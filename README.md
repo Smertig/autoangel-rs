@@ -4,6 +4,13 @@ A library for parsing and manipulating Angelica Engine game files, with Python a
 
 > Rust rewrite of my old [autoangel](https://github.com/Smertig/autoangel) C++ library, now with Python and WASM bindings. Started in 2020, worked on it on and off until 2023. Finally done right. Don't really do PW stuff anymore, but why not publish it.
 
+## Live Demo
+
+- [PCK Viewer](https://smertig.github.io/autoangel-rs/master/viewer/) — browse and extract files from `.pck`/`.pkx` packages in the browser
+- [Elements Viewer](https://smertig.github.io/autoangel-rs/master/viewer/elements.html) — inspect `elements.data` structures in the browser
+
+Both demos use the autoangel WASM package.
+
 ## Features
 
 - Parse and manipulate `elements.data` files (list structures, typed fields, roundtrip serialization)
@@ -86,8 +93,6 @@ cd autoangel-core && cargo bench
 ## Documentation
 
 - [Python API docs](https://smertig.github.io/autoangel-rs/master/autoangel.html)
-- [PCK Viewer demo](https://smertig.github.io/autoangel-rs/master/viewer/) (uses autoangel WASM package)
-- [Elements Viewer demo](https://smertig.github.io/autoangel-rs/master/viewer/elements.html) (uses autoangel WASM package)
 
 ## License
 
