@@ -87,6 +87,7 @@ cd autoangel-core && cargo bench
 
 - [Python API docs](https://smertig.github.io/autoangel-rs/master/autoangel.html)
 - [PCK Viewer demo](https://smertig.github.io/autoangel-rs/master/viewer/) (uses autoangel WASM package)
+- [Elements Viewer demo](https://smertig.github.io/autoangel-rs/master/viewer/elements.html) (uses autoangel WASM package)
 
 ## License
 

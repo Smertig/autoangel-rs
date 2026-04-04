@@ -157,6 +157,8 @@ Full TypeScript definitions are included in the package (`autoangel.d.ts`).
 
 A browser-based PCK viewer built with this package is available at [smertig.github.io/autoangel-rs](https://smertig.github.io/autoangel-rs/master/viewer/).
 
+An elements.data viewer is also available at [smertig.github.io/autoangel-rs/elements](https://smertig.github.io/autoangel-rs/master/viewer/elements.html).
+
 ## Development
 
 Requires Rust (1.94.1+), [wasm-pack](https://rustwasm.github.io/wasm-pack/), and Node.js 20+.
