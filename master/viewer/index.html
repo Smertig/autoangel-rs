@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PCK Viewer</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+</head>
+<body>
+  <div id="app">
+    <header id="header">
+      <div id="drop" class="drop-zone">
+        <span class="drop-label">Drop <code>.pck</code> (and optional <code>.pkx</code>) here, or</span>
+        <input type="file" id="picker" accept=".pck,.pkx" multiple>
+      </div>
+      <div id="status">Loading WASM&hellip;</div>
+    </header>
+
+    <main id="explorer" class="hidden">
+      <aside id="sidebar">
+        <div id="tree"></div>
+      </aside>
+      <div id="divider"></div>
+      <section id="content">
+        <nav id="breadcrumb"></nav>
+        <div id="preview">
+          <div class="placeholder">Select a file to preview</div>
+        </div>
+        <div id="actions"></div>
+      </section>
+    </main>
+
+    <footer id="statusbar" class="hidden">
+      <span id="filecount"></span>
+      <span id="format"></span>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/languages/ini.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/languages/xml.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/languages/json.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/languages/lua.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/languages/python.min.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
