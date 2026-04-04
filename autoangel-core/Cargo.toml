@@ -1,0 +1,49 @@
+[package]
+name = "autoangel-core"
+version = "0.8.0"
+authors = ["Smertig <akaraevz@mail.ru>"]
+edition = "2024"
+
+[features]
+default = ["fs"]
+fs = ["dep:memmap2"]
+
+[dependencies]
+static_assertions = "1.1"
+thiserror = "2.0.18"
+subslice = "0.2.3"
+miniz_oxide = "0.9.1"
+encoding = "0.2.33"
+memmap2 = { version = "0.9", optional = true }
+endiannezz = "0.6.5"
+itertools = "0.14.0"
+replace_with = "0.1.8"
+smallvec = { version = "1.15.1", features = ["union"] }
+include_dir = "0.7.4"
+once_cell = "1.21"
+im = "15.1.0"
+format = "0.2.4"
+parking_lot = "0.12.5"
+eyre = "0.6.12"
+color-eyre = "0.6.5"
+log = "0.4.29"
+
+[dev-dependencies]
+criterion = "0.8.2"
+stats_alloc = "0.1"
+
+[[bench]]
+name = "pck"
+harness = false
+
+[[bench]]
+name = "elements"
+harness = false
+
+[[bench]]
+name = "elements_mem"
+harness = false
+
+[[bench]]
+name = "pck_mem"
+harness = false

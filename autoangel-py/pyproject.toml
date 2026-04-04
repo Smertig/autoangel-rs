@@ -1,0 +1,32 @@
+[build-system]
+requires = ["maturin>=1.7,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "autoangel"
+requires-python = ">=3.10"
+readme = "README.md"
+dynamic = ["version"]
+
+[dependency-groups]
+dev = ["pytest"]
+
+[tool.maturin]
+module-name = "autoangel"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.uv]
+# Force-reinstall on every `uv run` because cache-keys globs with ".." paths
+# silently match nothing due to a globwalk bug: https://github.com/Gilnaa/globwalk/issues/28
+# Tracked in uv: https://github.com/astral-sh/uv/pull/12888
+# Maturin + cargo incremental compilation makes this cheap when nothing changed.
+reinstall-package = ["autoangel"]
+cache-keys = [
+    { file = "pyproject.toml" },
+    { file = "Cargo.toml" },
+    { file = "src/**/*.rs" },
+    { file = "../autoangel-core/src/**/*.rs" },
+]
+config-settings = { build-args = "--profile=dev" }

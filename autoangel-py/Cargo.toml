@@ -1,0 +1,26 @@
+[package]
+name = "autoangel-py"
+version = "0.8.0"
+authors = ["Smertig <akaraevz@mail.ru>"]
+edition = "2024"
+
+# https://pyo3.rs/master/faq.html#i-cant-run-cargo-test-my-crate-cannot-be-found-for-tests-in-tests-directory
+[lib]
+name = "autoangel"
+bench = false # https://github.com/bheisler/criterion.rs/issues/193
+crate-type = ["cdylib", "rlib"]
+
+[build-dependencies]
+built = { version = "0.8.0", features = ["chrono", "cargo-lock"] }
+
+[dependencies]
+autoangel-core = { path = "../autoangel-core" }
+pyo3 = { version = "0.28.2", features = ["abi3-py37", "eyre"] }
+memmap2 = "0.9"
+im = "15.1.0"
+pyo3-built = "0.6.0"
+color-eyre = "0.6.5"
+
+[features]
+extension-module = ["pyo3/extension-module"]
+default = ["extension-module"]

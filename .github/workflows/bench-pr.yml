@@ -1,0 +1,57 @@
+name: Benchmark PR
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'autoangel-core/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/bench-pr.yml'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  benchmark:
+    name: Compare benchmarks
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Run time benchmarks
+        run: set -o pipefail && cd autoangel-core && cargo bench --bench elements --bench pck -- --output-format bencher --sample-size 10 --measurement-time 3 | tee time_output.txt
+
+      - name: Run memory benchmarks
+        run: set -o pipefail && cd autoangel-core && cargo bench --bench elements_mem --bench pck_mem | tee mem_output.txt
+
+      - name: Compare time benchmarks
+        uses: benchmark-action/github-action-benchmark@v1.21.0
+        with:
+          name: Rust Benchmark (Time)
+          tool: 'cargo'
+          output-file-path: autoangel-core/time_output.txt
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          alert-threshold: '150%'
+          comment-always: true
+          fail-on-alert: false
+          save-data-file: false
+
+      - name: Compare memory benchmarks
+        uses: benchmark-action/github-action-benchmark@v1.21.0
+        with:
+          name: Rust Benchmark (Memory)
+          tool: 'cargo'
+          output-file-path: autoangel-core/mem_output.txt
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          alert-threshold: '150%'
+          comment-always: true
+          fail-on-alert: false
+          save-data-file: false
+          skip-fetch-gh-pages: true

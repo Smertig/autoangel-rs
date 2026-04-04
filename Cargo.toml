@@ -1,0 +1,10 @@
+[workspace]
+members = [
+    "autoangel-core",
+    "autoangel-py",
+    "autoangel-wasm",
+]
+resolver = "2"
+
+[profile.release]
+lto = true

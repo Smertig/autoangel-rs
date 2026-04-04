@@ -1,0 +1,35 @@
+name: Check Documentation
+
+on:
+  push:
+
+jobs:
+  check-docs:
+    name: Check if documentation is up-to-date
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+
+      - name: Build documentation
+        run: uv run docs/rebuild.py
+
+      - name: Check for documentation changes
+        run: |
+          if [[ -n $(git status --porcelain docs/html/) ]]; then
+            echo "::error::Documentation is out of date. Please run 'uv run docs/rebuild.py' and commit the changes."
+            git diff
+            exit 1
+          else
+            echo "Documentation is up-to-date."
+          fi

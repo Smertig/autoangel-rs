@@ -1,0 +1,240 @@
+name: Bump tag, publish PyPI + npm, update docs
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - autoangel-py/Cargo.toml
+      - autoangel-wasm/Cargo.toml
+      - .github/workflows/publish.yml
+
+permissions:
+  contents: write
+
+env:
+  PYTHON_VERSION: '3.8' # abi3 minimal supported version is 3.7, but it's not supported on fresh OSes anymore
+
+jobs:
+  bump_tag:
+    name: Bump tag
+    runs-on: ubuntu-24.04
+    outputs:
+      new_tag: ${{ steps.check_tag.outputs.tag_exists == 'false' && steps.make_tag.outputs.new_tag || '' }}
+      version: ${{ steps.extract_version.outputs.version }}
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Extract version from Cargo.toml
+        id: extract_version
+        run: |
+          VERSION=$(grep -m1 '^version = ' autoangel-py/Cargo.toml | sed -E 's/version = "(.*)"/\1/')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION"
+
+      - name: Check if tag exists
+        id: check_tag
+        run: |
+          VERSION="${{ steps.extract_version.outputs.version }}"
+          TAG_EXISTS=$(git ls-remote --tags origin | grep -q "refs/tags/v$VERSION" && echo "true" || echo "false")
+          echo "tag_exists=$TAG_EXISTS" >> $GITHUB_OUTPUT
+          echo "Checking if tag v$VERSION exists: $TAG_EXISTS"
+
+      - name: Create tag
+        id: make_tag
+        if: ${{ steps.check_tag.outputs.tag_exists == 'false' }}
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          custom_tag: ${{ steps.extract_version.outputs.version }}
+          tag_prefix: 'v'
+
+  build-wheels:
+    needs: bump_tag
+    if: ${{ needs.bump_tag.outputs.new_tag }}
+    strategy:
+      matrix:
+        include:
+          - name: Windows x86
+            os: windows-2022
+            maturin_extra_args: -- -Ctarget-feature=+crt-static
+            python_arch: x86
+
+          - name: Windows x64
+            os: windows-2022
+            maturin_extra_args: -- -Ctarget-feature=+crt-static
+            python_arch: x64
+
+          - name: Ubuntu x64
+            os: ubuntu-24.04   # When updated, make sure a python version is supported: https://raw.githubusercontent.com/actions/python-versions/main/versions-manifest.json
+            python_arch: x64
+
+          - name: macOS uni
+            os: macos-14
+            maturin_extra_args: --universal2
+
+    name: Build Wheel (${{matrix.name}})
+    runs-on: ${{matrix.os}}
+    outputs:
+      wheel_paths: ${{ steps.build_wheel.outputs.wheel_paths }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Build wheels (3.7 and beyond due to abi3, see also Cargo.toml)
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{env.PYTHON_VERSION}}
+          architecture: ${{matrix.python_arch}}
+
+      - name: Build wheel
+        id: build_wheel
+        uses: PyO3/maturin-action@v1.50.1
+        with:
+          working-directory: autoangel-py
+          maturin-version: 'v0.14.5'
+          target: ${{matrix.python_arch}} # otherwise, host arch will be used
+          command: build
+          args: --release ${{matrix.maturin_extra_args}}
+
+      - name: Upload wheel as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{matrix.name}}
+          path: target/wheels/*.whl
+
+  publish-wheels:
+    needs: [ bump_tag, build-wheels ]
+    if: ${{ needs.bump_tag.outputs.new_tag && success() }}
+    name: Publish Wheels to PyPI
+    runs-on: ubuntu-24.04
+    environment: pypi
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Download all wheels
+        uses: actions/download-artifact@v4
+        with:
+          path: wheels
+
+      - name: Flatten wheel directory structure
+        run: |
+          mkdir -p dist
+          find wheels -name "*.whl" -exec cp {} dist/ \;
+          echo "Found wheels:"
+          ls -la dist/
+
+      - name: Publish to PyPI
+        id: publish
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
+          skip-existing: true
+          verbose: true
+
+      - name: Write package link to summary
+        run: |
+          echo "## Package Published Successfully! :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "Package has been published to PyPI and is available at:" >> $GITHUB_STEP_SUMMARY
+          echo "### [autoangel v${{ needs.bump_tag.outputs.version }}](https://pypi.org/project/autoangel/${{ needs.bump_tag.outputs.version }}/)" >> $GITHUB_STEP_SUMMARY
+          echo "You can install it with:" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo "pip install autoangel==${{ needs.bump_tag.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+  publish-npm:
+    needs: bump_tag
+    if: ${{ needs.bump_tag.outputs.new_tag }}
+    name: Publish to npm
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: curl -sSL https://rustwasm.github.io/wasm-pack/installer/init.sh | sh
+
+      - name: Build WASM package
+        run: cd autoangel-wasm && wasm-pack build --target web --out-name autoangel
+
+      - name: Rename npm package to autoangel
+        run: |
+          sed -i 's/"name": "autoangel-wasm"/"name": "autoangel"/' autoangel-wasm/pkg/package.json
+
+      - name: Publish to npm
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > autoangel-wasm/pkg/.npmrc
+          cd autoangel-wasm/pkg && npm publish
+
+      - name: Write npm link to summary
+        run: |
+          echo "## npm Package Published! :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "Package has been published to npm:" >> $GITHUB_STEP_SUMMARY
+          echo "### [autoangel v${{ needs.bump_tag.outputs.version }}](https://www.npmjs.com/package/autoangel/v/${{ needs.bump_tag.outputs.version }})" >> $GITHUB_STEP_SUMMARY
+          echo "CDN:" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "https://cdn.jsdelivr.net/npm/autoangel@${{ needs.bump_tag.outputs.version }}/" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+  final-cleanup:
+    needs: [ bump_tag, build-wheels, publish-wheels, publish-npm, rollback-pypi-on-publish-failure, update-docs ]
+    if: ${{ always() && needs.bump_tag.outputs.new_tag }}
+    name: Final Cleanup
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Git tag preservation note
+        run: echo "Git tag is preserved even if workflow fails since the package was uploaded anyway"
+
+  rollback-pypi-on-publish-failure:
+    needs: [ bump_tag, build-wheels, publish-wheels ]
+    if: ${{ always() && needs.bump_tag.outputs.new_tag && needs.publish-wheels.result == 'failure' }}
+    name: Rollback on Publish Failure
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{env.PYTHON_VERSION}}
+
+      - name: Warning about PyPI packages
+        run: |
+          echo "Warning: Workflow failed after publishing to PyPI"
+          echo "PyPI doesn't support programmatic package deletion"
+          echo "If needed, manually yank the package version from PyPI web interface"
+          echo "Package: autoangel v${{ needs.bump_tag.outputs.version }}"
+          echo "URL: https://pypi.org/project/autoangel/${{ needs.bump_tag.outputs.version }}/"
+
+  update-docs:
+    needs: [ bump_tag, publish-wheels ]
+    if: ${{ needs.bump_tag.outputs.new_tag && success() }}
+    name: Update Docs for v${{ needs.bump_tag.outputs.version }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      # update docs
+      - name: Publish Docs to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/html
+          destination_dir: ${{ needs.bump_tag.outputs.version }}

@@ -1,0 +1,29 @@
+name: Update Documentation
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - docs/html/**
+
+permissions:
+  contents: write
+
+jobs:
+  docs:
+    runs-on: ubuntu-24.04
+    name: Update docs
+
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Publish Docs to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/html
+          destination_dir: master

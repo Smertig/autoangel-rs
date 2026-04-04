@@ -1,0 +1,9 @@
+target
+Cargo.lock
+__pycache__
+/*.iml
+/.idea
+/.venv*
+/.cargo
+/.claude
+/.temp

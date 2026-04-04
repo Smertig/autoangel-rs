@@ -1,0 +1,198 @@
+on:
+  push:
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+
+name: CI
+
+jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      core: ${{ steps.filter.outputs.core }}
+      python: ${{ steps.filter.outputs.python }}
+      wasm: ${{ steps.filter.outputs.wasm }}
+      ci: ${{ steps.filter.outputs.ci }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            core:
+              - 'autoangel-core/**'
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+            python:
+              - 'autoangel-py/**'
+            wasm:
+              - 'autoangel-wasm/**'
+            ci:
+              - '.github/workflows/build.yml'
+
+  check:
+    name: Check
+    needs: changes
+    if: needs.changes.outputs.core == 'true' || needs.changes.outputs.python == 'true' || needs.changes.outputs.wasm == 'true' || needs.changes.outputs.ci == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+      - name: Run cargo check
+        run: cargo check
+
+  test-rust:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            os: windows-2022
+
+          - name: Ubuntu
+            os: ubuntu-24.04
+
+          - name: macOS
+            os: macos-14
+
+    name: Rust Tests (${{matrix.name}})
+    needs: changes
+    if: needs.changes.outputs.core == 'true' || needs.changes.outputs.ci == 'true'
+    runs-on: ${{matrix.os}}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+
+      - name: Run Rust tests
+        run: cargo test -p autoangel-core
+
+  test-python:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, ubuntu-24.04, macos-14]
+        python-version: ['3.10', '3.13']
+
+    name: Python Tests (${{matrix.os}}, py${{matrix.python-version}})
+    needs: changes
+    if: needs.changes.outputs.core == 'true' || needs.changes.outputs.python == 'true' || needs.changes.outputs.ci == 'true'
+    runs-on: ${{matrix.os}}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Set up Python
+        run: uv python install ${{matrix.python-version}}
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+
+      - name: Run Python tests
+        run: cd autoangel-py && uv run pytest
+
+  check-wasm:
+    name: Check WASM
+    needs: changes
+    if: needs.changes.outputs.core == 'true' || needs.changes.outputs.wasm == 'true' || needs.changes.outputs.ci == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+          targets: wasm32-unknown-unknown
+
+      - name: Check autoangel-core compiles for WASM
+        run: cargo check -p autoangel-core --target wasm32-unknown-unknown --no-default-features
+
+      - name: Check autoangel-wasm compiles
+        run: cargo check -p autoangel-wasm --target wasm32-unknown-unknown
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install wasm-pack
+        run: curl -sSL https://rustwasm.github.io/wasm-pack/installer/init.sh | sh
+
+      - name: Build WASM for Node.js
+        run: cd autoangel-wasm && wasm-pack build --target nodejs --out-dir pkg-node --out-name autoangel
+
+      - name: Run WASM tests
+        run: cd autoangel-wasm && node --test tests/test.mjs
+
+  fmt:
+    name: Rustfmt
+    needs: changes
+    if: needs.changes.outputs.core == 'true' || needs.changes.outputs.python == 'true' || needs.changes.outputs.wasm == 'true' || needs.changes.outputs.ci == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+          components: rustfmt
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+  clippy:
+    name: Clippy
+    needs: changes
+    if: needs.changes.outputs.core == 'true' || needs.changes.outputs.python == 'true' || needs.changes.outputs.wasm == 'true' || needs.changes.outputs.ci == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+          components: clippy
+
+      - name: Run clippy
+        run: cargo clippy --all-features -- -D warnings
+
+  stubtest:
+    name: Stubtest
+    needs: changes
+    if: needs.changes.outputs.core == 'true' || needs.changes.outputs.python == 'true' || needs.changes.outputs.ci == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Set up Python
+        run: uv python install 3.13
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+
+      - name: Build extension
+        run: cd autoangel-py && uv run --with maturin maturin develop
+
+      - name: Run stubtest
+        run: cd autoangel-py && uv run --with mypy python -m mypy.stubtest autoangel --ignore-missing-stub --allowlist stubtest_allowlist.txt

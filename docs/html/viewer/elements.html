@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Elements Viewer</title>
+  <link rel="stylesheet" href="elements.css">
+</head>
+<body>
+  <div id="app">
+    <header id="header">
+      <div id="drop" class="drop-zone">
+        <span class="drop-label">Drop an <code>elements.data</code> file here, or</span>
+        <input type="file" id="picker" accept=".data">
+      </div>
+      <div id="status">Loading WASM&hellip;</div>
+    </header>
+
+    <main id="explorer" class="hidden">
+      <aside id="lists-panel">
+        <div class="panel-header">
+          <input type="text" id="list-filter" placeholder="Filter lists&hellip;">
+        </div>
+        <div id="lists-content"></div>
+      </aside>
+      <div id="divider1" class="divider"></div>
+      <section id="entries-panel">
+        <div class="panel-header">
+          <span id="entries-title">Entries</span>
+          <input type="text" id="entry-search" placeholder="Search ID or Name&hellip;">
+        </div>
+        <div id="entries-content"></div>
+      </section>
+      <div id="divider2" class="divider"></div>
+      <section id="detail-panel">
+        <div class="panel-header">
+          <span id="detail-title">Detail</span>
+        </div>
+        <div id="detail-content">
+          <div class="placeholder">Select an entry to view details</div>
+        </div>
+      </section>
+    </main>
+
+    <footer id="statusbar" class="hidden">
+      <span id="info-lists"></span>
+      <span id="info-version"></span>
+      <span id="info-entries"></span>
+    </footer>
+  </div>
+
+  <script type="module" src="elements.js"></script>
+</body>
+</html>

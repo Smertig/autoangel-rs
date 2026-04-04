@@ -1,0 +1,8 @@
+# __getattr__ is implemented in Rust but not directly visible to stubtest
+autoangel.ElementsDataEntry.__getattr__
+
+# Type alias only exists in the stub for IDE support
+autoangel.ReadValue
+
+# __iter__ declared in stub for IDE support; at runtime iteration works via __getitem__+__len__ fallback
+autoangel.ElementsDataList.__iter__
