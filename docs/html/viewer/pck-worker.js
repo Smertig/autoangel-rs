@@ -5,6 +5,8 @@ const CDN = 'https://cdn.jsdelivr.net/npm/autoangel@0.8.0';
 
 let init, PckPackage;
 let pkg = null;
+let syncHandles = [];
+const workerUid = Math.random().toString(36).slice(2, 10);
 
 async function initWasm() {
   const mod = await import(`${CDN}/autoangel.js`);
@@ -32,26 +34,26 @@ async function handleParse(pckFile, pkxFile) {
   await wasmReady;
 
   if (pkg) { pkg.free(); pkg = null; }
+  for (const h of syncHandles) { try { h.close(); } catch {} }
+  syncHandles = [];
 
   // Write file(s) to OPFS
-  const pckHandle = await writeToOpfs('current.pck', pckFile);
+  const pckHandle = await writeToOpfs(`${workerUid}.pck`, pckFile);
   const pckSync = await openSyncHandle(pckHandle);
+  syncHandles.push(pckSync);
 
   try {
     if (pkxFile) {
-      const pkxHandle = await writeToOpfs('current.pkx', pkxFile);
+      const pkxHandle = await writeToOpfs(`${workerUid}.pkx`, pkxFile);
       const pkxSync = await openSyncHandle(pkxHandle);
-      try {
-        pkg = PckPackage.open2(pckSync, pkxSync);
-      } catch (e) {
-        pkxSync.close();
-        throw e;
-      }
+      syncHandles.push(pkxSync);
+      pkg = PckPackage.open2(pckSync, pkxSync);
     } else {
       pkg = PckPackage.open(pckSync);
     }
   } catch (e) {
-    pckSync.close();
+    for (const h of syncHandles) { try { h.close(); } catch {} }
+    syncHandles = [];
     throw e;
   }
 
