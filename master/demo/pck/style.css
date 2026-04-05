@@ -97,7 +97,7 @@ body {
   line-height: 1.45;
 }
 
-#error-banner .error-text { flex: 1; }
+#error-banner .error-text { flex: 1; white-space: pre-line; }
 
 #error-banner .error-dismiss {
   flex-shrink: 0;

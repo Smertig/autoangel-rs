@@ -14,6 +14,10 @@ let selectedEntryIdx = -1;
 let selectedListEl = null;
 let selectedEntryEl = null;
 
+let customConfigText = null;
+let lastFileBytes = null;
+let lastFileName = '';
+
 // --- DOM refs ---
 
 const dom = {
@@ -32,18 +36,56 @@ const dom = {
   infoLists: document.getElementById('info-lists'),
   infoVersion: document.getElementById('info-version'),
   infoEntries: document.getElementById('info-entries'),
+  // Config panel
+  configToggle: document.getElementById('config-toggle'),
+  configPanel: document.getElementById('config-panel'),
+  configText: document.getElementById('config-text'),
+  configApply: document.getElementById('config-apply'),
+  configClear: document.getElementById('config-clear'),
+  configPicker: document.getElementById('config-picker'),
+  configInfo: document.getElementById('config-info'),
+  configError: document.getElementById('config-error'),
+  errorBanner: document.getElementById('error-banner'),
 };
 
 // --- Init WASM ---
 
-const { default: init, ElementsData } = await import(`${CDN}/autoangel.js`);
+const { default: init, ElementsData, ElementsConfig } = await import(`${CDN}/autoangel.js`);
 await init(`${CDN}/autoangel_bg.wasm`);
 dom.status.textContent = 'Ready. Open an elements.data file.';
+
+// --- Error banner ---
+
+function showError(msg) {
+  dom.errorBanner.innerHTML = '';
+  const text = document.createElement('span');
+  text.className = 'error-text';
+  text.textContent = msg;
+  const dismiss = document.createElement('button');
+  dismiss.className = 'error-dismiss';
+  dismiss.textContent = '\u00d7';
+  dismiss.onclick = hideError;
+  dom.errorBanner.append(text, dismiss);
+  dom.errorBanner.classList.remove('hidden');
+}
+
+function hideError() {
+  dom.errorBanner.classList.add('hidden');
+  dom.errorBanner.innerHTML = '';
+}
 
 // --- File loading ---
 
 async function loadFile(file) {
   dom.status.textContent = `Parsing ${file.name} (${(file.size / 1e6).toFixed(1)} MB)\u2026`;
+  lastFileName = file.name;
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  lastFileBytes = bytes;
+  parseAndDisplay(bytes, file.name);
+}
+
+function parseAndDisplay(bytes, label) {
+  hideError();
   showPlaceholder(dom.detailContent, 'Parsing\u2026');
   dom.listsContent.innerHTML = '';
   dom.entriesContent.innerHTML = '';
@@ -54,11 +96,12 @@ async function loadFile(file) {
   lastEntryPerList.clear();
   if (data) { data.free(); data = null; }
 
-  const bytes = new Uint8Array(await file.arrayBuffer());
   try {
-    data = ElementsData.parse(bytes);
+    const config = customConfigText ? ElementsConfig.parse(customConfigText, 'pw') : undefined;
+    data = ElementsData.parse(bytes, config);
   } catch (e) {
-    dom.status.textContent = `Error: ${e.message || e}`;
+    showError(e.message || String(e));
+    dom.status.textContent = label;
     return;
   }
 
@@ -72,7 +115,7 @@ async function loadFile(file) {
     totalEntries += entryCount;
   }
 
-  dom.status.textContent = file.name;
+  dom.status.textContent = label;
   dom.infoLists.textContent = `${lists.length} lists`;
   dom.infoVersion.textContent = `v${data.version}`;
   dom.infoEntries.textContent = `${totalEntries} total entries`;
@@ -87,7 +130,6 @@ async function loadFile(file) {
 
   renderLists('');
   dom.entriesTitle.textContent = 'Entries';
-  dom.entriesContent.innerHTML = '';
   showPlaceholder(dom.detailContent, 'Select an entry to view details');
   dom.listFilter.value = '';
   dom.entrySearch.value = '';
@@ -359,6 +401,87 @@ dom.entrySearch.oninput = debounce(() => {
     renderEntries(lists[selectedListIdx], dom.entrySearch.value);
   }
 }, 150);
+
+// --- Config panel ---
+
+dom.configToggle.onclick = () => {
+  const open = dom.configPanel.classList.toggle('hidden');
+  dom.configToggle.classList.toggle('active', !open);
+};
+
+function showConfigError(msg) {
+  dom.configError.textContent = msg;
+  dom.configError.classList.remove('hidden');
+}
+
+function applyConfigText(text, displayName) {
+  dom.configError.classList.add('hidden');
+
+  if (!text.trim()) {
+    dom.configError.textContent = 'Config text is empty.';
+    dom.configError.classList.remove('hidden');
+    return;
+  }
+
+  let config;
+  try {
+    config = ElementsConfig.parse(text, 'pw');
+  } catch (e) {
+    showConfigError(e.message || String(e));
+    return;
+  }
+
+  const name = displayName ?? config.name ?? 'unnamed';
+  const listCount = config.listCount;
+  config.free();
+
+  customConfigText = text;
+
+  dom.configInfo.textContent = `Custom config: "${name}" (${listCount} lists)`;
+  dom.configInfo.classList.add('custom');
+  dom.configClear.disabled = false;
+  dom.configToggle.classList.add('has-config');
+
+  reparseIfLoaded();
+}
+
+function reparseIfLoaded() {
+  if (lastFileBytes) parseAndDisplay(lastFileBytes, lastFileName);
+}
+
+async function loadConfigFromFile(file) {
+  const text = await file.text();
+  dom.configText.value = text;
+  applyConfigText(text, file.name);
+}
+
+dom.configApply.onclick = () => applyConfigText(dom.configText.value);
+
+dom.configClear.onclick = () => {
+  customConfigText = null;
+  dom.configInfo.textContent = 'No custom config applied. The viewer auto-detects a bundled config from the data file version.';
+  dom.configInfo.classList.remove('custom');
+  dom.configError.classList.add('hidden');
+  dom.configClear.disabled = true;
+  dom.configToggle.classList.remove('has-config');
+  reparseIfLoaded();
+};
+
+dom.configText.ondragover = (e) => {
+  e.preventDefault();
+  dom.configText.classList.add('dragover');
+};
+dom.configText.ondragleave = () => dom.configText.classList.remove('dragover');
+dom.configText.ondrop = (e) => {
+  e.preventDefault();
+  dom.configText.classList.remove('dragover');
+  if (e.dataTransfer.files[0]) loadConfigFromFile(e.dataTransfer.files[0]);
+};
+
+dom.configPicker.onchange = (e) => {
+  if (e.target.files[0]) loadConfigFromFile(e.target.files[0]);
+  e.target.value = '';
+};
 
 // --- Boot ---
 
