@@ -3,10 +3,19 @@
 <head>
   <meta charset="utf-8">
   <title>PCK Viewer</title>
+  <link rel="stylesheet" href="../nav.css">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
 </head>
 <body>
+  <nav class="demo-nav">
+    <a href="../" class="demo-nav-home">autoangel</a>
+    <div class="demo-nav-links">
+      <a href="../elements/" class="demo-nav-link">Elements</a>
+      <a href="../pck/" class="demo-nav-link active">PCK</a>
+    </div>
+  </nav>
+  <script>if(location.search)document.querySelectorAll('.demo-nav a').forEach(a=>{if(!a.href.includes('?'))a.href+=location.search})</script>
   <div id="app">
     <header id="header">
       <div id="drop" class="drop-zone">
