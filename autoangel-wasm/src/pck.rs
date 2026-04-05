@@ -4,6 +4,42 @@ use autoangel_core::util::data_source::DataSource;
 use wasm_bindgen::prelude::*;
 use web_sys::FileSystemSyncAccessHandle;
 
+/// Metadata for a single file entry in a pck package.
+#[wasm_bindgen]
+pub struct FileEntry {
+    path: String,
+    size: u32,
+    compressed_size: u32,
+    hash: u32,
+}
+
+#[wasm_bindgen]
+impl FileEntry {
+    /// Normalized file path (lowercase, backslash-separated).
+    #[wasm_bindgen(getter)]
+    pub fn path(&self) -> String {
+        self.path.clone()
+    }
+
+    /// Uncompressed file size in bytes.
+    #[wasm_bindgen(getter)]
+    pub fn size(&self) -> u32 {
+        self.size
+    }
+
+    /// Compressed file size in bytes.
+    #[wasm_bindgen(getter, js_name = "compressedSize")]
+    pub fn compressed_size(&self) -> u32 {
+        self.compressed_size
+    }
+
+    /// CRC32 hash of the decompressed file content.
+    #[wasm_bindgen(getter)]
+    pub fn hash(&self) -> u32 {
+        self.hash
+    }
+}
+
 /// Configuration for pck package parsing (encryption keys and guards).
 #[wasm_bindgen]
 pub struct PackageConfig {
@@ -145,5 +181,21 @@ impl PckPackage {
     #[wasm_bindgen(js_name = "fileList")]
     pub fn file_list(&self) -> Vec<String> {
         self.find_prefix("")
+    }
+
+    /// List all file entries with metadata (including content CRC32 hashes).
+    /// This decompresses every file to compute hashes.
+    #[wasm_bindgen(js_name = "fileEntries")]
+    pub fn file_entries(&self) -> Vec<FileEntry> {
+        self.info
+            .file_entries(&self.content)
+            .into_iter()
+            .map(|e| FileEntry {
+                path: e.path.to_owned(),
+                size: e.size,
+                compressed_size: e.compressed_size,
+                hash: e.hash,
+            })
+            .collect()
     }
 }

@@ -77,6 +77,17 @@ function handleGetFile(path) {
   return { data: buf, byteOffset: data.byteOffset, byteLength: data.byteLength };
 }
 
+function handleFileEntries() {
+  if (!pkg) throw new Error('No package loaded');
+  const wasmEntries = pkg.fileEntries();
+  const entries = wasmEntries.map(e => {
+    const plain = { path: e.path, size: e.size, compressedSize: e.compressedSize, hash: e.hash };
+    e.free();
+    return plain;
+  });
+  return entries;
+}
+
 self.onmessage = async (e) => {
   const { id, type } = e.data;
   try {
@@ -86,6 +97,9 @@ self.onmessage = async (e) => {
     } else if (type === 'getFile') {
       const { data, byteOffset, byteLength } = handleGetFile(e.data.path);
       self.postMessage({ id, type: 'result', data, byteOffset, byteLength }, [data]);
+    } else if (type === 'fileEntries') {
+      const entries = handleFileEntries();
+      self.postMessage({ id, type: 'result', entries });
     }
   } catch (err) {
     self.postMessage({ id, type: 'error', message: err.message || String(err) });

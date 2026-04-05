@@ -249,6 +249,14 @@ pub struct FileEntry {
     compressed_size: u32,
 }
 
+/// Summary of a file entry with content hash, returned by [`PackageInfo::file_entries`].
+pub struct FileEntrySummary<'a> {
+    pub path: &'a str,
+    pub size: u32,
+    pub compressed_size: u32,
+    pub hash: u32,
+}
+
 impl FileEntry {
     pub fn normalize_path(path: &str) -> String {
         path.replace('/', r"\").to_lowercase()
@@ -259,6 +267,19 @@ impl FileEntry {
         let compressed_size = self.compressed_size as usize;
 
         content.read_bytes_at(offset, compressed_size)
+    }
+
+    /// Read and decompress the file content.
+    pub fn get_file<'a>(&self, content: &'a DataSource) -> Option<Cow<'a, [u8]>> {
+        let compressed = self.get_raw_file_bytes(content).ok()?;
+
+        if self.compressed_size >= self.size {
+            return Some(compressed);
+        }
+
+        miniz_oxide::inflate::decompress_to_vec_zlib(&compressed)
+            .ok()
+            .map(Cow::Owned)
     }
 }
 
@@ -584,33 +605,35 @@ impl PackageInfo {
         }
     }
 
+    /// Return metadata and content hashes for all files in a single pass.
+    pub fn file_entries(&self, content: &DataSource) -> Vec<FileEntrySummary<'_>> {
+        self.files
+            .iter()
+            .map(|entry| {
+                let hash = entry
+                    .get_file(content)
+                    .map(|data| crc32fast::hash(&data))
+                    .unwrap_or(0);
+                FileEntrySummary {
+                    path: &entry.normalized_name,
+                    size: entry.size,
+                    compressed_size: entry.compressed_size,
+                    hash,
+                }
+            })
+            .collect()
+    }
+
     pub fn get_file<'a>(&self, content: &'a DataSource, path: &str) -> Option<Cow<'a, [u8]>> {
         let path = FileEntry::normalize_path(path);
 
-        let entry = match self
+        let entry = self
             .files
             .binary_search_by(|e| e.normalized_name.cmp(&path))
-        {
-            Ok(index) => &self.files[index],
-            Err(_) => return None,
-        };
+            .ok()
+            .map(|index| &self.files[index])?;
 
-        let offset = entry.offset as usize;
-        let compressed_size = entry.compressed_size as usize;
-
-        let compressed = match content.read_bytes_at(offset, compressed_size) {
-            Ok(data) => data,
-            Err(_) => return None,
-        };
-
-        if entry.compressed_size >= entry.size {
-            return Some(compressed);
-        }
-
-        match miniz_oxide::inflate::decompress_to_vec_zlib(&compressed) {
-            Ok(result) => Some(Cow::Owned(result)),
-            Err(_) => None,
-        }
+        entry.get_file(content)
     }
 }
 

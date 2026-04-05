@@ -320,6 +320,23 @@ class ElementsMetaFieldArray:
 
 
 @final
+class FileEntry:
+    """
+    Metadata for a single file entry in a pck package.
+    """
+    path: str
+    """Normalized file path (lowercase, backslash-separated)."""
+    size: int
+    """Uncompressed file size in bytes."""
+    compressed_size: int
+    """Compressed file size in bytes."""
+    hash: int
+    """CRC32 hash of the decompressed file content."""
+
+    def __repr__(self) -> str: ...
+
+
+@final
 class PackageConfig:
     """
     Configuration for pck package encryption keys and guard values.
@@ -386,6 +403,15 @@ class PckPackage:
 
         :param path: Path to file inside package.
         :return: ``None`` if file not found. Otherwise, returns file content.
+        """
+        ...
+
+    def file_entries(self) -> List[FileEntry]:
+        """
+        Returns list of file entries with metadata (including content hashes).
+        This decompresses every file to compute CRC32 hashes.
+
+        :return: All file entries in package.
         """
         ...
 

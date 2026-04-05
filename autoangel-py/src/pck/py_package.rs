@@ -5,6 +5,29 @@ use autoangel_core::util::data_source::DataSource;
 use pyo3::prelude::*;
 use pyo3::types::*;
 
+/// Metadata for a single file entry in a pck package.
+#[pyclass(name = "FileEntry")]
+struct PyFileEntry {
+    #[pyo3(get)]
+    path: String,
+    #[pyo3(get)]
+    size: u32,
+    #[pyo3(get)]
+    compressed_size: u32,
+    #[pyo3(get)]
+    hash: u32,
+}
+
+#[pymethods]
+impl PyFileEntry {
+    fn __repr__(&self) -> String {
+        format!(
+            "FileEntry(path='{}', size={}, compressed_size={}, hash=0x{:08X})",
+            self.path, self.size, self.compressed_size, self.hash
+        )
+    }
+}
+
 /// Object describing parsed pck package.
 #[pyclass(name = "PckPackage")]
 struct PyPackage {
@@ -67,6 +90,21 @@ impl PyPackage {
         self.find_prefix("", py)
     }
 
+    /// List all file entries with metadata (including content CRC32 hashes).
+    /// This decompresses every file to compute hashes.
+    fn file_entries(&self) -> Vec<PyFileEntry> {
+        self.info
+            .file_entries(&self.content)
+            .into_iter()
+            .map(|e| PyFileEntry {
+                path: e.path.to_owned(),
+                size: e.size,
+                compressed_size: e.compressed_size,
+                hash: e.hash,
+            })
+            .collect()
+    }
+
     fn __repr__(&self) -> String {
         format!(
             "PckPackage(version=0x{:X}, files={})",
@@ -106,6 +144,7 @@ pub fn init_py(m: &Bound<'_, PyModule>) -> PyResult<()> {
     }
     m.add_function(pyo3::wrap_pyfunction!(read_pck, m)?)?;
 
+    m.add_class::<PyFileEntry>()?;
     m.add_class::<PyPackage>()?;
     m.add_class::<PyPackageConfig>()?;
 

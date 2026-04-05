@@ -260,6 +260,54 @@ describe("PckPackage", () => {
     assert.throws(() => PckPackage.parse(new Uint8Array([])));
   });
 
+  it("returns file entries with metadata and hashes", () => {
+    const pkg = PckPackage.parse(CONFIGS_PCK);
+    const entries = pkg.fileEntries();
+    assert.equal(entries.length, pkg.fileCount);
+
+    for (const entry of entries) {
+      assert.equal(typeof entry.path, "string");
+      assert.ok(entry.path.length > 0);
+      assert.equal(typeof entry.size, "number");
+      assert.ok(entry.size >= 0);
+      assert.equal(typeof entry.compressedSize, "number");
+      assert.ok(entry.compressedSize >= 0);
+      assert.ok(entry.compressedSize <= entry.size || entry.size === 0);
+      assert.equal(typeof entry.hash, "number");
+      entry.free();
+    }
+
+    pkg.free();
+  });
+
+  it("file entries hashes are consistent", () => {
+    const pkg = PckPackage.parse(CONFIGS_PCK);
+    const entries1 = pkg.fileEntries();
+    const entries2 = pkg.fileEntries();
+
+    for (let i = 0; i < entries1.length; i++) {
+      assert.equal(entries1[i].hash, entries2[i].hash);
+      entries1[i].free();
+      entries2[i].free();
+    }
+
+    pkg.free();
+  });
+
+  it("file entries paths match file list", () => {
+    const pkg = PckPackage.parse(CONFIGS_PCK);
+    const fileList = pkg.fileList();
+    const entries = pkg.fileEntries();
+    assert.equal(entries.length, fileList.length);
+
+    for (let i = 0; i < entries.length; i++) {
+      assert.equal(entries[i].path, fileList[i]);
+      entries[i].free();
+    }
+
+    pkg.free();
+  });
+
   it("rejects wrong guards", () => {
     const config = PackageConfig.withKeys(
       0xa8937462,
