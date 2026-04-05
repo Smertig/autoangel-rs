@@ -1,4 +1,7 @@
-const CDN = 'https://cdn.jsdelivr.net/npm/autoangel@0.8.0';
+const LOCAL_PKG = '../../../../autoangel-wasm/pkg';
+const CDN = new URLSearchParams(location.search).has('local')
+  ? new URL(LOCAL_PKG, import.meta.url).href
+  : 'https://cdn.jsdelivr.net/npm/autoangel@0.8.0';
 
 // --- Extension maps ---
 
@@ -96,7 +99,9 @@ function workerCall(msg, transfer) {
 }
 
 function initWorker() {
-  worker = new Worker(new URL('./pck-worker.js', import.meta.url), { type: 'module' });
+  const workerUrl = new URL('./pck-worker.js', import.meta.url);
+  workerUrl.searchParams.set('cdn', CDN);
+  worker = new Worker(workerUrl, { type: 'module' });
   worker.onmessage = (e) => {
     const { id, type, message, ...rest } = e.data;
     const cb = workerPending.get(id);

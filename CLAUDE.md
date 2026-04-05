@@ -67,6 +67,21 @@ wasm-bindgen bindings exposing `autoangel-core` as an npm package. Uses `default
 
 Build: `cd autoangel-wasm && wasm-pack build --target web`
 
+### Local demo testing
+
+To test demo viewers against a local WASM build:
+
+```bash
+cd autoangel-wasm && wasm-pack build --target web --out-name autoangel
+python -m http.server 9853    # from repo root
+```
+
+Then open with `?local` to use the local build instead of CDN:
+- `http://localhost:9853/docs/html/demo/pck/index.html?local`
+- `http://localhost:9853/docs/html/demo/elements/index.html?local`
+
+Without `?local`, the demos load WASM from the published npm CDN as usual.
+
 ## Version bumps
 
 All crates share the same version. When bumping, update **all** of these:
@@ -75,7 +90,6 @@ All crates share the same version. When bumping, update **all** of these:
 - `autoangel-wasm/Cargo.toml`
 - `autoangel-wasm/README.md` — CDN URL in the installation example
 - `docs/html/demo/pck/app.js` — `CDN` const
-- `docs/html/demo/pck/pck-worker.js` — `CDN` const
 - `docs/html/demo/elements/elements.js` — `CDN` const
 
 ## CI

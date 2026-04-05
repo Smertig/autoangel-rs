@@ -1,7 +1,8 @@
 // Web Worker for OPFS-based PCK/PKX parsing.
 // Receives files from main thread, writes to OPFS, opens via sync access handles.
 
-const CDN = 'https://cdn.jsdelivr.net/npm/autoangel@0.8.0';
+const CDN = new URL(self.location).searchParams.get('cdn');
+if (!CDN) throw new Error('Worker requires ?cdn= parameter');
 
 let init, PckPackage;
 let pkg = null;
