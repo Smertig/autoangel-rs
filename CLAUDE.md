@@ -89,8 +89,7 @@ All crates share the same version. When bumping, update **all** of these:
 - `autoangel-py/Cargo.toml`
 - `autoangel-wasm/Cargo.toml`
 - `autoangel-wasm/README.md` — CDN URL in the installation example
-- `docs/html/demo/pck/app.js` — `CDN` const
-- `docs/html/demo/elements/elements.js` — `CDN` const
+- `docs/html/demo/cdn.js` — `CDN_PKG` const (single source of truth for all demo pages)
 
 ## CI
 
