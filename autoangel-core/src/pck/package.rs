@@ -443,6 +443,16 @@ impl PackageInfo {
             eyre::bail!("Invalid headers_end_offset: {}", headers_end_offset);
         }
 
+        if headers_end_offset > data.size() {
+            eyre::bail!(
+                "Header offset ({}) exceeds data size ({}), \
+                 the archive may be split across multiple files - \
+                 try providing the .pkx file as well",
+                headers_end_offset,
+                data.size(),
+            );
+        }
+
         let raw_version = data
             .get(headers_end_offset - 4..headers_end_offset)?
             .as_le::<u32>()?;
