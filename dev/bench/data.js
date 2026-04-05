@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1775382096390,
+  "lastUpdate": 1775390429256,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -167,6 +167,90 @@ window.BENCHMARK_DATA = {
             "name": "PackageInfo::get_file",
             "value": 3581,
             "range": "± 5",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "bc2c681f4f261f055842904e0e833bfde82e8f9d",
+          "message": "docs: add custom config panel and error banner to elements viewer\n\n* Config panel supports paste, file picker, and drag-drop of .cfg files\n\n* Parse errors shown in a dismissible banner below header (both viewers)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+          "timestamp": "2026-04-05T14:51:22+03:00",
+          "tree_id": "09a4705252ce218120e59a3c147331c94804e7a6",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/bc2c681f4f261f055842904e0e833bfde82e8f9d"
+        },
+        "date": 1775390428633,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 30400,
+            "range": "± 1558",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 68,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::access_fields",
+            "value": 13,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 129,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 21094,
+            "range": "± 42",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::iterate_lists",
+            "value": 1502,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 14,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 302695,
+            "range": "± 10666",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::find_prefix",
+            "value": 331,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 3604,
+            "range": "± 7",
             "unit": "ns/iter"
           }
         ]
