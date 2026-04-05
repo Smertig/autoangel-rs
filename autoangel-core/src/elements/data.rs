@@ -202,7 +202,7 @@ impl DataView {
 
     pub fn parse(content: &DataSource, config: config::Config) -> Result<Self> {
         let with_backtrace =
-            |result, lists| Self::with_backtrace(result, lists, &config, content).unwrap();
+            |result, lists| Self::with_backtrace(result, lists, &config, content);
 
         let mut data = content.clone();
 
@@ -694,5 +694,20 @@ mod tests {
             format!("{err:?}").contains("Unexpected header"),
             "unexpected error: {err:?}"
         );
+    }
+
+    #[test]
+    fn parse_mismatched_config_returns_error() {
+        // v29 data with v7 config — must return Err, not panic
+        let bytes = include_test_data_bytes!("elements/elements_v29.data");
+        let content = DataSource::from_bytes(bytes.to_vec());
+        let config = config::Config::parse(
+            include_resources_str!("known_configs/PW_1.2.2_v7.cfg"),
+            None,
+            GameDialectRef::PW,
+        )
+        .unwrap();
+        let result = DataView::parse(&content, config);
+        assert!(result.is_err(), "expected error for mismatched config, got Ok");
     }
 }

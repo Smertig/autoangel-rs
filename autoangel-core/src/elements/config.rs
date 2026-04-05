@@ -237,8 +237,8 @@ mod tests {
 
         assert_eq!(meta.get_byte_size(), 4);
 
-        assert_eq!(meta.value_from_bytes(b"\x01\x02\x03\x04"), 0x04030201_i32);
-        assert_eq!(meta.value_from_bytes(b"\x00\x00\x00\x00"), 0_i32);
+        assert_eq!(meta.value_from_bytes(b"\x01\x02\x03\x04").unwrap(), 0x04030201_i32);
+        assert_eq!(meta.value_from_bytes(b"\x00\x00\x00\x00").unwrap(), 0_i32);
     }
 
     #[test]

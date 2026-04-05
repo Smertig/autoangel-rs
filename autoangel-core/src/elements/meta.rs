@@ -52,10 +52,10 @@ impl MetaType {
 
     pub fn read_value(&self, bytes: &[u8]) -> Result<ReadValue> {
         Ok(match self {
-            MetaType::I32(meta) => ReadValue::Integer(meta.value_from_bytes(bytes) as i64),
-            MetaType::I64(meta) => ReadValue::Integer(meta.value_from_bytes(bytes)),
-            MetaType::F32(meta) => ReadValue::Float(meta.value_from_bytes(bytes)),
-            MetaType::F64(meta) => ReadValue::Double(meta.value_from_bytes(bytes)),
+            MetaType::I32(meta) => ReadValue::Integer(meta.value_from_bytes(bytes)? as i64),
+            MetaType::I64(meta) => ReadValue::Integer(meta.value_from_bytes(bytes)?),
+            MetaType::F32(meta) => ReadValue::Float(meta.value_from_bytes(bytes)?),
+            MetaType::F64(meta) => ReadValue::Double(meta.value_from_bytes(bytes)?),
             MetaType::ByteAuto(meta) => ReadValue::Bytes(meta.value_from_bytes(bytes)),
             MetaType::Bytes(meta) => ReadValue::Bytes(meta.value_from_bytes(bytes)),
             MetaType::GBKString(meta) => ReadValue::String(meta.value_from_bytes(bytes)?),
@@ -131,12 +131,11 @@ where
         std::mem::size_of::<T>()
     }
 
-    pub fn value_from_bytes(&self, bytes: &[u8]) -> T {
+    pub fn value_from_bytes(&self, bytes: &[u8]) -> Result<T> {
         let buf = bytes
             .try_into()
-            .map_err(|_| ())
-            .expect("wrong byte size for LE parse");
-        T::from_le_bytes(buf)
+            .map_err(|_| eyre!("expected {} bytes, got {}", std::mem::size_of::<T>(), bytes.len()))?;
+        Ok(T::from_le_bytes(buf))
     }
 
     pub fn value_to_bytes(&self, value: T) -> Box<[u8]> {
@@ -231,7 +230,9 @@ impl StringMetaType<u16> {
 
 impl StringMetaType<u8> {
     pub fn value_from_bytes(&self, bytes: &[u8]) -> Result<String> {
-        assert!(bytes.ends_with(&[0]));
+        if !bytes.ends_with(&[0]) {
+            bail!("GBK string not null-terminated (len={})", bytes.len());
+        }
 
         encoding::all::GBK
             .decode(
