@@ -20,7 +20,7 @@ impl ElementsConfig {
             .ok_or_else(|| JsError::new(&format!("unknown game dialect: '{game}'")))?;
 
         let config = config::Config::parse(content, None, dialect)
-            .map_err(|e| JsError::new(&format!("{e:#}")))?;
+            .map_err(|e| crate::format_error(&e))?;
 
         Ok(ElementsConfig { config })
     }
@@ -53,7 +53,7 @@ fn resolve_config(
         Some(c) => Ok(c.config),
         None => {
             let version = data::DataView::parse_header(content)
-                .map_err(|e| JsError::new(&format!("{e:#}")))?;
+                .map_err(|e| crate::format_error(&e))?;
             config::Config::find_bundled(version)
                 .ok_or_else(|| JsError::new(&format!("no bundled config for v{version}")))
         }
@@ -69,7 +69,7 @@ impl ElementsData {
         let content = DataSource::from_bytes(bytes.to_vec());
         let config = resolve_config(&content, config)?;
         let view =
-            data::DataView::parse(&content, config).map_err(|e| JsError::new(&format!("{e:#}")))?;
+            data::DataView::parse(&content, config).map_err(|e| crate::format_error(&e))?;
 
         Ok(ElementsData {
             inner: data::Data::from(view, content),
@@ -85,10 +85,10 @@ impl ElementsData {
         config: Option<ElementsConfig>,
     ) -> Result<ElementsData, JsError> {
         let content =
-            opfs::data_source_from_handle(handle).map_err(|e| JsError::new(&format!("{e:#}")))?;
+            opfs::data_source_from_handle(handle).map_err(|e| crate::format_error(&e))?;
         let config = resolve_config(&content, config)?;
         let view =
-            data::DataView::parse(&content, config).map_err(|e| JsError::new(&format!("{e:#}")))?;
+            data::DataView::parse(&content, config).map_err(|e| crate::format_error(&e))?;
 
         Ok(ElementsData {
             inner: data::Data::from(view, content),
@@ -129,7 +129,7 @@ impl ElementsData {
         let mut buffer = Vec::new();
         self.inner
             .write(&mut std::io::BufWriter::new(&mut buffer))
-            .map_err(|e| JsError::new(&format!("{e:#}")))?;
+            .map_err(|e| crate::format_error(&e))?;
         Ok(buffer)
     }
 
@@ -179,7 +179,7 @@ impl ElementsDataList {
 
         let entry_view = entries[index]
             .resolve(&self.content, &self.list.config)
-            .map_err(|e| JsError::new(&format!("{e:#}")))?
+            .map_err(|e| crate::format_error(&e))?
             .clone();
 
         Ok(ElementsDataEntry {
@@ -220,11 +220,11 @@ impl ElementsDataEntry {
         let fields = self.inner.fields.read();
         let bytes = fields[index]
             .get_bytes(&self.inner.content)
-            .map_err(|e| JsError::new(&format!("{e:#}")))?;
+            .map_err(|e| crate::format_error(&e))?;
         let value = self.list_config.fields[index]
             .meta_type
             .read_value(&bytes)
-            .map_err(|e| JsError::new(&format!("{e:#}")))?;
+            .map_err(|e| crate::format_error(&e))?;
 
         Ok(read_value_to_js(value))
     }
