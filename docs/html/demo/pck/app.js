@@ -70,6 +70,7 @@ let useOpfs = false;
 
 const dom = {
   status: document.getElementById('status'),
+  errorBanner: document.getElementById('error-banner'),
   drop: document.getElementById('drop'),
   picker: document.getElementById('picker'),
   explorer: document.getElementById('explorer'),
@@ -83,6 +84,24 @@ const dom = {
   filecount: document.getElementById('filecount'),
   format: document.getElementById('format'),
 };
+
+function showError(msg) {
+  dom.errorBanner.innerHTML = '';
+  const text = document.createElement('span');
+  text.className = 'error-text';
+  text.textContent = msg;
+  const dismiss = document.createElement('button');
+  dismiss.className = 'error-dismiss';
+  dismiss.textContent = '\u00d7';
+  dismiss.onclick = hideError;
+  dom.errorBanner.append(text, dismiss);
+  dom.errorBanner.classList.remove('hidden');
+}
+
+function hideError() {
+  dom.errorBanner.classList.add('hidden');
+  dom.errorBanner.innerHTML = '';
+}
 
 // --- OPFS Worker ---
 
@@ -163,11 +182,12 @@ async function getFileData(path) {
 
 async function loadFiles(files) {
   const { pck: pckFile, pkx: pkxFile } = classifyFiles(files);
-  if (!pckFile) { dom.status.textContent = 'No .pck file found.'; return; }
+  if (!pckFile) { showError('No .pck file found.'); return; }
 
   const label = pkxFile ? `${pckFile.name} + ${pkxFile.name}` : pckFile.name;
   const totalSize = pckFile.size + (pkxFile?.size || 0);
 
+  hideError();
   dom.status.textContent = `Parsing ${label} (${(totalSize / 1e6).toFixed(1)} MB)\u2026`;
   dom.preview.innerHTML = '<div class="placeholder">Parsing\u2026</div>';
   dom.actions.innerHTML = '';
@@ -184,7 +204,7 @@ async function loadFiles(files) {
       version = result.version;
     } else {
       if (pkxFile) {
-        dom.status.textContent = 'Error: .pkx files require OPFS support (use a modern browser with HTTPS)';
+        showError('.pkx files require OPFS support (use a modern browser with HTTPS)');
         return;
       }
       const pckBytes = new Uint8Array(await pckFile.arrayBuffer());
@@ -193,7 +213,7 @@ async function loadFiles(files) {
       version = pkg.version;
     }
   } catch (e) {
-    dom.status.textContent = `Error: ${e.message || e}`;
+    showError(e.message || String(e));
     return;
   }
 
