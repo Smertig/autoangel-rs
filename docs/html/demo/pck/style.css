@@ -77,6 +77,24 @@ body {
   white-space: nowrap;
 }
 
+.source-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 13px;
+  white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: var(--radius);
+  transition: color 0.15s, background 0.15s;
+}
+
+.source-link:hover {
+  color: var(--text);
+  background: var(--tree-hover);
+}
+
 /* --- Explorer layout --- */
 
 #explorer {
