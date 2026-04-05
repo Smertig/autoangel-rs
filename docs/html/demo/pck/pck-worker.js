@@ -4,7 +4,7 @@
 const CDN = new URL(self.location).searchParams.get('cdn');
 if (!CDN) throw new Error('Worker requires ?cdn= parameter');
 
-let init, PckPackage;
+let init, PckPackage, PackageConfig;
 let pkg = null;
 let syncHandles = [];
 const workerUid = Math.random().toString(36).slice(2, 10);
@@ -13,6 +13,7 @@ async function initWasm() {
   const mod = await import(`${CDN}/autoangel.js`);
   init = mod.default;
   PckPackage = mod.PckPackage;
+  PackageConfig = mod.PackageConfig;
   await init(`${CDN}/autoangel_bg.wasm`);
 }
 
@@ -31,7 +32,7 @@ async function openSyncHandle(fileHandle) {
   return await fileHandle.createSyncAccessHandle();
 }
 
-async function handleParse(pckFile, pkxFile) {
+async function handleParse(pckFile, pkxFile, keys) {
   await wasmReady;
 
   if (pkg) { pkg.free(); pkg = null; }
@@ -43,14 +44,16 @@ async function handleParse(pckFile, pkxFile) {
   const pckSync = await openSyncHandle(pckHandle);
   syncHandles.push(pckSync);
 
+  const config = keys ? PackageConfig.withKeys(keys.key1, keys.key2, keys.guard1, keys.guard2) : undefined;
+
   try {
     if (pkxFile) {
       const pkxHandle = await writeToOpfs(`${workerUid}.pkx`, pkxFile);
       const pkxSync = await openSyncHandle(pkxHandle);
       syncHandles.push(pkxSync);
-      pkg = PckPackage.open2(pckSync, pkxSync);
+      pkg = PckPackage.open2(pckSync, pkxSync, config);
     } else {
-      pkg = PckPackage.open(pckSync);
+      pkg = PckPackage.open(pckSync, config);
     }
   } catch (e) {
     for (const h of syncHandles) { try { h.close(); } catch {} }
@@ -78,7 +81,7 @@ self.onmessage = async (e) => {
   const { id, type } = e.data;
   try {
     if (type === 'parse') {
-      const result = await handleParse(e.data.pckFile, e.data.pkxFile);
+      const result = await handleParse(e.data.pckFile, e.data.pkxFile, e.data.keys);
       self.postMessage({ id, type: 'result', ...result });
     } else if (type === 'getFile') {
       const { data, byteOffset, byteLength } = handleGetFile(e.data.path);
