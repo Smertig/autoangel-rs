@@ -201,8 +201,7 @@ impl DataView {
     }
 
     pub fn parse(content: &DataSource, config: config::Config) -> Result<Self> {
-        let with_backtrace =
-            |result, lists| Self::with_backtrace(result, lists, &config, content);
+        let with_backtrace = |result, lists| Self::with_backtrace(result, lists, &config, content);
 
         let mut data = content.clone();
 
@@ -708,6 +707,9 @@ mod tests {
         )
         .unwrap();
         let result = DataView::parse(&content, config);
-        assert!(result.is_err(), "expected error for mismatched config, got Ok");
+        assert!(
+            result.is_err(),
+            "expected error for mismatched config, got Ok"
+        );
     }
 }

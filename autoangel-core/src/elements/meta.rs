@@ -132,9 +132,13 @@ where
     }
 
     pub fn value_from_bytes(&self, bytes: &[u8]) -> Result<T> {
-        let buf = bytes
-            .try_into()
-            .map_err(|_| eyre!("expected {} bytes, got {}", std::mem::size_of::<T>(), bytes.len()))?;
+        let buf = bytes.try_into().map_err(|_| {
+            eyre!(
+                "expected {} bytes, got {}",
+                std::mem::size_of::<T>(),
+                bytes.len()
+            )
+        })?;
         Ok(T::from_le_bytes(buf))
     }
 

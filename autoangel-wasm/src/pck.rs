@@ -85,8 +85,7 @@ impl PckPackage {
         config: Option<PackageConfig>,
     ) -> Result<PckPackage, JsError> {
         let config = config.map_or_else(Default::default, |c| c.config);
-        let content =
-            opfs::data_source_from_handle(handle).map_err(|e| crate::format_error(&e))?;
+        let content = opfs::data_source_from_handle(handle).map_err(|e| crate::format_error(&e))?;
         Self::from_data_source(content, config)
     }
 
@@ -107,8 +106,8 @@ impl PckPackage {
         content: DataSource,
         config: package::PackageConfig,
     ) -> Result<PckPackage, JsError> {
-        let info = package::PackageInfo::parse(&content, config)
-            .map_err(|e| crate::format_error(&e))?;
+        let info =
+            package::PackageInfo::parse(&content, config).map_err(|e| crate::format_error(&e))?;
         Ok(PckPackage { content, info })
     }
 

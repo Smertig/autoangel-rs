@@ -19,8 +19,8 @@ impl ElementsConfig {
         let dialect = GameDialectRef::get(game)
             .ok_or_else(|| JsError::new(&format!("unknown game dialect: '{game}'")))?;
 
-        let config = config::Config::parse(content, None, dialect)
-            .map_err(|e| crate::format_error(&e))?;
+        let config =
+            config::Config::parse(content, None, dialect).map_err(|e| crate::format_error(&e))?;
 
         Ok(ElementsConfig { config })
     }
@@ -52,8 +52,8 @@ fn resolve_config(
     match config {
         Some(c) => Ok(c.config),
         None => {
-            let version = data::DataView::parse_header(content)
-                .map_err(|e| crate::format_error(&e))?;
+            let version =
+                data::DataView::parse_header(content).map_err(|e| crate::format_error(&e))?;
             config::Config::find_bundled(version)
                 .ok_or_else(|| JsError::new(&format!("no bundled config for v{version}")))
         }
@@ -68,8 +68,7 @@ impl ElementsData {
     pub fn parse(bytes: &[u8], config: Option<ElementsConfig>) -> Result<ElementsData, JsError> {
         let content = DataSource::from_bytes(bytes.to_vec());
         let config = resolve_config(&content, config)?;
-        let view =
-            data::DataView::parse(&content, config).map_err(|e| crate::format_error(&e))?;
+        let view = data::DataView::parse(&content, config).map_err(|e| crate::format_error(&e))?;
 
         Ok(ElementsData {
             inner: data::Data::from(view, content),
@@ -84,11 +83,9 @@ impl ElementsData {
         handle: FileSystemSyncAccessHandle,
         config: Option<ElementsConfig>,
     ) -> Result<ElementsData, JsError> {
-        let content =
-            opfs::data_source_from_handle(handle).map_err(|e| crate::format_error(&e))?;
+        let content = opfs::data_source_from_handle(handle).map_err(|e| crate::format_error(&e))?;
         let config = resolve_config(&content, config)?;
-        let view =
-            data::DataView::parse(&content, config).map_err(|e| crate::format_error(&e))?;
+        let view = data::DataView::parse(&content, config).map_err(|e| crate::format_error(&e))?;
 
         Ok(ElementsData {
             inner: data::Data::from(view, content),
