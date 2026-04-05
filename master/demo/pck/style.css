@@ -121,6 +121,121 @@ body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* --- Keys toggle + panel --- */
+
+.keys-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-muted);
+  font-size: 13px;
+  white-space: nowrap;
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.keys-toggle:hover {
+  color: var(--text);
+  background: var(--tree-hover);
+}
+
+.keys-toggle.active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: #e7f5ff;
+}
+
+.keys-toggle.has-custom {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.keys-toggle.has-custom::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-left: 2px;
+}
+
+.keys-panel {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.keys-panel.hidden { display: none; }
+
+.keys-body {
+  display: flex;
+  gap: 16px;
+  padding: 12px 16px;
+  align-items: flex-start;
+}
+
+.keys-fields {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.key-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.key-field span {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.key-field input {
+  width: 120px;
+  padding: 5px 8px;
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.key-field input:focus {
+  border-color: var(--accent);
+}
+
+.key-field input.modified {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.keys-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.keys-info {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  max-width: 240px;
+}
+
+.keys-info.custom {
+  color: var(--accent);
+}
+
 .source-link {
   display: inline-flex;
   align-items: center;

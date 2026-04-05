@@ -83,6 +83,14 @@ const dom = {
   statusbar: document.getElementById('statusbar'),
   filecount: document.getElementById('filecount'),
   format: document.getElementById('format'),
+  keysToggle: document.getElementById('keys-toggle'),
+  keysPanel: document.getElementById('keys-panel'),
+  keysInfo: document.getElementById('keys-info'),
+  keysReset: document.getElementById('keys-reset'),
+  key1: document.getElementById('key1'),
+  key2: document.getElementById('key2'),
+  guard1: document.getElementById('guard1'),
+  guard2: document.getElementById('guard2'),
 };
 
 function showError(msg) {
@@ -134,6 +142,7 @@ function initWorker() {
 // --- Init WASM (in-memory fallback) ---
 
 let PckPackage = null;
+let PackageConfig = null;
 
 const opfsAvailable = typeof navigator !== 'undefined'
   && typeof navigator.storage?.getDirectory === 'function'
@@ -150,9 +159,58 @@ if (!useOpfs) {
   const mod = await import(`${CDN}/autoangel.js`);
   await mod.default(`${CDN}/autoangel_bg.wasm`);
   PckPackage = mod.PckPackage;
+  PackageConfig = mod.PackageConfig;
 }
 
 dom.status.textContent = 'Ready. Open a .pck file.';
+
+// --- Keys panel ---
+
+const DEFAULT_KEYS = { key1: '0xA8937462', key2: '0x59374231', guard1: '0xFDFDFEEE', guard2: '0xF00DBEEF' };
+
+function readKeyValues() {
+  const vals = { key1: dom.key1.value.trim(), key2: dom.key2.value.trim(), guard1: dom.guard1.value.trim(), guard2: dom.guard2.value.trim() };
+  const isDefault = Object.keys(DEFAULT_KEYS).every(k => vals[k].toLowerCase() === DEFAULT_KEYS[k].toLowerCase());
+  return { vals, isDefault };
+}
+
+function getCustomConfig() {
+  const { vals, isDefault } = readKeyValues();
+  if (isDefault) return null;
+  const parse = (v) => {
+    const n = Number(v);
+    if (!Number.isFinite(n)) throw new Error(`Invalid key value: "${v}"`);
+    return n >>> 0;
+  };
+  return { key1: parse(vals.key1), key2: parse(vals.key2), guard1: parse(vals.guard1), guard2: parse(vals.guard2) };
+}
+
+function updateKeysIndicator() {
+  const { vals, isDefault } = readKeyValues();
+  dom.keysToggle.classList.toggle('has-custom', !isDefault);
+  dom.keysReset.disabled = isDefault;
+  dom.keysInfo.textContent = isDefault
+    ? 'Default keys. Change values and re-open a file to use custom keys.'
+    : 'Custom keys set. Re-open a file to apply.';
+  dom.keysInfo.classList.toggle('custom', !isDefault);
+  for (const k of ['key1', 'key2', 'guard1', 'guard2']) {
+    dom[k].classList.toggle('modified', vals[k].toLowerCase() !== DEFAULT_KEYS[k].toLowerCase());
+  }
+}
+
+dom.keysToggle.onclick = () => {
+  const wasHidden = dom.keysPanel.classList.toggle('hidden');
+  dom.keysToggle.classList.toggle('active', !wasHidden);
+};
+
+dom.keysReset.onclick = () => {
+  for (const [k, v] of Object.entries(DEFAULT_KEYS)) dom[k].value = v;
+  updateKeysIndicator();
+};
+
+for (const k of ['key1', 'key2', 'guard1', 'guard2']) {
+  dom[k].oninput = updateKeysIndicator;
+}
 
 // --- File classification ---
 
@@ -187,6 +245,14 @@ async function loadFiles(files) {
   const label = pkxFile ? `${pckFile.name} + ${pkxFile.name}` : pckFile.name;
   const totalSize = pckFile.size + (pkxFile?.size || 0);
 
+  let customKeys;
+  try {
+    customKeys = getCustomConfig();
+  } catch (e) {
+    showError(e.message);
+    return;
+  }
+
   hideError();
   dom.status.textContent = `Parsing ${label} (${(totalSize / 1e6).toFixed(1)} MB)\u2026`;
   dom.preview.innerHTML = '<div class="placeholder">Parsing\u2026</div>';
@@ -199,7 +265,7 @@ async function loadFiles(files) {
 
   try {
     if (useOpfs) {
-      const result = await workerCall({ type: 'parse', pckFile, pkxFile });
+      const result = await workerCall({ type: 'parse', pckFile, pkxFile, keys: customKeys });
       fileList = result.fileList;
       version = result.version;
     } else {
@@ -208,7 +274,8 @@ async function loadFiles(files) {
         return;
       }
       const pckBytes = new Uint8Array(await pckFile.arrayBuffer());
-      pkg = PckPackage.parse(pckBytes);
+      const config = customKeys ? PackageConfig.withKeys(customKeys.key1, customKeys.key2, customKeys.guard1, customKeys.guard2) : undefined;
+      pkg = PckPackage.parse(pckBytes, config);
       fileList = pkg.fileList();
       version = pkg.version;
     }
