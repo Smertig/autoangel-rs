@@ -6,8 +6,8 @@ A library for parsing and manipulating Angelica Engine game files, with Python a
 
 ## Live Demo
 
-- [PCK Viewer](https://smertig.github.io/autoangel-rs/master/viewer/) — browse and extract files from `.pck`/`.pkx` packages in the browser
-- [Elements Viewer](https://smertig.github.io/autoangel-rs/master/viewer/elements.html) — inspect `elements.data` structures in the browser
+- [PCK Viewer](https://smertig.github.io/autoangel-rs/master/demo/pck/) — browse and extract files from `.pck`/`.pkx` packages in the browser
+- [Elements Viewer](https://smertig.github.io/autoangel-rs/master/demo/elements/) — inspect `elements.data` structures in the browser
 
 Both demos use the autoangel WASM package.
 

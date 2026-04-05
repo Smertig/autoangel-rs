@@ -155,9 +155,9 @@ Full TypeScript definitions are included in the package (`autoangel.d.ts`).
 
 ## Live Demo
 
-A browser-based PCK viewer built with this package is available at [smertig.github.io/autoangel-rs](https://smertig.github.io/autoangel-rs/master/viewer/).
+A browser-based PCK viewer built with this package is available at [smertig.github.io/autoangel-rs/demo/pck](https://smertig.github.io/autoangel-rs/master/demo/pck/).
 
-An elements.data viewer is also available at [smertig.github.io/autoangel-rs/elements](https://smertig.github.io/autoangel-rs/master/viewer/elements.html).
+An elements.data viewer is also available at [smertig.github.io/autoangel-rs/demo/elements](https://smertig.github.io/autoangel-rs/master/demo/elements/).
 
 ## Development
 
