@@ -7,7 +7,34 @@ if (!CDN) throw new Error('Worker requires ?cdn= parameter');
 let init, PckPackage, PackageConfig;
 let pkg = null;
 let syncHandles = [];
+let currentOpfsNames = [];
 const workerUid = Math.random().toString(36).slice(2, 10);
+const LOCK_PREFIX = 'opfs-pck-';
+
+// Hold a Web Lock for this worker's lifetime. The browser releases it
+// automatically when the tab/worker is destroyed, letting other workers
+// identify orphaned OPFS files.
+let lockAcquired;
+const lockReady = new Promise(resolve => { lockAcquired = resolve; });
+navigator.locks.request(LOCK_PREFIX + workerUid, () => {
+  lockAcquired();
+  return new Promise(() => {});
+});
+
+async function cleanupOrphanedOpfs() {
+  await lockReady;
+  const root = await navigator.storage.getDirectory();
+  const { held } = await navigator.locks.query();
+  const aliveUids = new Set(
+    held.filter(l => l.name.startsWith(LOCK_PREFIX)).map(l => l.name.slice(LOCK_PREFIX.length))
+  );
+  for await (const [name] of root.entries()) {
+    const uid = name.split('.')[0];
+    if (uid && !aliveUids.has(uid)) {
+      try { await root.removeEntry(name); } catch {}
+    }
+  }
+}
 
 async function initWasm() {
   const mod = await import(`${CDN}/autoangel.js`);
@@ -17,6 +44,7 @@ async function initWasm() {
   await init(`${CDN}/autoangel_bg.wasm`);
 }
 
+const opfsCleanup = cleanupOrphanedOpfs();
 const wasmReady = initWasm();
 
 async function writeToOpfs(name, file, onChunk) {
@@ -44,12 +72,22 @@ async function openSyncHandle(fileHandle) {
   return await fileHandle.createSyncAccessHandle();
 }
 
+async function removeCurrentFiles() {
+  const root = await navigator.storage.getDirectory();
+  for (const name of currentOpfsNames) {
+    try { await root.removeEntry(name); } catch {}
+  }
+  currentOpfsNames = [];
+}
+
 async function handleParse(id, pckFile, pkxFiles, keys) {
-  await wasmReady;
+  await Promise.all([wasmReady, opfsCleanup]);
 
   if (pkg) { pkg.free(); pkg = null; }
   for (const h of syncHandles) { try { h.close(); } catch {} }
   syncHandles = [];
+
+  await removeCurrentFiles();
 
   const config = keys ? PackageConfig.withKeys(keys.key1, keys.key2, keys.guard1, keys.guard2) : undefined;
 
@@ -71,6 +109,7 @@ async function handleParse(id, pckFile, pkxFiles, keys) {
     });
     prevFileWritten += file.size;
     fileHandles.push(fh);
+    currentOpfsNames.push(name);
   }
 
   // Open sync handles
