@@ -71,53 +71,67 @@ impl DataReader for memmap2::Mmap {
     }
 }
 
-/// Reads across two consecutive `DataReader`s as if they were one contiguous buffer.
-pub struct CompositeReader {
-    first: Arc<dyn DataReader>,
-    second: Arc<dyn DataReader>,
-    first_size: usize,
-    total_size: usize,
+/// Reads across N consecutive `DataReader`s as if they were one contiguous buffer.
+pub struct MultiReader {
+    parts: Vec<Arc<dyn DataReader>>,
+    /// prefix_sums[0] = 0, prefix_sums[i] = sum of sizes of parts[0..i]
+    /// Length = parts.len() + 1
+    prefix_sums: Vec<usize>,
 }
 
-impl CompositeReader {
-    pub fn new(first: Arc<dyn DataReader>, second: Arc<dyn DataReader>) -> Self {
-        let first_size = first.size();
-        let total_size = first_size + second.size();
-        Self {
-            first,
-            second,
-            first_size,
-            total_size,
+impl MultiReader {
+    pub fn new(parts: Vec<Arc<dyn DataReader>>) -> Self {
+        let mut prefix_sums = Vec::with_capacity(parts.len() + 1);
+        prefix_sums.push(0);
+        for part in &parts {
+            prefix_sums.push(prefix_sums.last().unwrap() + part.size());
         }
+        Self { parts, prefix_sums }
     }
 }
 
-impl DataReader for CompositeReader {
+impl DataReader for MultiReader {
     fn read_at(&self, offset: usize, buf: &mut [u8]) -> Result<()> {
         let end = offset + buf.len();
-        if end > self.total_size {
+        let total_size = self.size();
+        if end > total_size {
             return Err(eyre!(
-                "CompositeReader: read out of bounds: {}..{} (size {})",
+                "MultiReader: read out of bounds: {}..{} (size {})",
                 offset,
                 end,
-                self.total_size,
+                total_size,
             ));
         }
 
-        if end <= self.first_size {
-            self.first.read_at(offset, buf)
-        } else if offset >= self.first_size {
-            self.second.read_at(offset - self.first_size, buf)
-        } else {
-            let first_len = self.first_size - offset;
-            self.first.read_at(offset, &mut buf[..first_len])?;
-            self.second.read_at(0, &mut buf[first_len..])?;
-            Ok(())
+        let mut part_idx = match self.prefix_sums.binary_search(&offset) {
+            Ok(i) => {
+                if i < self.parts.len() {
+                    i
+                } else {
+                    i - 1
+                }
+            }
+            Err(i) => i - 1,
+        };
+
+        let mut buf_offset = 0;
+        while buf_offset < buf.len() {
+            let part_start = self.prefix_sums[part_idx];
+            let part_end = self.prefix_sums[part_idx + 1];
+            let read_start = (offset + buf_offset) - part_start;
+            let available = part_end - part_start - read_start;
+            let to_read = available.min(buf.len() - buf_offset);
+
+            self.parts[part_idx].read_at(read_start, &mut buf[buf_offset..buf_offset + to_read])?;
+            buf_offset += to_read;
+            part_idx += 1;
         }
+
+        Ok(())
     }
 
     fn size(&self) -> usize {
-        self.total_size
+        *self.prefix_sums.last().unwrap_or(&0)
     }
 }
 
@@ -165,18 +179,28 @@ impl DataSource {
         Ok(Self::from_reader(reader))
     }
 
-    /// Create a DataSource from two memory-mapped files (e.g. pck + pkx).
+    /// Create a DataSource from multiple memory-mapped files (e.g. pck + pkx + pkx1 + ...).
     #[cfg(feature = "fs")]
-    pub fn from_file2(file1: std::fs::File, file2: std::fs::File) -> Result<Self> {
-        let mapped1: Arc<dyn DataReader> = Arc::new(unsafe { memmap2::Mmap::map(&file1) }?);
-        let mapped2: Arc<dyn DataReader> = Arc::new(unsafe { memmap2::Mmap::map(&file2) }?);
-        Ok(Self::composite(mapped1, mapped2))
+    pub fn from_files(files: Vec<std::fs::File>) -> Result<Self> {
+        if files.len() == 1 {
+            return Self::from_file(files.into_iter().next().unwrap());
+        }
+        let readers: Vec<Arc<dyn DataReader>> = files
+            .into_iter()
+            .map(|f| -> Result<Arc<dyn DataReader>> {
+                Ok(Arc::new(unsafe { memmap2::Mmap::map(&f) }?))
+            })
+            .collect::<Result<_>>()?;
+        Ok(Self::composite(readers))
     }
 
-    /// Create a DataSource backed by two consecutive readers (e.g. pck + pkx).
-    pub fn composite(first: Arc<dyn DataReader>, second: Arc<dyn DataReader>) -> Self {
-        let composite = Arc::new(CompositeReader::new(first, second));
-        Self::from_reader(composite)
+    /// Create a DataSource backed by consecutive readers (e.g. pck + pkx + pkx1 + ...).
+    pub fn composite(parts: Vec<Arc<dyn DataReader>>) -> Self {
+        if parts.len() == 1 {
+            return Self::from_reader(parts.into_iter().next().unwrap());
+        }
+        let multi = Arc::new(MultiReader::new(parts));
+        Self::from_reader(multi)
     }
 
     /// Number of bytes in this view.
@@ -517,10 +541,18 @@ mod tests {
     }
 
     #[test]
-    fn composite_reader() {
+    fn multi_reader_single() {
+        let a: Arc<dyn DataReader> = Arc::new(b"hello".to_vec());
+        let ds = DataSource::composite(vec![a]);
+        assert_eq!(ds.size(), 5);
+        assert_eq!(ds.to_bytes().unwrap().as_ref(), b"hello");
+    }
+
+    #[test]
+    fn multi_reader_two_parts() {
         let a: Arc<dyn DataReader> = Arc::new(b"hello ".to_vec());
         let b: Arc<dyn DataReader> = Arc::new(b"world".to_vec());
-        let ds = DataSource::composite(a, b);
+        let ds = DataSource::composite(vec![a, b]);
 
         assert_eq!(ds.size(), 11);
         assert_eq!(ds.to_bytes().unwrap().as_ref(), b"hello world");
@@ -543,11 +575,37 @@ mod tests {
     }
 
     #[test]
-    fn composite_reader_out_of_bounds() {
+    fn multi_reader_three_parts() {
+        let a: Arc<dyn DataReader> = Arc::new(b"aaa".to_vec());
+        let b: Arc<dyn DataReader> = Arc::new(b"bbb".to_vec());
+        let c: Arc<dyn DataReader> = Arc::new(b"ccc".to_vec());
+        let ds = DataSource::composite(vec![a, b, c]);
+
+        assert_eq!(ds.size(), 9);
+        assert_eq!(ds.to_bytes().unwrap().as_ref(), b"aaabbbccc");
+
+        // Read spanning all three parts
+        assert_eq!(
+            ds.get_at(2, 5).unwrap().to_bytes().unwrap().as_ref(),
+            b"abbbc"
+        );
+        // Read entirely in middle part
+        assert_eq!(
+            ds.get_at(3, 3).unwrap().to_bytes().unwrap().as_ref(),
+            b"bbb"
+        );
+        // Read entirely in last part
+        assert_eq!(
+            ds.get_at(6, 3).unwrap().to_bytes().unwrap().as_ref(),
+            b"ccc"
+        );
+    }
+
+    #[test]
+    fn multi_reader_out_of_bounds() {
         let a: Arc<dyn DataReader> = Arc::new(b"ab".to_vec());
         let b: Arc<dyn DataReader> = Arc::new(b"cd".to_vec());
-        let ds = DataSource::composite(a, b);
-
+        let ds = DataSource::composite(vec![a, b]);
         assert!(ds.get_at(0, 5).is_err());
     }
 

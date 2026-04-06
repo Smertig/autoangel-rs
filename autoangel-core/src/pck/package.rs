@@ -486,7 +486,7 @@ impl PackageInfo {
             eyre::bail!(
                 "Header offset ({}) exceeds data size ({}), \
                  the archive may be split across multiple files - \
-                 try providing the .pkx file as well",
+                 try providing the .pkx/.pkx1/.pkx2/... files as well",
                 headers_end_offset,
                 data.size(),
             );
