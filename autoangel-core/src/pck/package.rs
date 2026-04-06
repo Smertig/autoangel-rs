@@ -8,27 +8,73 @@ use std::io::{Seek, Write};
 use std::path::Path;
 use subslice::SubsliceExt;
 
-#[derive(Debug, Eq, PartialEq, Default)]
+#[derive(Debug, Default, Eq, PartialEq)]
 struct KeyHeader {
     key1: u32,
-    headers_end_offset: u32,
+    headers_end_offset: u64,
     key2: u32,
+    /// True when the on-disk format uses a 64-bit offset (16 bytes total instead of 12).
+    wide: bool,
 }
 
 impl KeyHeader {
-    const SIZE: usize = 12;
+    fn size(&self) -> usize {
+        if self.wide { 16 } else { 12 }
+    }
+
+    fn has_valid_version_at(data: &DataSource, offset: u64) -> bool {
+        offset >= 4
+            && offset <= data.size()
+            && data
+                .get(offset - 4..offset)
+                .ok()
+                .and_then(|d| d.as_le::<u32>().ok())
+                .is_some_and(|ver| PckVersion::from_raw(ver).is_ok())
+    }
 
     fn parse(data: &DataSource) -> Result<Self> {
-        Ok(KeyHeader {
-            key1: data.get(0..4)?.as_le()?,
-            headers_end_offset: data.get(4..8)?.as_le()?,
-            key2: data.get(8..12)?.as_le()?,
-        })
+        let key1: u32 = data.get(0..4)?.as_le()?;
+
+        // Try 12-byte format (u32 offset)
+        let offset_narrow: u64 = data.get(4..8)?.as_le::<u32>()? as u64;
+        if Self::has_valid_version_at(data, offset_narrow) {
+            return Ok(KeyHeader {
+                key1,
+                headers_end_offset: offset_narrow,
+                key2: data.get(8..12)?.as_le()?,
+                wide: false,
+            });
+        }
+
+        // Try 16-byte format (u64 offset)
+        let offset_wide: u64 = data.get(4..12)?.as_le()?;
+        if Self::has_valid_version_at(data, offset_wide) {
+            return Ok(KeyHeader {
+                key1,
+                headers_end_offset: offset_wide,
+                key2: data.get(12..16)?.as_le()?,
+                wide: true,
+            });
+        }
+
+        eyre::bail!(
+            "Cannot parse key header: neither narrow (u32) nor wide (u64) offset yielded a valid version"
+        )
     }
 
     fn save<W: Write>(&self, writer: &mut W) -> Result<()> {
         writer.write_all(&self.key1.to_le_bytes())?;
-        writer.write_all(&self.headers_end_offset.to_le_bytes())?;
+        if self.wide {
+            writer.write_all(&self.headers_end_offset.to_le_bytes())?;
+        } else {
+            let offset: u32 = self.headers_end_offset.try_into().map_err(|_| {
+                eyre!(
+                    "Narrow key header cannot represent offset {}",
+                    self.headers_end_offset
+                )
+            })?;
+            writer.write_all(&offset.to_le_bytes())?;
+        }
         writer.write_all(&self.key2.to_le_bytes())?;
         Ok(())
     }
@@ -378,9 +424,14 @@ impl PackageInfo {
         let version = PckVersion::from_raw(self.meta_header.version)?;
         let mut current_offset: u64 = 0;
 
-        // Placeholder header, overwritten after we know the final size
-        KeyHeader::default().save(writer)?;
-        current_offset += KeyHeader::SIZE as u64;
+        // Placeholder header, overwritten after we know the final size.
+        // Preserve the original format (narrow/wide) so round-trip is lossless.
+        let key_header_template = KeyHeader {
+            wide: self.key_header.wide,
+            ..Default::default()
+        };
+        key_header_template.save(writer)?;
+        current_offset += key_header_template.size() as u64;
 
         let mut new_entries = Vec::new();
 
@@ -454,12 +505,13 @@ impl PackageInfo {
         package_header.save(writer, version)?;
         meta_header.save(writer)?;
 
-        let end_offset = writer.stream_position()? as u32;
+        let end_offset = writer.stream_position()?;
 
         let key_header = KeyHeader {
             key1: self.key_header.key1,
             headers_end_offset: end_offset,
             key2: self.key_header.key2,
+            wide: self.key_header.wide,
         };
 
         {
@@ -475,7 +527,7 @@ impl PackageInfo {
     pub fn parse(data: &DataSource, config: PackageConfig) -> Result<Self> {
         let key_header = KeyHeader::parse(data)?;
 
-        let headers_end_offset = key_header.headers_end_offset as u64;
+        let headers_end_offset = key_header.headers_end_offset;
 
         if headers_end_offset < 4 {
             eyre::bail!("Invalid headers_end_offset: {}", headers_end_offset);
@@ -691,14 +743,26 @@ mod tests {
     fn parse_key_header() {
         assert!(KeyHeader::parse(&ds(b"")).is_err());
         assert!(KeyHeader::parse(&ds(b"\x00\x00\x00\x00")).is_err());
+
+        // 12-byte (narrow) format: key1=1, offset=16, key2=3, then version 0x20002 at bytes 12..16
+        let mut narrow = vec![0u8; 16];
+        narrow[0..4].copy_from_slice(&1u32.to_le_bytes()); // key1
+        narrow[4..8].copy_from_slice(&16u32.to_le_bytes()); // offset → points to end
+        narrow[8..12].copy_from_slice(&3u32.to_le_bytes()); // key2
+        narrow[12..16].copy_from_slice(&0x20002u32.to_le_bytes()); // version tag
         assert_eq!(
-            KeyHeader::parse(&ds(b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00")).unwrap(),
+            KeyHeader::parse(&ds(&narrow)).unwrap(),
             KeyHeader {
                 key1: 1,
-                headers_end_offset: 2,
-                key2: 3
+                headers_end_offset: 16,
+                key2: 3,
+                wide: false,
             }
         );
+
+        // Wide (u64 offset) format cannot be unit-tested with small buffers because
+        // the narrow parser always matches first when the upper 32 bits are zero.
+        // The wide path is exercised by real >4GB multi-part archives.
     }
 
     #[test]
@@ -785,9 +849,10 @@ mod tests {
         let version_offset = heo - 4;
         data[version_offset..version_offset + 4].copy_from_slice(&0x99999u32.to_le_bytes());
         let config: PackageConfig = Default::default();
+        // Corrupted version causes KeyHeader::parse to fail (neither narrow nor wide yields valid version)
         let err = PackageInfo::parse(&DataSource::from_bytes(data), config).unwrap_err();
         assert!(
-            err.to_string().contains("Unknown version"),
+            err.to_string().contains("key header"),
             "unexpected error: {err}"
         );
     }
