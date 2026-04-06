@@ -1,7 +1,6 @@
-const LOCAL_PKG = '../../../../autoangel-wasm/pkg';
-const CDN = new URLSearchParams(location.search).has('local')
-  ? new URL(LOCAL_PKG, import.meta.url).href
-  : 'https://cdn.jsdelivr.net/npm/autoangel@0.8.2';
+import { resolveCDN } from '../cdn.js';
+
+const CDN = resolveCDN(import.meta.url);
 
 // --- State ---
 
