@@ -9,8 +9,8 @@ def test_text_signatures():
     assert read_elements_config.__text_signature__ == '(path)'
 
     # PCK functions
-    assert read_pck_bytes.__text_signature__ == '(content, config=None)'
-    assert read_pck.__text_signature__ == '(pck_path, pkx_paths=None, *, config=None)'
+    assert read_pck_bytes.__text_signature__ == '(content, config=None, *, on_progress=None, progress_interval_ms=0)'
+    assert read_pck.__text_signature__ == '(pck_path, pkx_paths=None, *, config=None, on_progress=None, progress_interval_ms=0)'
 
     # PackageConfig methods
     assert PackageConfig.__text_signature__ == '(key1=2828235874, key2=1496793649, guard1=4261281518, guard2=4027432687)'

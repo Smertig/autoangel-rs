@@ -14,7 +14,8 @@ pub fn package_parse(c: &mut Criterion) {
     let content = configs_ds();
     c.bench_function("PackageInfo::parse", |b| {
         b.iter(|| {
-            let package = PackageInfo::parse(&content, Default::default()).unwrap();
+            let package =
+                PackageInfo::parse(&content, Default::default(), Default::default()).unwrap();
             black_box(package);
         })
     });
@@ -22,7 +23,7 @@ pub fn package_parse(c: &mut Criterion) {
 
 pub fn package_file_list(c: &mut Criterion) {
     let content = configs_ds();
-    let package = PackageInfo::parse(&content, Default::default()).unwrap();
+    let package = PackageInfo::parse(&content, Default::default(), Default::default()).unwrap();
 
     c.bench_function("PackageInfo::find_prefix", |b| {
         b.iter(|| {
@@ -34,7 +35,7 @@ pub fn package_file_list(c: &mut Criterion) {
 
 pub fn package_get_file(c: &mut Criterion) {
     let content = configs_ds();
-    let package = PackageInfo::parse(&content, Default::default()).unwrap();
+    let package = PackageInfo::parse(&content, Default::default(), Default::default()).unwrap();
 
     c.bench_function("PackageInfo::get_file", |b| {
         b.iter(|| {
@@ -54,7 +55,7 @@ pub fn package_get_file(c: &mut Criterion) {
 
 pub fn package_get_all_files(c: &mut Criterion) {
     let content = configs_ds();
-    let package = PackageInfo::parse(&content, Default::default()).unwrap();
+    let package = PackageInfo::parse(&content, Default::default(), Default::default()).unwrap();
 
     c.bench_function("PackageInfo::get_all_files", |b| {
         b.iter(|| {
@@ -72,7 +73,7 @@ pub fn package_get_all_files(c: &mut Criterion) {
 
 pub fn package_save(c: &mut Criterion) {
     let content = configs_ds();
-    let package = PackageInfo::parse(&content, Default::default()).unwrap();
+    let package = PackageInfo::parse(&content, Default::default(), Default::default()).unwrap();
     let config = PackageConfig::default();
 
     c.bench_function("PackageInfo::save_to", |b| {

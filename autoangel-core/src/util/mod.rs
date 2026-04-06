@@ -1,5 +1,6 @@
 pub mod data_source;
 pub mod line_reader;
+pub mod throttle;
 
 pub trait DropLeadingZeros {
     fn drop_leading_zeros(self) -> Self;

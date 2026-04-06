@@ -1,5 +1,6 @@
 use crate::util::DropLeadingZeros;
 use crate::util::data_source::DataSource;
+use crate::util::throttle::Throttle;
 use eyre::{Context, Result, eyre};
 use std::borrow::Cow;
 use std::convert::TryInto;
@@ -323,6 +324,25 @@ pub struct FileEntriesOptions {
     pub on_progress: Option<FileEntriesProgressFn>,
 }
 
+/// Progress information passed to the callback during [`PackageInfo::parse`].
+#[derive(Debug)]
+pub struct ParseProgress {
+    pub index: usize,
+    pub total: usize,
+}
+
+/// Callback type for progress reporting in [`PackageInfo::parse`].
+pub type ParseProgressFn = Box<dyn FnMut(ParseProgress) -> Result<()>>;
+
+/// Options for [`PackageInfo::parse`].
+#[derive(Default)]
+pub struct ParseOptions {
+    pub on_progress: Option<ParseProgressFn>,
+    /// Minimum interval in milliseconds between progress callbacks.
+    /// The first and last entries are always reported. Default `0` means no throttling.
+    pub progress_interval_ms: u32,
+}
+
 impl FileEntry {
     pub fn normalize_path(path: &str) -> String {
         path.replace('/', r"\").to_lowercase()
@@ -524,7 +544,7 @@ impl PackageInfo {
         Ok(())
     }
 
-    pub fn parse(data: &DataSource, config: PackageConfig) -> Result<Self> {
+    pub fn parse(data: &DataSource, config: PackageConfig, options: ParseOptions) -> Result<Self> {
         let key_header = KeyHeader::parse(data)?;
 
         let headers_end_offset = key_header.headers_end_offset;
@@ -603,9 +623,25 @@ impl PackageInfo {
         let mut offset = entry_offset;
 
         let min_entry_size = FileGbkEntry::min_parse_size(version);
+        let file_count = meta_header.file_count as usize;
+        let mut on_progress = options.on_progress.map(|mut cb| {
+            let mut throttle = Throttle::new(options.progress_interval_ms);
+            move |index: usize| -> Result<()> {
+                if index + 1 == file_count || throttle.allow() {
+                    cb(ParseProgress {
+                        index,
+                        total: file_count,
+                    })?;
+                }
+                Ok(())
+            }
+        });
 
         let mut files = (0..meta_header.file_count)
             .map(|i| -> Result<FileEntry> {
+                if let Some(ref mut on_progress) = on_progress {
+                    on_progress(i as usize)?;
+                }
                 let first_size = data.get_at(offset, 4)?.as_le::<u32>()? ^ config.key1;
                 offset += 4;
 
@@ -797,7 +833,8 @@ mod tests {
     #[test]
     fn parse_package_info() {
         let bytes = include_test_data_bytes!("packages/configs.pck");
-        let package = PackageInfo::parse(&ds(bytes), Default::default()).unwrap();
+        let package =
+            PackageInfo::parse(&ds(bytes), Default::default(), Default::default()).unwrap();
 
         assert!(!package.files.is_empty());
     }
@@ -805,7 +842,8 @@ mod tests {
     #[test]
     fn find_prefix_empty_returns_all() {
         let bytes = include_test_data_bytes!("packages/configs.pck");
-        let package = PackageInfo::parse(&ds(bytes), Default::default()).unwrap();
+        let package =
+            PackageInfo::parse(&ds(bytes), Default::default(), Default::default()).unwrap();
 
         assert_eq!(package.find_prefix("").len(), package.file_count());
     }
@@ -821,9 +859,9 @@ mod tests {
     #[test]
     fn parse_truncated_input() {
         let config: PackageConfig = Default::default();
-        assert!(PackageInfo::parse(&ds(b""), config.clone()).is_err());
-        assert!(PackageInfo::parse(&ds(b"short"), config.clone()).is_err());
-        assert!(PackageInfo::parse(&ds(&[0u8; 11]), config).is_err());
+        assert!(PackageInfo::parse(&ds(b""), config.clone(), Default::default()).is_err());
+        assert!(PackageInfo::parse(&ds(b"short"), config.clone(), Default::default()).is_err());
+        assert!(PackageInfo::parse(&ds(&[0u8; 11]), config, Default::default()).is_err());
     }
 
     #[test]
@@ -834,7 +872,8 @@ mod tests {
         // Set a valid version at offset 96..100 so the version check passes
         data[96..100].copy_from_slice(&0x20002u32.to_le_bytes());
         let config: PackageConfig = Default::default();
-        let err = PackageInfo::parse(&DataSource::from_bytes(data), config).unwrap_err();
+        let err = PackageInfo::parse(&DataSource::from_bytes(data), config, Default::default())
+            .unwrap_err();
         assert!(
             err.to_string().contains("Invalid headers_end_offset"),
             "unexpected error: {err}"
@@ -850,7 +889,8 @@ mod tests {
         data[version_offset..version_offset + 4].copy_from_slice(&0x99999u32.to_le_bytes());
         let config: PackageConfig = Default::default();
         // Corrupted version causes KeyHeader::parse to fail (neither narrow nor wide yields valid version)
-        let err = PackageInfo::parse(&DataSource::from_bytes(data), config).unwrap_err();
+        let err = PackageInfo::parse(&DataSource::from_bytes(data), config, Default::default())
+            .unwrap_err();
         assert!(
             err.to_string().contains("key header"),
             "unexpected error: {err}"
@@ -866,7 +906,8 @@ mod tests {
         // Zero out the description so it won't contain "lica File Package"
         data[desc_offset..desc_offset + 252].fill(0);
         let config: PackageConfig = Default::default();
-        let err = PackageInfo::parse(&DataSource::from_bytes(data), config).unwrap_err();
+        let err = PackageInfo::parse(&DataSource::from_bytes(data), config, Default::default())
+            .unwrap_err();
         assert!(
             err.to_string().contains("Invalid description"),
             "unexpected error: {err}"
@@ -880,7 +921,7 @@ mod tests {
             guard1: 0xDEADBEEF,
             ..Default::default()
         };
-        let err = PackageInfo::parse(&ds(&data), config).unwrap_err();
+        let err = PackageInfo::parse(&ds(&data), config, Default::default()).unwrap_err();
         assert!(
             err.to_string().contains("Invalid guard1"),
             "unexpected error: {err}"
@@ -890,7 +931,7 @@ mod tests {
             guard2: 0xDEADBEEF,
             ..Default::default()
         };
-        let err = PackageInfo::parse(&ds(&data), config).unwrap_err();
+        let err = PackageInfo::parse(&ds(&data), config, Default::default()).unwrap_err();
         assert!(
             err.to_string().contains("Invalid guard2"),
             "unexpected error: {err}"
@@ -901,7 +942,7 @@ mod tests {
     fn file_entries_without_progress() {
         let bytes = include_test_data_bytes!("packages/configs.pck");
         let content = ds(bytes);
-        let package = PackageInfo::parse(&content, Default::default()).unwrap();
+        let package = PackageInfo::parse(&content, Default::default(), Default::default()).unwrap();
 
         let entries = package.file_entries(&content, Default::default()).unwrap();
         assert_eq!(entries.len(), package.file_count());
@@ -914,7 +955,7 @@ mod tests {
     fn file_entries_progress_callback_values() {
         let bytes = include_test_data_bytes!("packages/configs.pck");
         let content = ds(bytes);
-        let package = PackageInfo::parse(&content, Default::default()).unwrap();
+        let package = PackageInfo::parse(&content, Default::default(), Default::default()).unwrap();
         let total = package.file_count();
 
         let collected = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
@@ -942,7 +983,7 @@ mod tests {
     fn file_entries_progress_cancellation() {
         let bytes = include_test_data_bytes!("packages/configs.pck");
         let content = ds(bytes);
-        let package = PackageInfo::parse(&content, Default::default()).unwrap();
+        let package = PackageInfo::parse(&content, Default::default(), Default::default()).unwrap();
 
         let call_count = std::rc::Rc::new(std::cell::Cell::new(0usize));
         let cb_count = call_count.clone();
@@ -958,6 +999,55 @@ mod tests {
         };
 
         let result = package.file_entries(&content, options);
+        assert!(result.is_err());
+        assert_eq!(call_count.get(), 2);
+        assert!(result.unwrap_err().to_string().contains("cancelled"));
+    }
+
+    #[test]
+    fn parse_progress_callback_values() {
+        let bytes = include_test_data_bytes!("packages/configs.pck");
+
+        let collected = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
+        let cb_collected = collected.clone();
+
+        let options = ParseOptions {
+            on_progress: Some(Box::new(move |p: ParseProgress| {
+                cb_collected.borrow_mut().push((p.index, p.total));
+                Ok(())
+            })),
+            ..Default::default()
+        };
+
+        let package = PackageInfo::parse(&ds(bytes), Default::default(), options).unwrap();
+        let collected = collected.borrow();
+        let total = package.file_count();
+        assert_eq!(collected.len(), total);
+        for (i, (index, cb_total)) in collected.iter().enumerate() {
+            assert_eq!(*index, i);
+            assert_eq!(*cb_total, total);
+        }
+    }
+
+    #[test]
+    fn parse_progress_cancellation() {
+        let bytes = include_test_data_bytes!("packages/configs.pck");
+
+        let call_count = std::rc::Rc::new(std::cell::Cell::new(0usize));
+        let cb_count = call_count.clone();
+        let options = ParseOptions {
+            on_progress: Some(Box::new(move |_: ParseProgress| {
+                let n = cb_count.get() + 1;
+                cb_count.set(n);
+                if n >= 2 {
+                    eyre::bail!("cancelled");
+                }
+                Ok(())
+            })),
+            ..Default::default()
+        };
+
+        let result = PackageInfo::parse(&ds(bytes), Default::default(), options);
         assert!(result.is_err());
         assert_eq!(call_count.get(), 2);
         assert!(result.unwrap_err().to_string().contains("cancelled"));

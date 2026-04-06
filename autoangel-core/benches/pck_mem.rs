@@ -17,12 +17,13 @@ fn main() {
 
     bench("PackageInfo::parse", || {
         measure_bytes(|| {
-            let package = PackageInfo::parse(&content, Default::default()).unwrap();
+            let package =
+                PackageInfo::parse(&content, Default::default(), Default::default()).unwrap();
             black_box(package);
         })
     });
 
-    let package = PackageInfo::parse(&content, Default::default()).unwrap();
+    let package = PackageInfo::parse(&content, Default::default(), Default::default()).unwrap();
 
     bench("PackageInfo::get_file", || {
         measure_bytes(|| {
@@ -60,13 +61,16 @@ fn main() {
     });
 
     bench_scenario("PackageInfo [just parsed]", || {
-        let (_pkg, stats) = measure(|| PackageInfo::parse(&content, Default::default()).unwrap());
+        let (_pkg, stats) = measure(|| {
+            PackageInfo::parse(&content, Default::default(), Default::default()).unwrap()
+        });
         stats
     });
 
     bench_scenario("PackageInfo [parsed + all files]", || {
-        let (pkg, parse_stats) =
-            measure(|| PackageInfo::parse(&content, Default::default()).unwrap());
+        let (pkg, parse_stats) = measure(|| {
+            PackageInfo::parse(&content, Default::default(), Default::default()).unwrap()
+        });
         let (_files, iter_stats) = measure(|| {
             pkg.find_prefix("")
                 .iter()
@@ -92,8 +96,9 @@ fn main() {
     );
 
     bench_scenario("PackageInfo [parsed + 3 files]", || {
-        let (pkg, parse_stats) =
-            measure(|| PackageInfo::parse(&content, Default::default()).unwrap());
+        let (pkg, parse_stats) = measure(|| {
+            PackageInfo::parse(&content, Default::default(), Default::default()).unwrap()
+        });
         let (_files, get_stats) = measure(|| {
             sample_files
                 .iter()

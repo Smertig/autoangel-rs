@@ -491,6 +491,8 @@ def read_pck(
     pkx_paths: Optional[Union[str, List[str]]] = None,
     *,
     config: Optional[PackageConfig] = None,
+    on_progress: Optional[Callable[[int, int], None]] = None,
+    progress_interval_ms: int = 0,
 ) -> PckPackage:
     """
     Parses pck package from file at path ``pck_path`` (and optionally pkx file(s)) and returns ``PckPackage`` describing parsed file(s).
@@ -499,18 +501,32 @@ def read_pck(
     :param pck_path: Path to pck package.
     :param pkx_paths: Optional pkx path(s) — a single string or list of strings (``None`` by default).
     :param config: Custom package configuration. Defaults to None.
+    :param on_progress: Optional callback ``(index, total)`` called for each file entry during parsing.
+        Raise an exception to cancel parsing.
+    :param progress_interval_ms: Minimum interval in milliseconds between progress callbacks (``0`` by default — no throttling).
+        The last entry is always reported regardless of throttling.
     :return: Object describing parsed package.
     :raises Exception: If any I/O error occurs or package has invalid internal structure.
     """
     ...
 
 
-def read_pck_bytes(content: bytes, config: Optional[PackageConfig] = None) -> PckPackage:
+def read_pck_bytes(
+    content: bytes,
+    config: Optional[PackageConfig] = None,
+    *,
+    on_progress: Optional[Callable[[int, int], None]] = None,
+    progress_interval_ms: int = 0,
+) -> PckPackage:
     """
     Parses package from byte array ``content`` and returns ``PckPackage``.
 
     :param content: Content of package.
     :param config: Custom package configuration. Defaults to None.
+    :param on_progress: Optional callback ``(index, total)`` called for each file entry during parsing.
+        Raise an exception to cancel parsing.
+    :param progress_interval_ms: Minimum interval in milliseconds between progress callbacks (``0`` by default — no throttling).
+        The last entry is always reported regardless of throttling.
     :return: Object describing parsed package.
     :raises Exception: If package has invalid internal structure.
     """

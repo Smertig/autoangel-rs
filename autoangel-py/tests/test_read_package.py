@@ -108,6 +108,56 @@ def test_file_entries_progress_cancellation():
     assert call_count == 2
 
 
+def test_read_pck_with_parse_progress():
+    test_path = '../tests/test_data/packages/configs.pck'
+
+    collected = []
+    def on_progress(index, total):
+        collected.append((index, total))
+
+    package = autoangel.read_pck(test_path, on_progress=on_progress)
+    total_files = len(package.file_list())
+    assert len(collected) == total_files
+    for i, (index, total) in enumerate(collected):
+        assert index == i
+        assert total == total_files
+
+
+def test_read_pck_bytes_with_parse_progress():
+    test_path = '../tests/test_data/packages/configs.pck'
+    with open(test_path, 'rb') as f:
+        content = f.read()
+
+    collected = []
+    def on_progress(index, total):
+        collected.append((index, total))
+
+    package = autoangel.read_pck_bytes(content, on_progress=on_progress)
+    total_files = len(package.file_list())
+    assert len(collected) == total_files
+    for i, (index, total) in enumerate(collected):
+        assert index == i
+        assert total == total_files
+
+
+def test_read_pck_parse_progress_cancellation():
+    test_path = '../tests/test_data/packages/configs.pck'
+
+    call_count = 0
+    def on_progress(index, total):
+        nonlocal call_count
+        call_count += 1
+        if call_count >= 2:
+            raise RuntimeError("cancelled")
+
+    try:
+        autoangel.read_pck(test_path, on_progress=on_progress)
+        assert False, "should have raised"
+    except RuntimeError as e:
+        assert "cancelled" in str(e)
+    assert call_count == 2
+
+
 def test_read_pck_with_pkx_paths_none():
     test_path = '../tests/test_data/packages/configs.pck'
     package = autoangel.read_pck(test_path, pkx_paths=None)

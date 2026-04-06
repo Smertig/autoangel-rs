@@ -1,6 +1,9 @@
 use crate::opfs;
 use autoangel_core::pck::package;
-use autoangel_core::pck::package::{FileEntriesOptions, FileEntriesProgressFn, FileEntryProgress};
+use autoangel_core::pck::package::{
+    FileEntriesOptions, FileEntriesProgressFn, FileEntryProgress, ParseOptions, ParseProgress,
+    ParseProgressFn,
+};
 use autoangel_core::util::data_source::DataSource;
 use js_sys;
 use wasm_bindgen::JsCast;
@@ -99,6 +102,39 @@ impl PackageConfig {
     }
 }
 
+fn make_parse_options(options: &Option<JsValue>) -> ParseOptions {
+    let opts = options.as_ref().filter(|o| o.is_object());
+
+    let on_progress_fn = opts.and_then(|opts| {
+        js_sys::Reflect::get(opts, &"onProgress".into())
+            .ok()
+            .and_then(|v| v.dyn_into::<js_sys::Function>().ok())
+    });
+
+    let progress_interval_ms = opts
+        .and_then(|opts| {
+            js_sys::Reflect::get(opts, &"progressIntervalMs".into())
+                .ok()
+                .and_then(|v| v.as_f64())
+        })
+        .unwrap_or(0.0) as u32;
+
+    ParseOptions {
+        on_progress: on_progress_fn.map(|func| -> ParseProgressFn {
+            Box::new(move |p: ParseProgress| {
+                func.call2(
+                    &JsValue::NULL,
+                    &JsValue::from(p.index as f64),
+                    &JsValue::from(p.total as f64),
+                )
+                .map_err(|e| eyre::eyre!("{:?}", e))?;
+                Ok(())
+            })
+        }),
+        progress_interval_ms,
+    }
+}
+
 /// Parsed pck/pkx package.
 #[wasm_bindgen]
 pub struct PckPackage {
@@ -109,20 +145,27 @@ pub struct PckPackage {
 #[wasm_bindgen]
 impl PckPackage {
     /// Parse a pck package from bytes (loads entire file into WASM memory).
+    /// Third argument is an optional options object: `{ onProgress?: (index: number, total: number) => void, progressIntervalMs?: number }`.
     #[wasm_bindgen]
-    pub fn parse(bytes: &[u8], config: Option<PackageConfig>) -> Result<PckPackage, JsError> {
+    pub fn parse(
+        bytes: &[u8],
+        config: Option<PackageConfig>,
+        options: Option<JsValue>,
+    ) -> Result<PckPackage, JsError> {
         let config = config.map_or_else(Default::default, |c| c.config);
         let content = DataSource::from_bytes(bytes.to_vec());
-        Self::from_data_source(content, config)
+        let parse_options = make_parse_options(&options);
+        Self::from_data_source(content, config, parse_options)
     }
 
     /// Open a pck package from OPFS sync access handles (Web Worker only).
-    /// Second argument is an optional options object: `{ pkxHandles?: FileSystemSyncAccessHandle[], config?: PackageConfig }`.
+    /// Second argument is an optional options object: `{ pkxHandles?: FileSystemSyncAccessHandle[], config?: PackageConfig, onProgress?: (index: number, total: number) => void, progressIntervalMs?: number }`.
     #[wasm_bindgen(js_name = "open")]
     pub fn open(
         pck_handle: FileSystemSyncAccessHandle,
         options: Option<JsValue>,
     ) -> Result<PckPackage, JsError> {
+        let parse_options = make_parse_options(&options);
         let mut handles = vec![pck_handle];
         let mut config_val = None;
 
@@ -162,15 +205,16 @@ impl PckPackage {
         let config = config_val.map_or_else(Default::default, |c| c.config);
         let content =
             opfs::data_source_from_handles(handles).map_err(|e| crate::format_error(&e))?;
-        Self::from_data_source(content, config)
+        Self::from_data_source(content, config, parse_options)
     }
 
     fn from_data_source(
         content: DataSource,
         config: package::PackageConfig,
+        options: ParseOptions,
     ) -> Result<PckPackage, JsError> {
-        let info =
-            package::PackageInfo::parse(&content, config).map_err(|e| crate::format_error(&e))?;
+        let info = package::PackageInfo::parse(&content, config, options)
+            .map_err(|e| crate::format_error(&e))?;
         Ok(PckPackage { content, info })
     }
 

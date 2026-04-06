@@ -94,8 +94,10 @@ impl LazyEntry {
             LazyEntry::Deferred { byte_range, parsed } => match parsed.get() {
                 Some(entry) => entry.write(out, content),
                 None => {
-                    let bytes = content
-                        .read_bytes_at(byte_range.start, (byte_range.end - byte_range.start) as usize)?;
+                    let bytes = content.read_bytes_at(
+                        byte_range.start,
+                        (byte_range.end - byte_range.start) as usize,
+                    )?;
                     out.write_all(&bytes)?;
                     Ok(())
                 }

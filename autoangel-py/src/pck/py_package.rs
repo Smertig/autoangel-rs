@@ -1,7 +1,8 @@
 use crate::pck::py_package_config::PyPackageConfig;
 use autoangel_core::pck::package;
 use autoangel_core::pck::package::{
-    FileEntriesOptions, FileEntriesProgressFn, FileEntryProgress, PackageConfig,
+    FileEntriesOptions, FileEntriesProgressFn, FileEntryProgress, PackageConfig, ParseOptions,
+    ParseProgress, ParseProgressFn,
 };
 use autoangel_core::util::data_source::DataSource;
 use color_eyre::eyre;
@@ -39,22 +40,30 @@ struct PyPackage {
 }
 
 impl PyPackage {
-    fn new(content: DataSource, config: PackageConfig) -> PyResult<Self> {
-        let info = package::PackageInfo::parse(&content, config)?;
+    fn new(content: DataSource, config: PackageConfig, options: ParseOptions) -> PyResult<Self> {
+        let info = package::PackageInfo::parse(&content, config, options)?;
 
         Ok(Self { content, info })
     }
 
-    fn from_bytes(content: &[u8], config: PackageConfig) -> PyResult<Self> {
-        PyPackage::new(DataSource::from_bytes(content.to_owned()), config)
+    fn from_bytes(content: &[u8], config: PackageConfig, options: ParseOptions) -> PyResult<Self> {
+        PyPackage::new(DataSource::from_bytes(content.to_owned()), config, options)
     }
 
-    fn from_file(file: std::fs::File, config: PackageConfig) -> PyResult<Self> {
-        PyPackage::new(DataSource::from_file(file)?, config)
+    fn from_file(
+        file: std::fs::File,
+        config: PackageConfig,
+        options: ParseOptions,
+    ) -> PyResult<Self> {
+        PyPackage::new(DataSource::from_file(file)?, config, options)
     }
 
-    fn from_files(files: Vec<std::fs::File>, config: PackageConfig) -> PyResult<Self> {
-        PyPackage::new(DataSource::from_files(files)?, config)
+    fn from_files(
+        files: Vec<std::fs::File>,
+        config: PackageConfig,
+        options: ParseOptions,
+    ) -> PyResult<Self> {
+        PyPackage::new(DataSource::from_files(files)?, config, options)
     }
 }
 
@@ -128,10 +137,28 @@ impl PyPackage {
 
 /// Parse package from byte array.
 #[pyfunction]
-#[pyo3(signature = (content, config=None))]
-fn read_pck_bytes(content: &[u8], config: Option<&PyPackageConfig>) -> PyResult<PyPackage> {
+#[pyo3(signature = (content, config=None, *, on_progress=None, progress_interval_ms=0))]
+fn read_pck_bytes(
+    content: &[u8],
+    config: Option<&PyPackageConfig>,
+    on_progress: Option<Py<PyAny>>,
+    progress_interval_ms: u32,
+) -> PyResult<PyPackage> {
     let config = config.map_or_else(Default::default, |c| c.config.clone());
-    PyPackage::from_bytes(content, config)
+    let options = make_parse_options(on_progress, progress_interval_ms);
+    PyPackage::from_bytes(content, config, options)
+}
+
+fn make_parse_options(on_progress: Option<Py<PyAny>>, progress_interval_ms: u32) -> ParseOptions {
+    ParseOptions {
+        on_progress: on_progress.map(|cb| -> ParseProgressFn {
+            Box::new(move |p: ParseProgress| {
+                Python::attach(|py| cb.call1(py, (p.index, p.total)).map_err(eyre::Report::from))?;
+                Ok(())
+            })
+        }),
+        progress_interval_ms,
+    }
 }
 
 pub fn init_py(m: &Bound<'_, PyModule>) -> PyResult<()> {
@@ -139,14 +166,17 @@ pub fn init_py(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     /// Parse pck package from file(s) using memory-mapped I/O.
     #[pyfunction]
-    #[pyo3(signature = (pck_path, pkx_paths=None, *, config=None))]
+    #[pyo3(signature = (pck_path, pkx_paths=None, *, config=None, on_progress=None, progress_interval_ms=0))]
     fn read_pck(
         pck_path: &str,
         pkx_paths: Option<&Bound<'_, PyAny>>,
         config: Option<&PyPackageConfig>,
+        on_progress: Option<Py<PyAny>>,
+        progress_interval_ms: u32,
     ) -> PyResult<PyPackage> {
         let pck = std::fs::File::open(pck_path)?;
         let config = config.map_or_else(Default::default, |c| c.config.clone());
+        let options = make_parse_options(on_progress, progress_interval_ms);
 
         let mut files = vec![pck];
 
@@ -162,9 +192,9 @@ pub fn init_py(m: &Bound<'_, PyModule>) -> PyResult<()> {
         }
 
         if files.len() == 1 {
-            PyPackage::from_file(files.into_iter().next().unwrap(), config)
+            PyPackage::from_file(files.into_iter().next().unwrap(), config, options)
         } else {
-            PyPackage::from_files(files, config)
+            PyPackage::from_files(files, config, options)
         }
     }
     m.add_function(pyo3::wrap_pyfunction!(read_pck, m)?)?;

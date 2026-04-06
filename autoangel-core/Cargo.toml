@@ -26,6 +26,7 @@ format = "0.2.4"
 parking_lot = "0.12.5"
 crc32fast = "1.5"
 eyre = "0.6.12"
+web-time = "1"
 color-eyre = "0.6.5"
 log = "0.4.29"
 
