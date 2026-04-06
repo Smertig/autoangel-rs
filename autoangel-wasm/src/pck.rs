@@ -1,6 +1,9 @@
 use crate::opfs;
 use autoangel_core::pck::package;
+use autoangel_core::pck::package::{FileEntriesOptions, FileEntriesProgressFn, FileEntryProgress};
 use autoangel_core::util::data_source::DataSource;
+use js_sys;
+use wasm_bindgen::JsCast;
 use wasm_bindgen::prelude::*;
 use web_sys::FileSystemSyncAccessHandle;
 
@@ -186,9 +189,37 @@ impl PckPackage {
     /// List all file entries with metadata (including content CRC32 hashes).
     /// This decompresses every file to compute hashes.
     #[wasm_bindgen(js_name = "fileEntries")]
-    pub fn file_entries(&self) -> Vec<FileEntry> {
-        self.info
-            .file_entries(&self.content)
+    pub fn file_entries(&self, options: Option<JsValue>) -> Result<Vec<FileEntry>, JsError> {
+        let on_progress_fn = options.and_then(|opts| {
+            if !opts.is_object() {
+                return None;
+            }
+            js_sys::Reflect::get(&opts, &"onProgress".into())
+                .ok()
+                .and_then(|v| v.dyn_into::<js_sys::Function>().ok())
+        });
+
+        let options = FileEntriesOptions {
+            on_progress: on_progress_fn.map(|func| -> FileEntriesProgressFn {
+                Box::new(move |p: FileEntryProgress| {
+                    func.call3(
+                        &JsValue::NULL,
+                        &p.path.into(),
+                        &JsValue::from(p.index as f64),
+                        &JsValue::from(p.total as f64),
+                    )
+                    .map_err(|e| eyre::eyre!("{:?}", e))?;
+                    Ok(())
+                })
+            }),
+        };
+
+        let entries = self
+            .info
+            .file_entries(&self.content, options)
+            .map_err(|e| crate::format_error(&e))?;
+
+        Ok(entries
             .into_iter()
             .map(|e| FileEntry {
                 path: e.path.to_owned(),
@@ -196,6 +227,6 @@ impl PckPackage {
                 compressed_size: e.compressed_size,
                 hash: e.hash,
             })
-            .collect()
+            .collect())
     }
 }

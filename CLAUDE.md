@@ -37,6 +37,8 @@ cd autoangel-core && cargo bench --bench pck       # pck only
 uv run docs/rebuild.py  # rebuild HTML docs
 ```
 
+Rebuild docs after any change to the public API: type stubs (`.pyi`), PyO3 bindings, or public Rust types/signatures. Include the regenerated docs in the commit.
+
 ## Architecture
 
 Cargo workspace with two crates:

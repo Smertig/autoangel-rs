@@ -250,11 +250,29 @@ pub struct FileEntry {
 }
 
 /// Summary of a file entry with content hash, returned by [`PackageInfo::file_entries`].
+#[derive(Debug)]
 pub struct FileEntrySummary<'a> {
     pub path: &'a str,
     pub size: u32,
     pub compressed_size: u32,
     pub hash: u32,
+}
+
+/// Progress information passed to the callback during [`PackageInfo::file_entries`].
+#[derive(Debug)]
+pub struct FileEntryProgress<'a> {
+    pub path: &'a str,
+    pub index: usize,
+    pub total: usize,
+}
+
+/// Callback type for progress reporting in [`PackageInfo::file_entries`].
+pub type FileEntriesProgressFn = Box<dyn FnMut(FileEntryProgress) -> Result<()>>;
+
+/// Options for [`PackageInfo::file_entries`].
+#[derive(Default)]
+pub struct FileEntriesOptions {
+    pub on_progress: Option<FileEntriesProgressFn>,
 }
 
 impl FileEntry {
@@ -606,22 +624,37 @@ impl PackageInfo {
     }
 
     /// Return metadata and content hashes for all files in a single pass.
-    pub fn file_entries(&self, content: &DataSource) -> Vec<FileEntrySummary<'_>> {
-        self.files
-            .iter()
-            .map(|entry| {
-                let hash = entry
-                    .get_file(content)
-                    .map(|data| crc32fast::hash(&data))
-                    .unwrap_or(0);
-                FileEntrySummary {
+    pub fn file_entries(
+        &self,
+        content: &DataSource,
+        mut options: FileEntriesOptions,
+    ) -> Result<Vec<FileEntrySummary<'_>>> {
+        let total = self.files.len();
+        let mut results = Vec::with_capacity(total);
+
+        for (index, entry) in self.files.iter().enumerate() {
+            if let Some(ref mut on_progress) = options.on_progress {
+                on_progress(FileEntryProgress {
                     path: &entry.normalized_name,
-                    size: entry.size,
-                    compressed_size: entry.compressed_size,
-                    hash,
-                }
-            })
-            .collect()
+                    index,
+                    total,
+                })?;
+            }
+
+            let hash = entry
+                .get_file(content)
+                .map(|data| crc32fast::hash(&data))
+                .unwrap_or(0);
+
+            results.push(FileEntrySummary {
+                path: &entry.normalized_name,
+                size: entry.size,
+                compressed_size: entry.compressed_size,
+                hash,
+            });
+        }
+
+        Ok(results)
     }
 
     pub fn get_file<'a>(&self, content: &'a DataSource, path: &str) -> Option<Cow<'a, [u8]>> {
@@ -799,5 +832,71 @@ mod tests {
             err.to_string().contains("Invalid guard2"),
             "unexpected error: {err}"
         );
+    }
+
+    #[test]
+    fn file_entries_without_progress() {
+        let bytes = include_test_data_bytes!("packages/configs.pck");
+        let content = ds(bytes);
+        let package = PackageInfo::parse(&content, Default::default()).unwrap();
+
+        let entries = package.file_entries(&content, Default::default()).unwrap();
+        assert_eq!(entries.len(), package.file_count());
+        for entry in &entries {
+            assert!(!entry.path.is_empty());
+        }
+    }
+
+    #[test]
+    fn file_entries_progress_callback_values() {
+        let bytes = include_test_data_bytes!("packages/configs.pck");
+        let content = ds(bytes);
+        let package = PackageInfo::parse(&content, Default::default()).unwrap();
+        let total = package.file_count();
+
+        let collected = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
+        let cb_collected = collected.clone();
+        let options = FileEntriesOptions {
+            on_progress: Some(Box::new(move |p: FileEntryProgress| {
+                cb_collected
+                    .borrow_mut()
+                    .push((p.path.to_owned(), p.index, p.total));
+                Ok(())
+            })),
+        };
+
+        let entries = package.file_entries(&content, options).unwrap();
+        let collected = collected.borrow();
+        assert_eq!(collected.len(), total);
+        for (i, (path, index, cb_total)) in collected.iter().enumerate() {
+            assert_eq!(*index, i);
+            assert_eq!(*cb_total, total);
+            assert_eq!(path, entries[i].path);
+        }
+    }
+
+    #[test]
+    fn file_entries_progress_cancellation() {
+        let bytes = include_test_data_bytes!("packages/configs.pck");
+        let content = ds(bytes);
+        let package = PackageInfo::parse(&content, Default::default()).unwrap();
+
+        let call_count = std::rc::Rc::new(std::cell::Cell::new(0usize));
+        let cb_count = call_count.clone();
+        let options = FileEntriesOptions {
+            on_progress: Some(Box::new(move |_: FileEntryProgress| {
+                let n = cb_count.get() + 1;
+                cb_count.set(n);
+                if n >= 2 {
+                    eyre::bail!("cancelled");
+                }
+                Ok(())
+            })),
+        };
+
+        let result = package.file_entries(&content, options);
+        assert!(result.is_err());
+        assert_eq!(call_count.get(), 2);
+        assert!(result.unwrap_err().to_string().contains("cancelled"));
     }
 }

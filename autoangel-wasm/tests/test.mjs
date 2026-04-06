@@ -308,6 +308,46 @@ describe("PckPackage", () => {
     pkg.free();
   });
 
+  it("file entries with progress callback", () => {
+    const pkg = PckPackage.parse(CONFIGS_PCK);
+    const collected = [];
+
+    const entries = pkg.fileEntries({
+      onProgress: (path, index, total) => {
+        collected.push({ path, index, total });
+      },
+    });
+
+    assert.equal(collected.length, pkg.fileCount);
+    for (let i = 0; i < collected.length; i++) {
+      assert.equal(collected[i].index, i);
+      assert.equal(collected[i].total, pkg.fileCount);
+      assert.equal(collected[i].path, entries[i].path);
+      entries[i].free();
+    }
+
+    pkg.free();
+  });
+
+  it("file entries progress cancellation", () => {
+    const pkg = PckPackage.parse(CONFIGS_PCK);
+    let callCount = 0;
+
+    assert.throws(() => {
+      pkg.fileEntries({
+        onProgress: (_path, _index, _total) => {
+          callCount++;
+          if (callCount >= 2) {
+            throw new Error("cancelled");
+          }
+        },
+      });
+    });
+
+    assert.equal(callCount, 2);
+    pkg.free();
+  });
+
   it("rejects wrong guards", () => {
     const config = PackageConfig.withKeys(
       0xa8937462,

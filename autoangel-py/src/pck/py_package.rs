@@ -1,7 +1,10 @@
 use crate::pck::py_package_config::PyPackageConfig;
 use autoangel_core::pck::package;
-use autoangel_core::pck::package::PackageConfig;
+use autoangel_core::pck::package::{
+    FileEntriesOptions, FileEntriesProgressFn, FileEntryProgress, PackageConfig,
+};
 use autoangel_core::util::data_source::DataSource;
+use color_eyre::eyre;
 use pyo3::prelude::*;
 use pyo3::types::*;
 
@@ -92,9 +95,22 @@ impl PyPackage {
 
     /// List all file entries with metadata (including content CRC32 hashes).
     /// This decompresses every file to compute hashes.
-    fn file_entries(&self) -> Vec<PyFileEntry> {
-        self.info
-            .file_entries(&self.content)
+    #[pyo3(signature = (*, on_progress=None))]
+    fn file_entries(&self, on_progress: Option<Py<PyAny>>) -> PyResult<Vec<PyFileEntry>> {
+        let options = FileEntriesOptions {
+            on_progress: on_progress.map(|cb| -> FileEntriesProgressFn {
+                Box::new(move |p: FileEntryProgress| {
+                    Python::attach(|py| {
+                        cb.call1(py, (p.path, p.index, p.total))
+                            .map_err(eyre::Report::from)
+                    })?;
+                    Ok(())
+                })
+            }),
+        };
+        let entries = self.info.file_entries(&self.content, options)?;
+
+        Ok(entries
             .into_iter()
             .map(|e| PyFileEntry {
                 path: e.path.to_owned(),
@@ -102,7 +118,7 @@ impl PyPackage {
                 compressed_size: e.compressed_size,
                 hash: e.hash,
             })
-            .collect()
+            .collect())
     }
 
     fn __repr__(&self) -> String {

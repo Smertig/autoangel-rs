@@ -70,3 +70,39 @@ def test_pck_repr():
     r = repr(package)
     assert r.startswith('PckPackage(')
     assert 'files=' in r
+
+
+def test_file_entries_with_progress():
+    test_path = '../tests/test_data/packages/configs.pck'
+    package = autoangel.read_pck(test_path)
+    total_files = len(package.file_list())
+
+    collected = []
+    def on_progress(path, index, total):
+        collected.append((path, index, total))
+
+    entries = package.file_entries(on_progress=on_progress)
+    assert len(collected) == total_files
+    for i, (path, index, total) in enumerate(collected):
+        assert index == i
+        assert total == total_files
+        assert path == entries[i].path
+
+
+def test_file_entries_progress_cancellation():
+    test_path = '../tests/test_data/packages/configs.pck'
+    package = autoangel.read_pck(test_path)
+
+    call_count = 0
+    def on_progress(path, index, total):
+        nonlocal call_count
+        call_count += 1
+        if call_count >= 2:
+            raise RuntimeError("cancelled")
+
+    try:
+        package.file_entries(on_progress=on_progress)
+        assert False, "should have raised"
+    except RuntimeError as e:
+        assert "cancelled" in str(e)
+    assert call_count == 2

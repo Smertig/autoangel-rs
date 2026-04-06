@@ -93,7 +93,7 @@ else:
 ```
 """
 
-from typing import Any, Iterator, Optional, Literal, List, Union, final
+from typing import Any, Callable, Iterator, Optional, Literal, List, Union, final
 
 ReadValue = Union[int, float, str, bytes]
 
@@ -406,11 +406,17 @@ class PckPackage:
         """
         ...
 
-    def file_entries(self) -> List[FileEntry]:
+    def file_entries(
+        self,
+        *,
+        on_progress: Optional[Callable[[str, int, int], None]] = None,
+    ) -> List[FileEntry]:
         """
         Returns list of file entries with metadata (including content hashes).
         This decompresses every file to compute CRC32 hashes.
 
+        :param on_progress: Optional callback ``(path, index, total)`` called for each file.
+            Raise an exception to cancel iteration.
         :return: All file entries in package.
         """
         ...
