@@ -17,6 +17,10 @@ let selectedPath = null;
 let selectedTreeItem = null;
 let currentEncoding = 'auto';
 let useOpfs = false;
+let filterText = '';
+let filterTextLower = '';
+let filterDebounceTimer = 0;
+let renderGeneration = 0;
 
 // --- DOM refs ---
 
@@ -28,6 +32,7 @@ const dom = {
   explorer: document.getElementById('explorer'),
   sidebar: document.getElementById('sidebar'),
   tree: document.getElementById('tree'),
+  filterInput: document.getElementById('filter-input'),
   divider: document.getElementById('divider'),
   breadcrumb: document.getElementById('breadcrumb'),
   preview: document.getElementById('preview'),
@@ -197,6 +202,9 @@ async function loadFiles(files) {
   dom.preview.innerHTML = '<div class="placeholder">Parsing\u2026</div>';
   dom.actions.innerHTML = '';
   dom.tree.innerHTML = '';
+  dom.filterInput.value = '';
+  filterText = '';
+  filterTextLower = '';
 
   if (pkg) { pkg.free(); pkg = null; }
 
@@ -234,7 +242,7 @@ async function loadFiles(files) {
 
   selectedPath = null;
   selectedTreeItem = null;
-  renderTree(fileTree, dom.tree, 0);
+  rerenderTree();
   showPlaceholder('Select a file to preview');
   updateBreadcrumb([]);
 }
@@ -254,20 +262,83 @@ function buildTree(paths) {
       }
       node = node.children.get(dir);
     }
-    node.files.push({ name: parts[parts.length - 1], fullPath: path });
+    node.files.push({ name: parts[parts.length - 1], fullPath: path, fullPathLower: path.toLowerCase() });
   }
 
   return root;
 }
 
-// --- Tree rendering ---
+// --- Tree filtering ---
 
-function renderTree(node, container, depth) {
-  // Sort: folders first (alphabetical), then files (alphabetical)
+function isFileVisible(file) {
+  if (filterTextLower && !file.fullPathLower.includes(filterTextLower)) return false;
+  return true;
+}
+
+function hasFolderVisibleDescendants(node) {
+  for (const file of node.files) {
+    if (isFileVisible(file)) return true;
+  }
+  for (const [, child] of node.children) {
+    if (hasFolderVisibleDescendants(child)) return true;
+  }
+  return false;
+}
+
+function highlightLabel(el, text) {
+  if (!filterTextLower) {
+    el.textContent = text;
+    return;
+  }
+  const lower = text.toLowerCase();
+  const idx = lower.indexOf(filterTextLower);
+  if (idx === -1) {
+    el.textContent = text;
+    return;
+  }
+  el.textContent = text.slice(0, idx);
+  const mark = document.createElement('mark');
+  mark.textContent = text.slice(idx, idx + filterTextLower.length);
+  el.appendChild(mark);
+  el.appendChild(document.createTextNode(text.slice(idx + filterTextLower.length)));
+}
+
+function rerenderTree() {
+  const gen = ++renderGeneration;
+  if (!fileTree) {
+    dom.tree.innerHTML = '';
+    return;
+  }
+  const buffer = document.createDocumentFragment();
+  renderTreeAsync(fileTree, buffer, 0, gen).then(() => {
+    if (renderGeneration !== gen) return;
+    dom.tree.innerHTML = '';
+    dom.tree.appendChild(buffer);
+  });
+}
+
+// --- Tree rendering (async, cancellable) ---
+
+let renderItemCount = 0;
+
+function yieldToMain() {
+  return new Promise(r => setTimeout(r, 0));
+}
+
+async function renderTreeAsync(node, container, depth, gen) {
+  if (depth === 0) renderItemCount = 0;
+  if (renderGeneration !== gen) return;
+
   const folders = [...node.children.entries()].sort((a, b) => a[0].localeCompare(b[0]));
   const files = [...node.files].sort((a, b) => a.name.localeCompare(b.name));
 
-  for (const [name, child] of folders) {
+  const visibleFiles = files.filter(f => isFileVisible(f));
+  const visibleFolders = folders.filter(([, child]) => hasFolderVisibleDescendants(child));
+  const autoExpand = !!filterText;
+
+  for (const [name, child] of visibleFolders) {
+    if (renderGeneration !== gen) return;
+
     const item = document.createElement('div');
 
     const row = document.createElement('div');
@@ -284,7 +355,7 @@ function renderTree(node, container, depth) {
 
     const label = document.createElement('span');
     label.className = 'tree-label';
-    label.textContent = name;
+    highlightLabel(label, name);
 
     row.append(arrow, icon, label);
 
@@ -300,7 +371,7 @@ function renderTree(node, container, depth) {
         icon.textContent = '\uD83D\uDCC1';
       } else {
         if (!childContainer.hasChildNodes()) {
-          renderTree(child, childContainer, depth + 1);
+          renderTreeAsync(child, childContainer, depth + 1, renderGeneration);
         }
         childContainer.classList.add('expanded');
         arrow.classList.add('expanded');
@@ -311,16 +382,23 @@ function renderTree(node, container, depth) {
     item.append(row, childContainer);
     container.appendChild(item);
 
-    // Auto-expand if this folder is the only child at this level
-    if (folders.length + files.length === 1) {
-      renderTree(child, childContainer, depth + 1);
+    if (autoExpand || visibleFolders.length + visibleFiles.length === 1) {
+      await renderTreeAsync(child, childContainer, depth + 1, gen);
+      if (renderGeneration !== gen) return;
       childContainer.classList.add('expanded');
       arrow.classList.add('expanded');
       icon.textContent = '\uD83D\uDCC2';
     }
+
+    if (++renderItemCount % 500 === 0) {
+      await yieldToMain();
+      if (renderGeneration !== gen) return;
+    }
   }
 
-  for (const file of files) {
+  for (const file of visibleFiles) {
+    if (renderGeneration !== gen) return;
+
     const row = document.createElement('div');
     row.className = 'tree-item';
     row.style.paddingLeft = `${8 + depth * 16}px`;
@@ -334,7 +412,7 @@ function renderTree(node, container, depth) {
 
     const label = document.createElement('span');
     label.className = 'tree-label';
-    label.textContent = file.name;
+    highlightLabel(label, file.name);
 
     row.append(arrow, icon, label);
 
@@ -343,7 +421,17 @@ function renderTree(node, container, depth) {
       selectFile(file.fullPath, row);
     };
 
+    if (file.fullPath === selectedPath) {
+      row.classList.add('selected');
+      selectedTreeItem = row;
+    }
+
     container.appendChild(row);
+
+    if (++renderItemCount % 500 === 0) {
+      await yieldToMain();
+      if (renderGeneration !== gen) return;
+    }
   }
 }
 
@@ -636,6 +724,46 @@ dom.drop.ondrop = (e) => {
   dom.drop.classList.remove('over');
   if (e.dataTransfer.files.length) loadFiles(e.dataTransfer.files);
 };
+
+// --- Filter input ---
+
+dom.filterInput.oninput = () => {
+  clearTimeout(filterDebounceTimer);
+  filterDebounceTimer = setTimeout(() => {
+    filterText = dom.filterInput.value;
+    filterTextLower = filterText.toLowerCase();
+    rerenderTree();
+  }, 60);
+};
+
+// --- Keyboard shortcuts ---
+
+document.addEventListener('keydown', (e) => {
+  // Skip when typing in inputs (except Escape)
+  if (e.target.matches('input, select, textarea')) {
+    if (e.key === 'Escape') {
+      e.target.blur();
+      e.preventDefault();
+    }
+    return;
+  }
+
+  // Only active when explorer is visible
+  if (dom.explorer.classList.contains('hidden')) return;
+
+  switch (e.key) {
+    case '/':
+      e.preventDefault();
+      dom.filterInput.focus();
+      break;
+    case 'Escape':
+      if (dom.filterInput.value) {
+        dom.filterInput.value = '';
+        dom.filterInput.dispatchEvent(new Event('input'));
+      }
+      break;
+  }
+});
 
 // --- Boot ---
 

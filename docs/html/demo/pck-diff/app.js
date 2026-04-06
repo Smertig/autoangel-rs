@@ -20,6 +20,8 @@ let diffResult = null; // { added, deleted, modified, unchanged }
 let activeFilters = new Set();  // subset of 'added', 'deleted', 'modified', 'unchanged'
 let showUnchanged = false;
 let filterText = '';
+let filterTextLower = '';
+let filterDebounceTimer = 0;
 let selectedPath = null;
 let selectedTreeItem = null;
 let diffTree = null;
@@ -351,6 +353,7 @@ function handleNewCompare() {
   activeFilters.clear();
   showUnchanged = false;
   filterText = '';
+  filterTextLower = '';
   selectedPath = null;
   selectedTreeItem = null;
   document.getElementById('filter-input').value = '';
@@ -411,8 +414,12 @@ function renderSummaryBar() {
   const filterInput = document.getElementById('filter-input');
   filterInput.value = filterText;
   filterInput.oninput = () => {
-    filterText = filterInput.value;
-    rerenderTree();
+    clearTimeout(filterDebounceTimer);
+    filterDebounceTimer = setTimeout(() => {
+      filterText = filterInput.value;
+      filterTextLower = filterText.toLowerCase();
+      rerenderTree();
+    }, 120);
   };
 }
 
@@ -484,7 +491,7 @@ function isFileVisible(file) {
   if (!showUnchanged && file.status === 'unchanged' && !activeFilters.has('unchanged')) return false;
 
   // Check text filter
-  if (filterText && !file.fullPath.toLowerCase().includes(filterText.toLowerCase())) return false;
+  if (filterTextLower && !file.fullPath.toLowerCase().includes(filterTextLower)) return false;
 
   return true;
 }
@@ -497,6 +504,24 @@ function hasFolderVisibleDescendants(node) {
     if (hasFolderVisibleDescendants(child)) return true;
   }
   return false;
+}
+
+function highlightLabel(el, text) {
+  if (!filterTextLower) {
+    el.textContent = text;
+    return;
+  }
+  const lower = text.toLowerCase();
+  const idx = lower.indexOf(filterTextLower);
+  if (idx === -1) {
+    el.textContent = text;
+    return;
+  }
+  el.textContent = text.slice(0, idx);
+  const mark = document.createElement('mark');
+  mark.textContent = text.slice(idx, idx + filterTextLower.length);
+  el.appendChild(mark);
+  el.appendChild(document.createTextNode(text.slice(idx + filterTextLower.length)));
 }
 
 // --- Tree rendering ---
@@ -534,7 +559,7 @@ function renderDiffTree(node, container, depth) {
 
     const label = document.createElement('span');
     label.className = 'tree-label';
-    label.textContent = name;
+    highlightLabel(label, name);
 
     row.append(arrow, icon, label);
 
@@ -595,7 +620,7 @@ function renderDiffTree(node, container, depth) {
 
     const label = document.createElement('span');
     label.className = 'tree-label';
-    label.textContent = file.name;
+    highlightLabel(label, file.name);
 
     row.append(arrow, icon, label);
 
