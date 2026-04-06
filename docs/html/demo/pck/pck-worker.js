@@ -77,9 +77,18 @@ function handleGetFile(path) {
   return { data: buf, byteOffset: data.byteOffset, byteLength: data.byteLength };
 }
 
-function handleFileEntries() {
+function handleFileEntries(id) {
   if (!pkg) throw new Error('No package loaded');
-  const wasmEntries = pkg.fileEntries();
+  let lastProgressTime = 0;
+  const wasmEntries = pkg.fileEntries({
+    onProgress: (_path, index, total) => {
+      const now = performance.now();
+      if (index === 0 || index === total - 1 || now - lastProgressTime >= 1000 / 60) {
+        self.postMessage({ id, type: 'progress', index, total });
+        lastProgressTime = now;
+      }
+    }
+  });
   const entries = wasmEntries.map(e => {
     const plain = { path: e.path, size: e.size, compressedSize: e.compressedSize, hash: e.hash };
     e.free();
@@ -98,7 +107,7 @@ self.onmessage = async (e) => {
       const { data, byteOffset, byteLength } = handleGetFile(e.data.path);
       self.postMessage({ id, type: 'result', data, byteOffset, byteLength }, [data]);
     } else if (type === 'fileEntries') {
-      const entries = handleFileEntries();
+      const entries = handleFileEntries(id);
       self.postMessage({ id, type: 'result', entries });
     }
   } catch (err) {
