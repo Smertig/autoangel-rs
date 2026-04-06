@@ -25,6 +25,7 @@ let selectedTreeItem = null;
 let diffTree = null;
 let activeBlobUrls = [];
 let imageFitToScreen = true;
+let imageCompareMode = 'Side-by-side';
 
 // --- DOM refs ---
 
@@ -750,25 +751,26 @@ async function previewModifiedImage(leftData, rightData, path, ext) {
   tabs.className = 'image-compare-tabs';
 
   const modes = ['Side-by-side', 'Swipe', 'Onion skin'];
-  let activeMode = 'Side-by-side';
   const sameDimensions = leftImg.width === rightImg.width && leftImg.height === rightImg.height;
+  const needsSameSize = imageCompareMode === 'Swipe' || imageCompareMode === 'Onion skin';
+  if (needsSameSize && !sameDimensions) imageCompareMode = 'Side-by-side';
 
   for (const mode of modes) {
     const btn = document.createElement('button');
     btn.className = 'btn';
-    const needsSameSize = mode === 'Swipe' || mode === 'Onion skin';
-    if (needsSameSize && !sameDimensions) {
+    const modeNeedsSameSize = mode === 'Swipe' || mode === 'Onion skin';
+    if (modeNeedsSameSize && !sameDimensions) {
       btn.disabled = true;
       btn.title = 'Requires images of the same size';
     }
-    if (mode === activeMode) btn.classList.add('active');
+    if (mode === imageCompareMode) btn.classList.add('active');
     btn.textContent = mode;
     btn.onclick = () => {
-      if (mode === activeMode) return;
-      activeMode = mode;
+      if (mode === imageCompareMode) return;
+      imageCompareMode = mode;
       for (const b of tabs.children) b.classList.remove('active');
       btn.classList.add('active');
-      renderImageMode(activeMode, leftImg, rightImg, leftData, rightData, preview);
+      renderImageMode(imageCompareMode, leftImg, rightImg, leftData, rightData, preview);
     };
     tabs.appendChild(btn);
   }
@@ -778,17 +780,17 @@ async function previewModifiedImage(leftData, rightData, path, ext) {
   // Fit/Real size toggle
   const fitToggle = document.createElement('button');
   fitToggle.className = 'btn btn-small';
-  fitToggle.textContent = 'Real size';
+  fitToggle.textContent = imageFitToScreen ? 'Real size' : 'Fit to screen';
   fitToggle.title = 'Switch between fit-to-screen and real pixel size';
   fitToggle.onclick = () => {
     imageFitToScreen = !imageFitToScreen;
     fitToggle.textContent = imageFitToScreen ? 'Real size' : 'Fit to screen';
-    renderImageMode(activeMode, leftImg, rightImg, leftData, rightData, preview);
+    renderImageMode(imageCompareMode, leftImg, rightImg, leftData, rightData, preview);
   };
   actions.appendChild(fitToggle);
 
   // Render default mode
-  renderImageMode(activeMode, leftImg, rightImg, leftData, rightData, preview);
+  renderImageMode(imageCompareMode, leftImg, rightImg, leftData, rightData, preview);
 }
 
 function cloneImageElement(imgInfo) {
