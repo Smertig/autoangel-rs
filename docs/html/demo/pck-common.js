@@ -6,6 +6,7 @@ export const TEXT_EXTENSIONS = new Set([
   '.txt', '.cfg', '.ini', '.xml', '.json', '.lua', '.py', '.lst',
   '.action', '.border', '.log', '.csv', '.htm', '.html', '.css',
   '.js', '.shtml', '.conf', '.properties', '.yaml', '.yml',
+  '.ecm', '.gfx',
 ]);
 
 export const BINARY_EXTENSIONS = new Set([
@@ -16,7 +17,7 @@ export const BINARY_EXTENSIONS = new Set([
   '.avi', '.mp4', '.wmv', '.flv', '.mkv', '.bik',
   '.ttf', '.otf', '.fon',
   '.doc', '.xls', '.ppt',
-  '.pck', '.pkx', '.smd', '.ski', '.bon', '.att', '.ecm', '.gfx', '.stck',
+  '.pck', '.pkx', '.smd', '.ski', '.bon', '.att', '.stck',
 ]);
 
 export const IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.ico', '.cur', '.webp']);
