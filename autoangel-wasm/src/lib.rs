@@ -1,4 +1,5 @@
 pub mod elements;
+pub mod image;
 mod opfs;
 pub mod pck;
 

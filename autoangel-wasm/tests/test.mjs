@@ -12,6 +12,8 @@ const {
   ElementsData,
   PackageConfig,
   PckPackage,
+  decodeDds,
+  decodeTga,
 } = await import("../pkg-node/autoangel.js");
 
 const CONFIG_TEXT = readFileSync(
@@ -356,5 +358,80 @@ describe("PckPackage", () => {
       0x22222222
     );
     assert.throws(() => PckPackage.parse(CONFIGS_PCK, config));
+  });
+});
+
+// --- Image decoding ---
+
+// Build a minimal 2x2 uncompressed RGBA DDS (B8G8R8A8_UNORM)
+function makeDds2x2() {
+  const buf = new ArrayBuffer(128 + 16); // header + 2x2x4 bytes
+  const view = new DataView(buf);
+  view.setUint32(0, 0x20534444, true);   // magic "DDS "
+  view.setUint32(4, 124, true);          // header size
+  view.setUint32(8, 0x1007, true);       // flags: CAPS|HEIGHT|WIDTH|PIXELFORMAT
+  view.setUint32(12, 2, true);           // height
+  view.setUint32(16, 2, true);           // width
+  // pixel format at offset 76
+  view.setUint32(76, 32, true);          // pfSize
+  view.setUint32(80, 0x41, true);        // pfFlags: RGB|ALPHAPIXELS
+  view.setUint32(88, 32, true);          // rgbBitCount
+  view.setUint32(92, 0x00FF0000, true);  // rMask
+  view.setUint32(96, 0x0000FF00, true);  // gMask
+  view.setUint32(100, 0x000000FF, true); // bMask
+  view.setUint32(104, 0xFF000000, true); // aMask
+  view.setUint32(108, 0x1000, true);     // caps: TEXTURE
+  // pixel data: 4 BGRA pixels (red, green, blue, white)
+  const pixels = new Uint8Array(buf, 128);
+  pixels.set([0,0,255,255, 0,255,0,255, 255,0,0,255, 255,255,255,255]);
+  return new Uint8Array(buf);
+}
+
+// Build a minimal 2x2 uncompressed TGA (24-bit BGR, bottom-to-top)
+function makeTga2x2() {
+  const header = new Uint8Array(18);
+  header[2] = 2;        // image type: uncompressed true-color
+  header[12] = 2;       // width low byte
+  header[14] = 2;       // height low byte
+  header[16] = 24;      // bpp
+  // pixel data: 4 BGR pixels (bottom row first)
+  const pixels = new Uint8Array([255,0,0, 0,255,0, 0,0,255, 255,255,255]);
+  const buf = new Uint8Array(18 + 12);
+  buf.set(header);
+  buf.set(pixels, 18);
+  return buf;
+}
+
+describe("decodeDds", () => {
+  it("decodes uncompressed BGRA DDS", () => {
+    const dds = makeDds2x2();
+    const img = decodeDds(dds);
+    assert.equal(img.width, 2);
+    assert.equal(img.height, 2);
+    const rgba = img.intoRgba();
+    assert.equal(rgba.length, 2 * 2 * 4);
+  });
+
+  it("rejects empty bytes", () => {
+    assert.throws(() => decodeDds(new Uint8Array([])));
+  });
+
+  it("rejects truncated file", () => {
+    assert.throws(() => decodeDds(new Uint8Array([0x44, 0x44, 0x53, 0x20])));
+  });
+});
+
+describe("decodeTga", () => {
+  it("decodes uncompressed TGA", () => {
+    const tga = makeTga2x2();
+    const img = decodeTga(tga);
+    assert.equal(img.width, 2);
+    assert.equal(img.height, 2);
+    const rgba = img.intoRgba();
+    assert.equal(rgba.length, 2 * 2 * 4);
+  });
+
+  it("rejects empty bytes", () => {
+    assert.throws(() => decodeTga(new Uint8Array([])));
   });
 });
