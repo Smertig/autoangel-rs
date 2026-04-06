@@ -116,28 +116,52 @@ impl PckPackage {
         Self::from_data_source(content, config)
     }
 
-    /// Open a pck package from an OPFS sync access handle (Web Worker only).
-    /// The file is NOT loaded into memory — reads happen on demand.
+    /// Open a pck package from OPFS sync access handles (Web Worker only).
+    /// Second argument is an optional options object: `{ pkxHandles?: FileSystemSyncAccessHandle[], config?: PackageConfig }`.
     #[wasm_bindgen(js_name = "open")]
     pub fn open(
-        handle: FileSystemSyncAccessHandle,
-        config: Option<PackageConfig>,
-    ) -> Result<PckPackage, JsError> {
-        let config = config.map_or_else(Default::default, |c| c.config);
-        let content = opfs::data_source_from_handle(handle).map_err(|e| crate::format_error(&e))?;
-        Self::from_data_source(content, config)
-    }
-
-    /// Open a pck+pkx pair from two OPFS sync access handles (Web Worker only).
-    #[wasm_bindgen(js_name = "open2")]
-    pub fn open2(
         pck_handle: FileSystemSyncAccessHandle,
-        pkx_handle: FileSystemSyncAccessHandle,
-        config: Option<PackageConfig>,
+        options: Option<JsValue>,
     ) -> Result<PckPackage, JsError> {
-        let config = config.map_or_else(Default::default, |c| c.config);
-        let content = opfs::data_source_from_handles(pck_handle, pkx_handle)
-            .map_err(|e| crate::format_error(&e))?;
+        let mut handles = vec![pck_handle];
+        let mut config_val = None;
+
+        if let Some(ref opts) = options.filter(|o| o.is_object()) {
+            // Extract pkxHandles array
+            if let Some(arr) = js_sys::Reflect::get(opts, &"pkxHandles".into())
+                .ok()
+                .and_then(|v| v.dyn_into::<js_sys::Array>().ok())
+            {
+                for i in 0..arr.length() {
+                    let h: FileSystemSyncAccessHandle = arr.get(i).unchecked_into();
+                    handles.push(h);
+                }
+            }
+            // Extract config: read key1/key2/guard1/guard2 fields via Reflect
+            if let Some(cfg_val) = js_sys::Reflect::get(opts, &"config".into())
+                .ok()
+                .filter(|v| v.is_object())
+            {
+                let get_u32 = |obj: &JsValue, key: &str| -> Option<u32> {
+                    js_sys::Reflect::get(obj, &key.into())
+                        .ok()
+                        .and_then(|v| v.as_f64())
+                        .map(|v| v as u32)
+                };
+                if let (Some(k1), Some(k2), Some(g1), Some(g2)) = (
+                    get_u32(&cfg_val, "key1"),
+                    get_u32(&cfg_val, "key2"),
+                    get_u32(&cfg_val, "guard1"),
+                    get_u32(&cfg_val, "guard2"),
+                ) {
+                    config_val = Some(PackageConfig::with_keys(k1, k2, g1, g2));
+                }
+            }
+        }
+
+        let config = config_val.map_or_else(Default::default, |c| c.config);
+        let content =
+            opfs::data_source_from_handles(handles).map_err(|e| crate::format_error(&e))?;
         Self::from_data_source(content, config)
     }
 

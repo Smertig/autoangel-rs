@@ -74,18 +74,11 @@ impl DataReader for OpfsReader {
     }
 }
 
-/// Create a `DataSource` from a single OPFS sync access handle.
-pub fn data_source_from_handle(handle: FileSystemSyncAccessHandle) -> Result<DataSource> {
-    let reader: Arc<dyn DataReader> = Arc::new(OpfsReader::new(handle)?);
-    Ok(DataSource::from_reader(reader))
-}
-
-/// Create a `DataSource` from two OPFS handles (pck + pkx).
-pub fn data_source_from_handles(
-    handle1: FileSystemSyncAccessHandle,
-    handle2: FileSystemSyncAccessHandle,
-) -> Result<DataSource> {
-    let reader1: Arc<dyn DataReader> = Arc::new(OpfsReader::new(handle1)?);
-    let reader2: Arc<dyn DataReader> = Arc::new(OpfsReader::new(handle2)?);
-    Ok(DataSource::composite(reader1, reader2))
+/// Create a `DataSource` from one or more OPFS handles (pck + pkx + pkx1 + ...).
+pub fn data_source_from_handles(handles: Vec<FileSystemSyncAccessHandle>) -> Result<DataSource> {
+    let readers: Vec<Arc<dyn DataReader>> = handles
+        .into_iter()
+        .map(|h| -> Result<Arc<dyn DataReader>> { Ok(Arc::new(OpfsReader::new(h)?)) })
+        .collect::<Result<_>>()?;
+    Ok(DataSource::composite(readers))
 }

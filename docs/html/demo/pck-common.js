@@ -73,14 +73,23 @@ export function escapeHtml(str) {
 // --- File classification ---
 
 export function classifyFiles(files) {
-  let pck = null, pkx = null;
+  let pck = null;
+  const pkxParts = []; // { file, order }
   for (const f of files) {
-    const ext = f.name.toLowerCase().split('.').pop();
-    if (ext === 'pck') pck = f;
-    else if (ext === 'pkx') pkx = f;
+    const name = f.name.toLowerCase();
+    if (name.endsWith('.pck')) {
+      pck = f;
+    } else if (name.endsWith('.pkx')) {
+      pkxParts.push({ file: f, order: 0 });
+    } else {
+      const m = name.match(/\.pkx(\d+)$/);
+      if (m) pkxParts.push({ file: f, order: parseInt(m[1], 10) });
+    }
   }
-  if (!pck && pkx) { pck = pkx; pkx = null; }
-  return { pck, pkx };
+  if (!pck && pkxParts.length > 0) { pck = pkxParts.shift().file; }
+  pkxParts.sort((a, b) => a.order - b.order);
+  const pkxFiles = pkxParts.map(p => p.file);
+  return { pck, pkxFiles };
 }
 
 // --- Encoding detection ---

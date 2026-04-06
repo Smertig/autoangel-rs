@@ -200,11 +200,11 @@ for (const side of ['left', 'right']) {
 // --- File loading ---
 
 async function loadPackage(side, files) {
-  const { pck: pckFile, pkx: pkxFile } = classifyFiles(files);
+  const { pck: pckFile, pkxFiles } = classifyFiles(files);
   if (!pckFile) { showError('No .pck file found.'); return; }
 
-  const label = pkxFile ? `${pckFile.name} + ${pkxFile.name}` : pckFile.name;
-  const totalSize = pckFile.size + (pkxFile?.size || 0);
+  const label = pkxFiles.length > 0 ? `${pckFile.name} + ${pkxFiles.map(f => f.name).join(' + ')}` : pckFile.name;
+  const totalSize = pckFile.size + pkxFiles.reduce((s, f) => s + f.size, 0);
 
   let customKeys;
   try {
@@ -227,9 +227,9 @@ async function loadPackage(side, files) {
 
   try {
     if (useOpfs) {
-      await workerCall(side, { type: 'parse', pckFile, pkxFile, keys: customKeys });
+      await workerCall(side, { type: 'parse', pckFile, pkxFiles, keys: customKeys });
     } else {
-      if (pkxFile) {
+      if (pkxFiles.length > 0) {
         showError('.pkx files require OPFS support (use a modern browser with HTTPS)');
         return;
       }

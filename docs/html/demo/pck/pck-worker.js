@@ -32,14 +32,14 @@ async function openSyncHandle(fileHandle) {
   return await fileHandle.createSyncAccessHandle();
 }
 
-async function handleParse(pckFile, pkxFile, keys) {
+async function handleParse(pckFile, pkxFiles, keys) {
   await wasmReady;
 
   if (pkg) { pkg.free(); pkg = null; }
   for (const h of syncHandles) { try { h.close(); } catch {} }
   syncHandles = [];
 
-  // Write file(s) to OPFS
+  // Write pck to OPFS
   const pckHandle = await writeToOpfs(`${workerUid}.pck`, pckFile);
   const pckSync = await openSyncHandle(pckHandle);
   syncHandles.push(pckSync);
@@ -47,13 +47,19 @@ async function handleParse(pckFile, pkxFile, keys) {
   const config = keys ? PackageConfig.withKeys(keys.key1, keys.key2, keys.guard1, keys.guard2) : undefined;
 
   try {
-    if (pkxFile) {
-      const pkxHandle = await writeToOpfs(`${workerUid}.pkx`, pkxFile);
-      const pkxSync = await openSyncHandle(pkxHandle);
-      syncHandles.push(pkxSync);
-      pkg = PckPackage.open2(pckSync, pkxSync, config);
+    const pkxHandles = [];
+    for (let i = 0; i < pkxFiles.length; i++) {
+      const ext = i === 0 ? 'pkx' : `pkx${i}`;
+      const fh = await writeToOpfs(`${workerUid}.${ext}`, pkxFiles[i]);
+      const sh = await openSyncHandle(fh);
+      syncHandles.push(sh);
+      pkxHandles.push(sh);
+    }
+
+    if (pkxHandles.length > 0) {
+      pkg = PckPackage.open(pckSync, { pkxHandles, config });
     } else {
-      pkg = PckPackage.open(pckSync, config);
+      pkg = PckPackage.open(pckSync, config ? { config } : undefined);
     }
   } catch (e) {
     for (const h of syncHandles) { try { h.close(); } catch {} }
@@ -101,7 +107,7 @@ self.onmessage = async (e) => {
   const { id, type } = e.data;
   try {
     if (type === 'parse') {
-      const result = await handleParse(e.data.pckFile, e.data.pkxFile, e.data.keys);
+      const result = await handleParse(e.data.pckFile, e.data.pkxFiles || [], e.data.keys);
       self.postMessage({ id, type: 'result', ...result });
     } else if (type === 'getFile') {
       const { data, byteOffset, byteLength } = handleGetFile(e.data.path);

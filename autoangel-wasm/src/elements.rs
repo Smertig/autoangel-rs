@@ -83,7 +83,8 @@ impl ElementsData {
         handle: FileSystemSyncAccessHandle,
         config: Option<ElementsConfig>,
     ) -> Result<ElementsData, JsError> {
-        let content = opfs::data_source_from_handle(handle).map_err(|e| crate::format_error(&e))?;
+        let content =
+            opfs::data_source_from_handles(vec![handle]).map_err(|e| crate::format_error(&e))?;
         let config = resolve_config(&content, config)?;
         let view = data::DataView::parse(&content, config).map_err(|e| crate::format_error(&e))?;
 

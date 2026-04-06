@@ -1257,20 +1257,20 @@ If no config specified, one of predefined will be used.</li>
                     <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">read_pck</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">pck_path</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">pkx_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="n"><a href="#PackageConfig">PackageConfig</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="n"><a href="#PckPackage">PckPackage</a></span>:</span></span>
+        <span class="name">read_pck</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">pck_path</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">pkx_paths</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="n"><a href="#PackageConfig">PackageConfig</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="n"><a href="#PckPackage">PckPackage</a></span>:</span></span>
 
         
     </div>
     <a class="headerlink" href="#read_pck"></a>
     
-            <div class="docstring"><p>Parses pck package from file at path <code>pck_path</code> (and optionally <code>pkx_path</code>) and returns <code><a href="#PckPackage">PckPackage</a></code> describing parsed file(s).
+            <div class="docstring"><p>Parses pck package from file at path <code>pck_path</code> (and optionally pkx file(s)) and returns <code><a href="#PckPackage">PckPackage</a></code> describing parsed file(s).
 Doesn't load file content into memory, uses memory-mapped I/O - so file(s) cannot be modified while <code><a href="#PckPackage">PckPackage</a></code> is alive.</p>
 
 <h6 id="parameters">Parameters</h6>
 
 <ul>
 <li><strong>pck_path</strong>:  Path to pck package.</li>
-<li><strong>pkx_path</strong>:  Optional path to pkx package (<code>None</code> by default).</li>
+<li><strong>pkx_paths</strong>:  Optional pkx path(s) — a single string or list of strings (<code>None</code> by default).</li>
 <li><strong>config</strong>:  Custom package configuration. Defaults to None.</li>
 </ul>
 
