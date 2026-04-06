@@ -1,4 +1,4 @@
-import { classifyFiles, formatSize, getExtension, isLikelyText, detectEncoding, decodeText, IMAGE_EXTENSIONS, CANVAS_IMAGE_EXTENSIONS, ENCODINGS, HLJS_LANG, IMAGE_MIME, decodeTGA, decodeDDS, escapeHtml } from '../pck-common.js';
+import { classifyFiles, formatSize, getExtension, isLikelyText, detectEncoding, decodeText, IMAGE_EXTENSIONS, CANVAS_IMAGE_EXTENSIONS, ENCODINGS, HLJS_LANG, IMAGE_MIME, renderCanvasImage, escapeHtml } from '../pck-common.js';
 import { resolveCDN } from '../cdn.js';
 
 const CDN = resolveCDN(import.meta.url);
@@ -695,13 +695,8 @@ async function previewModified(leftData, rightData, path) {
 
 async function createImageElement(data, ext) {
   if (CANVAS_IMAGE_EXTENSIONS.has(ext)) {
-    const decode = ext === '.tga' ? decodeTGA : decodeDDS;
-    const imageData = decode(data);
-    const canvas = document.createElement('canvas');
-    canvas.width = imageData.width;
-    canvas.height = imageData.height;
-    canvas.getContext('2d').putImageData(imageData, 0, 0);
-    return { el: canvas, width: imageData.width, height: imageData.height };
+    const { canvas, width, height } = renderCanvasImage(data, ext);
+    return { el: canvas, width, height };
   }
 
   const blob = new Blob([data], { type: IMAGE_MIME[ext] });
@@ -1555,19 +1550,14 @@ function previewSingleFile(data, path, status) {
 
   if (CANVAS_IMAGE_EXTENSIONS.has(ext)) {
     try {
-      const decode = ext === '.tga' ? decodeTGA : decodeDDS;
-      const imageData = decode(data);
-      const canvas = document.createElement('canvas');
-      canvas.width = imageData.width;
-      canvas.height = imageData.height;
+      const { canvas, width, height } = renderCanvasImage(data, ext);
       canvas.className = 'canvas-preview';
-      canvas.getContext('2d').putImageData(imageData, 0, 0);
       const container = document.createElement('div');
       container.className = 'image-preview';
       container.appendChild(canvas);
       const info = document.createElement('div');
       info.className = 'image-info';
-      info.textContent = `${imageData.width} \u00D7 ${imageData.height} (${ext.slice(1).toUpperCase()})`;
+      info.textContent = `${width} \u00D7 ${height} (${ext.slice(1).toUpperCase()})`;
       container.appendChild(info);
       preview.appendChild(container);
     } catch (e) {

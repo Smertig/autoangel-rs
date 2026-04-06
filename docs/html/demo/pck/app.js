@@ -3,7 +3,7 @@ import {
   IMAGE_MIME, HLJS_LANG, ENCODINGS,
   getExtension, formatSize, escapeHtml, classifyFiles,
   detectBOM, detectUTF16Pattern, detectEncoding, decodeText, isLikelyText,
-  decodeTGA, decodeDDS,
+  renderCanvasImage,
 } from '../pck-common.js';
 import { resolveCDN } from '../cdn.js';
 
@@ -529,21 +529,10 @@ function showImagePreview(data, ext) {
   dom.preview.appendChild(container);
 }
 
-const CANVAS_DECODERS = { '.tga': decodeTGA, '.dds': decodeDDS };
-
 function showCanvasImagePreview(data, ext) {
-  const decode = CANVAS_DECODERS[ext];
-  if (!decode) { showHexDump(data); return; }
-
   try {
-    const imageData = decode(data);
-
-    const canvas = document.createElement('canvas');
-    canvas.width = imageData.width;
-    canvas.height = imageData.height;
+    const { canvas, width, height } = renderCanvasImage(data, ext);
     canvas.className = 'canvas-preview';
-    const ctx = canvas.getContext('2d');
-    ctx.putImageData(imageData, 0, 0);
 
     const container = document.createElement('div');
     container.className = 'image-preview';
@@ -551,7 +540,7 @@ function showCanvasImagePreview(data, ext) {
 
     const info = document.createElement('div');
     info.className = 'image-info';
-    info.textContent = `${imageData.width} \u00D7 ${imageData.height} (${ext.slice(1).toUpperCase()})`;
+    info.textContent = `${width} \u00D7 ${height} (${ext.slice(1).toUpperCase()})`;
     container.appendChild(info);
 
     dom.preview.innerHTML = '';

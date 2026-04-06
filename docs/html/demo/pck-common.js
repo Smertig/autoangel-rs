@@ -1,3 +1,5 @@
+import { renderDDSToCanvas } from './webgl-renderer.js';
+
 // --- Extension maps ---
 
 export const TEXT_EXTENSIONS = new Set([
@@ -232,18 +234,28 @@ export function decodeTGA(buf) {
   return new ImageData(pixels, width, height);
 }
 
-// --- DDS decoder (via UTEX.js — supports BC1/BC2/BC3/BC7 + uncompressed) ---
+// --- DDS / TGA canvas rendering (WebGL2 compressed textures for DDS) ---
 
-export function decodeDDS(buf) {
-  if (typeof UTEX === 'undefined' || !UTEX.DDS) {
-    throw new Error('UTEX.js not loaded — include UTEX.js and UTEX.DDS.js script tags');
+export { renderDDSToCanvas };
+
+/**
+ * Render a .dds or .tga buffer to a canvas.
+ * DDS: uses WebGL2 compressed texture upload (GPU-native, no CPU decompression).
+ * TGA: CPU-decoded to RGBA, then drawn to a 2D canvas.
+ * @param {Uint8Array} data
+ * @param {string} ext - '.dds' or '.tga'
+ * @returns {{ canvas: HTMLCanvasElement, width: number, height: number }}
+ */
+export function renderCanvasImage(data, ext) {
+  if (ext === '.dds') {
+    const result = renderDDSToCanvas(data);
+    if (result) return result;
+    throw new Error('Cannot render DDS: WebGL2 with S3TC extension required');
   }
-  const ab = (buf.byteOffset === 0 && buf.byteLength === buf.buffer.byteLength)
-    ? buf.buffer
-    : buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
-  const mips = UTEX.DDS.decode(ab);
-  if (!mips || mips.length === 0) throw new Error('UTEX.DDS.decode returned no data');
-  const mip = mips[0];
-  const pixels = new Uint8ClampedArray(mip.image);
-  return new ImageData(pixels, mip.width, mip.height);
+  const imageData = decodeTGA(data);
+  const canvas = document.createElement('canvas');
+  canvas.width = imageData.width;
+  canvas.height = imageData.height;
+  canvas.getContext('2d').putImageData(imageData, 0, 0);
+  return { canvas, width: imageData.width, height: imageData.height };
 }
