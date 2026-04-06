@@ -739,10 +739,16 @@ async function previewModifiedImage(leftData, rightData, path, ext) {
 
   const modes = ['Side-by-side', 'Swipe', 'Onion skin'];
   let activeMode = 'Side-by-side';
+  const sameDimensions = leftImg.width === rightImg.width && leftImg.height === rightImg.height;
 
   for (const mode of modes) {
     const btn = document.createElement('button');
     btn.className = 'btn';
+    const needsSameSize = mode === 'Swipe' || mode === 'Onion skin';
+    if (needsSameSize && !sameDimensions) {
+      btn.disabled = true;
+      btn.title = 'Requires images of the same size';
+    }
     if (mode === activeMode) btn.classList.add('active');
     btn.textContent = mode;
     btn.onclick = () => {
@@ -900,12 +906,11 @@ function renderImageOnionSkin(leftImg, rightImg, container) {
   const onion = document.createElement('div');
   onion.className = 'image-onion';
 
-  // Base (left/old) image
+  // Base (left/old) image — always fully opaque
   const baseEl = cloneImageElement(leftImg);
-  baseEl.style.opacity = '0.5';
   onion.appendChild(baseEl);
 
-  // Top (right/new) image
+  // Top (right/new) image — opacity controls blend
   const topEl = cloneImageElement(rightImg);
   topEl.className = 'onion-top';
   topEl.style.opacity = '0.5';
@@ -938,9 +943,8 @@ function renderImageOnionSkin(leftImg, rightImg, container) {
 
   range.oninput = () => {
     const v = range.value;
-    baseEl.style.opacity = 1 - v / 100;
     topEl.style.opacity = v / 100;
-    valLabel.textContent = `${v}%`;
+    valLabel.textContent = `Opacity: ${v}%`;
   };
 
   sliderRow.append(oldLabel, range, valLabel, newLabel);
