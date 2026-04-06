@@ -19,11 +19,23 @@ async function initWasm() {
 
 const wasmReady = initWasm();
 
-async function writeToOpfs(name, file) {
+async function writeToOpfs(name, file, onChunk) {
   const root = await navigator.storage.getDirectory();
   const fh = await root.getFileHandle(name, { create: true });
   const writable = await fh.createWritable();
-  await writable.write(file);
+  if (onChunk && file.size > 0) {
+    const chunkSize = 4 * 1024 * 1024;
+    let offset = 0;
+    while (offset < file.size) {
+      const end = Math.min(offset + chunkSize, file.size);
+      const chunk = file.slice(offset, end);
+      await writable.write(chunk);
+      offset = end;
+      onChunk(offset, file.size);
+    }
+  } else {
+    await writable.write(file);
+  }
   await writable.close();
   return fh;
 }
@@ -32,35 +44,56 @@ async function openSyncHandle(fileHandle) {
   return await fileHandle.createSyncAccessHandle();
 }
 
-async function handleParse(pckFile, pkxFiles, keys) {
+async function handleParse(id, pckFile, pkxFiles, keys) {
   await wasmReady;
 
   if (pkg) { pkg.free(); pkg = null; }
   for (const h of syncHandles) { try { h.close(); } catch {} }
   syncHandles = [];
 
-  // Write pck to OPFS
-  const pckHandle = await writeToOpfs(`${workerUid}.pck`, pckFile);
-  const pckSync = await openSyncHandle(pckHandle);
+  const config = keys ? PackageConfig.withKeys(keys.key1, keys.key2, keys.guard1, keys.guard2) : undefined;
+
+  // Compute total bytes for write progress
+  const allFiles = [{ name: `${workerUid}.pck`, file: pckFile }];
+  for (let i = 0; i < pkxFiles.length; i++) {
+    const ext = i === 0 ? 'pkx' : `pkx${i}`;
+    allFiles.push({ name: `${workerUid}.${ext}`, file: pkxFiles[i] });
+  }
+  const totalBytes = allFiles.reduce((s, f) => s + f.file.size, 0);
+
+  // Write all files to OPFS with progress
+  const fileHandles = [];
+  let prevFileWritten = 0;
+  for (const { name, file } of allFiles) {
+    const fh = await writeToOpfs(name, file, (written, _size) => {
+      const current = prevFileWritten + written;
+      self.postMessage({ id, type: 'progress', phase: 'write', written: current, totalBytes });
+    });
+    prevFileWritten += file.size;
+    fileHandles.push(fh);
+  }
+
+  // Open sync handles
+  const pckSync = await openSyncHandle(fileHandles[0]);
   syncHandles.push(pckSync);
 
-  const config = keys ? PackageConfig.withKeys(keys.key1, keys.key2, keys.guard1, keys.guard2) : undefined;
+  const onProgress = (index, total) => {
+    self.postMessage({ id, type: 'progress', phase: 'parse', index, total });
+  };
 
   try {
     const pkxHandles = [];
-    for (let i = 0; i < pkxFiles.length; i++) {
-      const ext = i === 0 ? 'pkx' : `pkx${i}`;
-      const fh = await writeToOpfs(`${workerUid}.${ext}`, pkxFiles[i]);
-      const sh = await openSyncHandle(fh);
+    for (let i = 1; i < fileHandles.length; i++) {
+      const sh = await openSyncHandle(fileHandles[i]);
       syncHandles.push(sh);
       pkxHandles.push(sh);
     }
 
-    if (pkxHandles.length > 0) {
-      pkg = PckPackage.open(pckSync, { pkxHandles, config });
-    } else {
-      pkg = PckPackage.open(pckSync, config ? { config } : undefined);
-    }
+    const opts = { onProgress, progressIntervalMs: 16 };
+    if (pkxHandles.length > 0) opts.pkxHandles = pkxHandles;
+    if (config) opts.config = config;
+
+    pkg = PckPackage.open(pckSync, opts);
   } catch (e) {
     for (const h of syncHandles) { try { h.close(); } catch {} }
     syncHandles = [];
@@ -107,7 +140,7 @@ self.onmessage = async (e) => {
   const { id, type } = e.data;
   try {
     if (type === 'parse') {
-      const result = await handleParse(e.data.pckFile, e.data.pkxFiles || [], e.data.keys);
+      const result = await handleParse(id, e.data.pckFile, e.data.pkxFiles || [], e.data.keys);
       self.postMessage({ id, type: 'result', ...result });
     } else if (type === 'getFile') {
       const { data, byteOffset, byteLength } = handleGetFile(e.data.path);

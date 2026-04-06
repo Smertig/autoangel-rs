@@ -225,9 +225,19 @@ async function loadPackage(side, files) {
     sides[side].pkg = null;
   }
 
+  const onWorkerProgress = ({ phase, written, totalBytes, index, total }) => {
+    if (phase === 'write') {
+      const pct = Math.round((written / totalBytes) * 100);
+      sd.statusLine.textContent = `Loading ${label}: ${pct}%`;
+    } else if (phase === 'parse') {
+      const pct = Math.round(((index + 1) / total) * 100);
+      sd.statusLine.textContent = `Parsing ${label}: ${pct}%`;
+    }
+  };
+
   try {
     if (useOpfs) {
-      await workerCall(side, { type: 'parse', pckFile, pkxFiles, keys: customKeys });
+      await workerCall(side, { type: 'parse', pckFile, pkxFiles, keys: customKeys }, undefined, onWorkerProgress);
     } else {
       if (pkxFiles.length > 0) {
         showError('.pkx files require OPFS support (use a modern browser with HTTPS)');
@@ -235,7 +245,7 @@ async function loadPackage(side, files) {
       }
       const pckBytes = new Uint8Array(await pckFile.arrayBuffer());
       const config = customKeys ? PackageConfig.withKeys(customKeys.key1, customKeys.key2, customKeys.guard1, customKeys.guard2) : undefined;
-      sides[side].pkg = PckPackage.parse(pckBytes, config);
+      sides[side].pkg = PckPackage.parse(pckBytes, config, { onProgress: (index, total) => onWorkerProgress({ phase: 'parse', index, total }) });
     }
   } catch (e) {
     showError(e.message || String(e));

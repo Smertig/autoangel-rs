@@ -74,10 +74,10 @@ let worker = null;
 let workerMsgId = 0;
 const workerPending = new Map();
 
-function workerCall(msg, transfer) {
+function workerCall(msg, transfer, onProgress) {
   return new Promise((resolve, reject) => {
     const id = ++workerMsgId;
-    workerPending.set(id, { resolve, reject });
+    workerPending.set(id, { resolve, reject, onProgress });
     worker.postMessage({ id, ...msg }, transfer || []);
   });
 }
@@ -90,6 +90,10 @@ function initWorker() {
     const { id, type, message, ...rest } = e.data;
     const cb = workerPending.get(id);
     if (!cb) return;
+    if (type === 'progress') {
+      if (cb.onProgress) cb.onProgress(rest);
+      return;
+    }
     workerPending.delete(id);
     if (type === 'error') cb.reject(new Error(message));
     else cb.resolve(rest);
@@ -213,9 +217,19 @@ async function loadFiles(files) {
 
   let fileList, version;
 
+  const onWorkerProgress = ({ phase, written, totalBytes, index, total }) => {
+    if (phase === 'write') {
+      const pct = Math.round((written / totalBytes) * 100);
+      dom.status.textContent = `Loading ${label}: ${pct}%`;
+    } else if (phase === 'parse') {
+      const pct = Math.round(((index + 1) / total) * 100);
+      dom.status.textContent = `Parsing ${label}: ${pct}%`;
+    }
+  };
+
   try {
     if (useOpfs) {
-      const result = await workerCall({ type: 'parse', pckFile, pkxFiles, keys: customKeys });
+      const result = await workerCall({ type: 'parse', pckFile, pkxFiles, keys: customKeys }, undefined, onWorkerProgress);
       fileList = result.fileList;
       version = result.version;
     } else {
@@ -225,7 +239,7 @@ async function loadFiles(files) {
       }
       const pckBytes = new Uint8Array(await pckFile.arrayBuffer());
       const config = customKeys ? PackageConfig.withKeys(customKeys.key1, customKeys.key2, customKeys.guard1, customKeys.guard2) : undefined;
-      pkg = PckPackage.parse(pckBytes, config);
+      pkg = PckPackage.parse(pckBytes, config, { onProgress: (index, total) => onWorkerProgress({ phase: 'parse', index, total }) });
       fileList = pkg.fileList();
       version = pkg.version;
     }
