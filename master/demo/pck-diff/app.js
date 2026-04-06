@@ -1,4 +1,4 @@
-import { classifyFiles, formatSize, getExtension, isLikelyText, detectEncoding, decodeText, IMAGE_EXTENSIONS, CANVAS_IMAGE_EXTENSIONS, ENCODINGS, HLJS_LANG, IMAGE_MIME, decodeTGA, decodeDDS, escapeHtml } from '../pck-common.js';
+import { classifyFiles, formatSize, getExtension, isLikelyText, detectEncoding, decodeText, IMAGE_EXTENSIONS, CANVAS_IMAGE_EXTENSIONS, ENCODINGS, HLJS_LANG, IMAGE_MIME, renderCanvasImage, escapeHtml } from '../pck-common.js';
 import { resolveCDN } from '../cdn.js';
 
 const CDN = resolveCDN(import.meta.url);
@@ -20,11 +20,14 @@ let diffResult = null; // { added, deleted, modified, unchanged }
 let activeFilters = new Set();  // subset of 'added', 'deleted', 'modified', 'unchanged'
 let showUnchanged = false;
 let filterText = '';
+let filterTextLower = '';
+let filterDebounceTimer = 0;
 let selectedPath = null;
 let selectedTreeItem = null;
 let diffTree = null;
 let activeBlobUrls = [];
 let imageFitToScreen = true;
+let imageCompareMode = 'Side-by-side';
 
 // --- DOM refs ---
 
@@ -350,6 +353,7 @@ function handleNewCompare() {
   activeFilters.clear();
   showUnchanged = false;
   filterText = '';
+  filterTextLower = '';
   selectedPath = null;
   selectedTreeItem = null;
   document.getElementById('filter-input').value = '';
@@ -410,8 +414,12 @@ function renderSummaryBar() {
   const filterInput = document.getElementById('filter-input');
   filterInput.value = filterText;
   filterInput.oninput = () => {
-    filterText = filterInput.value;
-    rerenderTree();
+    clearTimeout(filterDebounceTimer);
+    filterDebounceTimer = setTimeout(() => {
+      filterText = filterInput.value;
+      filterTextLower = filterText.toLowerCase();
+      rerenderTree();
+    }, 120);
   };
 }
 
@@ -483,7 +491,7 @@ function isFileVisible(file) {
   if (!showUnchanged && file.status === 'unchanged' && !activeFilters.has('unchanged')) return false;
 
   // Check text filter
-  if (filterText && !file.fullPath.toLowerCase().includes(filterText.toLowerCase())) return false;
+  if (filterTextLower && !file.fullPath.toLowerCase().includes(filterTextLower)) return false;
 
   return true;
 }
@@ -496,6 +504,24 @@ function hasFolderVisibleDescendants(node) {
     if (hasFolderVisibleDescendants(child)) return true;
   }
   return false;
+}
+
+function highlightLabel(el, text) {
+  if (!filterTextLower) {
+    el.textContent = text;
+    return;
+  }
+  const lower = text.toLowerCase();
+  const idx = lower.indexOf(filterTextLower);
+  if (idx === -1) {
+    el.textContent = text;
+    return;
+  }
+  el.textContent = text.slice(0, idx);
+  const mark = document.createElement('mark');
+  mark.textContent = text.slice(idx, idx + filterTextLower.length);
+  el.appendChild(mark);
+  el.appendChild(document.createTextNode(text.slice(idx + filterTextLower.length)));
 }
 
 // --- Tree rendering ---
@@ -533,7 +559,7 @@ function renderDiffTree(node, container, depth) {
 
     const label = document.createElement('span');
     label.className = 'tree-label';
-    label.textContent = name;
+    highlightLabel(label, name);
 
     row.append(arrow, icon, label);
 
@@ -594,7 +620,7 @@ function renderDiffTree(node, container, depth) {
 
     const label = document.createElement('span');
     label.className = 'tree-label';
-    label.textContent = file.name;
+    highlightLabel(label, file.name);
 
     row.append(arrow, icon, label);
 
@@ -695,13 +721,8 @@ async function previewModified(leftData, rightData, path) {
 
 async function createImageElement(data, ext) {
   if (CANVAS_IMAGE_EXTENSIONS.has(ext)) {
-    const decode = ext === '.tga' ? decodeTGA : decodeDDS;
-    const imageData = decode(data);
-    const canvas = document.createElement('canvas');
-    canvas.width = imageData.width;
-    canvas.height = imageData.height;
-    canvas.getContext('2d').putImageData(imageData, 0, 0);
-    return { el: canvas, width: imageData.width, height: imageData.height };
+    const { canvas, width, height } = renderCanvasImage(data, ext);
+    return { el: canvas, width, height };
   }
 
   const blob = new Blob([data], { type: IMAGE_MIME[ext] });
@@ -755,25 +776,26 @@ async function previewModifiedImage(leftData, rightData, path, ext) {
   tabs.className = 'image-compare-tabs';
 
   const modes = ['Side-by-side', 'Swipe', 'Onion skin'];
-  let activeMode = 'Side-by-side';
   const sameDimensions = leftImg.width === rightImg.width && leftImg.height === rightImg.height;
+  const needsSameSize = imageCompareMode === 'Swipe' || imageCompareMode === 'Onion skin';
+  if (needsSameSize && !sameDimensions) imageCompareMode = 'Side-by-side';
 
   for (const mode of modes) {
     const btn = document.createElement('button');
     btn.className = 'btn';
-    const needsSameSize = mode === 'Swipe' || mode === 'Onion skin';
-    if (needsSameSize && !sameDimensions) {
+    const modeNeedsSameSize = mode === 'Swipe' || mode === 'Onion skin';
+    if (modeNeedsSameSize && !sameDimensions) {
       btn.disabled = true;
       btn.title = 'Requires images of the same size';
     }
-    if (mode === activeMode) btn.classList.add('active');
+    if (mode === imageCompareMode) btn.classList.add('active');
     btn.textContent = mode;
     btn.onclick = () => {
-      if (mode === activeMode) return;
-      activeMode = mode;
+      if (mode === imageCompareMode) return;
+      imageCompareMode = mode;
       for (const b of tabs.children) b.classList.remove('active');
       btn.classList.add('active');
-      renderImageMode(activeMode, leftImg, rightImg, leftData, rightData, preview);
+      renderImageMode(imageCompareMode, leftImg, rightImg, leftData, rightData, preview);
     };
     tabs.appendChild(btn);
   }
@@ -783,17 +805,17 @@ async function previewModifiedImage(leftData, rightData, path, ext) {
   // Fit/Real size toggle
   const fitToggle = document.createElement('button');
   fitToggle.className = 'btn btn-small';
-  fitToggle.textContent = 'Real size';
+  fitToggle.textContent = imageFitToScreen ? 'Real size' : 'Fit to screen';
   fitToggle.title = 'Switch between fit-to-screen and real pixel size';
   fitToggle.onclick = () => {
     imageFitToScreen = !imageFitToScreen;
     fitToggle.textContent = imageFitToScreen ? 'Real size' : 'Fit to screen';
-    renderImageMode(activeMode, leftImg, rightImg, leftData, rightData, preview);
+    renderImageMode(imageCompareMode, leftImg, rightImg, leftData, rightData, preview);
   };
   actions.appendChild(fitToggle);
 
   // Render default mode
-  renderImageMode(activeMode, leftImg, rightImg, leftData, rightData, preview);
+  renderImageMode(imageCompareMode, leftImg, rightImg, leftData, rightData, preview);
 }
 
 function cloneImageElement(imgInfo) {
@@ -1555,19 +1577,14 @@ function previewSingleFile(data, path, status) {
 
   if (CANVAS_IMAGE_EXTENSIONS.has(ext)) {
     try {
-      const decode = ext === '.tga' ? decodeTGA : decodeDDS;
-      const imageData = decode(data);
-      const canvas = document.createElement('canvas');
-      canvas.width = imageData.width;
-      canvas.height = imageData.height;
+      const { canvas, width, height } = renderCanvasImage(data, ext);
       canvas.className = 'canvas-preview';
-      canvas.getContext('2d').putImageData(imageData, 0, 0);
       const container = document.createElement('div');
       container.className = 'image-preview';
       container.appendChild(canvas);
       const info = document.createElement('div');
       info.className = 'image-info';
-      info.textContent = `${imageData.width} \u00D7 ${imageData.height} (${ext.slice(1).toUpperCase()})`;
+      info.textContent = `${width} \u00D7 ${height} (${ext.slice(1).toUpperCase()})`;
       container.appendChild(info);
       preview.appendChild(container);
     } catch (e) {
