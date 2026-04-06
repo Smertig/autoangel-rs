@@ -106,3 +106,15 @@ def test_file_entries_progress_cancellation():
     except RuntimeError as e:
         assert "cancelled" in str(e)
     assert call_count == 2
+
+
+def test_read_pck_with_pkx_paths_none():
+    test_path = '../tests/test_data/packages/configs.pck'
+    package = autoangel.read_pck(test_path, pkx_paths=None)
+    _check_package(package)
+
+
+def test_read_pck_with_empty_pkx_list():
+    test_path = '../tests/test_data/packages/configs.pck'
+    package = autoangel.read_pck(test_path, pkx_paths=[])
+    _check_package(package)

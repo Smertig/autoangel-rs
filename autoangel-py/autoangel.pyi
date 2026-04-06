@@ -486,13 +486,18 @@ def read_elements_config_string(content: str) -> ElementsConfig:
     ...
 
 
-def read_pck(pck_path: str, pkx_path: Optional[str] = None, config: Optional[PackageConfig] = None) -> PckPackage:
+def read_pck(
+    pck_path: str,
+    pkx_paths: Optional[Union[str, List[str]]] = None,
+    *,
+    config: Optional[PackageConfig] = None,
+) -> PckPackage:
     """
-    Parses pck package from file at path ``pck_path`` (and optionally ``pkx_path``) and returns ``PckPackage`` describing parsed file(s).
+    Parses pck package from file at path ``pck_path`` (and optionally pkx file(s)) and returns ``PckPackage`` describing parsed file(s).
     Doesn't load file content into memory, uses memory-mapped I/O - so file(s) cannot be modified while ``PckPackage`` is alive.
 
     :param pck_path: Path to pck package.
-    :param pkx_path: Optional path to pkx package (``None`` by default).
+    :param pkx_paths: Optional pkx path(s) — a single string or list of strings (``None`` by default).
     :param config: Custom package configuration. Defaults to None.
     :return: Object describing parsed package.
     :raises Exception: If any I/O error occurs or package has invalid internal structure.

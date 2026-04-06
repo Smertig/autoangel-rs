@@ -53,12 +53,8 @@ impl PyPackage {
         PyPackage::new(DataSource::from_file(file)?, config)
     }
 
-    fn from_file2(
-        file: std::fs::File,
-        file2: std::fs::File,
-        config: PackageConfig,
-    ) -> PyResult<Self> {
-        PyPackage::new(DataSource::from_file2(file, file2)?, config)
+    fn from_files(files: Vec<std::fs::File>, config: PackageConfig) -> PyResult<Self> {
+        PyPackage::new(DataSource::from_files(files)?, config)
     }
 }
 
@@ -141,21 +137,34 @@ fn read_pck_bytes(content: &[u8], config: Option<&PyPackageConfig>) -> PyResult<
 pub fn init_py(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(pyo3::wrap_pyfunction!(read_pck_bytes, m)?)?;
 
-    /// Parse pck package from file using memory-mapped I/O.
+    /// Parse pck package from file(s) using memory-mapped I/O.
     #[pyfunction]
-    #[pyo3(signature = (pck_path, pkx_path=None, config=None))]
+    #[pyo3(signature = (pck_path, pkx_paths=None, *, config=None))]
     fn read_pck(
         pck_path: &str,
-        pkx_path: Option<&str>,
+        pkx_paths: Option<&Bound<'_, PyAny>>,
         config: Option<&PyPackageConfig>,
     ) -> PyResult<PyPackage> {
         let pck = std::fs::File::open(pck_path)?;
         let config = config.map_or_else(Default::default, |c| c.config.clone());
 
-        if let Some(pkx_path) = pkx_path {
-            PyPackage::from_file2(pck, std::fs::File::open(pkx_path)?, config)
+        let mut files = vec![pck];
+
+        if let Some(paths) = pkx_paths {
+            if let Ok(s) = paths.extract::<String>() {
+                files.push(std::fs::File::open(s)?);
+            } else {
+                let list = paths.extract::<Vec<String>>()?;
+                for p in list {
+                    files.push(std::fs::File::open(p)?);
+                }
+            }
+        }
+
+        if files.len() == 1 {
+            PyPackage::from_file(files.into_iter().next().unwrap(), config)
         } else {
-            PyPackage::from_file(pck, config)
+            PyPackage::from_files(files, config)
         }
     }
     m.add_function(pyo3::wrap_pyfunction!(read_pck, m)?)?;

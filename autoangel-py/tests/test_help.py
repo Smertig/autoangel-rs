@@ -10,7 +10,7 @@ def test_text_signatures():
 
     # PCK functions
     assert read_pck_bytes.__text_signature__ == '(content, config=None)'
-    assert read_pck.__text_signature__ == '(pck_path, pkx_path=None, config=None)'
+    assert read_pck.__text_signature__ == '(pck_path, pkx_paths=None, *, config=None)'
 
     # PackageConfig methods
     assert PackageConfig.__text_signature__ == '(key1=2828235874, key2=1496793649, guard1=4261281518, guard2=4027432687)'
