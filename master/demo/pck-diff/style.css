@@ -300,7 +300,8 @@ body {
   transition: background 0.1s;
 }
 
-.btn:hover { background: var(--tree-hover); }
+.btn:hover:not(:disabled) { background: var(--tree-hover); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .btn-compare {
   padding: 10px 32px;
