@@ -15,7 +15,7 @@ const DDS_HEADER_SIZE = 128;
 /**
  * Parse a DDS file header and return format info + a view into the raw data.
  * @param {Uint8Array} buf - The full DDS file bytes
- * @returns {{ width: number, height: number, format: string|null, blockSize: number, data: Uint8Array }}
+ * @returns {{ width: number, height: number, format: string|null, blockSize: number, data: Uint8Array, pfFlags: number, fourCC: number, rgbBitCount: number, rMask: number }}
  */
 export function parseDDS(buf) {
   if (buf.byteLength < DDS_HEADER_SIZE) {
@@ -32,8 +32,11 @@ export function parseDDS(buf) {
   const width = view.getUint32(16, true);
   const pfFlags = view.getUint32(80, true);
   const fourCC = view.getUint32(84, true);
+  const rgbBitCount = view.getUint32(88, true);
+  const rMask = view.getUint32(92, true);
 
   const data = new Uint8Array(buf.buffer, buf.byteOffset + DDS_HEADER_SIZE, buf.byteLength - DDS_HEADER_SIZE);
+  const diag = { pfFlags, fourCC, rgbBitCount, rMask };
 
   // Compressed formats (BC1/BC2/BC3)
   if (pfFlags & DDPF_FOURCC) {
@@ -55,14 +58,11 @@ export function parseDDS(buf) {
         break;
     }
 
-    return { width, height, format, blockSize, data };
+    return { width, height, format, blockSize, data, ...diag };
   }
 
   // Uncompressed RGB/RGBA formats
   if (pfFlags & DDPF_RGB) {
-    const rgbBitCount = view.getUint32(88, true);
-    const rMask = view.getUint32(92, true);
-
     let format = null;
     let blockSize = 0;
 
@@ -75,13 +75,16 @@ export function parseDDS(buf) {
     } else if (rgbBitCount === 24 && rMask === 0x00FF0000) {
       format = 'bgr';
       blockSize = 3;
+    } else if (rgbBitCount === 16 && rMask === 0x0000F800) {
+      format = 'r5g6b5';
+      blockSize = 2;
     }
 
-    return { width, height, format, blockSize, data };
+    return { width, height, format, blockSize, data, ...diag };
   }
 
   // Unknown / unsupported
-  return { width, height, format: null, blockSize: 0, data };
+  return { width, height, format: null, blockSize: 0, data, ...diag };
 }
 
 // --- TextureRenderer (WebGL2 + S3TC) ---
@@ -262,19 +265,22 @@ export class TextureRenderer {
  * Returns { canvas, width, height } or null if the format is unsupported
  * or WebGL2 is unavailable.
  * @param {Uint8Array} buf - Full DDS file bytes
- * @returns {{ canvas: HTMLCanvasElement, width: number, height: number }|null}
+ * @returns {{ canvas: HTMLCanvasElement, width: number, height: number }|{ error: string }}
  */
 export function renderDDSToCanvas(buf) {
   const dds = parseDDS(buf);
   const { width, height, format } = dds;
 
-  if (!format) return null;
+  if (!format) {
+    const fcc = dds.fourCC ? String.fromCharCode(dds.fourCC & 0xFF, (dds.fourCC >> 8) & 0xFF, (dds.fourCC >> 16) & 0xFF, (dds.fourCC >> 24) & 0xFF) : '';
+    return { error: `unsupported format (pfFlags=0x${dds.pfFlags.toString(16)}, fourCC="${fcc}", bits=${dds.rgbBitCount}, rMask=0x${dds.rMask.toString(16)})` };
+  }
 
   // Compressed formats — use WebGL2
   if (format === 'dxt1' || format === 'dxt3' || format === 'dxt5') {
     const canvas = document.createElement('canvas');
     const renderer = TextureRenderer.create(canvas);
-    if (!renderer) return null;
+    if (!renderer) return { error: 'WebGL2 with S3TC extension required' };
 
     renderer.uploadCompressed(dds);
 
@@ -290,7 +296,7 @@ export function renderDDSToCanvas(buf) {
   }
 
   // Uncompressed formats — swizzle to RGBA on CPU, draw with 2D canvas
-  if (format === 'rgba' || format === 'bgra' || format === 'bgr') {
+  if (format === 'rgba' || format === 'bgra' || format === 'bgr' || format === 'r5g6b5') {
     const pixelCount = width * height;
     const pixels = new Uint8ClampedArray(pixelCount * 4);
     const src = dds.data;
@@ -314,6 +320,16 @@ export function renderDDSToCanvas(buf) {
         pixels[di + 1] = src[si + 1]; // G
         pixels[di + 2] = src[si];     // B <- R
         pixels[di + 3] = 255;         // A
+      }
+    } else if (format === 'r5g6b5') {
+      const src16 = new Uint16Array(src.buffer, src.byteOffset, pixelCount);
+      for (let i = 0; i < pixelCount; i++) {
+        const v = src16[i];
+        const di = i * 4;
+        pixels[di]     = (v >>> 11) * 255 / 31 | 0;         // R (5 bits)
+        pixels[di + 1] = ((v >>> 5) & 0x3F) * 255 / 63 | 0; // G (6 bits)
+        pixels[di + 2] = (v & 0x1F) * 255 / 31 | 0;         // B (5 bits)
+        pixels[di + 3] = 255;                                 // A
       }
     }
 
