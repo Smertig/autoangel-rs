@@ -984,7 +984,7 @@ all data entries (<code><a href="#ElementsDataEntry">ElementsDataEntry</a></code
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">file_entries</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">List</span><span class="p">[</span><span class="n"><a href="#FileEntry">FileEntry</a></span><span class="p">]</span>:</span></span>
+        <span class="name">file_entries</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">on_progress</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">NoneType</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="n">List</span><span class="p">[</span><span class="n"><a href="#FileEntry">FileEntry</a></span><span class="p">]</span>:</span></span>
 
         
     </div>
@@ -992,6 +992,13 @@ all data entries (<code><a href="#ElementsDataEntry">ElementsDataEntry</a></code
     
             <div class="docstring"><p>Returns list of file entries with metadata (including content hashes).
 This decompresses every file to compute CRC32 hashes.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>on_progress</strong>:  Optional callback <code>(path, index, total)</code> called for each file.
+Raise an exception to cancel iteration.</li>
+</ul>
 
 <h6 id="returns">Returns</h6>
 

@@ -89,6 +89,10 @@ function initWorker(side) {
     const state = sides[side];
     const cb = state.pending.get(id);
     if (!cb) return;
+    if (type === 'progress') {
+      if (cb.onProgress) cb.onProgress(rest);
+      return;
+    }
     state.pending.delete(id);
     if (type === 'error') cb.reject(new Error(message));
     else cb.resolve(rest);
@@ -96,11 +100,11 @@ function initWorker(side) {
   sides[side].worker = w;
 }
 
-function workerCall(side, msg, transfer) {
+function workerCall(side, msg, transfer, onProgress) {
   const state = sides[side];
   return new Promise((resolve, reject) => {
     const id = ++state.msgId;
-    state.pending.set(id, { resolve, reject });
+    state.pending.set(id, { resolve, reject, onProgress });
     state.worker.postMessage({ id, ...msg }, transfer || []);
   });
 }
@@ -261,14 +265,26 @@ async function getFileEntries(side) {
   const fill = progressItem.querySelector('.progress-fill');
 
   label.textContent = `Computing hashes for ${side} package...`;
-  fill.className = 'progress-fill indeterminate';
+  fill.className = 'progress-fill no-transition';
+  fill.style.width = '0%';
+  // Force reflow so the 0% is applied before re-enabling transition
+  fill.offsetWidth; // eslint-disable-line no-unused-expressions
+  fill.className = 'progress-fill';
+
+  const updateProgress = ({ index, total }) => {
+    const pct = Math.round(((index + 1) / total) * 100);
+    fill.style.width = `${pct}%`;
+    label.textContent = `Hashing ${side}: ${index + 1} / ${total}`;
+  };
 
   let entries;
   if (useOpfs) {
-    const result = await workerCall(side, { type: 'fileEntries' });
+    const result = await workerCall(side, { type: 'fileEntries' }, undefined, updateProgress);
     entries = result.entries;
   } else {
-    const wasmEntries = sides[side].pkg.fileEntries();
+    const wasmEntries = sides[side].pkg.fileEntries({
+      onProgress: (_path, index, total) => updateProgress({ index, total }),
+    });
     entries = wasmEntries.map(e => {
       const plain = { path: e.path, size: e.size, compressedSize: e.compressedSize, hash: e.hash };
       e.free();
@@ -277,6 +293,7 @@ async function getFileEntries(side) {
   }
 
   label.textContent = `Done (${entries.length} files)`;
+  fill.style.width = '100%';
   fill.className = 'progress-fill done';
 
   return entries;
@@ -1692,11 +1709,13 @@ async function startComparison() {
 
   // Show progress
   dom.progress.classList.remove('hidden');
-  // Reset progress bars to indeterminate
+  // Reset progress bars
   for (const side of ['left', 'right']) {
     const item = document.getElementById(`progress-${side}`);
+    const fill = item.querySelector('.progress-fill');
     item.querySelector('.progress-label').textContent = `Computing hashes for ${side} package...`;
-    item.querySelector('.progress-fill').className = 'progress-fill indeterminate';
+    fill.className = 'progress-fill no-transition';
+    fill.style.width = '0%';
   }
 
   try {
