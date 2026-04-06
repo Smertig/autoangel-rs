@@ -10,6 +10,9 @@ cargo build --release             # release build (LTO enabled)
 
 cargo test -p autoangel-core           # Rust tests
 cd autoangel-py && uv run pytest       # Python tests (auto-rebuilds extension if .rs files changed)
+# NOTE: if Python tests fail with unexpected AttributeError/TypeError after
+# cherry-picks or branch switches, delete autoangel-py/.venv and retry.
+# The uv cache-keys glob for ../autoangel-core changes is broken (globwalk bug).
 
 cargo fmt --all -- --check             # check formatting
 cargo clippy --all-features            # lint
