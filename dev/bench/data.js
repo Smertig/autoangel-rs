@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1775500632331,
+  "lastUpdate": 1775500632882,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -1309,6 +1309,108 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Smertig/autoangel-rs/commit/c8893ae848c17cb33815d96a2b8ef74a9a0b4878"
         },
         "date": 1775468154993,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 71607,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 32,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 204,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 501248,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 4,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [just parsed]/allocated",
+            "value": 71607,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [just parsed]/retained",
+            "value": 58279,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [parsed + iterated]/allocated",
+            "value": 1166599,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [parsed + iterated]/retained",
+            "value": 774647,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [parsed + 3 searches]/allocated",
+            "value": 76343,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [parsed + 3 searches]/retained",
+            "value": 62103,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 864922,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 10776,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "bd75c451ea1261daf577b49ca60e1b84a0b0c255",
+          "message": "multi-pkx [wasm, docs]: merge open/open2, update demos\n\nCloses #2\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+          "timestamp": "2026-04-06T21:33:45+03:00",
+          "tree_id": "281ac7778cb230df88b794841625c40dc1714d1d",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/bd75c451ea1261daf577b49ca60e1b84a0b0c255"
+        },
+        "date": 1775500632645,
         "tool": "cargo",
         "benches": [
           {
