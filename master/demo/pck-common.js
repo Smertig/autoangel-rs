@@ -250,8 +250,8 @@ export { renderDDSToCanvas };
 export function renderCanvasImage(data, ext) {
   if (ext === '.dds') {
     const result = renderDDSToCanvas(data);
-    if (result) return result;
-    throw new Error('Cannot render DDS: WebGL2 with S3TC extension required');
+    if (result.error) throw new Error(`Cannot render DDS: ${result.error}`);
+    return result;
   }
   const imageData = decodeTGA(data);
   const canvas = document.createElement('canvas');
