@@ -180,7 +180,9 @@ impl FileGbkEntry {
     fn parse(data: &DataSource, version: PckVersion) -> Result<Self> {
         match version {
             PckVersion::V2 => {
-                if data.size() != Self::SIZE_V2 && data.size() != Self::SIZE_V2_WITHOUT_RESERVED {
+                if data.size() != Self::SIZE_V2 as u64
+                    && data.size() != Self::SIZE_V2_WITHOUT_RESERVED as u64
+                {
                     eyre::bail!(
                         "Invalid FileGbkEntry size: got {}, expected {} or {}",
                         data.size(),
@@ -196,7 +198,7 @@ impl FileGbkEntry {
                 })
             }
             PckVersion::V3 => {
-                if data.size() != Self::SIZE_V3 {
+                if data.size() != Self::SIZE_V3 as u64 {
                     eyre::bail!(
                         "Invalid FileGbkEntry size: got {}, expected {}",
                         data.size(),
@@ -281,10 +283,7 @@ impl FileEntry {
     }
 
     pub fn get_raw_file_bytes<'a>(&self, content: &'a DataSource) -> Result<Cow<'a, [u8]>> {
-        let offset = self.offset as usize;
-        let compressed_size = self.compressed_size as usize;
-
-        content.read_bytes_at(offset, compressed_size)
+        content.read_bytes_at(self.offset, self.compressed_size as usize)
     }
 
     /// Read and decompress the file content.
@@ -476,7 +475,7 @@ impl PackageInfo {
     pub fn parse(data: &DataSource, config: PackageConfig) -> Result<Self> {
         let key_header = KeyHeader::parse(data)?;
 
-        let headers_end_offset = key_header.headers_end_offset as usize;
+        let headers_end_offset = key_header.headers_end_offset as u64;
 
         if headers_end_offset < 4 {
             eyre::bail!("Invalid headers_end_offset: {}", headers_end_offset);
@@ -497,22 +496,22 @@ impl PackageInfo {
             .as_le::<u32>()?;
         let version = PckVersion::from_raw(raw_version)?;
 
-        let package_header_size = PackageHeader::size_for_version(version);
+        let package_header_size = PackageHeader::size_for_version(version) as u64;
 
-        if headers_end_offset < PackageMetaHeader::SIZE + package_header_size {
+        if headers_end_offset < PackageMetaHeader::SIZE as u64 + package_header_size {
             eyre::bail!(
                 "Invalid headers_end_offset: {} (minimum is {})",
                 headers_end_offset,
-                PackageMetaHeader::SIZE + package_header_size
+                PackageMetaHeader::SIZE as u64 + package_header_size
             );
         }
 
-        let meta_header_offset = headers_end_offset - PackageMetaHeader::SIZE;
+        let meta_header_offset = headers_end_offset - PackageMetaHeader::SIZE as u64;
         let header_offset = meta_header_offset - package_header_size;
 
         let meta_header = PackageMetaHeader::parse(
             &data
-                .get_at(meta_header_offset, PackageMetaHeader::SIZE)
+                .get_at(meta_header_offset, PackageMetaHeader::SIZE as u64)
                 .wrap_err_with(|| eyre!("Invalid meta-header position"))?,
         )?;
 
@@ -548,8 +547,7 @@ impl PackageInfo {
             );
         }
 
-        let entry_offset =
-            (package_header.entry_offset ^ version.entry_offset_key(config.key1)) as usize;
+        let entry_offset = package_header.entry_offset ^ version.entry_offset_key(config.key1);
         let mut offset = entry_offset;
 
         let min_entry_size = FileGbkEntry::min_parse_size(version);
@@ -566,7 +564,7 @@ impl PackageInfo {
                     eyre::bail!("Invalid decoded compressed size: {0:08X} != {1:08X}", first_size, second_size);
                 }
 
-                let size = first_size as usize;
+                let size = first_size as u64;
                 let entry_data = data.get_at(offset, size)?;
                 let entry_bytes = entry_data.to_bytes()?;
                 offset += size;

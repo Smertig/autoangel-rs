@@ -8,8 +8,8 @@ use std::sync::Arc;
 /// Implementations exist for in-memory buffers (`[u8]`, `Vec<u8>`, `Mmap`)
 /// and can be added for external backends (e.g. OPFS handles).
 pub trait DataReader: Send + Sync {
-    fn read_at(&self, offset: usize, buf: &mut [u8]) -> Result<()>;
-    fn size(&self) -> usize;
+    fn read_at(&self, offset: u64, buf: &mut [u8]) -> Result<()>;
+    fn size(&self) -> u64;
 
     /// If the backing store is contiguous memory, return it directly.
     /// This enables zero-copy access for in-memory readers.
@@ -19,7 +19,8 @@ pub trait DataReader: Send + Sync {
 }
 
 impl DataReader for [u8] {
-    fn read_at(&self, offset: usize, buf: &mut [u8]) -> Result<()> {
+    fn read_at(&self, offset: u64, buf: &mut [u8]) -> Result<()> {
+        let offset = offset as usize;
         let end = offset + buf.len();
         if end > self.len() {
             return Err(eyre!(
@@ -33,8 +34,8 @@ impl DataReader for [u8] {
         Ok(())
     }
 
-    fn size(&self) -> usize {
-        self.len()
+    fn size(&self) -> u64 {
+        self.len() as u64
     }
 
     fn as_slice(&self) -> Option<&[u8]> {
@@ -43,12 +44,12 @@ impl DataReader for [u8] {
 }
 
 impl DataReader for Vec<u8> {
-    fn read_at(&self, offset: usize, buf: &mut [u8]) -> Result<()> {
+    fn read_at(&self, offset: u64, buf: &mut [u8]) -> Result<()> {
         self.as_slice().read_at(offset, buf)
     }
 
-    fn size(&self) -> usize {
-        self.len()
+    fn size(&self) -> u64 {
+        self.len() as u64
     }
 
     fn as_slice(&self) -> Option<&[u8]> {
@@ -58,12 +59,12 @@ impl DataReader for Vec<u8> {
 
 #[cfg(feature = "fs")]
 impl DataReader for memmap2::Mmap {
-    fn read_at(&self, offset: usize, buf: &mut [u8]) -> Result<()> {
+    fn read_at(&self, offset: u64, buf: &mut [u8]) -> Result<()> {
         (**self).read_at(offset, buf)
     }
 
-    fn size(&self) -> usize {
-        self.len()
+    fn size(&self) -> u64 {
+        self.len() as u64
     }
 
     fn as_slice(&self) -> Option<&[u8]> {
@@ -76,13 +77,13 @@ pub struct MultiReader {
     parts: Vec<Arc<dyn DataReader>>,
     /// prefix_sums[0] = 0, prefix_sums[i] = sum of sizes of parts[0..i]
     /// Length = parts.len() + 1
-    prefix_sums: Vec<usize>,
+    prefix_sums: Vec<u64>,
 }
 
 impl MultiReader {
     pub fn new(parts: Vec<Arc<dyn DataReader>>) -> Self {
         let mut prefix_sums = Vec::with_capacity(parts.len() + 1);
-        prefix_sums.push(0);
+        prefix_sums.push(0u64);
         for part in &parts {
             prefix_sums.push(prefix_sums.last().unwrap() + part.size());
         }
@@ -91,8 +92,8 @@ impl MultiReader {
 }
 
 impl DataReader for MultiReader {
-    fn read_at(&self, offset: usize, buf: &mut [u8]) -> Result<()> {
-        let end = offset + buf.len();
+    fn read_at(&self, offset: u64, buf: &mut [u8]) -> Result<()> {
+        let end = offset + buf.len() as u64;
         let total_size = self.size();
         if end > total_size {
             return Err(eyre!(
@@ -114,12 +115,12 @@ impl DataReader for MultiReader {
             Err(i) => i - 1,
         };
 
-        let mut buf_offset = 0;
+        let mut buf_offset = 0usize;
         while buf_offset < buf.len() {
             let part_start = self.prefix_sums[part_idx];
             let part_end = self.prefix_sums[part_idx + 1];
-            let read_start = (offset + buf_offset) - part_start;
-            let available = part_end - part_start - read_start;
+            let read_start = (offset + buf_offset as u64) - part_start;
+            let available = (part_end - part_start - read_start) as usize;
             let to_read = available.min(buf.len() - buf_offset);
 
             self.parts[part_idx].read_at(read_start, &mut buf[buf_offset..buf_offset + to_read])?;
@@ -130,7 +131,7 @@ impl DataReader for MultiReader {
         Ok(())
     }
 
-    fn size(&self) -> usize {
+    fn size(&self) -> u64 {
         *self.prefix_sums.last().unwrap_or(&0)
     }
 }
@@ -146,14 +147,14 @@ pub struct DataSource {
     reader: Arc<dyn DataReader>,
     /// Absolute byte offset into the reader where this view starts.
     /// Also serves as the "base offset" for error messages.
-    offset: usize,
-    len: usize,
+    offset: u64,
+    len: u64,
 }
 
 impl DataSource {
     /// Create a DataSource from an owned byte vector.
     pub fn from_bytes(bytes: Vec<u8>) -> Self {
-        let len = bytes.len();
+        let len = bytes.len() as u64;
         Self {
             reader: Arc::new(bytes),
             offset: 0,
@@ -205,7 +206,7 @@ impl DataSource {
 
     /// Number of bytes in this view.
     #[inline]
-    pub fn size(&self) -> usize {
+    pub fn size(&self) -> u64 {
         self.len
     }
 
@@ -217,12 +218,12 @@ impl DataSource {
     /// Absolute offset of this view's start within the original reader.
     /// Used for error messages and byte-range tracking.
     #[inline]
-    pub fn base_offset(&self) -> usize {
+    pub fn base_offset(&self) -> u64 {
         self.offset
     }
 
     /// Extract a sub-view at the given offset and length. No I/O occurs.
-    pub fn get_at(&self, offset: usize, len: usize) -> Result<Self> {
+    pub fn get_at(&self, offset: u64, len: u64) -> Result<Self> {
         let end = offset + len;
         if end > self.len {
             return Err(self.range_error(offset, end));
@@ -235,7 +236,7 @@ impl DataSource {
     }
 
     /// Extract a sub-view using a range. No I/O occurs.
-    pub fn get<R: std::ops::RangeBounds<usize>>(&self, range: R) -> Result<Self> {
+    pub fn get<R: std::ops::RangeBounds<u64>>(&self, range: R) -> Result<Self> {
         use std::ops::Bound::*;
 
         let from = match range.start_bound() {
@@ -264,14 +265,15 @@ impl DataSource {
     /// Read bytes at a relative offset within this view, without creating
     /// an intermediate `DataSource`. The returned `Cow` borrows directly from
     /// `&self`, so the borrow lifetime is tied to this `DataSource`.
-    pub fn read_bytes_at(&self, offset: usize, len: usize) -> Result<Cow<'_, [u8]>> {
-        let end = offset + len;
+    pub fn read_bytes_at(&self, offset: u64, len: usize) -> Result<Cow<'_, [u8]>> {
+        let end = offset + len as u64;
         if end > self.len {
             return Err(self.range_error(offset, end));
         }
         let abs_offset = self.offset + offset;
         if let Some(slice) = self.reader.as_slice() {
-            Ok(Cow::Borrowed(&slice[abs_offset..abs_offset + len]))
+            let abs = abs_offset as usize;
+            Ok(Cow::Borrowed(&slice[abs..abs + len]))
         } else {
             let mut buf = vec![0u8; len];
             self.reader.read_at(abs_offset, &mut buf)?;
@@ -285,9 +287,12 @@ impl DataSource {
     /// `Cow::Owned` for external readers.
     pub fn to_bytes(&self) -> Result<Cow<'_, [u8]>> {
         if let Some(slice) = self.reader.as_slice() {
-            Ok(Cow::Borrowed(&slice[self.offset..self.offset + self.len]))
+            let off = self.offset as usize;
+            let n = self.len as usize;
+            Ok(Cow::Borrowed(&slice[off..off + n]))
         } else {
-            let mut buf = vec![0u8; self.len];
+            let n = self.len as usize;
+            let mut buf = vec![0u8; n];
             self.reader.read_at(self.offset, &mut buf)?;
             Ok(Cow::Owned(buf))
         }
@@ -326,7 +331,7 @@ impl DataSource {
     }
 
     /// Advance the start of this view by `prefix_size` bytes.
-    pub fn remove_prefix(&mut self, prefix_size: usize) {
+    pub fn remove_prefix(&mut self, prefix_size: u64) {
         assert!(
             prefix_size <= self.len,
             "remove_prefix({}) exceeds size ({})",
@@ -337,7 +342,7 @@ impl DataSource {
         self.len -= prefix_size;
     }
 
-    fn range_error(&self, from: usize, to: usize) -> eyre::Report {
+    fn range_error(&self, from: u64, to: u64) -> eyre::Report {
         let abs_from = self.offset + from;
         let abs_to = self.offset + to;
         let abs_start = self.offset;

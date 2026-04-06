@@ -21,14 +21,14 @@ unsafe impl Sync for SyncHandle {}
 /// offset, reading only the requested bytes — no full-file load required.
 pub struct OpfsReader {
     handle: SyncHandle,
-    size: usize,
+    size: u64,
 }
 
 impl OpfsReader {
     pub fn new(handle: FileSystemSyncAccessHandle) -> Result<Self> {
         let size = handle
             .get_size()
-            .map_err(|e| eyre!("getSize failed: {e:?}"))? as usize;
+            .map_err(|e| eyre!("getSize failed: {e:?}"))? as u64;
         Ok(Self {
             handle: SyncHandle(handle),
             size,
@@ -37,8 +37,8 @@ impl OpfsReader {
 }
 
 impl DataReader for OpfsReader {
-    fn read_at(&self, offset: usize, buf: &mut [u8]) -> Result<()> {
-        let end = offset + buf.len();
+    fn read_at(&self, offset: u64, buf: &mut [u8]) -> Result<()> {
+        let end = offset + buf.len() as u64;
         if end > self.size {
             return Err(eyre!(
                 "OpfsReader: read out of bounds: {}..{} (size {})",
@@ -69,7 +69,7 @@ impl DataReader for OpfsReader {
         Ok(())
     }
 
-    fn size(&self) -> usize {
+    fn size(&self) -> u64 {
         self.size
     }
 }

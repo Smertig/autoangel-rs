@@ -56,7 +56,7 @@ pub struct DataEntryView {
 }
 
 pub enum DataFieldView {
-    ByteRange { range: Range<usize> },
+    ByteRange { range: Range<u64> },
     Bytes(Box<[u8]>),
 }
 
@@ -66,7 +66,7 @@ pub enum DataFieldView {
 pub enum LazyEntry {
     /// Entry has not been parsed yet; only its byte range is known.
     Deferred {
-        byte_range: Range<usize>,
+        byte_range: Range<u64>,
         parsed: OnceCell<DataEntryView>,
     },
     /// Entry created by mutation (append/setitem) or explicitly materialized.
@@ -95,7 +95,7 @@ impl LazyEntry {
                 Some(entry) => entry.write(out, content),
                 None => {
                     let bytes = content
-                        .read_bytes_at(byte_range.start, byte_range.end - byte_range.start)?;
+                        .read_bytes_at(byte_range.start, (byte_range.end - byte_range.start) as usize)?;
                     out.write_all(&bytes)?;
                     Ok(())
                 }
@@ -206,7 +206,7 @@ impl DataView {
         let mut data = content.clone();
 
         let version = Self::parse_header_impl(&mut data).wrap_err_with(|| {
-            let preview_len = content.size().min(32);
+            let preview_len = content.size().min(32) as usize;
             match content.read_bytes_at(0, preview_len) {
                 Ok(preview) => {
                     format!(
@@ -304,9 +304,9 @@ impl DataListView {
         let prefix_len = match list_config.offset {
             config::ListOffset::Auto => match list_config.dt {
                 // TODO: move to GameDialect
-                util::DataType(1) if version >= 191 => 8 + data.get(4..8)?.as_le::<u32>()? as usize,
-                util::DataType(21) => 8 + 4 + data.get(4..8)?.as_le::<u32>()? as usize,
-                util::DataType(101) => 8 + data.get(4..8)?.as_le::<u32>()? as usize,
+                util::DataType(1) if version >= 191 => 8 + data.get(4..8)?.as_le::<u32>()? as u64,
+                util::DataType(21) => 8 + 4 + data.get(4..8)?.as_le::<u32>()? as u64,
+                util::DataType(101) => 8 + data.get(4..8)?.as_le::<u32>()? as u64,
                 _ => {
                     bail!(
                         "Unexpected element list #{dt} '{name}' with AUTO offset",
@@ -315,7 +315,7 @@ impl DataListView {
                     );
                 }
             },
-            config::ListOffset::Fixed(offset) => offset,
+            config::ListOffset::Fixed(offset) => offset as u64,
         };
 
         let prefix = data.get(..prefix_len)?.to_bytes()?.into_owned();
@@ -323,7 +323,7 @@ impl DataListView {
 
         // TODO: move to GameDialect
         if version >= 191 {
-            let _list_index = data.get(..4)?.as_le::<u32>()? as usize;
+            let _list_index: u32 = data.get(..4)?.as_le()?;
             data.remove_prefix(4);
         }
 
@@ -350,13 +350,13 @@ impl DataListView {
             // Fast path: all fields have fixed sizes, compute offsets arithmetically
             let base_offset = data.base_offset();
             for _ in 0..len {
-                let entry_start = base_offset + entries.len() * fixed_size;
+                let entry_start = base_offset + entries.len() as u64 * fixed_size as u64;
                 entries.push(LazyEntry::Deferred {
-                    byte_range: entry_start..entry_start + fixed_size,
+                    byte_range: entry_start..entry_start + fixed_size as u64,
                     parsed: OnceCell::new(),
                 });
             }
-            data.remove_prefix(len * fixed_size);
+            data.remove_prefix(len as u64 * fixed_size as u64);
         } else {
             // Slow path: variable-size entries, walk each to find boundaries
             for i in 0..len {
@@ -373,10 +373,10 @@ impl DataListView {
                         )
                     })?;
                 entries.push(LazyEntry::Deferred {
-                    byte_range: entry_start..entry_start + entry_size,
+                    byte_range: entry_start..entry_start + entry_size as u64,
                     parsed: OnceCell::new(),
                 });
-                data.remove_prefix(entry_size);
+                data.remove_prefix(entry_size as u64);
             }
         }
 
@@ -579,9 +579,9 @@ impl DataFieldView {
 
     fn parse(data: &mut DataSource, field: &meta::MetaField) -> Result<Self> {
         let byte_size = field.meta_type.get_byte_size(data)?;
-        let field_data = data.get(..byte_size)?;
+        let field_data = data.get(..byte_size as u64)?;
 
-        data.remove_prefix(byte_size);
+        data.remove_prefix(byte_size as u64);
 
         Ok(DataFieldView::from_source(&field_data))
     }
@@ -589,7 +589,7 @@ impl DataFieldView {
     pub fn get_bytes<'a>(&'a self, content: &'a DataSource) -> Result<Cow<'a, [u8]>> {
         match self {
             DataFieldView::ByteRange { range } => {
-                content.read_bytes_at(range.start, range.end - range.start)
+                content.read_bytes_at(range.start, (range.end - range.start) as usize)
             }
             DataFieldView::Bytes(bytes) => Ok(Cow::Borrowed(bytes)),
         }

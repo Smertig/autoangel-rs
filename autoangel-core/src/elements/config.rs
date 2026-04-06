@@ -104,11 +104,11 @@ impl ListConfig {
     /// Computes the byte size of one entry starting at the current position
     /// in `data`, by walking all field sizes. Does not advance `data`.
     pub fn compute_entry_byte_size(&self, data: &DataSource) -> Result<usize> {
-        let mut total = 0;
+        let mut total: usize = 0;
         let mut view = data.clone();
         for field in self.fields.iter() {
             let size = field.meta_type.get_byte_size(&view)?;
-            view.remove_prefix(size);
+            view.remove_prefix(size as u64);
             total += size;
         }
         Ok(total)

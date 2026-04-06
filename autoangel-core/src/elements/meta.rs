@@ -195,15 +195,16 @@ impl<T> StringMetaType<T> {
         encoding: &'static str,
     ) -> Result<Box<[u8]>> {
         // at least sizeof(T) zero bytes should be placed at the end
-        if bytes.len() > self.get_byte_size() - std::mem::size_of::<T>() {
+        let byte_size = self.get_byte_size();
+        if bytes.len() > byte_size - std::mem::size_of::<T>() {
             return Err(eyre!(
                 "Error converting string '{string}' to {encoding}: result len ({}) > storage size ({})",
                 bytes.len(),
-                self.get_byte_size()
+                byte_size
             ));
         }
 
-        bytes.extend(std::iter::repeat_n(0, self.get_byte_size() - bytes.len()));
+        bytes.extend(std::iter::repeat_n(0, byte_size - bytes.len()));
 
         Ok(bytes.into_boxed_slice())
     }
@@ -273,7 +274,7 @@ impl ByteMetaType {
 
 impl ByteAutoMetaType {
     fn get_byte_size(&self, data: &DataSource) -> Result<usize> {
-        let mut pos = 0x84;
+        let mut pos: u64 = 0x84;
 
         let num_window: u32 = data.get(pos..pos + 4)?.as_le()?;
         pos += 4;
@@ -284,14 +285,14 @@ impl ByteAutoMetaType {
 
             let talk_text_len: u32 = data.get(pos..pos + 4)?.as_le()?;
             pos += 4;
-            pos += talk_text_len as usize * 2;
+            pos += talk_text_len as u64 * 2;
 
             let num_option: u32 = data.get(pos..pos + 4)?.as_le()?;
             pos += 4;
-            pos += num_option as usize * 0x88;
+            pos += num_option as u64 * 0x88;
         }
 
-        Ok(pos)
+        Ok(pos as usize)
     }
 
     pub fn value_from_bytes(&self, bytes: &[u8]) -> Vec<u8> {
