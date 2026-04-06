@@ -75,7 +75,7 @@ To test demo viewers against a local WASM build:
 
 ```bash
 cd autoangel-wasm && wasm-pack build --target web --out-name autoangel
-python -m http.server 9853    # from repo root
+uv run docs/serve.py          # no-cache dev server on port 9853
 ```
 
 Then open with `?local` to use the local build instead of CDN:
