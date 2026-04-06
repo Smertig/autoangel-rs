@@ -1,4 +1,4 @@
-import { classifyFiles, formatSize, getExtension, isLikelyText, detectEncoding, decodeText, IMAGE_EXTENSIONS, CANVAS_IMAGE_EXTENSIONS, ENCODINGS, HLJS_LANG, IMAGE_MIME, renderCanvasImage, escapeHtml } from '../pck-common.js';
+import { classifyFiles, formatSize, getExtension, isLikelyText, detectEncoding, decodeText, IMAGE_EXTENSIONS, CANVAS_IMAGE_EXTENSIONS, ENCODINGS, HLJS_LANG, IMAGE_MIME, renderCanvasImage, initImageDecoders, escapeHtml } from '../pck-common.js';
 import { resolveCDN } from '../cdn.js';
 
 const CDN = resolveCDN(import.meta.url);
@@ -126,11 +126,13 @@ if (opfsAvailable) {
   } catch { /* fall through to in-memory */ }
 }
 
+const wasmMod = await import(`${CDN}/autoangel.js`);
+await wasmMod.default(`${CDN}/autoangel_bg.wasm`);
+initImageDecoders(wasmMod.decodeDds, wasmMod.decodeTga);
+
 if (!useOpfs) {
-  const mod = await import(`${CDN}/autoangel.js`);
-  await mod.default(`${CDN}/autoangel_bg.wasm`);
-  PckPackage = mod.PckPackage;
-  PackageConfig = mod.PackageConfig;
+  PckPackage = wasmMod.PckPackage;
+  PackageConfig = wasmMod.PackageConfig;
 }
 
 dom.status.textContent = 'Ready. Drop packages to compare.';

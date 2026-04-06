@@ -3,7 +3,7 @@ import {
   IMAGE_MIME, HLJS_LANG, ENCODINGS,
   getExtension, formatSize, escapeHtml, classifyFiles,
   detectBOM, detectUTF16Pattern, detectEncoding, decodeText, isLikelyText,
-  renderCanvasImage,
+  renderCanvasImage, initImageDecoders,
 } from '../pck-common.js';
 import { resolveCDN } from '../cdn.js';
 
@@ -112,11 +112,14 @@ if (opfsAvailable) {
   } catch { /* fall through to in-memory */ }
 }
 
+// Always load WASM in main thread (needed for image decoding; also used for PCK parsing in non-OPFS mode)
+const wasmMod = await import(`${CDN}/autoangel.js`);
+await wasmMod.default(`${CDN}/autoangel_bg.wasm`);
+initImageDecoders(wasmMod.decodeDds, wasmMod.decodeTga);
+
 if (!useOpfs) {
-  const mod = await import(`${CDN}/autoangel.js`);
-  await mod.default(`${CDN}/autoangel_bg.wasm`);
-  PckPackage = mod.PckPackage;
-  PackageConfig = mod.PackageConfig;
+  PckPackage = wasmMod.PckPackage;
+  PackageConfig = wasmMod.PackageConfig;
 }
 
 dom.status.textContent = 'Ready. Open a .pck file.';
