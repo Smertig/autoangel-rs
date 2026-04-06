@@ -1,5 +1,3 @@
-import { renderDDSToCanvas } from './webgl-renderer.js';
-
 // --- Extension maps ---
 
 export const TEXT_EXTENSIONS = new Set([
@@ -75,14 +73,23 @@ export function escapeHtml(str) {
 // --- File classification ---
 
 export function classifyFiles(files) {
-  let pck = null, pkx = null;
+  let pck = null;
+  const pkxParts = []; // { file, order }
   for (const f of files) {
-    const ext = f.name.toLowerCase().split('.').pop();
-    if (ext === 'pck') pck = f;
-    else if (ext === 'pkx') pkx = f;
+    const name = f.name.toLowerCase();
+    if (name.endsWith('.pck')) {
+      pck = f;
+    } else if (name.endsWith('.pkx')) {
+      pkxParts.push({ file: f, order: 0 });
+    } else {
+      const m = name.match(/\.pkx(\d+)$/);
+      if (m) pkxParts.push({ file: f, order: parseInt(m[1], 10) });
+    }
   }
-  if (!pck && pkx) { pck = pkx; pkx = null; }
-  return { pck, pkx };
+  if (!pck && pkxParts.length > 0) { pck = pkxParts.shift().file; }
+  pkxParts.sort((a, b) => a.order - b.order);
+  const pkxFiles = pkxParts.map(p => p.file);
+  return { pck, pkxFiles };
 }
 
 // --- Encoding detection ---
@@ -146,117 +153,31 @@ export function isLikelyText(data, ext) {
   return true;
 }
 
-// --- TGA decoder ---
+// --- WASM image decoders (injected at init) ---
 
-export function decodeTGA(buf) {
-  const d = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
-  const idLen = d.getUint8(0);
-  const colorMapType = d.getUint8(1);
-  const imageType = d.getUint8(2);
-  const width = d.getUint16(12, true);
-  const height = d.getUint16(14, true);
-  const bpp = d.getUint8(16);
-  const descriptor = d.getUint8(17);
-  const topToBottom = (descriptor & 0x20) !== 0;
+let _decodeDds = null;
+let _decodeTga = null;
 
-  const colorMapStart = d.getUint16(3, true);
-  const colorMapLen = d.getUint16(5, true);
-  const colorMapBpp = d.getUint8(7);
-  const colorMapBytes = colorMapType ? colorMapLen * (colorMapBpp / 8) : 0;
-
-  let offset = 18 + idLen + colorMapBytes;
-  const pixels = new Uint8ClampedArray(width * height * 4);
-  const isRLE = imageType >= 9;
-  const baseType = isRLE ? imageType - 8 : imageType;
-
-  // Read color map if present
-  let colorMap = null;
-  if (colorMapType && colorMapLen > 0) {
-    const cmBytesPerEntry = colorMapBpp / 8;
-    const cmOffset = 18 + idLen;
-    colorMap = [];
-    for (let i = 0; i < colorMapLen; i++) {
-      const o = cmOffset + i * cmBytesPerEntry;
-      if (cmBytesPerEntry === 3) colorMap.push([buf[o + 2], buf[o + 1], buf[o], 255]);
-      else if (cmBytesPerEntry === 4) colorMap.push([buf[o + 2], buf[o + 1], buf[o], buf[o + 3]]);
-      else colorMap.push([buf[o], buf[o], buf[o], 255]);
-    }
-  }
-
-  // Reusable pixel buffer to avoid per-pixel array allocations
-  const px = [0, 0, 0, 255];
-
-  function readPixel() {
-    px[3] = 255;
-    if (baseType === 1 && colorMap) {
-      const idx = (bpp === 16) ? d.getUint16(offset, true) : buf[offset];
-      offset += bpp / 8;
-      const c = colorMap[idx - colorMapStart] || px;
-      px[0] = c[0]; px[1] = c[1]; px[2] = c[2]; px[3] = c[3];
-    } else if (baseType === 3) {
-      px[0] = px[1] = px[2] = buf[offset++];
-      if (bpp === 16) px[3] = buf[offset++];
-    } else {
-      px[2] = buf[offset++]; px[1] = buf[offset++]; px[0] = buf[offset++];
-      if (bpp === 32) px[3] = buf[offset++];
-    }
-  }
-
-  function writePixel(pixIdx) {
-    const row = topToBottom ? Math.floor(pixIdx / width) : height - 1 - Math.floor(pixIdx / width);
-    const j = ((row * width) + (pixIdx % width)) * 4;
-    pixels[j] = px[0]; pixels[j + 1] = px[1]; pixels[j + 2] = px[2]; pixels[j + 3] = px[3];
-  }
-
-  let pixIdx = 0;
-  const totalPixels = width * height;
-
-  if (isRLE) {
-    while (pixIdx < totalPixels) {
-      const packet = buf[offset++];
-      const count = (packet & 0x7F) + 1;
-      if (packet & 0x80) {
-        readPixel();
-        for (let i = 0; i < count && pixIdx < totalPixels; i++) writePixel(pixIdx++);
-      } else {
-        for (let i = 0; i < count && pixIdx < totalPixels; i++) {
-          readPixel();
-          writePixel(pixIdx++);
-        }
-      }
-    }
-  } else {
-    for (let i = 0; i < totalPixels; i++) {
-      readPixel();
-      writePixel(i);
-    }
-  }
-
-  return new ImageData(pixels, width, height);
+export function initImageDecoders(decodeDds, decodeTga) {
+  _decodeDds = decodeDds;
+  _decodeTga = decodeTga;
 }
 
-// --- DDS / TGA canvas rendering (WebGL2 compressed textures for DDS) ---
-
-export { renderDDSToCanvas };
-
 /**
- * Render a .dds or .tga buffer to a canvas.
- * DDS: uses WebGL2 compressed texture upload (GPU-native, no CPU decompression).
- * TGA: CPU-decoded to RGBA, then drawn to a 2D canvas.
+ * Decode a .dds or .tga buffer to a canvas via WASM.
  * @param {Uint8Array} data
  * @param {string} ext - '.dds' or '.tga'
  * @returns {{ canvas: HTMLCanvasElement, width: number, height: number }}
  */
 export function renderCanvasImage(data, ext) {
-  if (ext === '.dds') {
-    const result = renderDDSToCanvas(data);
-    if (result.error) throw new Error(`Cannot render DDS: ${result.error}`);
-    return result;
-  }
-  const imageData = decodeTGA(data);
+  const decoded = ext === '.dds' ? _decodeDds(data) : _decodeTga(data);
+  const { width, height } = decoded;
+  const rgba = decoded.intoRgba();
+
+  const imageData = new ImageData(new Uint8ClampedArray(rgba.buffer, rgba.byteOffset, rgba.byteLength), width, height);
   const canvas = document.createElement('canvas');
-  canvas.width = imageData.width;
-  canvas.height = imageData.height;
+  canvas.width = width;
+  canvas.height = height;
   canvas.getContext('2d').putImageData(imageData, 0, 0);
-  return { canvas, width: imageData.width, height: imageData.height };
+  return { canvas, width, height };
 }

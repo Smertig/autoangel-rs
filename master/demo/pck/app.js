@@ -3,7 +3,7 @@ import {
   IMAGE_MIME, HLJS_LANG, ENCODINGS,
   getExtension, formatSize, escapeHtml, classifyFiles,
   detectBOM, detectUTF16Pattern, detectEncoding, decodeText, isLikelyText,
-  renderCanvasImage,
+  renderCanvasImage, initImageDecoders,
 } from '../pck-common.js';
 import { resolveCDN } from '../cdn.js';
 
@@ -112,11 +112,14 @@ if (opfsAvailable) {
   } catch { /* fall through to in-memory */ }
 }
 
+// Always load WASM in main thread (needed for image decoding; also used for PCK parsing in non-OPFS mode)
+const wasmMod = await import(`${CDN}/autoangel.js`);
+await wasmMod.default(`${CDN}/autoangel_bg.wasm`);
+initImageDecoders(wasmMod.decodeDds, wasmMod.decodeTga);
+
 if (!useOpfs) {
-  const mod = await import(`${CDN}/autoangel.js`);
-  await mod.default(`${CDN}/autoangel_bg.wasm`);
-  PckPackage = mod.PckPackage;
-  PackageConfig = mod.PackageConfig;
+  PckPackage = wasmMod.PckPackage;
+  PackageConfig = wasmMod.PackageConfig;
 }
 
 dom.status.textContent = 'Ready. Open a .pck file.';
@@ -183,11 +186,11 @@ async function getFileData(path) {
 // --- File loading ---
 
 async function loadFiles(files) {
-  const { pck: pckFile, pkx: pkxFile } = classifyFiles(files);
+  const { pck: pckFile, pkxFiles } = classifyFiles(files);
   if (!pckFile) { showError('No .pck file found.'); return; }
 
-  const label = pkxFile ? `${pckFile.name} + ${pkxFile.name}` : pckFile.name;
-  const totalSize = pckFile.size + (pkxFile?.size || 0);
+  const label = pkxFiles.length > 0 ? `${pckFile.name} + ${pkxFiles.map(f => f.name).join(' + ')}` : pckFile.name;
+  const totalSize = pckFile.size + pkxFiles.reduce((s, f) => s + f.size, 0);
 
   let customKeys;
   try {
@@ -212,11 +215,11 @@ async function loadFiles(files) {
 
   try {
     if (useOpfs) {
-      const result = await workerCall({ type: 'parse', pckFile, pkxFile, keys: customKeys });
+      const result = await workerCall({ type: 'parse', pckFile, pkxFiles, keys: customKeys });
       fileList = result.fileList;
       version = result.version;
     } else {
-      if (pkxFile) {
+      if (pkxFiles.length > 0) {
         showError('.pkx files require OPFS support (use a modern browser with HTTPS)');
         return;
       }

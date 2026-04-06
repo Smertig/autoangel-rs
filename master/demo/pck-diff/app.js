@@ -1,4 +1,4 @@
-import { classifyFiles, formatSize, getExtension, isLikelyText, detectEncoding, decodeText, IMAGE_EXTENSIONS, CANVAS_IMAGE_EXTENSIONS, ENCODINGS, HLJS_LANG, IMAGE_MIME, renderCanvasImage, escapeHtml } from '../pck-common.js';
+import { classifyFiles, formatSize, getExtension, isLikelyText, detectEncoding, decodeText, IMAGE_EXTENSIONS, CANVAS_IMAGE_EXTENSIONS, ENCODINGS, HLJS_LANG, IMAGE_MIME, renderCanvasImage, initImageDecoders, escapeHtml } from '../pck-common.js';
 import { resolveCDN } from '../cdn.js';
 
 const CDN = resolveCDN(import.meta.url);
@@ -126,11 +126,13 @@ if (opfsAvailable) {
   } catch { /* fall through to in-memory */ }
 }
 
+const wasmMod = await import(`${CDN}/autoangel.js`);
+await wasmMod.default(`${CDN}/autoangel_bg.wasm`);
+initImageDecoders(wasmMod.decodeDds, wasmMod.decodeTga);
+
 if (!useOpfs) {
-  const mod = await import(`${CDN}/autoangel.js`);
-  await mod.default(`${CDN}/autoangel_bg.wasm`);
-  PckPackage = mod.PckPackage;
-  PackageConfig = mod.PackageConfig;
+  PckPackage = wasmMod.PckPackage;
+  PackageConfig = wasmMod.PackageConfig;
 }
 
 dom.status.textContent = 'Ready. Drop packages to compare.';
@@ -198,11 +200,11 @@ for (const side of ['left', 'right']) {
 // --- File loading ---
 
 async function loadPackage(side, files) {
-  const { pck: pckFile, pkx: pkxFile } = classifyFiles(files);
+  const { pck: pckFile, pkxFiles } = classifyFiles(files);
   if (!pckFile) { showError('No .pck file found.'); return; }
 
-  const label = pkxFile ? `${pckFile.name} + ${pkxFile.name}` : pckFile.name;
-  const totalSize = pckFile.size + (pkxFile?.size || 0);
+  const label = pkxFiles.length > 0 ? `${pckFile.name} + ${pkxFiles.map(f => f.name).join(' + ')}` : pckFile.name;
+  const totalSize = pckFile.size + pkxFiles.reduce((s, f) => s + f.size, 0);
 
   let customKeys;
   try {
@@ -225,9 +227,9 @@ async function loadPackage(side, files) {
 
   try {
     if (useOpfs) {
-      await workerCall(side, { type: 'parse', pckFile, pkxFile, keys: customKeys });
+      await workerCall(side, { type: 'parse', pckFile, pkxFiles, keys: customKeys });
     } else {
-      if (pkxFile) {
+      if (pkxFiles.length > 0) {
         showError('.pkx files require OPFS support (use a modern browser with HTTPS)');
         return;
       }
