@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PCK Diff</title>
+  <link rel="stylesheet" href="../nav.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+</head>
+<body>
+  <nav class="demo-nav">
+    <a href="../" class="demo-nav-home">autoangel</a>
+    <div class="demo-nav-links">
+      <a href="../elements/" class="demo-nav-link">Elements</a>
+      <a href="../pck/" class="demo-nav-link">PCK</a>
+      <a href="../pck-diff/" class="demo-nav-link active">Diff</a>
+    </div>
+  </nav>
+  <script>if(location.search)document.querySelectorAll('.demo-nav a').forEach(a=>{if(!a.href.includes('?'))a.href+=location.search})</script>
+  <div id="app">
+    <header id="chooser">
+      <div class="chooser-title">
+        <h1>PCK Diff <span class="chooser-glyph">&larr;&rarr;</span></h1>
+        <p class="chooser-subtitle">Compare two package archives</p>
+      </div>
+
+      <div class="chooser-panels">
+        <div id="left-panel" class="chooser-panel panel-left">
+          <div class="panel-label">Left (old)</div>
+          <div class="drop-zone" data-side="left">
+            <span class="drop-label">Drop <code>.pck</code> (and optional <code>.pkx</code>) here, or</span>
+            <input type="file" class="picker" data-side="left" accept=".pck,.pkx" multiple>
+          </div>
+          <div class="panel-controls">
+            <button class="keys-toggle" data-side="left" title="Custom encryption keys">
+              <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16.5 10.5l-3-3m0 0l-3 3m3-3v8M7 5.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z"/>
+              </svg>
+              <span>Keys</span>
+            </button>
+            <div class="status-line" data-side="left"></div>
+          </div>
+          <div class="keys-panel hidden" data-side="left">
+            <div class="keys-body">
+              <div class="keys-fields">
+                <label class="key-field"><span>Key 1</span><input type="text" data-side="left" data-key="key1" value="0xA8937462" spellcheck="false"></label>
+                <label class="key-field"><span>Key 2</span><input type="text" data-side="left" data-key="key2" value="0x59374231" spellcheck="false"></label>
+                <label class="key-field"><span>Guard 1</span><input type="text" data-side="left" data-key="guard1" value="0xFDFDFEEE" spellcheck="false"></label>
+                <label class="key-field"><span>Guard 2</span><input type="text" data-side="left" data-key="guard2" value="0xF00DBEEF" spellcheck="false"></label>
+              </div>
+              <div class="keys-actions">
+                <div class="keys-info" data-side="left">Default keys. Change values and re-open a file to use custom keys.</div>
+                <button class="keys-reset btn" data-side="left" disabled>Reset to defaults</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="right-panel" class="chooser-panel panel-right">
+          <div class="panel-label">Right (new)</div>
+          <div class="drop-zone" data-side="right">
+            <span class="drop-label">Drop <code>.pck</code> (and optional <code>.pkx</code>) here, or</span>
+            <input type="file" class="picker" data-side="right" accept=".pck,.pkx" multiple>
+          </div>
+          <div class="panel-controls">
+            <button class="keys-toggle" data-side="right" title="Custom encryption keys">
+              <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16.5 10.5l-3-3m0 0l-3 3m3-3v8M7 5.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z"/>
+              </svg>
+              <span>Keys</span>
+            </button>
+            <div class="status-line" data-side="right"></div>
+          </div>
+          <div class="keys-panel hidden" data-side="right">
+            <div class="keys-body">
+              <div class="keys-fields">
+                <label class="key-field"><span>Key 1</span><input type="text" data-side="right" data-key="key1" value="0xA8937462" spellcheck="false"></label>
+                <label class="key-field"><span>Key 2</span><input type="text" data-side="right" data-key="key2" value="0x59374231" spellcheck="false"></label>
+                <label class="key-field"><span>Guard 1</span><input type="text" data-side="right" data-key="guard1" value="0xFDFDFEEE" spellcheck="false"></label>
+                <label class="key-field"><span>Guard 2</span><input type="text" data-side="right" data-key="guard2" value="0xF00DBEEF" spellcheck="false"></label>
+              </div>
+              <div class="keys-actions">
+                <div class="keys-info" data-side="right">Default keys. Change values and re-open a file to use custom keys.</div>
+                <button class="keys-reset btn" data-side="right" disabled>Reset to defaults</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button id="compare-btn" class="btn btn-compare" disabled>Compare</button>
+    </header>
+
+    <div id="error-banner" class="hidden"></div>
+
+    <div id="progress" class="hidden">
+      <div class="progress-title">Comparing packages...</div>
+      <div class="progress-item" id="progress-left">
+        <span class="progress-label">Computing hashes for left package...</span>
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+      </div>
+      <div class="progress-item" id="progress-right">
+        <span class="progress-label">Computing hashes for right package...</span>
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+      </div>
+    </div>
+
+    <main id="results" class="hidden">
+      <div id="summary-bar">
+        <div class="summary-names">
+          <span id="summary-left-name"></span>
+          <span class="summary-arrow">&#8596;</span>
+          <span id="summary-right-name"></span>
+        </div>
+        <div class="summary-stats" id="summary-stats">
+          <!-- stat badges rendered by JS -->
+        </div>
+        <div class="summary-actions">
+          <button id="swap-btn" class="btn btn-small" title="Swap left and right">&#8644; Swap</button>
+          <button id="new-compare-btn" class="btn btn-small">New Compare</button>
+        </div>
+      </div>
+      <div class="results-body">
+        <aside id="sidebar">
+          <div class="sidebar-controls">
+            <input type="text" id="filter-input" class="filter-input" placeholder="Filter files...">
+            <label class="show-unchanged-toggle">
+              <input type="checkbox" id="show-unchanged">
+              <span id="show-unchanged-label">Show unchanged</span>
+            </label>
+          </div>
+          <div id="tree"></div>
+        </aside>
+        <div id="divider"></div>
+        <section id="content">
+          <div id="content-header"></div>
+          <div id="preview">
+            <div class="placeholder">Select a file to view its diff</div>
+          </div>
+          <div id="actions"></div>
+        </section>
+      </div>
+    </main>
+
+    <footer id="statusbar" class="hidden">
+      <span id="status">Ready. Drop packages to compare.</span>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/gh/photopea/UTEX.js@47d6532/UTEX.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/photopea/UTEX.js@47d6532/UTEX.DDS.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/languages/ini.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/languages/xml.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/languages/json.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/languages/lua.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/diff@7/dist/diff.min.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
