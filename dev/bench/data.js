@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1775468154682,
+  "lastUpdate": 1775468155239,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -1123,6 +1123,108 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Smertig/autoangel-rs/commit/fb6082741808dce069c8f839d216c6e543813e38"
         },
         "date": 1775415684937,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 71607,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 32,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 204,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 501248,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 4,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [just parsed]/allocated",
+            "value": 71607,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [just parsed]/retained",
+            "value": 58279,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [parsed + iterated]/allocated",
+            "value": 1166599,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [parsed + iterated]/retained",
+            "value": 774647,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [parsed + 3 searches]/allocated",
+            "value": 76343,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [parsed + 3 searches]/retained",
+            "value": 62103,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 864922,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 10776,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "c8893ae848c17cb33815d96a2b8ef74a9a0b4878",
+          "message": "docs: add no-cache dev server for local WASM testing\n\nReplaces `python -m http.server` which uses heuristic caching,\ncausing stale WASM files to be served after rebuilds.\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+          "timestamp": "2026-04-06T09:24:50+03:00",
+          "tree_id": "332065e5e61b10c72f90717a7164867579bc54ad",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/c8893ae848c17cb33815d96a2b8ef74a9a0b4878"
+        },
+        "date": 1775468154993,
         "tool": "cargo",
         "benches": [
           {
