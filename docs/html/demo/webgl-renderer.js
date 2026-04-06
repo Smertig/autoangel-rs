@@ -277,9 +277,16 @@ export function renderDDSToCanvas(buf) {
     if (!renderer) return null;
 
     renderer.uploadCompressed(dds);
+
+    // Read back to a 2D canvas so pixels survive WebGL context disposal
+    const canvas2d = document.createElement('canvas');
+    canvas2d.width = width;
+    canvas2d.height = height;
+    canvas2d.getContext('2d').drawImage(canvas, 0, 0);
+
     renderer.dispose();
 
-    return { canvas, width, height };
+    return { canvas: canvas2d, width, height };
   }
 
   // Uncompressed formats — swizzle to RGBA on CPU, draw with 2D canvas
