@@ -16,7 +16,6 @@ let fileTree = null;
 let selectedPath = null;
 let selectedTreeItem = null;
 let currentEncoding = 'auto';
-let useOpfs = false;
 let filterText = '';
 let filterTextLower = '';
 let filterDebounceTimer = 0;
@@ -68,7 +67,7 @@ function hideError() {
   dom.errorBanner.innerHTML = '';
 }
 
-// --- OPFS Worker ---
+// --- Worker ---
 
 let worker = null;
 let workerMsgId = 0;
@@ -105,23 +104,20 @@ function initWorker() {
 let PckPackage = null;
 let PackageConfig = null;
 
-const opfsAvailable = typeof navigator !== 'undefined'
-  && typeof navigator.storage?.getDirectory === 'function'
-  && typeof Worker !== 'undefined';
+const workerAvailable = typeof Worker !== 'undefined';
 
-if (opfsAvailable) {
+if (workerAvailable) {
   try {
     initWorker();
-    useOpfs = true;
   } catch { /* fall through to in-memory */ }
 }
 
-// Always load WASM in main thread (needed for image decoding; also used for PCK parsing in non-OPFS mode)
+// Always load WASM in main thread (needed for image decoding; also used for PCK parsing when no worker)
 const wasmMod = await import(`${CDN}/autoangel.js`);
 await wasmMod.default(`${CDN}/autoangel_bg.wasm`);
 initImageDecoders(wasmMod.decodeDds, wasmMod.decodeTga);
 
-if (!useOpfs) {
+if (!worker) {
   PckPackage = wasmMod.PckPackage;
   PackageConfig = wasmMod.PackageConfig;
 }
@@ -179,11 +175,11 @@ for (const k of ['key1', 'key2', 'guard1', 'guard2']) {
 // --- Unified file data access (works in both modes) ---
 
 async function getFileData(path) {
-  if (useOpfs) {
+  if (worker) {
     const result = await workerCall({ type: 'getFile', path });
     return new Uint8Array(result.data, result.byteOffset, result.byteLength);
   } else {
-    return pkg.getFile(path);
+    return await pkg.getFile(path);
   }
 }
 
@@ -217,29 +213,27 @@ async function loadFiles(files) {
 
   let fileList, version;
 
-  const onWorkerProgress = ({ phase, written, totalBytes, index, total }) => {
-    if (phase === 'write') {
-      const pct = Math.round((written / totalBytes) * 100);
-      dom.status.textContent = `Loading ${label}: ${pct}%`;
-    } else if (phase === 'parse') {
+  const onWorkerProgress = ({ phase, index, total }) => {
+    if (phase === 'parse') {
       const pct = Math.round(((index + 1) / total) * 100);
       dom.status.textContent = `Parsing ${label}: ${pct}%`;
     }
   };
 
   try {
-    if (useOpfs) {
-      const result = await workerCall({ type: 'parse', pckFile, pkxFiles, keys: customKeys }, undefined, onWorkerProgress);
+    if (worker) {
+      const result = await workerCall({ type: 'parseFile', pckFile, pkxFiles, keys: customKeys }, undefined, onWorkerProgress);
       fileList = result.fileList;
       version = result.version;
     } else {
+      // In-memory fallback (no worker available)
       if (pkxFiles.length > 0) {
-        showError('.pkx files require OPFS support (use a modern browser with HTTPS)');
+        showError('.pkx files require a modern browser with Web Worker support');
         return;
       }
       const pckBytes = new Uint8Array(await pckFile.arrayBuffer());
       const config = customKeys ? PackageConfig.withKeys(customKeys.key1, customKeys.key2, customKeys.guard1, customKeys.guard2) : undefined;
-      pkg = PckPackage.parse(pckBytes, config, { onProgress: (index, total) => onWorkerProgress({ phase: 'parse', index, total }) });
+      pkg = await PckPackage.parse(pckBytes, config, { onProgress: (index, total) => onWorkerProgress({ phase: 'parse', index, total }) });
       fileList = pkg.fileList();
       version = pkg.version;
     }

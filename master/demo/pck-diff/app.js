@@ -10,7 +10,6 @@ const sides = {
   right: { worker: null, pkg: null, loaded: false, fileName: null, msgId: 0, pending: new Map() },
 };
 
-let useOpfs = false;
 let PckPackage = null;
 let PackageConfig = null;
 let diffResult = null; // { added, deleted, modified, unchanged }
@@ -81,7 +80,7 @@ function hideError() {
   dom.errorBanner.innerHTML = '';
 }
 
-// --- OPFS Worker (per side) ---
+// --- Worker (per side) ---
 
 function initWorker(side) {
   const workerUrl = new URL('../pck/pck-worker.js', import.meta.url);
@@ -114,15 +113,12 @@ function workerCall(side, msg, transfer, onProgress) {
 
 // --- Init WASM ---
 
-const opfsAvailable = typeof navigator !== 'undefined'
-  && typeof navigator.storage?.getDirectory === 'function'
-  && typeof Worker !== 'undefined';
+const workerAvailable = typeof Worker !== 'undefined';
 
-if (opfsAvailable) {
+if (workerAvailable) {
   try {
     initWorker('left');
     initWorker('right');
-    useOpfs = true;
   } catch { /* fall through to in-memory */ }
 }
 
@@ -130,7 +126,7 @@ const wasmMod = await import(`${CDN}/autoangel.js`);
 await wasmMod.default(`${CDN}/autoangel_bg.wasm`);
 initImageDecoders(wasmMod.decodeDds, wasmMod.decodeTga);
 
-if (!useOpfs) {
+if (!sides.left.worker) {
   PckPackage = wasmMod.PckPackage;
   PackageConfig = wasmMod.PackageConfig;
 }
@@ -220,32 +216,30 @@ async function loadPackage(side, files) {
   sd.statusLine.classList.remove('loaded');
 
   // Free previous package for in-memory mode
-  if (!useOpfs && sides[side].pkg) {
+  if (!sides[side].worker && sides[side].pkg) {
     sides[side].pkg.free();
     sides[side].pkg = null;
   }
 
-  const onWorkerProgress = ({ phase, written, totalBytes, index, total }) => {
-    if (phase === 'write') {
-      const pct = Math.round((written / totalBytes) * 100);
-      sd.statusLine.textContent = `Loading ${label}: ${pct}%`;
-    } else if (phase === 'parse') {
+  const onWorkerProgress = ({ phase, index, total }) => {
+    if (phase === 'parse') {
       const pct = Math.round(((index + 1) / total) * 100);
       sd.statusLine.textContent = `Parsing ${label}: ${pct}%`;
     }
   };
 
   try {
-    if (useOpfs) {
-      await workerCall(side, { type: 'parse', pckFile, pkxFiles, keys: customKeys }, undefined, onWorkerProgress);
+    if (sides[side].worker) {
+      await workerCall(side, { type: 'parseFile', pckFile, pkxFiles, keys: customKeys }, undefined, onWorkerProgress);
     } else {
+      // In-memory fallback (no worker available)
       if (pkxFiles.length > 0) {
-        showError('.pkx files require OPFS support (use a modern browser with HTTPS)');
+        showError('.pkx files require a modern browser with Web Worker support');
         return;
       }
       const pckBytes = new Uint8Array(await pckFile.arrayBuffer());
       const config = customKeys ? PackageConfig.withKeys(customKeys.key1, customKeys.key2, customKeys.guard1, customKeys.guard2) : undefined;
-      sides[side].pkg = PckPackage.parse(pckBytes, config, { onProgress: (index, total) => onWorkerProgress({ phase: 'parse', index, total }) });
+      sides[side].pkg = await PckPackage.parse(pckBytes, config, { onProgress: (index, total) => onWorkerProgress({ phase: 'parse', index, total }) });
     }
   } catch (e) {
     showError(e.message || String(e));
@@ -293,11 +287,11 @@ async function getFileEntries(side) {
   };
 
   let entries;
-  if (useOpfs) {
+  if (sides[side].worker) {
     const result = await workerCall(side, { type: 'fileEntries' }, undefined, updateProgress);
     entries = result.entries;
   } else {
-    const wasmEntries = sides[side].pkg.fileEntries({
+    const wasmEntries = await sides[side].pkg.fileEntries({
       onProgress: (_path, index, total) => updateProgress({ index, total }),
     });
     entries = wasmEntries.map(e => {
@@ -660,11 +654,11 @@ function renderDiffTree(node, container, depth) {
 // --- File data fetching ---
 
 async function getFileData(side, path) {
-  if (useOpfs) {
+  if (sides[side].worker) {
     const result = await workerCall(side, { type: 'getFile', path });
     return new Uint8Array(result.data, result.byteOffset, result.byteLength);
   } else {
-    return sides[side].pkg.getFile(path);
+    return await sides[side].pkg.getFile(path);
   }
 }
 
