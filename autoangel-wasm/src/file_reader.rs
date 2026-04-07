@@ -44,8 +44,8 @@ impl BufferedFileReader {
     }
 
     async fn fetch_chunk(&self, offset: u64, min_len: usize) -> Result<()> {
-        let chunk_size = self.chunk_size.max(min_len);
-        let end = ((offset as usize) + chunk_size).min(self.size as usize);
+        let chunk_size = self.chunk_size.max(min_len) as u64;
+        let end = (offset + chunk_size).min(self.size);
         let start = offset as f64;
 
         // File inherits from Blob, use Blob::slice
