@@ -21,7 +21,11 @@ pub fn elements_find_entry(c: &mut Criterion) {
 
     c.bench_function("Data::find_entry", |b| {
         b.iter(|| {
-            let entry = black_box(elements.find_entry(TEST_ENTRY_ID, None, true));
+            let entry = black_box(pollster::block_on(elements.find_entry(
+                TEST_ENTRY_ID,
+                None,
+                true,
+            )));
             assert!(entry.is_some());
         })
     });
@@ -34,7 +38,7 @@ pub fn elements_access_fields(c: &mut Criterion) {
         b.iter(|| {
             let fields = entry.fields.read();
             for field in fields.iter() {
-                black_box(field.get_bytes(&entry.content).unwrap());
+                black_box(pollster::block_on(field.get_bytes(&entry.content)).unwrap());
             }
         })
     });
@@ -45,7 +49,7 @@ pub fn elements_deep_clone(c: &mut Criterion) {
 
     c.bench_function("DataEntry::deep_clone", |b| {
         b.iter(|| {
-            let cloned_entry = black_box(entry.deep_clone().unwrap());
+            let cloned_entry = black_box(pollster::block_on(entry.deep_clone()).unwrap());
             assert_eq!(cloned_entry.fields.read().len(), entry.fields.read().len());
         })
     });
@@ -57,9 +61,7 @@ pub fn elements_write(c: &mut Criterion) {
     c.bench_function("Data::write", |b| {
         b.iter(|| {
             let mut buffer = Cursor::new(Vec::new());
-            elements
-                .write(&mut std::io::BufWriter::new(&mut buffer))
-                .unwrap();
+            pollster::block_on(elements.write(&mut std::io::BufWriter::new(&mut buffer))).unwrap();
             black_box(buffer.into_inner());
         })
     });
@@ -73,7 +75,9 @@ pub fn elements_iterate_lists(c: &mut Criterion) {
             for list in elements.lists.iter() {
                 let entries = list.entries.read();
                 for lazy_entry in entries.iter() {
-                    let entry = lazy_entry.resolve(&elements.content, &list.config).unwrap();
+                    let entry =
+                        pollster::block_on(lazy_entry.resolve(&elements.content, &list.config))
+                            .unwrap();
                     black_box(entry);
                 }
             }
@@ -83,15 +87,14 @@ pub fn elements_iterate_lists(c: &mut Criterion) {
 
 pub fn elements_modify_field(c: &mut Criterion) {
     let (_, entry) = find_test_entry();
-    let entry_clone = entry.deep_clone().unwrap();
+    let entry_clone = pollster::block_on(entry.deep_clone()).unwrap();
 
     c.bench_function("DataEntry::modify_field", |b| {
         b.iter(|| {
             let mut fields = entry_clone.fields.write();
 
             if !fields.is_empty() {
-                let first_field = fields[0]
-                    .get_bytes(&entry_clone.content)
+                let first_field = pollster::block_on(fields[0].get_bytes(&entry_clone.content))
                     .unwrap()
                     .into_owned();
                 fields[0] = DataFieldView::Bytes(first_field.into());

@@ -1,6 +1,6 @@
 use super::{meta::*, util};
 use crate::elements::game::GameDialectRef;
-use crate::util::data_source::DataSource;
+use crate::util::data_source::{DataReader, DataSource};
 use crate::util::line_reader::{LineReader, make_line_reader};
 use eyre::{Result, WrapErr, bail, eyre};
 use itertools::Itertools;
@@ -103,11 +103,14 @@ impl ListConfig {
 
     /// Computes the byte size of one entry starting at the current position
     /// in `data`, by walking all field sizes. Does not advance `data`.
-    pub fn compute_entry_byte_size(&self, data: &DataSource) -> Result<usize> {
+    pub async fn compute_entry_byte_size<R: DataReader>(
+        &self,
+        data: &DataSource<R>,
+    ) -> Result<usize> {
         let mut total: usize = 0;
-        let mut view = data.clone();
+        let mut view = data.get(..)?;
         for field in self.fields.iter() {
-            let size = field.meta_type.get_byte_size(&view)?;
+            let size = field.meta_type.get_byte_size(&view).await?;
             view.remove_prefix(size as u64);
             total += size;
         }

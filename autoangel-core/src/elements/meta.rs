@@ -1,6 +1,6 @@
 use super::value::ReadValue;
 use crate::util::DropLeadingZeros;
-use crate::util::data_source::DataSource;
+use crate::util::data_source::{DataReader, DataSource};
 use encoding::Encoding;
 use eyre::{Result, WrapErr, bail, eyre};
 use std::borrow::Cow;
@@ -25,11 +25,11 @@ impl std::fmt::Debug for MetaType {
 }
 
 impl MetaType {
-    pub fn get_byte_size(&self, data: &DataSource) -> Result<usize> {
+    pub async fn get_byte_size<R: DataReader>(&self, data: &DataSource<R>) -> Result<usize> {
         match self.fixed_byte_size() {
             Some(size) => Ok(size),
             None => match self {
-                MetaType::ByteAuto(meta) => Ok(meta.get_byte_size(data)?),
+                MetaType::ByteAuto(meta) => Ok(meta.get_byte_size(data).await?),
                 _ => unreachable!(),
             },
         }
@@ -273,21 +273,21 @@ impl ByteMetaType {
 }
 
 impl ByteAutoMetaType {
-    fn get_byte_size(&self, data: &DataSource) -> Result<usize> {
+    async fn get_byte_size<R: DataReader>(&self, data: &DataSource<R>) -> Result<usize> {
         let mut pos: u64 = 0x84;
 
-        let num_window: u32 = data.get(pos..pos + 4)?.as_le()?;
+        let num_window: u32 = data.get(pos..pos + 4)?.as_le().await?;
         pos += 4;
 
         for _ in 0..num_window {
             pos += 4;
             pos += 4;
 
-            let talk_text_len: u32 = data.get(pos..pos + 4)?.as_le()?;
+            let talk_text_len: u32 = data.get(pos..pos + 4)?.as_le().await?;
             pos += 4;
             pos += talk_text_len as u64 * 2;
 
-            let num_option: u32 = data.get(pos..pos + 4)?.as_le()?;
+            let num_option: u32 = data.get(pos..pos + 4)?.as_le().await?;
             pos += 4;
             pos += num_option as u64 * 0x88;
         }

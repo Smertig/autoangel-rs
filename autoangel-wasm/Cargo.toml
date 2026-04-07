@@ -13,6 +13,8 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 autoangel-core = { path = "../autoangel-core", default-features = false }
 wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+pollster = "0.4"
 js-sys = "0.3"
 eyre = "0.6"
 dds = { version = "0.2", default-features = false }
@@ -21,6 +23,8 @@ image = { version = "0.25", default-features = false, features = ["tga"] }
 [dependencies.web-sys]
 version = "0.3"
 features = [
+    "File",
+    "Blob",
     "FileSystemSyncAccessHandle",
     "FileSystemReadWriteOptions",
 ]

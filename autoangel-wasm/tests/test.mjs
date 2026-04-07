@@ -55,38 +55,40 @@ describe("ElementsConfig", () => {
 // --- ElementsData ---
 
 describe("ElementsData", () => {
-  it("parses with explicit config", () => {
+  it("parses with explicit config", async () => {
     const config = ElementsConfig.parse(CONFIG_TEXT, "pw");
-    const data = ElementsData.parse(ELEMENTS_V7, config);
+    const data = await ElementsData.parse(ELEMENTS_V7, config);
     assert.equal(data.version, 7);
     assert.equal(data.listCount, 119);
     data.free();
   });
 
-  it("parses with auto config", () => {
-    const data = ElementsData.parse(ELEMENTS_V7);
+  it("parses with auto config", async () => {
+    const data = await ElementsData.parse(ELEMENTS_V7);
     assert.equal(data.version, 7);
     assert.equal(data.listCount, 119);
     data.free();
   });
 
-  it("rejects empty bytes", () => {
-    assert.throws(() => ElementsData.parse(new Uint8Array([])));
+  it("rejects empty bytes", async () => {
+    await assert.rejects(() => ElementsData.parse(new Uint8Array([])));
   });
 
-  it("rejects truncated data", () => {
-    assert.throws(() => ElementsData.parse(new Uint8Array([0x07, 0x00])));
+  it("rejects truncated data", async () => {
+    await assert.rejects(() =>
+      ElementsData.parse(new Uint8Array([0x07, 0x00]))
+    );
   });
 
-  it("rejects invalid header", () => {
-    assert.throws(() =>
+  it("rejects invalid header", async () => {
+    await assert.rejects(() =>
       ElementsData.parse(new Uint8Array([0x07, 0x00, 0x00, 0x00]))
     );
   });
 
-  it("rejects data with no bundled config", () => {
+  it("rejects data with no bundled config", async () => {
     // version=9999 (0x270F), unknown=0x3000
-    assert.throws(() =>
+    await assert.rejects(() =>
       ElementsData.parse(new Uint8Array([0x0f, 0x27, 0x00, 0x30]))
     );
   });
@@ -95,8 +97,8 @@ describe("ElementsData", () => {
 // --- List access ---
 
 describe("ElementsDataList", () => {
-  it("accesses list by index", () => {
-    const data = ElementsData.parse(ELEMENTS_V7);
+  it("accesses list by index", async () => {
+    const data = await ElementsData.parse(ELEMENTS_V7);
     const list = data.getList(1);
     assert.equal(list.caption, "WEAPON_MAJOR_TYPE");
     assert.equal(list.entryCount, 7);
@@ -104,16 +106,16 @@ describe("ElementsDataList", () => {
     data.free();
   });
 
-  it("returns field names", () => {
-    const data = ElementsData.parse(ELEMENTS_V7);
+  it("returns field names", async () => {
+    const data = await ElementsData.parse(ELEMENTS_V7);
     const list = data.getList(1);
     assert.deepEqual(list.fieldNames(), ["ID", "Name"]);
     list.free();
     data.free();
   });
 
-  it("rejects out of bounds index", () => {
-    const data = ElementsData.parse(ELEMENTS_V7);
+  it("rejects out of bounds index", async () => {
+    const data = await ElementsData.parse(ELEMENTS_V7);
     assert.throws(() => data.getList(99999));
     data.free();
   });
@@ -122,39 +124,40 @@ describe("ElementsDataList", () => {
 // --- Entry access ---
 
 describe("ElementsDataEntry", () => {
-  it("reads field values", () => {
-    const data = ElementsData.parse(ELEMENTS_V7);
+  it("reads field values", async () => {
+    const data = await ElementsData.parse(ELEMENTS_V7);
     const list = data.getList(1);
-    const entry = list.getEntry(1);
-    assert.equal(entry.getField("ID"), 5);
+    const entry = await list.getEntry(1);
+    const id = await entry.getField("ID");
+    assert.equal(id, 5);
     assert.deepEqual(entry.keys(), ["ID", "Name"]);
     entry.free();
     list.free();
     data.free();
   });
 
-  it("rejects unknown field name", () => {
-    const data = ElementsData.parse(ELEMENTS_V7);
+  it("rejects unknown field name", async () => {
+    const data = await ElementsData.parse(ELEMENTS_V7);
     const list = data.getList(1);
-    const entry = list.getEntry(0);
-    assert.throws(() => entry.getField("nonexistent_field"));
+    const entry = await list.getEntry(0);
+    await assert.rejects(() => entry.getField("nonexistent_field"));
     entry.free();
     list.free();
     data.free();
   });
 
-  it("rejects out of bounds entry", () => {
-    const data = ElementsData.parse(ELEMENTS_V7);
+  it("rejects out of bounds entry", async () => {
+    const data = await ElementsData.parse(ELEMENTS_V7);
     const list = data.getList(1);
-    assert.throws(() => list.getEntry(99999));
+    await assert.rejects(() => list.getEntry(99999));
     list.free();
     data.free();
   });
 
-  it("converts to string", () => {
-    const data = ElementsData.parse(ELEMENTS_V7);
+  it("converts to string", async () => {
+    const data = await ElementsData.parse(ELEMENTS_V7);
     const list = data.getList(1);
-    const entry = list.getEntry(0);
+    const entry = await list.getEntry(0);
     const s = entry.toString();
     assert.ok(s.length > 0);
     entry.free();
@@ -166,18 +169,19 @@ describe("ElementsDataEntry", () => {
 // --- Find entry ---
 
 describe("findEntry", () => {
-  it("finds entry by ID", () => {
-    const data = ElementsData.parse(ELEMENTS_V7);
-    const entry = data.findEntry(10);
+  it("finds entry by ID", async () => {
+    const data = await ElementsData.parse(ELEMENTS_V7);
+    const entry = await data.findEntry(10);
     assert.notEqual(entry, undefined);
-    assert.equal(entry.getField("ID"), 10);
+    const id = await entry.getField("ID");
+    assert.equal(id, 10);
     entry.free();
     data.free();
   });
 
-  it("returns undefined for missing ID", () => {
-    const data = ElementsData.parse(ELEMENTS_V7);
-    assert.equal(data.findEntry(999999), undefined);
+  it("returns undefined for missing ID", async () => {
+    const data = await ElementsData.parse(ELEMENTS_V7);
+    assert.equal(await data.findEntry(999999), undefined);
     data.free();
   });
 });
@@ -185,9 +189,9 @@ describe("findEntry", () => {
 // --- Roundtrip ---
 
 describe("roundtrip", () => {
-  it("save_bytes reproduces original data", () => {
-    const data = ElementsData.parse(ELEMENTS_V7);
-    const saved = data.saveBytes();
+  it("save_bytes reproduces original data", async () => {
+    const data = await ElementsData.parse(ELEMENTS_V7);
+    const saved = await data.saveBytes();
     assert.deepEqual(Buffer.from(saved), ELEMENTS_V7);
     data.free();
   });
@@ -223,48 +227,48 @@ describe("PackageConfig", () => {
 // --- PckPackage ---
 
 describe("PckPackage", () => {
-  it("parses package", () => {
-    const pkg = PckPackage.parse(CONFIGS_PCK);
+  it("parses package", async () => {
+    const pkg = await PckPackage.parse(CONFIGS_PCK);
     assert.ok(pkg.fileCount > 0);
     pkg.free();
   });
 
-  it("lists files", () => {
-    const pkg = PckPackage.parse(CONFIGS_PCK);
+  it("lists files", async () => {
+    const pkg = await PckPackage.parse(CONFIGS_PCK);
     const files = pkg.fileList();
     assert.equal(files.length, pkg.fileCount);
     pkg.free();
   });
 
-  it("reads file content", () => {
-    const pkg = PckPackage.parse(CONFIGS_PCK);
+  it("reads file content", async () => {
+    const pkg = await PckPackage.parse(CONFIGS_PCK);
     const files = pkg.fileList();
-    const content = pkg.getFile(files[0]);
+    const content = await pkg.getFile(files[0]);
     assert.notEqual(content, undefined);
     assert.ok(content.length > 0);
     pkg.free();
   });
 
-  it("returns undefined for missing file", () => {
-    const pkg = PckPackage.parse(CONFIGS_PCK);
-    assert.equal(pkg.getFile("nonexistent/path.txt"), undefined);
+  it("returns undefined for missing file", async () => {
+    const pkg = await PckPackage.parse(CONFIGS_PCK);
+    assert.equal(await pkg.getFile("nonexistent/path.txt"), undefined);
     pkg.free();
   });
 
-  it("finds files by prefix", () => {
-    const pkg = PckPackage.parse(CONFIGS_PCK);
+  it("finds files by prefix", async () => {
+    const pkg = await PckPackage.parse(CONFIGS_PCK);
     const all = pkg.findPrefix("");
     assert.equal(all.length, pkg.fileCount);
     pkg.free();
   });
 
-  it("rejects empty bytes", () => {
-    assert.throws(() => PckPackage.parse(new Uint8Array([])));
+  it("rejects empty bytes", async () => {
+    await assert.rejects(() => PckPackage.parse(new Uint8Array([])));
   });
 
-  it("returns file entries with metadata and hashes", () => {
-    const pkg = PckPackage.parse(CONFIGS_PCK);
-    const entries = pkg.fileEntries();
+  it("returns file entries with metadata and hashes", async () => {
+    const pkg = await PckPackage.parse(CONFIGS_PCK);
+    const entries = await pkg.fileEntries();
     assert.equal(entries.length, pkg.fileCount);
 
     for (const entry of entries) {
@@ -282,10 +286,10 @@ describe("PckPackage", () => {
     pkg.free();
   });
 
-  it("file entries hashes are consistent", () => {
-    const pkg = PckPackage.parse(CONFIGS_PCK);
-    const entries1 = pkg.fileEntries();
-    const entries2 = pkg.fileEntries();
+  it("file entries hashes are consistent", async () => {
+    const pkg = await PckPackage.parse(CONFIGS_PCK);
+    const entries1 = await pkg.fileEntries();
+    const entries2 = await pkg.fileEntries();
 
     for (let i = 0; i < entries1.length; i++) {
       assert.equal(entries1[i].hash, entries2[i].hash);
@@ -296,10 +300,10 @@ describe("PckPackage", () => {
     pkg.free();
   });
 
-  it("file entries paths match file list", () => {
-    const pkg = PckPackage.parse(CONFIGS_PCK);
+  it("file entries paths match file list", async () => {
+    const pkg = await PckPackage.parse(CONFIGS_PCK);
     const fileList = pkg.fileList();
-    const entries = pkg.fileEntries();
+    const entries = await pkg.fileEntries();
     assert.equal(entries.length, fileList.length);
 
     for (let i = 0; i < entries.length; i++) {
@@ -310,11 +314,11 @@ describe("PckPackage", () => {
     pkg.free();
   });
 
-  it("file entries with progress callback", () => {
-    const pkg = PckPackage.parse(CONFIGS_PCK);
+  it("file entries with progress callback", async () => {
+    const pkg = await PckPackage.parse(CONFIGS_PCK);
     const collected = [];
 
-    const entries = pkg.fileEntries({
+    const entries = await pkg.fileEntries({
       onProgress: (path, index, total) => {
         collected.push({ path, index, total });
       },
@@ -331,11 +335,11 @@ describe("PckPackage", () => {
     pkg.free();
   });
 
-  it("file entries progress cancellation", () => {
-    const pkg = PckPackage.parse(CONFIGS_PCK);
+  it("file entries progress cancellation", async () => {
+    const pkg = await PckPackage.parse(CONFIGS_PCK);
     let callCount = 0;
 
-    assert.throws(() => {
+    await assert.rejects(() =>
       pkg.fileEntries({
         onProgress: (_path, _index, _total) => {
           callCount++;
@@ -343,21 +347,21 @@ describe("PckPackage", () => {
             throw new Error("cancelled");
           }
         },
-      });
-    });
+      })
+    );
 
     assert.equal(callCount, 2);
     pkg.free();
   });
 
-  it("rejects wrong guards", () => {
+  it("rejects wrong guards", async () => {
     const config = PackageConfig.withKeys(
       0xa8937462,
       0x59374231,
       0x11111111,
       0x22222222
     );
-    assert.throws(() => PckPackage.parse(CONFIGS_PCK, config));
+    await assert.rejects(() => PckPackage.parse(CONFIGS_PCK, config));
   });
 });
 

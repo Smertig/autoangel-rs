@@ -9,21 +9,21 @@ pub fn get_v7_config() -> config::Config {
     config::Config::find_bundled(7).unwrap()
 }
 
-pub fn elements_content() -> DataSource {
+pub fn elements_content() -> DataSource<Vec<u8>> {
     DataSource::from_bytes(ELEMENTS_V7.to_vec())
 }
 
-pub fn create_test_data() -> Data {
+pub fn create_test_data() -> Data<Vec<u8>> {
     let config = get_v7_config();
-    Data::from_bytes(ELEMENTS_V7.to_owned(), config).unwrap()
+    pollster::block_on(Data::from_bytes(ELEMENTS_V7.to_owned(), config)).unwrap()
 }
 
-pub fn create_test_data_view(content: &DataSource) -> DataView {
+pub fn create_test_data_view(content: &DataSource<Vec<u8>>) -> DataView {
     let config = get_v7_config();
-    DataView::parse(content, config).unwrap()
+    pollster::block_on(DataView::parse(content, config)).unwrap()
 }
 
-pub fn find_test_entry() -> (usize, DataEntry) {
+pub fn find_test_entry() -> (usize, DataEntry<Vec<u8>>) {
     let elements = create_test_data();
-    elements.find_entry(TEST_ENTRY_ID, None, true).unwrap()
+    pollster::block_on(elements.find_entry(TEST_ENTRY_ID, None, true)).unwrap()
 }

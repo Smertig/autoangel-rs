@@ -1,5 +1,5 @@
 use crate::util::DropLeadingZeros;
-use crate::util::data_source::DataSource;
+use crate::util::data_source::{DataReader, DataSource};
 use crate::util::throttle::Throttle;
 use eyre::{Context, Result, eyre};
 use std::borrow::Cow;
@@ -23,37 +23,40 @@ impl KeyHeader {
         if self.wide { 16 } else { 12 }
     }
 
-    fn has_valid_version_at(data: &DataSource, offset: u64) -> bool {
-        offset >= 4
-            && offset <= data.size()
-            && data
-                .get(offset - 4..offset)
-                .ok()
-                .and_then(|d| d.as_le::<u32>().ok())
-                .is_some_and(|ver| PckVersion::from_raw(ver).is_ok())
+    async fn has_valid_version_at<R: DataReader>(data: &DataSource<R>, offset: u64) -> bool {
+        if offset < 4 || offset > data.size() {
+            return false;
+        }
+        let Ok(d) = data.get(offset - 4..offset) else {
+            return false;
+        };
+        let Ok(ver) = d.as_le::<u32>().await else {
+            return false;
+        };
+        PckVersion::from_raw(ver).is_ok()
     }
 
-    fn parse(data: &DataSource) -> Result<Self> {
-        let key1: u32 = data.get(0..4)?.as_le()?;
+    async fn parse<R: DataReader>(data: &DataSource<R>) -> Result<Self> {
+        let key1: u32 = data.get(0..4)?.as_le().await?;
 
         // Try 12-byte format (u32 offset)
-        let offset_narrow: u64 = data.get(4..8)?.as_le::<u32>()? as u64;
-        if Self::has_valid_version_at(data, offset_narrow) {
+        let offset_narrow: u64 = data.get(4..8)?.as_le::<u32>().await? as u64;
+        if Self::has_valid_version_at(data, offset_narrow).await {
             return Ok(KeyHeader {
                 key1,
                 headers_end_offset: offset_narrow,
-                key2: data.get(8..12)?.as_le()?,
+                key2: data.get(8..12)?.as_le().await?,
                 wide: false,
             });
         }
 
         // Try 16-byte format (u64 offset)
-        let offset_wide: u64 = data.get(4..12)?.as_le()?;
-        if Self::has_valid_version_at(data, offset_wide) {
+        let offset_wide: u64 = data.get(4..12)?.as_le().await?;
+        if Self::has_valid_version_at(data, offset_wide).await {
             return Ok(KeyHeader {
                 key1,
                 headers_end_offset: offset_wide,
-                key2: data.get(12..16)?.as_le()?,
+                key2: data.get(12..16)?.as_le().await?,
                 wide: true,
             });
         }
@@ -117,10 +120,10 @@ struct PackageMetaHeader {
 impl PackageMetaHeader {
     const SIZE: usize = 8;
 
-    fn parse(data: &DataSource) -> Result<Self> {
+    async fn parse<R: DataReader>(data: &DataSource<R>) -> Result<Self> {
         Ok(PackageMetaHeader {
-            file_count: data.get(0..4)?.as_le()?,
-            version: data.get(4..8)?.as_le()?,
+            file_count: data.get(0..4)?.as_le().await?,
+            version: data.get(4..8)?.as_le().await?,
         })
     }
 
@@ -153,21 +156,21 @@ impl PackageHeader {
         }
     }
 
-    fn parse(data: &DataSource, version: PckVersion) -> Result<Self> {
+    async fn parse<R: DataReader>(data: &DataSource<R>, version: PckVersion) -> Result<Self> {
         let extra = match version {
             PckVersion::V2 => 0,
             PckVersion::V3 => 4,
         };
         Ok(PackageHeader {
-            guard1: data.get(0..4)?.as_le()?,
-            version: data.get(4..8)?.as_le()?,
+            guard1: data.get(0..4)?.as_le().await?,
+            version: data.get(4..8)?.as_le().await?,
             entry_offset: match version {
-                PckVersion::V2 => data.get(8..12)?.as_le::<u32>()? as u64,
-                PckVersion::V3 => data.get(8..16)?.as_le::<u64>()?,
+                PckVersion::V2 => data.get(8..12)?.as_le::<u32>().await? as u64,
+                PckVersion::V3 => data.get(8..16)?.as_le::<u64>().await?,
             },
-            flags: data.get(12 + extra..16 + extra)?.as_le()?,
-            description: data.get(16 + extra..268 + extra)?.try_get()?,
-            guard2: data.get(268 + extra..272 + extra)?.as_le()?,
+            flags: data.get(12 + extra..16 + extra)?.as_le().await?,
+            description: data.get(16 + extra..268 + extra)?.try_get().await?,
+            guard2: data.get(268 + extra..272 + extra)?.as_le().await?,
             // v3 has 4 trailing bytes (UNKNOWN) after guard2, skipped on parse
         })
     }
@@ -224,7 +227,7 @@ impl FileGbkEntry {
         }
     }
 
-    fn parse(data: &DataSource, version: PckVersion) -> Result<Self> {
+    async fn parse<R: DataReader>(data: &DataSource<R>, version: PckVersion) -> Result<Self> {
         match version {
             PckVersion::V2 => {
                 if data.size() != Self::SIZE_V2 as u64
@@ -238,10 +241,10 @@ impl FileGbkEntry {
                     );
                 }
                 Ok(FileGbkEntry {
-                    filename: data.get(0..260)?.try_get()?,
-                    offset: data.get(260..264)?.as_le::<u32>()? as u64,
-                    size: data.get(264..268)?.as_le::<u32>()?,
-                    compressed_size: data.get(268..272)?.as_le::<u32>()?,
+                    filename: data.get(0..260)?.try_get().await?,
+                    offset: data.get(260..264)?.as_le::<u32>().await? as u64,
+                    size: data.get(264..268)?.as_le::<u32>().await?,
+                    compressed_size: data.get(268..272)?.as_le::<u32>().await?,
                 })
             }
             PckVersion::V3 => {
@@ -253,10 +256,10 @@ impl FileGbkEntry {
                     );
                 }
                 Ok(FileGbkEntry {
-                    filename: data.get(0..260)?.try_get()?,
-                    offset: data.get(264..272)?.as_le::<u64>()?,
-                    size: data.get(272..276)?.as_le::<u32>()?,
-                    compressed_size: data.get(276..280)?.as_le::<u32>()?,
+                    filename: data.get(0..260)?.try_get().await?,
+                    offset: data.get(264..272)?.as_le::<u64>().await?,
+                    size: data.get(272..276)?.as_le::<u32>().await?,
+                    compressed_size: data.get(276..280)?.as_le::<u32>().await?,
                 })
             }
         }
@@ -348,13 +351,21 @@ impl FileEntry {
         path.replace('/', r"\").to_lowercase()
     }
 
-    pub fn get_raw_file_bytes<'a>(&self, content: &'a DataSource) -> Result<Cow<'a, [u8]>> {
-        content.read_bytes_at(self.offset, self.compressed_size as usize)
+    pub async fn get_raw_file_bytes<'a, R: DataReader>(
+        &self,
+        content: &'a DataSource<R>,
+    ) -> Result<Cow<'a, [u8]>> {
+        content
+            .read_bytes_at(self.offset, self.compressed_size as usize)
+            .await
     }
 
     /// Read and decompress the file content.
-    pub fn get_file<'a>(&self, content: &'a DataSource) -> Option<Cow<'a, [u8]>> {
-        let compressed = self.get_raw_file_bytes(content).ok()?;
+    pub async fn get_file<'a, R: DataReader>(
+        &self,
+        content: &'a DataSource<R>,
+    ) -> Option<Cow<'a, [u8]>> {
+        let compressed = self.get_raw_file_bytes(content).await.ok()?;
 
         if self.compressed_size >= self.size {
             return Some(compressed);
@@ -425,19 +436,19 @@ impl PackageInfo {
     }
 
     #[cfg(feature = "fs")]
-    pub fn save<P: AsRef<Path>>(
+    pub async fn save<R: DataReader, P: AsRef<Path>>(
         &self,
-        content: &DataSource,
+        content: &DataSource<R>,
         path: P,
         config: &PackageConfig,
     ) -> Result<()> {
         let mut file = std::fs::File::create(path)?;
-        self.save_to(content, &mut file, config)
+        self.save_to(content, &mut file, config).await
     }
 
-    pub fn save_to<W: Write + Seek>(
+    pub async fn save_to<R: DataReader, W: Write + Seek>(
         &self,
-        content: &DataSource,
+        content: &DataSource<R>,
         writer: &mut W,
         config: &PackageConfig,
     ) -> Result<()> {
@@ -458,7 +469,7 @@ impl PackageInfo {
         for old_entry in &self.files {
             use encoding::*;
 
-            let compressed = old_entry.get_raw_file_bytes(content)?;
+            let compressed = old_entry.get_raw_file_bytes(content).await?;
 
             writer.write_all(&compressed)?;
 
@@ -544,8 +555,12 @@ impl PackageInfo {
         Ok(())
     }
 
-    pub fn parse(data: &DataSource, config: PackageConfig, options: ParseOptions) -> Result<Self> {
-        let key_header = KeyHeader::parse(data)?;
+    pub async fn parse<R: DataReader>(
+        data: &DataSource<R>,
+        config: PackageConfig,
+        options: ParseOptions,
+    ) -> Result<Self> {
+        let key_header = KeyHeader::parse(data).await?;
 
         let headers_end_offset = key_header.headers_end_offset;
 
@@ -565,7 +580,8 @@ impl PackageInfo {
 
         let raw_version = data
             .get(headers_end_offset - 4..headers_end_offset)?
-            .as_le::<u32>()?;
+            .as_le::<u32>()
+            .await?;
         let version = PckVersion::from_raw(raw_version)?;
 
         let package_header_size = PackageHeader::size_for_version(version) as u64;
@@ -585,10 +601,12 @@ impl PackageInfo {
             &data
                 .get_at(meta_header_offset, PackageMetaHeader::SIZE as u64)
                 .wrap_err_with(|| eyre!("Invalid meta-header position"))?,
-        )?;
+        )
+        .await?;
 
         let package_header =
-            PackageHeader::parse(&data.get_at(header_offset, package_header_size)?, version)?;
+            PackageHeader::parse(&data.get_at(header_offset, package_header_size)?, version)
+                .await?;
 
         if package_header
             .description
@@ -637,44 +655,49 @@ impl PackageInfo {
             }
         });
 
-        let mut files = (0..meta_header.file_count)
-            .map(|i| -> Result<FileEntry> {
-                if let Some(ref mut on_progress) = on_progress {
-                    on_progress(i as usize)?;
-                }
-                let first_size = data.get_at(offset, 4)?.as_le::<u32>()? ^ config.key1;
-                offset += 4;
+        let mut files = Vec::with_capacity(meta_header.file_count as usize);
+        for i in 0..meta_header.file_count {
+            if let Some(ref mut on_progress) = on_progress {
+                on_progress(i as usize)?;
+            }
+            let first_size = data.get_at(offset, 4)?.as_le::<u32>().await? ^ config.key1;
+            offset += 4;
 
-                let second_size = data.get_at(offset, 4)?.as_le::<u32>()? ^ config.key1 ^ config.key2;
-                offset += 4;
+            let second_size =
+                data.get_at(offset, 4)?.as_le::<u32>().await? ^ config.key1 ^ config.key2;
+            offset += 4;
 
-                if first_size != second_size {
-                    eyre::bail!("Invalid decoded compressed size: {0:08X} != {1:08X}", first_size, second_size);
-                }
+            if first_size != second_size {
+                eyre::bail!(
+                    "Invalid decoded compressed size: {0:08X} != {1:08X}",
+                    first_size,
+                    second_size
+                );
+            }
 
-                let size = first_size as u64;
-                let entry_data = data.get_at(offset, size)?;
-                let entry_bytes = entry_data.to_bytes()?;
-                offset += size;
+            let size = first_size as u64;
+            let entry_data = data.get_at(offset, size)?;
+            let entry_bytes = entry_data.to_bytes().await?;
+            offset += size;
 
-                let decoded_entry = decompress_package_entry(&entry_bytes)
-                    .map_err(|e| eyre!("Decompression failed with {:?}", e))?;
+            let decoded_entry = decompress_package_entry(&entry_bytes)
+                .map_err(|e| eyre!("Decompression failed with {:?}", e))?;
 
-                if decoded_entry.len() < min_entry_size {
-                    eyre::bail!(
-                        "Invalid decompressed entry: compressed size of #{} is {} bytes, decompressed is {} bytes (expected at least {} bytes)",
-                        i,
-                        size,
-                        decoded_entry.len(),
-                        min_entry_size
-                    );
-                }
+            if decoded_entry.len() < min_entry_size {
+                eyre::bail!(
+                    "Invalid decompressed entry: compressed size of #{} is {} bytes, decompressed is {} bytes (expected at least {} bytes)",
+                    i,
+                    size,
+                    decoded_entry.len(),
+                    min_entry_size
+                );
+            }
 
-                let gbk_entry = FileGbkEntry::parse(&DataSource::from_bytes(decoded_entry), version)?;
-                let decoded_entry = gbk_entry.try_into()?;
-                Ok(decoded_entry)
-            })
-            .collect::<Result<Vec<_>, _>>()?;
+            let gbk_entry =
+                FileGbkEntry::parse(&DataSource::from_bytes(decoded_entry), version).await?;
+            let decoded_entry: FileEntry = gbk_entry.try_into()?;
+            files.push(decoded_entry);
+        }
 
         // TODO: remove sort? keep files non-sorted until requested?
         files.sort_by(|l, r| l.normalized_name.cmp(&r.normalized_name));
@@ -710,9 +733,9 @@ impl PackageInfo {
     }
 
     /// Return metadata and content hashes for all files in a single pass.
-    pub fn file_entries(
+    pub async fn file_entries<R: DataReader>(
         &self,
-        content: &DataSource,
+        content: &DataSource<R>,
         mut options: FileEntriesOptions,
     ) -> Result<Vec<FileEntrySummary<'_>>> {
         let total = self.files.len();
@@ -727,10 +750,10 @@ impl PackageInfo {
                 })?;
             }
 
-            let hash = entry
-                .get_file(content)
-                .map(|data| crc32fast::hash(&data))
-                .unwrap_or(0);
+            let hash = match entry.get_file(content).await {
+                Some(data) => crc32fast::hash(&data),
+                None => 0,
+            };
 
             results.push(FileEntrySummary {
                 path: &entry.normalized_name,
@@ -743,7 +766,11 @@ impl PackageInfo {
         Ok(results)
     }
 
-    pub fn get_file<'a>(&self, content: &'a DataSource, path: &str) -> Option<Cow<'a, [u8]>> {
+    pub async fn get_file<'a, R: DataReader>(
+        &self,
+        content: &'a DataSource<R>,
+        path: &str,
+    ) -> Option<Cow<'a, [u8]>> {
         let path = FileEntry::normalize_path(path);
 
         let entry = self
@@ -752,7 +779,7 @@ impl PackageInfo {
             .ok()
             .map(|index| &self.files[index])?;
 
-        entry.get_file(content)
+        entry.get_file(content).await
     }
 }
 
@@ -771,14 +798,14 @@ mod tests {
     use super::*;
     use crate::include_test_data_bytes;
 
-    fn ds(bytes: &[u8]) -> DataSource {
+    fn ds(bytes: &[u8]) -> DataSource<Vec<u8>> {
         DataSource::from_bytes(bytes.to_vec())
     }
 
     #[test]
     fn parse_key_header() {
-        assert!(KeyHeader::parse(&ds(b"")).is_err());
-        assert!(KeyHeader::parse(&ds(b"\x00\x00\x00\x00")).is_err());
+        assert!(pollster::block_on(KeyHeader::parse(&ds(b""))).is_err());
+        assert!(pollster::block_on(KeyHeader::parse(&ds(b"\x00\x00\x00\x00"))).is_err());
 
         // 12-byte (narrow) format: key1=1, offset=16, key2=3, then version 0x20002 at bytes 12..16
         let mut narrow = vec![0u8; 16];
@@ -787,7 +814,7 @@ mod tests {
         narrow[8..12].copy_from_slice(&3u32.to_le_bytes()); // key2
         narrow[12..16].copy_from_slice(&0x20002u32.to_le_bytes()); // version tag
         assert_eq!(
-            KeyHeader::parse(&ds(&narrow)).unwrap(),
+            pollster::block_on(KeyHeader::parse(&ds(&narrow))).unwrap(),
             KeyHeader {
                 key1: 1,
                 headers_end_offset: 16,
@@ -803,10 +830,10 @@ mod tests {
 
     #[test]
     fn parse_package_header() {
-        assert!(PackageHeader::parse(&ds(b""), PckVersion::V2).is_err());
-        assert!(PackageHeader::parse(&ds(b"123"), PckVersion::V2).is_err());
+        assert!(pollster::block_on(PackageHeader::parse(&ds(b""), PckVersion::V2)).is_err());
+        assert!(pollster::block_on(PackageHeader::parse(&ds(b"123"), PckVersion::V2)).is_err());
         assert_eq!(
-            PackageHeader::parse(
+            pollster::block_on(PackageHeader::parse(
                 &ds(b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00\
                        Hello, world\
                        \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
@@ -817,7 +844,7 @@ mod tests {
                        \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
                        \x05\x00\x00\x00"),
                 PckVersion::V2
-            )
+            ))
                 .unwrap(),
             PackageHeader {
                 guard1: 1,
@@ -833,8 +860,12 @@ mod tests {
     #[test]
     fn parse_package_info() {
         let bytes = include_test_data_bytes!("packages/configs.pck");
-        let package =
-            PackageInfo::parse(&ds(bytes), Default::default(), Default::default()).unwrap();
+        let package = pollster::block_on(PackageInfo::parse(
+            &ds(bytes),
+            Default::default(),
+            Default::default(),
+        ))
+        .unwrap();
 
         assert!(!package.files.is_empty());
     }
@@ -842,8 +873,12 @@ mod tests {
     #[test]
     fn find_prefix_empty_returns_all() {
         let bytes = include_test_data_bytes!("packages/configs.pck");
-        let package =
-            PackageInfo::parse(&ds(bytes), Default::default(), Default::default()).unwrap();
+        let package = pollster::block_on(PackageInfo::parse(
+            &ds(bytes),
+            Default::default(),
+            Default::default(),
+        ))
+        .unwrap();
 
         assert_eq!(package.find_prefix("").len(), package.file_count());
     }
@@ -859,9 +894,30 @@ mod tests {
     #[test]
     fn parse_truncated_input() {
         let config: PackageConfig = Default::default();
-        assert!(PackageInfo::parse(&ds(b""), config.clone(), Default::default()).is_err());
-        assert!(PackageInfo::parse(&ds(b"short"), config.clone(), Default::default()).is_err());
-        assert!(PackageInfo::parse(&ds(&[0u8; 11]), config, Default::default()).is_err());
+        assert!(
+            pollster::block_on(PackageInfo::parse(
+                &ds(b""),
+                config.clone(),
+                Default::default()
+            ))
+            .is_err()
+        );
+        assert!(
+            pollster::block_on(PackageInfo::parse(
+                &ds(b"short"),
+                config.clone(),
+                Default::default()
+            ))
+            .is_err()
+        );
+        assert!(
+            pollster::block_on(PackageInfo::parse(
+                &ds(&[0u8; 11]),
+                config,
+                Default::default()
+            ))
+            .is_err()
+        );
     }
 
     #[test]
@@ -872,8 +928,12 @@ mod tests {
         // Set a valid version at offset 96..100 so the version check passes
         data[96..100].copy_from_slice(&0x20002u32.to_le_bytes());
         let config: PackageConfig = Default::default();
-        let err = PackageInfo::parse(&DataSource::from_bytes(data), config, Default::default())
-            .unwrap_err();
+        let err = pollster::block_on(PackageInfo::parse(
+            &DataSource::from_bytes(data),
+            config,
+            Default::default(),
+        ))
+        .unwrap_err();
         assert!(
             err.to_string().contains("Invalid headers_end_offset"),
             "unexpected error: {err}"
@@ -889,8 +949,12 @@ mod tests {
         data[version_offset..version_offset + 4].copy_from_slice(&0x99999u32.to_le_bytes());
         let config: PackageConfig = Default::default();
         // Corrupted version causes KeyHeader::parse to fail (neither narrow nor wide yields valid version)
-        let err = PackageInfo::parse(&DataSource::from_bytes(data), config, Default::default())
-            .unwrap_err();
+        let err = pollster::block_on(PackageInfo::parse(
+            &DataSource::from_bytes(data),
+            config,
+            Default::default(),
+        ))
+        .unwrap_err();
         assert!(
             err.to_string().contains("key header"),
             "unexpected error: {err}"
@@ -906,8 +970,12 @@ mod tests {
         // Zero out the description so it won't contain "lica File Package"
         data[desc_offset..desc_offset + 252].fill(0);
         let config: PackageConfig = Default::default();
-        let err = PackageInfo::parse(&DataSource::from_bytes(data), config, Default::default())
-            .unwrap_err();
+        let err = pollster::block_on(PackageInfo::parse(
+            &DataSource::from_bytes(data),
+            config,
+            Default::default(),
+        ))
+        .unwrap_err();
         assert!(
             err.to_string().contains("Invalid description"),
             "unexpected error: {err}"
@@ -921,7 +989,8 @@ mod tests {
             guard1: 0xDEADBEEF,
             ..Default::default()
         };
-        let err = PackageInfo::parse(&ds(&data), config, Default::default()).unwrap_err();
+        let err = pollster::block_on(PackageInfo::parse(&ds(&data), config, Default::default()))
+            .unwrap_err();
         assert!(
             err.to_string().contains("Invalid guard1"),
             "unexpected error: {err}"
@@ -931,7 +1000,8 @@ mod tests {
             guard2: 0xDEADBEEF,
             ..Default::default()
         };
-        let err = PackageInfo::parse(&ds(&data), config, Default::default()).unwrap_err();
+        let err = pollster::block_on(PackageInfo::parse(&ds(&data), config, Default::default()))
+            .unwrap_err();
         assert!(
             err.to_string().contains("Invalid guard2"),
             "unexpected error: {err}"
@@ -942,9 +1012,15 @@ mod tests {
     fn file_entries_without_progress() {
         let bytes = include_test_data_bytes!("packages/configs.pck");
         let content = ds(bytes);
-        let package = PackageInfo::parse(&content, Default::default(), Default::default()).unwrap();
+        let package = pollster::block_on(PackageInfo::parse(
+            &content,
+            Default::default(),
+            Default::default(),
+        ))
+        .unwrap();
 
-        let entries = package.file_entries(&content, Default::default()).unwrap();
+        let entries =
+            pollster::block_on(package.file_entries(&content, Default::default())).unwrap();
         assert_eq!(entries.len(), package.file_count());
         for entry in &entries {
             assert!(!entry.path.is_empty());
@@ -955,7 +1031,12 @@ mod tests {
     fn file_entries_progress_callback_values() {
         let bytes = include_test_data_bytes!("packages/configs.pck");
         let content = ds(bytes);
-        let package = PackageInfo::parse(&content, Default::default(), Default::default()).unwrap();
+        let package = pollster::block_on(PackageInfo::parse(
+            &content,
+            Default::default(),
+            Default::default(),
+        ))
+        .unwrap();
         let total = package.file_count();
 
         let collected = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
@@ -969,7 +1050,7 @@ mod tests {
             })),
         };
 
-        let entries = package.file_entries(&content, options).unwrap();
+        let entries = pollster::block_on(package.file_entries(&content, options)).unwrap();
         let collected = collected.borrow();
         assert_eq!(collected.len(), total);
         for (i, (path, index, cb_total)) in collected.iter().enumerate() {
@@ -983,7 +1064,12 @@ mod tests {
     fn file_entries_progress_cancellation() {
         let bytes = include_test_data_bytes!("packages/configs.pck");
         let content = ds(bytes);
-        let package = PackageInfo::parse(&content, Default::default(), Default::default()).unwrap();
+        let package = pollster::block_on(PackageInfo::parse(
+            &content,
+            Default::default(),
+            Default::default(),
+        ))
+        .unwrap();
 
         let call_count = std::rc::Rc::new(std::cell::Cell::new(0usize));
         let cb_count = call_count.clone();
@@ -998,7 +1084,7 @@ mod tests {
             })),
         };
 
-        let result = package.file_entries(&content, options);
+        let result = pollster::block_on(package.file_entries(&content, options));
         assert!(result.is_err());
         assert_eq!(call_count.get(), 2);
         assert!(result.unwrap_err().to_string().contains("cancelled"));
@@ -1019,7 +1105,9 @@ mod tests {
             ..Default::default()
         };
 
-        let package = PackageInfo::parse(&ds(bytes), Default::default(), options).unwrap();
+        let package =
+            pollster::block_on(PackageInfo::parse(&ds(bytes), Default::default(), options))
+                .unwrap();
         let collected = collected.borrow();
         let total = package.file_count();
         assert_eq!(collected.len(), total);
@@ -1047,7 +1135,8 @@ mod tests {
             ..Default::default()
         };
 
-        let result = PackageInfo::parse(&ds(bytes), Default::default(), options);
+        let result =
+            pollster::block_on(PackageInfo::parse(&ds(bytes), Default::default(), options));
         assert!(result.is_err());
         assert_eq!(call_count.get(), 2);
         assert!(result.unwrap_err().to_string().contains("cancelled"));

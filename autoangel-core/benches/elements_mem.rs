@@ -20,7 +20,11 @@ fn main() {
 
     bench("Data::find_entry", || {
         measure_bytes(|| {
-            let entry = black_box(elements.find_entry(TEST_ENTRY_ID, None, true));
+            let entry = black_box(pollster::block_on(elements.find_entry(
+                TEST_ENTRY_ID,
+                None,
+                true,
+            )));
             assert!(entry.is_some());
         })
     });
@@ -28,7 +32,7 @@ fn main() {
     let (_, entry) = find_test_entry();
     bench("DataEntry::deep_clone", || {
         measure_bytes(|| {
-            let cloned = black_box(entry.deep_clone().unwrap());
+            let cloned = black_box(pollster::block_on(entry.deep_clone()).unwrap());
             assert_eq!(cloned.fields.read().len(), entry.fields.read().len());
         })
     });
@@ -36,18 +40,20 @@ fn main() {
     bench("Data::write", || {
         measure_bytes(|| {
             let mut buffer = Cursor::new(Vec::new());
-            black_box(elements.write(&mut std::io::BufWriter::new(&mut buffer))).unwrap();
+            black_box(pollster::block_on(
+                elements.write(&mut std::io::BufWriter::new(&mut buffer)),
+            ))
+            .unwrap();
             black_box(buffer.into_inner());
         })
     });
 
-    let entry_clone = entry.deep_clone().unwrap();
+    let entry_clone = pollster::block_on(entry.deep_clone()).unwrap();
     bench("DataEntry::modify_field", || {
         measure_bytes(|| {
             let mut fields = entry_clone.fields.write();
             if !fields.is_empty() {
-                let first_field = fields[0]
-                    .get_bytes(&entry_clone.content)
+                let first_field = pollster::block_on(fields[0].get_bytes(&entry_clone.content))
                     .unwrap()
                     .into_owned();
                 fields[0] = DataFieldView::Bytes(first_field.into());
@@ -66,10 +72,11 @@ fn main() {
         let (_, iter_stats) = measure(|| {
             for list in data.lists.iter() {
                 for lazy_entry in list.entries.read().iter() {
-                    let entry = lazy_entry.resolve(&content, &list.config).unwrap();
+                    let entry =
+                        pollster::block_on(lazy_entry.resolve(&content, &list.config)).unwrap();
                     let fields = entry.fields.read();
                     for field in fields.iter() {
-                        black_box(field.get_bytes(&content).unwrap());
+                        black_box(pollster::block_on(field.get_bytes(&content)).unwrap());
                     }
                 }
             }
@@ -87,7 +94,11 @@ fn main() {
         });
         let (_, search_stats) = measure(|| {
             for _ in 0..3 {
-                black_box(data.find_entry(TEST_ENTRY_ID, None, true));
+                black_box(pollster::block_on(data.find_entry(
+                    TEST_ENTRY_ID,
+                    None,
+                    true,
+                )));
             }
         });
         MemStats {

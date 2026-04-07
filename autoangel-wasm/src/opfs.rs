@@ -1,4 +1,4 @@
-use autoangel_core::util::data_source::{DataReader, DataSource};
+use autoangel_core::util::data_source::{DataReader, DataSource, MultiReader};
 use eyre::{Result, eyre};
 use std::sync::Arc;
 use web_sys::FileSystemSyncAccessHandle;
@@ -37,7 +37,7 @@ impl OpfsReader {
 }
 
 impl DataReader for OpfsReader {
-    fn read_at(&self, offset: u64, buf: &mut [u8]) -> Result<()> {
+    async fn read_at(&self, offset: u64, buf: &mut [u8]) -> Result<()> {
         let end = offset + buf.len() as u64;
         if end > self.size {
             return Err(eyre!(
@@ -75,10 +75,12 @@ impl DataReader for OpfsReader {
 }
 
 /// Create a `DataSource` from one or more OPFS handles (pck + pkx + pkx1 + ...).
-pub fn data_source_from_handles(handles: Vec<FileSystemSyncAccessHandle>) -> Result<DataSource> {
-    let readers: Vec<Arc<dyn DataReader>> = handles
+pub fn data_source_from_handles(
+    handles: Vec<FileSystemSyncAccessHandle>,
+) -> Result<DataSource<MultiReader<OpfsReader>>> {
+    let readers: Vec<Arc<OpfsReader>> = handles
         .into_iter()
-        .map(|h| -> Result<Arc<dyn DataReader>> { Ok(Arc::new(OpfsReader::new(h)?)) })
+        .map(|h| -> Result<Arc<OpfsReader>> { Ok(Arc::new(OpfsReader::new(h)?)) })
         .collect::<Result<_>>()?;
     Ok(DataSource::composite(readers))
 }

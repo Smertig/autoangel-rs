@@ -1,10 +1,11 @@
-use crate::opfs;
+use crate::file_reader::BufferedFileReader;
+use crate::opfs::{self, OpfsReader};
 use autoangel_core::pck::package;
 use autoangel_core::pck::package::{
     FileEntriesOptions, FileEntriesProgressFn, FileEntryProgress, ParseOptions, ParseProgress,
     ParseProgressFn,
 };
-use autoangel_core::util::data_source::DataSource;
+use autoangel_core::util::data_source::{DataReader, DataSource, MultiReader};
 use js_sys;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::prelude::*;
@@ -135,10 +136,49 @@ fn make_parse_options(options: &Option<JsValue>) -> ParseOptions {
     }
 }
 
+enum PckContent {
+    Memory(DataSource<Vec<u8>>),
+    Opfs(DataSource<MultiReader<OpfsReader>>),
+    File(DataSource<MultiReader<BufferedFileReader>>),
+}
+
+// -- Async helper functions for dispatching across content variants --
+
+async fn get_file_inner<R: DataReader>(
+    info: &package::PackageInfo,
+    content: &DataSource<R>,
+    path: &str,
+) -> Option<Vec<u8>> {
+    info.get_file(content, path)
+        .await
+        .map(|cow| cow.into_owned())
+}
+
+async fn file_entries_inner<R: DataReader>(
+    info: &package::PackageInfo,
+    content: &DataSource<R>,
+    options: FileEntriesOptions,
+) -> Result<Vec<FileEntry>, JsError> {
+    let entries = info
+        .file_entries(content, options)
+        .await
+        .map_err(|e| crate::format_error(&e))?;
+
+    Ok(entries
+        .into_iter()
+        .map(|e| FileEntry {
+            path: e.path.to_owned(),
+            size: e.size,
+            compressed_size: e.compressed_size,
+            hash: e.hash,
+        })
+        .collect())
+}
+
 /// Parsed pck/pkx package.
 #[wasm_bindgen]
 pub struct PckPackage {
-    content: DataSource,
+    content: PckContent,
     info: package::PackageInfo,
 }
 
@@ -147,7 +187,7 @@ impl PckPackage {
     /// Parse a pck package from bytes (loads entire file into WASM memory).
     /// Third argument is an optional options object: `{ onProgress?: (index: number, total: number) => void, progressIntervalMs?: number }`.
     #[wasm_bindgen]
-    pub fn parse(
+    pub async fn parse(
         bytes: &[u8],
         config: Option<PackageConfig>,
         options: Option<JsValue>,
@@ -155,13 +195,19 @@ impl PckPackage {
         let config = config.map_or_else(Default::default, |c| c.config);
         let content = DataSource::from_bytes(bytes.to_vec());
         let parse_options = make_parse_options(&options);
-        Self::from_data_source(content, config, parse_options)
+        let info = package::PackageInfo::parse(&content, config, parse_options)
+            .await
+            .map_err(|e| crate::format_error(&e))?;
+        Ok(PckPackage {
+            content: PckContent::Memory(content),
+            info,
+        })
     }
 
     /// Open a pck package from OPFS sync access handles (Web Worker only).
     /// Second argument is an optional options object: `{ pkxHandles?: FileSystemSyncAccessHandle[], config?: PackageConfig, onProgress?: (index: number, total: number) => void, progressIntervalMs?: number }`.
     #[wasm_bindgen(js_name = "open")]
-    pub fn open(
+    pub async fn open(
         pck_handle: FileSystemSyncAccessHandle,
         options: Option<JsValue>,
     ) -> Result<PckPackage, JsError> {
@@ -205,17 +251,13 @@ impl PckPackage {
         let config = config_val.map_or_else(Default::default, |c| c.config);
         let content =
             opfs::data_source_from_handles(handles).map_err(|e| crate::format_error(&e))?;
-        Self::from_data_source(content, config, parse_options)
-    }
-
-    fn from_data_source(
-        content: DataSource,
-        config: package::PackageConfig,
-        options: ParseOptions,
-    ) -> Result<PckPackage, JsError> {
-        let info = package::PackageInfo::parse(&content, config, options)
+        let info = package::PackageInfo::parse(&content, config, parse_options)
+            .await
             .map_err(|e| crate::format_error(&e))?;
-        Ok(PckPackage { content, info })
+        Ok(PckPackage {
+            content: PckContent::Opfs(content),
+            info,
+        })
     }
 
     /// Package version.
@@ -232,10 +274,12 @@ impl PckPackage {
 
     /// Get decompressed file content by path. Returns null if not found.
     #[wasm_bindgen(js_name = "getFile")]
-    pub fn get_file(&self, path: &str) -> Option<Vec<u8>> {
-        self.info
-            .get_file(&self.content, path)
-            .map(|cow| cow.into_owned())
+    pub async fn get_file(&self, path: &str) -> Option<Vec<u8>> {
+        match &self.content {
+            PckContent::Memory(c) => get_file_inner(&self.info, c, path).await,
+            PckContent::Opfs(c) => get_file_inner(&self.info, c, path).await,
+            PckContent::File(c) => get_file_inner(&self.info, c, path).await,
+        }
     }
 
     /// Find files matching a path prefix. Returns an array of normalized file paths.
@@ -257,7 +301,7 @@ impl PckPackage {
     /// List all file entries with metadata (including content CRC32 hashes).
     /// This decompresses every file to compute hashes.
     #[wasm_bindgen(js_name = "fileEntries")]
-    pub fn file_entries(&self, options: Option<JsValue>) -> Result<Vec<FileEntry>, JsError> {
+    pub async fn file_entries(&self, options: Option<JsValue>) -> Result<Vec<FileEntry>, JsError> {
         let on_progress_fn = options.and_then(|opts| {
             if !opts.is_object() {
                 return None;
@@ -282,19 +326,65 @@ impl PckPackage {
             }),
         };
 
-        let entries = self
-            .info
-            .file_entries(&self.content, options)
-            .map_err(|e| crate::format_error(&e))?;
+        match &self.content {
+            PckContent::Memory(c) => file_entries_inner(&self.info, c, options).await,
+            PckContent::Opfs(c) => file_entries_inner(&self.info, c, options).await,
+            PckContent::File(c) => file_entries_inner(&self.info, c, options).await,
+        }
+    }
 
-        Ok(entries
-            .into_iter()
-            .map(|e| FileEntry {
-                path: e.path.to_owned(),
-                size: e.size,
-                compressed_size: e.compressed_size,
-                hash: e.hash,
-            })
-            .collect())
+    /// Open a pck package from JS File objects (main thread, no OPFS needed).
+    /// Second argument is an optional options object: `{ pkxFiles?: File[], config?: PackageConfig, onProgress?: (index: number, total: number) => void, progressIntervalMs?: number }`.
+    #[wasm_bindgen(js_name = "openFile")]
+    pub async fn open_file(
+        pck_file: web_sys::File,
+        options: Option<JsValue>,
+    ) -> Result<PckPackage, JsError> {
+        let parse_options = make_parse_options(&options);
+        let mut files = vec![pck_file];
+        let mut config_val = None;
+
+        if let Some(ref opts) = options.filter(|o| o.is_object()) {
+            // Extract pkxFiles array
+            if let Some(arr) = js_sys::Reflect::get(opts, &"pkxFiles".into())
+                .ok()
+                .and_then(|v| v.dyn_into::<js_sys::Array>().ok())
+            {
+                for i in 0..arr.length() {
+                    let f: web_sys::File = arr.get(i).unchecked_into();
+                    files.push(f);
+                }
+            }
+            // Extract config
+            if let Some(cfg_val) = js_sys::Reflect::get(opts, &"config".into())
+                .ok()
+                .filter(|v| v.is_object())
+            {
+                let get_u32 = |obj: &JsValue, key: &str| -> Option<u32> {
+                    js_sys::Reflect::get(obj, &key.into())
+                        .ok()
+                        .and_then(|v| v.as_f64())
+                        .map(|v| v as u32)
+                };
+                if let (Some(k1), Some(k2), Some(g1), Some(g2)) = (
+                    get_u32(&cfg_val, "key1"),
+                    get_u32(&cfg_val, "key2"),
+                    get_u32(&cfg_val, "guard1"),
+                    get_u32(&cfg_val, "guard2"),
+                ) {
+                    config_val = Some(PackageConfig::with_keys(k1, k2, g1, g2));
+                }
+            }
+        }
+
+        let config = config_val.map_or_else(Default::default, |c| c.config);
+        let content = crate::file_reader::data_source_from_files(files);
+        let info = package::PackageInfo::parse(&content, config, parse_options)
+            .await
+            .map_err(|e| crate::format_error(&e))?;
+        Ok(PckPackage {
+            content: PckContent::File(content),
+            info,
+        })
     }
 }

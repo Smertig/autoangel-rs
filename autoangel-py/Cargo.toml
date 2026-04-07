@@ -17,6 +17,7 @@ built = { version = "0.8.0", features = ["chrono", "cargo-lock"] }
 autoangel-core = { path = "../autoangel-core" }
 pyo3 = { version = "0.28.2", features = ["abi3-py37", "eyre"] }
 memmap2 = "0.9"
+pollster = "0.4"
 im = "15.1.0"
 pyo3-built = "0.6.0"
 color-eyre = "0.6.5"

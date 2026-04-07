@@ -29,6 +29,7 @@ eyre = "0.6.12"
 web-time = "1"
 color-eyre = "0.6.5"
 log = "0.4.29"
+pollster = "0.4"
 
 [dev-dependencies]
 criterion = "0.8.2"

@@ -1,9 +1,8 @@
 use super::{config, meta, util, value};
-use crate::util::data_source::DataSource;
+use crate::util::data_source::{DataReader, DataSource};
 use color_eyre::{Help, SectionExt};
 use endiannezz::ext::EndianWriter;
 use eyre::{Result, WrapErr, bail, eyre};
-use itertools::Itertools;
 use once_cell::sync::OnceCell;
 use parking_lot::RwLock;
 use std::borrow::Cow;
@@ -14,21 +13,21 @@ use std::ops::{Deref, Range};
 use std::sync::Arc;
 
 #[derive(Clone)]
-pub struct WithContent<V> {
+pub struct WithContent<V, R: DataReader> {
     /// Backing data store. Must be a root DataSource (offset == 0, covering
     /// the entire reader) because `DataFieldView::ByteRange` and
     /// `LazyEntry::Deferred` store absolute byte offsets into it.
-    pub content: DataSource,
+    pub content: DataSource<R>,
     view: V,
 }
 
-impl<V> WithContent<V> {
+impl<V, R: DataReader> WithContent<V, R> {
     pub fn extract_view(self) -> V {
         self.view
     }
 }
 
-pub type Data = WithContent<DataView>;
+pub type Data<R> = WithContent<DataView, R>;
 
 #[derive(Clone)]
 pub struct DataView {
@@ -37,7 +36,7 @@ pub struct DataView {
     pub lists: Arc<[DataListView]>, // immutable shared array of lists
 }
 
-pub type DataList = WithContent<DataListView>;
+pub type DataList<R> = WithContent<DataListView, R>;
 
 #[derive(Clone)]
 pub struct DataListView {
@@ -48,7 +47,7 @@ pub struct DataListView {
     id_cache: Arc<RwLock<Option<HashMap<u32, Vec<usize>>>>>,
 }
 
-pub type DataEntry = WithContent<DataEntryView>;
+pub type DataEntry<R> = WithContent<DataEntryView, R>;
 
 #[derive(Clone)]
 pub struct DataEntryView {
@@ -75,45 +74,55 @@ pub enum LazyEntry {
 
 impl LazyEntry {
     /// Returns a reference to the parsed entry, parsing on first access.
-    pub fn resolve(
+    pub async fn resolve<R: DataReader>(
         &self,
-        content: &DataSource,
+        content: &DataSource<R>,
         list_config: &config::ListConfig,
     ) -> Result<&DataEntryView> {
         match self {
-            LazyEntry::Deferred { byte_range, parsed } => parsed.get_or_try_init(|| {
+            LazyEntry::Deferred { byte_range, parsed } => {
+                if let Some(v) = parsed.get() {
+                    return Ok(v);
+                }
                 let mut entry_data = content.get(byte_range.clone())?;
-                DataEntryView::parse(&mut entry_data, list_config)
-            }),
+                let view = DataEntryView::parse(&mut entry_data, list_config).await?;
+                Ok(parsed.get_or_init(|| view))
+            }
             LazyEntry::Materialized(entry) => Ok(entry),
         }
     }
 
-    fn write<W: Write>(&self, out: &mut BufWriter<W>, content: &DataSource) -> Result<()> {
+    async fn write<R: DataReader, W: Write>(
+        &self,
+        out: &mut BufWriter<W>,
+        content: &DataSource<R>,
+    ) -> Result<()> {
         match self {
             LazyEntry::Deferred { byte_range, parsed } => match parsed.get() {
-                Some(entry) => entry.write(out, content),
+                Some(entry) => entry.write(out, content).await,
                 None => {
-                    let bytes = content.read_bytes_at(
-                        byte_range.start,
-                        (byte_range.end - byte_range.start) as usize,
-                    )?;
+                    let bytes = content
+                        .read_bytes_at(
+                            byte_range.start,
+                            (byte_range.end - byte_range.start) as usize,
+                        )
+                        .await?;
                     out.write_all(&bytes)?;
                     Ok(())
                 }
             },
-            LazyEntry::Materialized(entry) => entry.write(out, content),
+            LazyEntry::Materialized(entry) => entry.write(out, content).await,
         }
     }
 }
 
-impl<T> WithContent<T> {
-    pub fn from(view: T, content: DataSource) -> Self {
+impl<T, R: DataReader> WithContent<T, R> {
+    pub fn from(view: T, content: DataSource<R>) -> Self {
         Self { content, view }
     }
 }
 
-impl<T> Deref for WithContent<T> {
+impl<T, R: DataReader> Deref for WithContent<T, R> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -121,35 +130,43 @@ impl<T> Deref for WithContent<T> {
     }
 }
 
-impl Data {
-    pub fn from_bytes(bytes: Vec<u8>, config: config::Config) -> Result<Self> {
+impl Data<Vec<u8>> {
+    pub async fn from_bytes(bytes: Vec<u8>, config: config::Config) -> Result<Self> {
         let content = DataSource::from_bytes(bytes);
-        let view = DataView::parse(&content, config)?;
+        let view = DataView::parse(&content, config).await?;
         Ok(Self::from(view, content))
     }
+}
 
-    pub fn write<W: Write>(&self, out: &mut BufWriter<W>) -> Result<()> {
-        self.view.write(out, &self.content)
+impl<R: DataReader> Data<R> {
+    pub async fn write<W: Write>(&self, out: &mut BufWriter<W>) -> Result<()> {
+        self.view.write(out, &self.content).await
     }
 
-    pub fn find_entry(
+    pub async fn find_entry(
         &self,
         id: u32,
         space_id: Option<&str>,
         allow_unknown: bool,
-    ) -> Option<(usize, DataEntry)> {
-        self.find_entries(id, space_id, allow_unknown)
-            .next()
-            .map(|(i, view)| (i, DataEntry::from(view, self.content.clone())))
+    ) -> Option<(usize, DataEntry<R>)> {
+        self.view
+            .find_entry(id, space_id, allow_unknown, &self.content)
+            .await
+            .map(|(i, view)| (i, DataEntry::from(view, self.content.get(..).unwrap())))
     }
+}
 
-    fn find_entries<'a>(
-        &'a self,
+impl DataView {
+    const UNKNOWN: u16 = 0x3000;
+
+    pub async fn find_entry<R: DataReader>(
+        &self,
         id: u32,
-        space_id: Option<&'a str>,
+        space_id: Option<&str>,
         allow_unknown: bool,
-    ) -> impl Iterator<Item = (usize, DataEntryView)> + 'a {
-        let is_valid_space = move |cur_space_id: Option<&'static str>| -> bool {
+        content: &DataSource<R>,
+    ) -> Option<(usize, DataEntryView)> {
+        let is_valid_space = |cur_space_id: Option<&'static str>| -> bool {
             match space_id {
                 None => true,
                 Some(space_id) => match cur_space_id {
@@ -159,31 +176,30 @@ impl Data {
             }
         };
 
-        self.lists
-            .iter()
-            .enumerate()
-            .filter(move |(_, list)| is_valid_space(list.config.space_id))
-            .flat_map(move |(i, list)| {
-                list.find_entries(id, &self.content)
-                    .into_iter()
-                    .map(move |entry| (i, entry))
-            })
+        for (i, list) in self.lists.iter().enumerate() {
+            if !is_valid_space(list.config.space_id) {
+                continue;
+            }
+            let entries = list.find_entries(id, content).await;
+            if let Some(view) = entries.into_iter().next() {
+                return Some((i, view));
+            }
+        }
+        None
     }
-}
 
-impl DataView {
-    const UNKNOWN: u16 = 0x3000;
-
-    fn parse_header_impl(data: &mut DataSource) -> Result<u16> {
+    async fn parse_header_impl<R: DataReader>(data: &mut DataSource<R>) -> Result<u16> {
         let version: u16 = data
             .get(0..2)
             .wrap_err("Can't parse version bytes")?
-            .as_le()?;
+            .as_le()
+            .await?;
 
         let unknown: u16 = data
             .get(2..4)
             .wrap_err("Can't parse after-version bytes")?
-            .as_le()?;
+            .as_le()
+            .await?;
 
         data.remove_prefix(4);
 
@@ -198,48 +214,57 @@ impl DataView {
         Ok(version)
     }
 
-    pub fn parse_header(content: &DataSource) -> Result<u16> {
-        Self::parse_header_impl(&mut content.clone())
+    pub async fn parse_header<R: DataReader>(content: &DataSource<R>) -> Result<u16> {
+        Self::parse_header_impl(&mut content.get(..)?).await
     }
 
-    pub fn parse(content: &DataSource, config: config::Config) -> Result<Self> {
-        let with_backtrace = |result, lists| Self::with_backtrace(result, lists, &config, content);
+    pub async fn parse<R: DataReader>(
+        content: &DataSource<R>,
+        config: config::Config,
+    ) -> Result<Self> {
+        let mut data = content.get(..)?;
 
-        let mut data = content.clone();
-
-        let version = Self::parse_header_impl(&mut data).wrap_err_with(|| {
-            let preview_len = content.size().min(32) as usize;
-            match content.read_bytes_at(0, preview_len) {
-                Ok(preview) => {
-                    format!(
+        let version = match Self::parse_header_impl(&mut data).await {
+            Ok(v) => v,
+            Err(err) => {
+                let preview_len = content.size().min(32) as usize;
+                let context = match content.read_bytes_at(0, preview_len).await {
+                    Ok(preview) => format!(
                         "Can't parse header, possibly corrupted data: {:02X?}",
                         preview.as_ref()
-                    )
-                }
-                Err(_) => "Can't parse header, possibly corrupted data".to_string(),
+                    ),
+                    Err(_) => "Can't parse header, possibly corrupted data".to_string(),
+                };
+                return Err(err.wrap_err(context));
             }
-        })?;
+        };
 
         let mut lists = Vec::<DataListView>::with_capacity(config.lists.len());
 
         for list_config in config.lists.iter() {
-            match DataListView::parse(&mut data, version, list_config) {
+            match DataListView::parse(&mut data, version, list_config).await {
                 Ok(list) => lists.push(list),
                 Err(err) => {
-                    return with_backtrace(
+                    return Self::with_backtrace(
                         Err(err).wrap_err(eyre!("Can't parse list '{}'", list_config.caption)),
                         &lists,
-                    );
+                        &config,
+                        content,
+                    )
+                    .await;
                 }
             }
         }
 
         let rest_size = data.size();
         if rest_size > 0 {
-            return with_backtrace(
+            return Self::with_backtrace(
                 Err(eyre!("Expected EOF, got {rest_size} bytes left")),
                 &lists,
-            );
+                &config,
+                content,
+            )
+            .await;
         }
 
         Ok(Self {
@@ -249,40 +274,40 @@ impl DataView {
         })
     }
 
-    pub fn write<W: Write>(&self, out: &mut BufWriter<W>, content: &DataSource) -> Result<()> {
+    pub async fn write<R: DataReader, W: Write>(
+        &self,
+        out: &mut BufWriter<W>,
+        content: &DataSource<R>,
+    ) -> Result<()> {
         out.write_le(self.version)?;
         out.write_le(Self::UNKNOWN)?;
 
         for list in self.lists.iter() {
-            list.write(out, content)?;
+            list.write(out, content).await?;
         }
 
         Ok(())
     }
 
-    fn with_backtrace<T>(
+    async fn with_backtrace<T, R: DataReader>(
         mut result: Result<T>,
         parsed_lists: &[DataListView],
         config: &config::Config,
-        content: &DataSource,
+        content: &DataSource<R>,
     ) -> Result<T> {
         for (list, config) in parsed_lists.iter().zip(config.lists.iter()).rev().take(3) {
             let entries = list.entries.read();
 
-            let presented_entries = entries
-                .iter()
-                .enumerate()
-                .rev()
-                .take(3)
-                .map(
-                    |(i, lazy_entry)| match lazy_entry.resolve(content, config) {
-                        Ok(entry) => {
-                            format!("#{}: {}", i + 1, entry.to_string(config, content))
-                        }
-                        Err(_) => format!("#{}: <unparsable>", i + 1),
-                    },
-                )
-                .join("\n");
+            let mut entry_strings = Vec::new();
+            for (i, lazy_entry) in entries.iter().enumerate().rev().take(3) {
+                entry_strings.push(match lazy_entry.resolve(content, config).await {
+                    Ok(entry) => {
+                        format!("#{}: {}", i + 1, entry.to_string(config, content))
+                    }
+                    Err(_) => format!("#{}: <unparsable>", i + 1),
+                });
+            }
+            let presented_entries = entry_strings.join("\n");
 
             result = result.section(presented_entries.header(format!(
                 "Previously parsed list - '{}' (dt={}, space_id='{}') with {} entries",
@@ -298,17 +323,19 @@ impl DataView {
 }
 
 impl DataListView {
-    fn parse(
-        data: &mut DataSource,
+    async fn parse<R: DataReader>(
+        data: &mut DataSource<R>,
         version: u16,
         list_config: &config::ListConfig,
     ) -> Result<Self> {
         let prefix_len = match list_config.offset {
             config::ListOffset::Auto => match list_config.dt {
                 // TODO: move to GameDialect
-                util::DataType(1) if version >= 191 => 8 + data.get(4..8)?.as_le::<u32>()? as u64,
-                util::DataType(21) => 8 + 4 + data.get(4..8)?.as_le::<u32>()? as u64,
-                util::DataType(101) => 8 + data.get(4..8)?.as_le::<u32>()? as u64,
+                util::DataType(1) if version >= 191 => {
+                    8 + data.get(4..8)?.as_le::<u32>().await? as u64
+                }
+                util::DataType(21) => 8 + 4 + data.get(4..8)?.as_le::<u32>().await? as u64,
+                util::DataType(101) => 8 + data.get(4..8)?.as_le::<u32>().await? as u64,
                 _ => {
                     bail!(
                         "Unexpected element list #{dt} '{name}' with AUTO offset",
@@ -320,16 +347,16 @@ impl DataListView {
             config::ListOffset::Fixed(offset) => offset as u64,
         };
 
-        let prefix = data.get(..prefix_len)?.to_bytes()?.into_owned();
+        let prefix = data.get(..prefix_len)?.to_bytes().await?.into_owned();
         data.remove_prefix(prefix_len);
 
         // TODO: move to GameDialect
         if version >= 191 {
-            let _list_index: u32 = data.get(..4)?.as_le()?;
+            let _list_index: u32 = data.get(..4)?.as_le().await?;
             data.remove_prefix(4);
         }
 
-        let len = data.get(..4)?.as_le::<u32>()? as usize;
+        let len = data.get(..4)?.as_le::<u32>().await? as usize;
         data.remove_prefix(4);
 
         // TODO: move to GameDialect
@@ -365,6 +392,7 @@ impl DataListView {
                 let entry_start = data.base_offset();
                 let entry_size = list_config
                     .compute_entry_byte_size(data)
+                    .await
                     .wrap_err_with(|| {
                         eyre!(
                             "Failed to compute size of {}/{} entry in list {} (dt={})",
@@ -390,19 +418,26 @@ impl DataListView {
         })
     }
 
-    pub fn write<W: Write>(&self, out: &mut BufWriter<W>, content: &DataSource) -> Result<()> {
+    pub async fn write<R: DataReader, W: Write>(
+        &self,
+        out: &mut BufWriter<W>,
+        content: &DataSource<R>,
+    ) -> Result<()> {
         let entries = self.entries.read();
 
         out.write_all(&self.prefix)?;
         out.write_le(entries.len() as u32)?;
         for entry in entries.iter() {
-            entry.write(out, content)?;
+            entry.write(out, content).await?;
         }
 
         Ok(())
     }
 
-    fn build_id_cache(&self, content: &DataSource) -> HashMap<u32, Vec<usize>> {
+    async fn build_id_cache<R: DataReader>(
+        &self,
+        content: &DataSource<R>,
+    ) -> HashMap<u32, Vec<usize>> {
         let id_index = match self.config.find_field("ID") {
             Some(idx) => idx,
             None => return HashMap::new(),
@@ -412,12 +447,12 @@ impl DataListView {
         let mut cache: HashMap<u32, Vec<usize>> = HashMap::with_capacity(entries.len());
 
         for (i, lazy_entry) in entries.iter().enumerate() {
-            let entry = match lazy_entry.resolve(content, &self.config) {
+            let entry = match lazy_entry.resolve(content, &self.config).await {
                 Ok(e) => e,
                 Err(_) => continue,
             };
-            let id_field = &entry.fields.read()[id_index];
-            let Ok(bytes) = id_field.get_bytes(content) else {
+            let fields_guard = entry.fields.read();
+            let Ok(bytes) = fields_guard[id_index].get_bytes(content).await else {
                 continue;
             };
             if let Ok(value::ReadValue::Integer(id_value)) =
@@ -430,7 +465,11 @@ impl DataListView {
         cache
     }
 
-    pub fn find_entries(&self, id: u32, content: &DataSource) -> Vec<DataEntryView> {
+    pub async fn find_entries<R: DataReader>(
+        &self,
+        id: u32,
+        content: &DataSource<R>,
+    ) -> Vec<DataEntryView> {
         if self.config.find_field("ID").is_none() {
             return Default::default();
         }
@@ -438,34 +477,37 @@ impl DataListView {
         {
             let cache = self.id_cache.read();
             if let Some(ref map) = *cache {
-                return self.lookup_cached_entries(map, id, content);
+                return self.lookup_cached_entries(map, id, content).await;
             }
         }
 
         let mut cache = self.id_cache.write();
         // Double-check: another thread may have populated the cache
         if cache.is_none() {
-            *cache = Some(self.build_id_cache(content));
+            *cache = Some(self.build_id_cache(content).await);
         }
         self.lookup_cached_entries(cache.as_ref().unwrap(), id, content)
+            .await
     }
 
-    fn lookup_cached_entries(
+    async fn lookup_cached_entries<R: DataReader>(
         &self,
         cache: &HashMap<u32, Vec<usize>>,
         id: u32,
-        content: &DataSource,
+        content: &DataSource<R>,
     ) -> Vec<DataEntryView> {
         match cache.get(&id) {
             Some(indices) => {
                 let entries = self.entries.read();
-                indices
-                    .iter()
-                    .filter_map(|&i| {
-                        let entry = entries.get(i)?.resolve(content, &self.config).ok()?;
-                        Some(entry.clone())
-                    })
-                    .collect()
+                let mut result = Vec::new();
+                for &i in indices {
+                    if let Some(lazy_entry) = entries.get(i)
+                        && let Ok(entry) = lazy_entry.resolve(content, &self.config).await
+                    {
+                        result.push(entry.clone());
+                    }
+                }
+                result
             }
             None => Vec::new(),
         }
@@ -491,11 +533,11 @@ impl DataListView {
     }
 }
 
-impl DataEntry {
-    pub fn deep_clone(&self) -> Result<Self> {
+impl<R: DataReader> DataEntry<R> {
+    pub async fn deep_clone(&self) -> Result<Self> {
         Ok(Self {
-            content: self.content.clone(),
-            view: self.view.deep_clone(&self.content)?,
+            content: self.content.get(..)?,
+            view: self.view.deep_clone(&self.content).await?,
         })
     }
 }
@@ -507,80 +549,82 @@ impl DataEntryView {
         }
     }
 
-    fn parse(data: &mut DataSource, list_config: &config::ListConfig) -> Result<Self> {
-        let fields: Result<Vec<_>, _> = list_config
-            .fields
-            .iter()
-            .map(|field| DataFieldView::parse(data, field))
-            .collect();
-
-        Ok(Self::new(fields?))
+    async fn parse<R: DataReader>(
+        data: &mut DataSource<R>,
+        list_config: &config::ListConfig,
+    ) -> Result<Self> {
+        let mut fields = Vec::with_capacity(list_config.fields.len());
+        for field in list_config.fields.iter() {
+            fields.push(DataFieldView::parse(data, field).await?);
+        }
+        Ok(Self::new(fields))
     }
 
-    pub fn write<W: Write>(&self, out: &mut BufWriter<W>, content: &DataSource) -> Result<()> {
+    pub async fn write<R: DataReader, W: Write>(
+        &self,
+        out: &mut BufWriter<W>,
+        content: &DataSource<R>,
+    ) -> Result<()> {
         for field in self.fields.read().iter() {
-            field.write(out, content)?;
+            field.write(out, content).await?;
         }
 
         Ok(())
     }
 
-    fn deep_clone(&self, content: &DataSource) -> Result<Self> {
-        let fields: Result<Vec<_>, _> = self
-            .fields
-            .read()
-            .iter()
-            .map(|field| field.deep_clone(content))
-            .collect();
-        Ok(Self::new(fields?))
+    async fn deep_clone<R: DataReader>(&self, content: &DataSource<R>) -> Result<Self> {
+        let mut fields = Vec::new();
+        for field in self.fields.read().iter() {
+            fields.push(field.deep_clone(content).await?);
+        }
+        Ok(Self::new(fields))
     }
 
-    pub fn to_string(&self, list_config: &config::ListConfig, content: &DataSource) -> String {
-        format::lazy_format!(|f| { self.fmt(list_config, content, f) }).to_string()
-    }
-
-    pub fn fmt(
+    pub fn to_string<R: DataReader>(
         &self,
         list_config: &config::ListConfig,
-        content: &DataSource,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+        content: &DataSource<R>,
+    ) -> String {
         let meta_fields = &list_config.fields;
 
+        let mut s = String::from("{");
         let mut sep = "";
-        f.write_char('{')?;
         for (meta_field, field) in meta_fields.iter().zip(self.fields.read().iter()) {
-            f.write_str(std::mem::replace(&mut sep, ", "))?;
+            s.push_str(std::mem::replace(&mut sep, ", "));
 
-            let bytes = match field.get_bytes(content) {
+            let bytes = match pollster::block_on(field.get_bytes(content)) {
                 Ok(b) => b,
                 Err(e) => {
-                    write!(f, "{}=<read_err={}>", &meta_field.name, e)?;
+                    write!(&mut s, "{}=<read_err={}>", &meta_field.name, e).unwrap();
                     continue;
                 }
             };
             let value = meta_field.meta_type.read_value(&bytes);
 
             match value {
-                Ok(value) => write!(f, "{}={}", &meta_field.name, value)?,
-                Err(err) => write!(f, "{}=<err={:?}>", &meta_field.name, err.to_string())?,
+                Ok(value) => write!(&mut s, "{}={}", &meta_field.name, value).unwrap(),
+                Err(err) => {
+                    write!(&mut s, "{}=<err={:?}>", &meta_field.name, err.to_string()).unwrap()
+                }
             }
         }
-        f.write_char('}')?;
-
-        Ok(())
+        s.push('}');
+        s
     }
 }
 
 impl DataFieldView {
-    fn from_source(source: &DataSource) -> Self {
+    fn from_source<R: DataReader>(source: &DataSource<R>) -> Self {
         DataFieldView::ByteRange {
             range: source.base_offset()..source.base_offset() + source.size(),
         }
     }
 
-    fn parse(data: &mut DataSource, field: &meta::MetaField) -> Result<Self> {
-        let byte_size = field.meta_type.get_byte_size(data)?;
+    async fn parse<R: DataReader>(
+        data: &mut DataSource<R>,
+        field: &meta::MetaField,
+    ) -> Result<Self> {
+        let byte_size = field.meta_type.get_byte_size(data).await?;
         let field_data = data.get(..byte_size as u64)?;
 
         data.remove_prefix(byte_size as u64);
@@ -588,22 +632,31 @@ impl DataFieldView {
         Ok(DataFieldView::from_source(&field_data))
     }
 
-    pub fn get_bytes<'a>(&'a self, content: &'a DataSource) -> Result<Cow<'a, [u8]>> {
+    pub async fn get_bytes<'a, R: DataReader>(
+        &'a self,
+        content: &'a DataSource<R>,
+    ) -> Result<Cow<'a, [u8]>> {
         match self {
             DataFieldView::ByteRange { range } => {
-                content.read_bytes_at(range.start, (range.end - range.start) as usize)
+                content
+                    .read_bytes_at(range.start, (range.end - range.start) as usize)
+                    .await
             }
             DataFieldView::Bytes(bytes) => Ok(Cow::Borrowed(bytes)),
         }
     }
 
-    pub fn write<W: Write>(&self, out: &mut BufWriter<W>, content: &DataSource) -> Result<()> {
-        out.write_all(&self.get_bytes(content)?)?;
+    pub async fn write<R: DataReader, W: Write>(
+        &self,
+        out: &mut BufWriter<W>,
+        content: &DataSource<R>,
+    ) -> Result<()> {
+        out.write_all(&self.get_bytes(content).await?)?;
         Ok(())
     }
 
-    fn deep_clone(&self, content: &DataSource) -> Result<Self> {
-        let bytes = self.get_bytes(content)?.into_owned();
+    async fn deep_clone<R: DataReader>(&self, content: &DataSource<R>) -> Result<Self> {
+        let bytes = self.get_bytes(content).await?.into_owned();
         Ok(DataFieldView::Bytes(bytes.into_boxed_slice()))
     }
 }
@@ -623,10 +676,10 @@ mod tests {
         .unwrap()
     }
 
-    fn parse_v7() -> (DataView, DataSource) {
+    fn parse_v7() -> (DataView, DataSource<Vec<u8>>) {
         let bytes = include_test_data_bytes!("elements/elements_v7.data");
         let content = DataSource::from_bytes(bytes.to_vec());
-        let data = DataView::parse(&content, parse_v7_config()).unwrap();
+        let data = pollster::block_on(DataView::parse(&content, parse_v7_config())).unwrap();
         (data, content)
     }
 
@@ -640,9 +693,11 @@ mod tests {
         let (data, content) = parse_v7();
         // Save without accessing any entries (raw byte write path)
         let mut output = Vec::new();
-        data.write(&mut BufWriter::new(&mut output), &content)
-            .unwrap();
-        assert_eq!(content.to_bytes().unwrap().as_ref(), output.as_slice());
+        pollster::block_on(data.write(&mut BufWriter::new(&mut output), &content)).unwrap();
+        assert_eq!(
+            content.to_bytes_blocking().unwrap().as_ref(),
+            output.as_slice()
+        );
     }
 
     #[test]
@@ -652,20 +707,22 @@ mod tests {
         for list in data.lists.iter() {
             let entries = list.entries.read();
             if !entries.is_empty() {
-                let _ = entries[0].resolve(&content, &list.config).unwrap();
+                let _ = pollster::block_on(entries[0].resolve(&content, &list.config)).unwrap();
                 break;
             }
         }
         let mut output = Vec::new();
-        data.write(&mut BufWriter::new(&mut output), &content)
-            .unwrap();
-        assert_eq!(content.to_bytes().unwrap().as_ref(), output.as_slice());
+        pollster::block_on(data.write(&mut BufWriter::new(&mut output), &content)).unwrap();
+        assert_eq!(
+            content.to_bytes_blocking().unwrap().as_ref(),
+            output.as_slice()
+        );
     }
 
     #[test]
     fn parse_empty_data() {
         let content = DataSource::from_bytes(b"".to_vec());
-        let result = DataView::parse(&content, parse_v7_config());
+        let result = pollster::block_on(DataView::parse(&content, parse_v7_config()));
         let err = result.err().expect("expected error for empty data");
         assert!(
             format!("{err:?}").contains("Can't parse version bytes"),
@@ -677,7 +734,7 @@ mod tests {
     fn parse_truncated_header() {
         // Only version, missing UNKNOWN field
         let content = DataSource::from_bytes(b"\x07\x00".to_vec());
-        let result = DataView::parse(&content, parse_v7_config());
+        let result = pollster::block_on(DataView::parse(&content, parse_v7_config()));
         let err = result.err().expect("expected error for truncated header");
         assert!(
             format!("{err:?}").contains("Can't parse after-version bytes"),
@@ -689,7 +746,7 @@ mod tests {
     fn parse_bad_unknown_field() {
         // Version 7 + wrong UNKNOWN value (0x0000 instead of 0x3000)
         let content = DataSource::from_bytes(b"\x07\x00\x00\x00".to_vec());
-        let result = DataView::parse(&content, parse_v7_config());
+        let result = pollster::block_on(DataView::parse(&content, parse_v7_config()));
         let err = result.err().expect("expected error for bad UNKNOWN field");
         assert!(
             format!("{err:?}").contains("Unexpected header"),
@@ -708,7 +765,7 @@ mod tests {
             GameDialectRef::PW,
         )
         .unwrap();
-        let result = DataView::parse(&content, config);
+        let result = pollster::block_on(DataView::parse(&content, config));
         assert!(
             result.is_err(),
             "expected error for mismatched config, got Ok"

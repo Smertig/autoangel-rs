@@ -4,7 +4,7 @@ use autoangel_core::pck::package::{
     FileEntriesOptions, FileEntriesProgressFn, FileEntryProgress, PackageConfig, ParseOptions,
     ParseProgress, ParseProgressFn,
 };
-use autoangel_core::util::data_source::DataSource;
+use autoangel_core::util::data_source::{DataSource, MultiReader};
 use color_eyre::eyre;
 use pyo3::prelude::*;
 use pyo3::types::*;
@@ -32,22 +32,37 @@ impl PyFileEntry {
     }
 }
 
+enum AnyPckContent {
+    Bytes(DataSource<Vec<u8>>),
+    Mmap(DataSource<memmap2::Mmap>),
+    MultiMmap(DataSource<MultiReader<memmap2::Mmap>>),
+}
+
+macro_rules! with_pck_content {
+    ($content:expr, |$c:ident| $body:expr) => {
+        match $content {
+            AnyPckContent::Bytes(ref $c) => $body,
+            AnyPckContent::Mmap(ref $c) => $body,
+            AnyPckContent::MultiMmap(ref $c) => $body,
+        }
+    };
+}
+
 /// Object describing parsed pck package.
 #[pyclass(name = "PckPackage")]
 struct PyPackage {
-    content: DataSource,
+    content: AnyPckContent,
     info: package::PackageInfo,
 }
 
 impl PyPackage {
-    fn new(content: DataSource, config: PackageConfig, options: ParseOptions) -> PyResult<Self> {
-        let info = package::PackageInfo::parse(&content, config, options)?;
-
-        Ok(Self { content, info })
-    }
-
     fn from_bytes(content: &[u8], config: PackageConfig, options: ParseOptions) -> PyResult<Self> {
-        PyPackage::new(DataSource::from_bytes(content.to_owned()), config, options)
+        let ds = DataSource::from_bytes(content.to_owned());
+        let info = pollster::block_on(package::PackageInfo::parse(&ds, config, options))?;
+        Ok(Self {
+            content: AnyPckContent::Bytes(ds),
+            info,
+        })
     }
 
     fn from_file(
@@ -55,7 +70,12 @@ impl PyPackage {
         config: PackageConfig,
         options: ParseOptions,
     ) -> PyResult<Self> {
-        PyPackage::new(DataSource::from_file(file)?, config, options)
+        let ds = DataSource::from_file(file)?;
+        let info = pollster::block_on(package::PackageInfo::parse(&ds, config, options))?;
+        Ok(Self {
+            content: AnyPckContent::Mmap(ds),
+            info,
+        })
     }
 
     fn from_files(
@@ -63,7 +83,12 @@ impl PyPackage {
         config: PackageConfig,
         options: ParseOptions,
     ) -> PyResult<Self> {
-        PyPackage::new(DataSource::from_files(files)?, config, options)
+        let ds = DataSource::from_files(files)?;
+        let info = pollster::block_on(package::PackageInfo::parse(&ds, config, options))?;
+        Ok(Self {
+            content: AnyPckContent::MultiMmap(ds),
+            info,
+        })
     }
 }
 
@@ -73,15 +98,17 @@ impl PyPackage {
     #[pyo3(signature = (path, config=None))]
     fn save(&self, path: &str, config: Option<&PyPackageConfig>) -> PyResult<()> {
         let config = config.map_or_else(Default::default, |c| c.config.clone());
-        self.info.save(&self.content, path, &config)?;
+        with_pck_content!(self.content, |c| {
+            pollster::block_on(self.info.save(c, path, &config))?;
+        });
         Ok(())
     }
 
     /// Get file content by its path.
     fn get_file<'py>(&self, path: &str, py: Python<'py>) -> Option<Bound<'py, PyBytes>> {
-        self.info
-            .get_file(&self.content, path)
-            .map(|r| PyBytes::new(py, &r))
+        with_pck_content!(self.content, |c| {
+            pollster::block_on(self.info.get_file(c, path)).map(|r| PyBytes::new(py, &r))
+        })
     }
 
     /// Find files by path prefix.
@@ -113,7 +140,9 @@ impl PyPackage {
                 })
             }),
         };
-        let entries = self.info.file_entries(&self.content, options)?;
+        let entries = with_pck_content!(self.content, |c| {
+            pollster::block_on(self.info.file_entries(c, options))?
+        });
 
         Ok(entries
             .into_iter()
