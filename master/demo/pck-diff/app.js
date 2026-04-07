@@ -310,6 +310,14 @@ async function getFileEntries(side) {
   return entries;
 }
 
+function bytesEqual(a, b) {
+  if (a.byteLength !== b.byteLength) return false;
+  for (let i = 0; i < a.byteLength; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
 function classifyDiff(leftEntries, rightEntries) {
   const leftMap = new Map(leftEntries.map(e => [e.path, e]));
   const rightMap = new Map(rightEntries.map(e => [e.path, e]));
@@ -1743,15 +1751,60 @@ async function startComparison() {
     fill.style.width = '0%';
   }
 
+  // Hide verification progress from any previous run
+  const verifyItem = document.getElementById('progress-verify');
+  verifyItem.classList.add('hidden');
+
   try {
+    // Phase 1: Get compressed hashes (parallel, no decompression)
     const [leftResult, rightResult] = await Promise.all([
       getFileEntries('left'),
       getFileEntries('right'),
     ]);
 
     const diff = classifyDiff(leftResult, rightResult);
-    diffResult = diff;
 
+    // Phase 2: Verify modified candidates where uncompressed sizes match.
+    // Different compressed hashes could mean same content with different compression.
+    const needsVerify = [];
+    const confirmedModified = [];
+    for (const e of diff.modified) {
+      (e.left.size === e.right.size ? needsVerify : confirmedModified).push(e);
+    }
+    if (needsVerify.length > 0) {
+
+      const verifyLabel = verifyItem.querySelector('.progress-label');
+      const verifyFill = verifyItem.querySelector('.progress-fill');
+      verifyItem.classList.remove('hidden');
+      verifyFill.className = 'progress-fill no-transition';
+      verifyFill.style.width = '0%';
+      verifyFill.offsetWidth; // force reflow
+      verifyFill.className = 'progress-fill';
+
+      for (let i = 0; i < needsVerify.length; i++) {
+        const entry = needsVerify[i];
+        verifyLabel.textContent = `Verifying ${i + 1} / ${needsVerify.length} modified files...`;
+        verifyFill.style.width = `${Math.round(((i + 1) / needsVerify.length) * 100)}%`;
+
+        const [leftData, rightData] = await Promise.all([
+          getFileData('left', entry.path),
+          getFileData('right', entry.path),
+        ]);
+
+        if (leftData && rightData && bytesEqual(leftData, rightData)) {
+          diff.unchanged.push(entry);
+        } else {
+          confirmedModified.push(entry);
+        }
+      }
+
+      diff.modified = confirmedModified;
+      verifyLabel.textContent = `Verified (${needsVerify.length} files)`;
+      verifyFill.style.width = '100%';
+      verifyFill.className = 'progress-fill done';
+    }
+
+    diffResult = diff;
     showResults();
   } catch (e) {
     showError(e.message || String(e));
