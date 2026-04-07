@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1775501713203,
+  "lastUpdate": 1775547693624,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -839,6 +839,90 @@ window.BENCHMARK_DATA = {
             "name": "PackageInfo::get_file",
             "value": 3382,
             "range": "± 1",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "7dd96f8ccdd18e50689f06bdcb1134f518b55180",
+          "message": "pck: add on_progress callback with throttling for package parsing\n\n* Callback reports (index, total) for each file entry during parse, with optional time-based throttling via progress_interval_ms (default 0 = no throttling); first and last entries always reported\n\n* Exposed in Python (read_pck/read_pck_bytes on_progress + progress_interval_ms kwargs) and WASM (onProgress + progressIntervalMs in options bag)\n\n* Added web-time dependency for cross-platform Instant (native + WASM)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+          "timestamp": "2026-04-07T00:50:33+03:00",
+          "tree_id": "84308aacb4c83ab03acf1f406604f6909af61146",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/7dd96f8ccdd18e50689f06bdcb1134f518b55180"
+        },
+        "date": 1775547693095,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 30732,
+            "range": "± 1367",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 60,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::access_fields",
+            "value": 13,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 131,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 23143,
+            "range": "± 537",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::iterate_lists",
+            "value": 1521,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 15,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 292750,
+            "range": "± 725",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::find_prefix",
+            "value": 331,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 3336,
+            "range": "± 2",
             "unit": "ns/iter"
           }
         ]
