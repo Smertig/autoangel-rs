@@ -152,6 +152,10 @@
   color: var(--added-text);
 }
 
+.status-line.has-progress {
+  white-space: normal;
+}
+
 /* --- Keys panel (pck-diff variant: gray bg, bordered) --- */
 
 .keys-panel {

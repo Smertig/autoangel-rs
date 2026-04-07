@@ -4,6 +4,7 @@ import {
   getExtension, formatSize, escapeHtml, classifyFiles,
   detectBOM, detectUTF16Pattern, detectEncoding, decodeText, isLikelyText,
   renderCanvasImage, initImageDecoders,
+  showInlineProgress,
 } from '../pck-common.js';
 import { resolveCDN } from '../cdn.js';
 
@@ -201,7 +202,7 @@ async function loadFiles(files) {
   }
 
   hideError();
-  dom.status.textContent = `Parsing ${label} (${(totalSize / 1e6).toFixed(1)} MB)\u2026`;
+  const statusFill = showInlineProgress(dom.status, `Parsing ${label} (${(totalSize / 1e6).toFixed(1)} MB)\u2026`);
   dom.preview.innerHTML = '<div class="placeholder">Parsing\u2026</div>';
   dom.actions.innerHTML = '';
   dom.tree.innerHTML = '';
@@ -216,7 +217,7 @@ async function loadFiles(files) {
   const onWorkerProgress = ({ phase, index, total }) => {
     if (phase === 'parse') {
       const pct = Math.round(((index + 1) / total) * 100);
-      dom.status.textContent = `Parsing ${label}: ${pct}%`;
+      statusFill.style.width = `${pct}%`;
     }
   };
 
@@ -239,12 +240,14 @@ async function loadFiles(files) {
     }
   } catch (e) {
     showError(e.message || String(e));
+    dom.status.classList.remove('has-progress');
     return;
   }
 
   fileTree = buildTree(fileList);
 
   dom.status.textContent = label;
+  dom.status.classList.remove('has-progress');
   dom.filecount.textContent = `${fileList.length} files`;
   dom.format.textContent = `format v0x${version.toString(16).toUpperCase()}`;
   dom.explorer.classList.remove('hidden');

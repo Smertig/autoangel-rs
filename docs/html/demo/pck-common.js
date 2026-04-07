@@ -181,3 +181,21 @@ export function renderCanvasImage(data, ext) {
   canvas.getContext('2d').putImageData(imageData, 0, 0);
   return { canvas, width, height };
 }
+
+/**
+ * Replace container contents with a text label + thin progress bar.
+ * @returns {HTMLDivElement} The fill element — set its style.width to update progress.
+ */
+export function showInlineProgress(container, text) {
+  const label = document.createElement('span');
+  label.className = 'status-text';
+  label.textContent = text;
+  const bar = document.createElement('div');
+  bar.className = 'status-bar';
+  const fill = document.createElement('div');
+  fill.className = 'status-bar-fill';
+  bar.appendChild(fill);
+  container.replaceChildren(label, bar);
+  container.classList.add('has-progress');
+  return fill;
+}
