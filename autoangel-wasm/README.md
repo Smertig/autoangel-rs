@@ -13,7 +13,7 @@ npm install autoangel
 ### CDN
 
 ```js
-import init, { ElementsData, PckPackage } from 'https://cdn.jsdelivr.net/npm/autoangel@0.8.6/autoangel.js';
+import init, { ElementsData, PckPackage } from 'https://cdn.jsdelivr.net/npm/autoangel@0.8.7/autoangel.js';
 await init();
 ```
 
