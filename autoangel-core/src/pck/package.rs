@@ -2,7 +2,7 @@ use crate::util::DropLeadingZeros;
 use crate::util::data_source::{DataReader, DataSource};
 use crate::util::throttle::Throttle;
 use eyre::{Context, Result, eyre};
-use std::borrow::Cow;
+
 use std::convert::TryInto;
 use std::io::{Seek, Write};
 #[cfg(feature = "fs")]
@@ -352,29 +352,20 @@ impl FileEntry {
         path.replace('/', r"\").to_lowercase()
     }
 
-    pub async fn get_raw_file_bytes<'a, R: DataReader>(
-        &self,
-        content: &'a DataSource<R>,
-    ) -> Result<Cow<'a, [u8]>> {
-        content
-            .read_bytes_at(self.offset, self.compressed_size as usize)
-            .await
-    }
-
     /// Read and decompress the file content.
-    pub async fn get_file<'a, R: DataReader>(
-        &self,
-        content: &'a DataSource<R>,
-    ) -> Option<Cow<'a, [u8]>> {
-        let compressed = self.get_raw_file_bytes(content).await.ok()?;
-
-        if self.compressed_size >= self.size {
-            return Some(compressed);
-        }
-
-        miniz_oxide::inflate::decompress_to_vec_zlib(&compressed)
-            .ok()
-            .map(Cow::Owned)
+    pub async fn get_file<R: DataReader>(&self, content: &DataSource<R>) -> Option<Vec<u8>> {
+        let compressed_size = self.compressed_size;
+        let size = self.size;
+        content
+            .read_at(self.offset, compressed_size as usize, |compressed| {
+                if compressed_size >= size {
+                    Some(compressed.to_vec())
+                } else {
+                    miniz_oxide::inflate::decompress_to_vec_zlib(compressed).ok()
+                }
+            })
+            .await
+            .ok()?
     }
 }
 
@@ -470,9 +461,11 @@ impl PackageInfo {
         for old_entry in &self.files {
             use encoding::*;
 
-            let compressed = old_entry.get_raw_file_bytes(content).await?;
-
-            writer.write_all(&compressed)?;
+            content
+                .read_at(old_entry.offset, old_entry.compressed_size as usize, |b| {
+                    writer.write_all(b)
+                })
+                .await??;
 
             fn add_leading_zeros<const N: usize>(bytes: &[u8]) -> Result<[u8; N]> {
                 assert!(N > 0);
@@ -489,16 +482,14 @@ impl PackageInfo {
                 .encode(&old_entry.original_name, EncoderTrap::Strict)
                 .map_err(|s| eyre!("Decoding error: {s}"))?;
 
-            let compressed_size = compressed.len();
-
             new_entries.push(FileGbkEntry {
                 filename: add_leading_zeros(&encoded_name)?,
                 offset: current_offset,
                 size: old_entry.size,
-                compressed_size: compressed_size as u32,
+                compressed_size: old_entry.compressed_size,
             });
 
-            current_offset += compressed_size as u64;
+            current_offset += old_entry.compressed_size as u64;
         }
 
         let entry_table_offset = current_offset;
@@ -751,10 +742,12 @@ impl PackageInfo {
                 })?;
             }
 
-            let hash = match entry.get_raw_file_bytes(content).await {
-                Ok(data) => crc32fast::hash(&data),
-                Err(_) => 0,
-            };
+            let hash: u32 = content
+                .read_at(entry.offset, entry.compressed_size as usize, |b| {
+                    crc32fast::hash(b)
+                })
+                .await
+                .unwrap_or(0);
 
             results.push(FileEntrySummary {
                 path: &entry.normalized_name,
@@ -767,11 +760,11 @@ impl PackageInfo {
         Ok(results)
     }
 
-    pub async fn get_file<'a, R: DataReader>(
+    pub async fn get_file<R: DataReader>(
         &self,
-        content: &'a DataSource<R>,
+        content: &DataSource<R>,
         path: &str,
-    ) -> Option<Cow<'a, [u8]>> {
+    ) -> Option<Vec<u8>> {
         let path = FileEntry::normalize_path(path);
 
         let entry = self

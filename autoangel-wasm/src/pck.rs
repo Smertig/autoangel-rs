@@ -146,9 +146,7 @@ async fn get_file_inner<R: DataReader>(
     content: &DataSource<R>,
     path: &str,
 ) -> Option<Vec<u8>> {
-    info.get_file(content, path)
-        .await
-        .map(|cow| cow.into_owned())
+    info.get_file(content, path).await
 }
 
 async fn file_entries_inner<R: DataReader>(

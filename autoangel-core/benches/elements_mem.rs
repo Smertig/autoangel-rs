@@ -53,9 +53,8 @@ fn main() {
         measure_bytes(|| {
             let mut fields = entry_clone.fields.write();
             if !fields.is_empty() {
-                let first_field = pollster::block_on(fields[0].get_bytes(&entry_clone.content))
-                    .unwrap()
-                    .into_owned();
+                let first_field =
+                    pollster::block_on(fields[0].get_bytes(&entry_clone.content)).unwrap();
                 fields[0] = DataFieldView::Bytes(first_field.into());
             }
             black_box(&fields);

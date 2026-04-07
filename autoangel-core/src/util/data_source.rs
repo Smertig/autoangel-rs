@@ -1,74 +1,42 @@
 use eyre::{Result, eyre};
-use std::borrow::Cow;
 use std::convert::TryFrom;
 use std::sync::Arc;
 
 /// Low-level trait for reading bytes from a backing store.
 ///
-/// Implementations exist for in-memory buffers (`Vec<u8>`, `Mmap`)
-/// and can be added for external backends (e.g. JS `File` handles via WASM).
+/// The callback-based `read_at` enables zero-copy access: implementations
+/// call `f` directly on their internal buffer (mmap, cache, etc.) without
+/// allocating intermediate copies.
 pub trait DataReader: Send + Sync {
     #[allow(async_fn_in_trait)] // We use static dispatch (generics), not dyn — no auto trait issue
-    async fn read_at(&self, offset: u64, buf: &mut [u8]) -> Result<()>;
+    async fn read_at<F, T>(&self, offset: u64, len: usize, f: F) -> Result<T>
+    where
+        F: FnOnce(&[u8]) -> T;
+
     fn size(&self) -> u64;
-
-    /// If the backing store is contiguous memory, return it directly.
-    /// This enables zero-copy access for in-memory readers.
-    fn as_slice(&self) -> Option<&[u8]> {
-        None
-    }
 }
 
-impl DataReader for Vec<u8> {
-    async fn read_at(&self, offset: u64, buf: &mut [u8]) -> Result<()> {
-        let slice: &[u8] = self.as_ref();
-        let offset = offset as usize;
-        let end = offset + buf.len();
+impl<B: AsRef<[u8]> + Send + Sync> DataReader for B {
+    async fn read_at<F, T>(&self, offset: u64, len: usize, f: F) -> Result<T>
+    where
+        F: FnOnce(&[u8]) -> T,
+    {
+        let slice = self.as_ref();
+        let off = offset as usize;
+        let end = off + len;
         if end > slice.len() {
             return Err(eyre!(
                 "DataReader: read out of bounds: {}..{} (size {})",
-                offset,
+                off,
                 end,
                 slice.len()
             ));
         }
-        buf.copy_from_slice(&slice[offset..end]);
-        Ok(())
+        Ok(f(&slice[off..end]))
     }
 
     fn size(&self) -> u64 {
-        self.len() as u64
-    }
-
-    fn as_slice(&self) -> Option<&[u8]> {
-        Some(self)
-    }
-}
-
-#[cfg(feature = "fs")]
-impl DataReader for memmap2::Mmap {
-    async fn read_at(&self, offset: u64, buf: &mut [u8]) -> Result<()> {
-        let slice: &[u8] = self.as_ref();
-        let offset = offset as usize;
-        let end = offset + buf.len();
-        if end > slice.len() {
-            return Err(eyre!(
-                "DataReader: read out of bounds: {}..{} (size {})",
-                offset,
-                end,
-                slice.len()
-            ));
-        }
-        buf.copy_from_slice(&slice[offset..end]);
-        Ok(())
-    }
-
-    fn size(&self) -> u64 {
-        self.len() as u64
-    }
-
-    fn as_slice(&self) -> Option<&[u8]> {
-        Some(self)
+        self.as_ref().len() as u64
     }
 }
 
@@ -89,11 +57,27 @@ impl<R: DataReader> MultiReader<R> {
         }
         Self { parts, prefix_sums }
     }
+
+    fn find_part(&self, offset: u64) -> usize {
+        match self.prefix_sums.binary_search(&offset) {
+            Ok(i) => {
+                if i < self.parts.len() {
+                    i
+                } else {
+                    i - 1
+                }
+            }
+            Err(i) => i - 1,
+        }
+    }
 }
 
 impl<R: DataReader> DataReader for MultiReader<R> {
-    async fn read_at(&self, offset: u64, buf: &mut [u8]) -> Result<()> {
-        let end = offset + buf.len() as u64;
+    async fn read_at<F, T>(&self, offset: u64, len: usize, f: F) -> Result<T>
+    where
+        F: FnOnce(&[u8]) -> T,
+    {
+        let end = offset + len as u64;
         let total_size = self.size();
         if end > total_size {
             return Err(eyre!(
@@ -104,33 +88,37 @@ impl<R: DataReader> DataReader for MultiReader<R> {
             ));
         }
 
-        let mut part_idx = match self.prefix_sums.binary_search(&offset) {
-            Ok(i) => {
-                if i < self.parts.len() {
-                    i
-                } else {
-                    i - 1
-                }
-            }
-            Err(i) => i - 1,
-        };
+        let part_idx = self.find_part(offset);
+        let part_end = self.prefix_sums[part_idx + 1];
 
-        let mut buf_offset = 0usize;
-        while buf_offset < buf.len() {
-            let part_start = self.prefix_sums[part_idx];
-            let part_end = self.prefix_sums[part_idx + 1];
-            let read_start = (offset + buf_offset as u64) - part_start;
-            let available = (part_end - part_start - read_start) as usize;
-            let to_read = available.min(buf.len() - buf_offset);
-
-            self.parts[part_idx]
-                .read_at(read_start, &mut buf[buf_offset..buf_offset + to_read])
-                .await?;
-            buf_offset += to_read;
-            part_idx += 1;
+        // Common case: range fits within a single part — delegate directly
+        if end <= part_end {
+            let local = offset - self.prefix_sums[part_idx];
+            return self.parts[part_idx].read_at(local, len, f).await;
         }
 
-        Ok(())
+        // Rare case: range spans multiple parts — assemble into a temp buffer
+        let mut buf = Vec::with_capacity(len);
+        let mut idx = part_idx;
+        let mut remaining = len;
+        let mut off = offset;
+        while remaining > 0 {
+            let ps = self.prefix_sums[idx];
+            let pe = self.prefix_sums[idx + 1];
+            let local = off - ps;
+            let available = (pe - ps - local) as usize;
+            let to_read = available.min(remaining);
+
+            let piece = self.parts[idx]
+                .read_at(local, to_read, |src| src.to_vec())
+                .await?;
+            buf.extend_from_slice(&piece);
+
+            off += to_read as u64;
+            remaining -= to_read;
+            idx += 1;
+        }
+        Ok(f(&buf))
     }
 
     fn size(&self) -> u64 {
@@ -139,16 +127,11 @@ impl<R: DataReader> DataReader for MultiReader<R> {
 }
 
 /// High-level view into a `DataReader`, supporting sub-views, cursor advancement,
-/// and zero-copy access for in-memory backends.
-///
-/// Replaces `ByteView` with a backend-agnostic design. For in-memory readers,
-/// `to_bytes()` returns `Cow::Borrowed` (zero-copy). For external readers (e.g.
-/// JS File), it returns `Cow::Owned`.
+/// and zero-copy processing via callbacks.
 #[derive(Clone)]
 pub struct DataSource<R: DataReader> {
     reader: Arc<R>,
     /// Absolute byte offset into the reader where this view starts.
-    /// Also serves as the "base offset" for error messages.
     offset: u64,
     len: u64,
 }
@@ -222,40 +205,24 @@ impl<R: DataReader> DataSource<R> {
         })
     }
 
-    /// Read bytes at a relative offset within this view, without creating
-    /// an intermediate `DataSource`. The returned `Cow` borrows directly from
-    /// `&self`, so the borrow lifetime is tied to this `DataSource`.
-    pub async fn read_bytes_at(&self, offset: u64, len: usize) -> Result<Cow<'_, [u8]>> {
+    /// Apply `f` to the bytes at a relative offset within this view.
+    /// Zero-copy for mmap/in-memory readers; allocates a temp buffer for external readers.
+    pub async fn read_at<F, T>(&self, offset: u64, len: usize, f: F) -> Result<T>
+    where
+        F: FnOnce(&[u8]) -> T,
+    {
         let end = offset + len as u64;
         if end > self.len {
             return Err(self.range_error(offset, end));
         }
         let abs_offset = self.offset + offset;
-        if let Some(slice) = self.reader.as_slice() {
-            let abs = abs_offset as usize;
-            Ok(Cow::Borrowed(&slice[abs..abs + len]))
-        } else {
-            let mut buf = vec![0u8; len];
-            self.reader.read_at(abs_offset, &mut buf).await?;
-            Ok(Cow::Owned(buf))
-        }
+        self.reader.read_at(abs_offset, len, f).await
     }
 
-    /// Materialize the bytes in this view.
-    ///
-    /// Returns `Cow::Borrowed` for in-memory readers (zero-copy),
-    /// `Cow::Owned` for external readers.
-    pub async fn to_bytes(&self) -> Result<Cow<'_, [u8]>> {
-        if let Some(slice) = self.reader.as_slice() {
-            let off = self.offset as usize;
-            let n = self.len as usize;
-            Ok(Cow::Borrowed(&slice[off..off + n]))
-        } else {
-            let n = self.len as usize;
-            let mut buf = vec![0u8; n];
-            self.reader.read_at(self.offset, &mut buf).await?;
-            Ok(Cow::Owned(buf))
-        }
+    /// Materialize the bytes in this view as an owned vector.
+    pub async fn to_bytes(&self) -> Result<Vec<u8>> {
+        let n = self.len as usize;
+        self.reader.read_at(self.offset, n, |b| b.to_vec()).await
     }
 
     /// Parse a little-endian primitive value from this view.
@@ -264,18 +231,20 @@ impl<R: DataReader> DataSource<R> {
         O: endiannezz::Primitive,
         for<'a> <O as endiannezz::Primitive>::Buf: TryFrom<&'a [u8]>,
     {
-        let bytes = self.to_bytes().await?;
-
-        let fixed_buf = bytes.as_ref().try_into().map_err(|_| {
-            eyre!(
-                "Unable to parse {} (little-endian) from range of len {} (expected len: {})",
-                std::any::type_name::<O>(),
-                bytes.len(),
-                std::mem::size_of::<O>()
-            )
-        })?;
-
-        Ok(O::from_le_bytes(fixed_buf))
+        let n = self.len as usize;
+        self.reader
+            .read_at(self.offset, n, |bytes| {
+                let fixed_buf = bytes.try_into().map_err(|_| {
+                    eyre!(
+                        "Unable to parse {} (little-endian) from range of len {} (expected len: {})",
+                        std::any::type_name::<O>(),
+                        bytes.len(),
+                        std::mem::size_of::<O>()
+                    )
+                })?;
+                Ok(O::from_le_bytes(fixed_buf))
+            })
+            .await?
     }
 
     /// Parse a typed value from this view's bytes.
@@ -284,10 +253,15 @@ impl<R: DataReader> DataSource<R> {
         O: for<'a> TryFrom<&'a [u8], Error = E>,
         E: std::error::Error + Send + Sync + 'static,
     {
-        let bytes = self.to_bytes().await?;
-        bytes.as_ref().try_into().map_err(|e: E| {
-            eyre::Report::new(e).wrap_err(format!("Unable to parse {}", std::any::type_name::<O>()))
-        })
+        let n = self.len as usize;
+        self.reader
+            .read_at(self.offset, n, |bytes| {
+                bytes.try_into().map_err(|e: E| {
+                    eyre::Report::new(e)
+                        .wrap_err(format!("Unable to parse {}", std::any::type_name::<O>()))
+                })
+            })
+            .await?
     }
 
     /// Advance the start of this view by `prefix_size` bytes.
@@ -377,12 +351,8 @@ impl<R: DataReader> std::fmt::Debug for DataSource<R> {
 
 #[cfg(test)]
 impl<R: DataReader> DataSource<R> {
-    pub fn to_bytes_blocking(&self) -> Result<Cow<'_, [u8]>> {
+    pub fn to_bytes_blocking(&self) -> Result<Vec<u8>> {
         pollster::block_on(self.to_bytes())
-    }
-
-    pub fn read_bytes_at_blocking(&self, offset: u64, len: usize) -> Result<Cow<'_, [u8]>> {
-        pollster::block_on(self.read_bytes_at(offset, len))
     }
 
     pub fn as_le_blocking<O>(&self) -> Result<O>
@@ -409,7 +379,7 @@ impl<R: DataReader> PartialEq for DataSource<R> {
             return false;
         }
         match (self.to_bytes_blocking(), other.to_bytes_blocking()) {
-            (Ok(a), Ok(b)) => a.as_ref() == b.as_ref(),
+            (Ok(a), Ok(b)) => a == b,
             _ => false,
         }
     }
@@ -428,7 +398,7 @@ mod tests {
         assert_eq!(ds.size(), 5);
         assert!(!ds.is_empty());
         assert_eq!(ds.base_offset(), 0);
-        assert_eq!(ds.to_bytes_blocking().unwrap().as_ref(), b"hello");
+        assert_eq!(ds.to_bytes_blocking().unwrap(), b"hello");
     }
 
     #[test]
@@ -442,7 +412,7 @@ mod tests {
     fn get_at() {
         let ds = DataSource::from_bytes(b"hello world".to_vec());
         let sub = ds.get_at(6, 5).unwrap();
-        assert_eq!(sub.to_bytes_blocking().unwrap().as_ref(), b"world");
+        assert_eq!(sub.to_bytes_blocking().unwrap(), b"world");
         assert_eq!(sub.base_offset(), 6);
         assert_eq!(sub.size(), 5);
     }
@@ -450,22 +420,10 @@ mod tests {
     #[test]
     fn get_range() {
         let ds = DataSource::from_bytes(b"12345".to_vec());
-        assert_eq!(
-            ds.get(..).unwrap().to_bytes_blocking().unwrap().as_ref(),
-            b"12345"
-        );
-        assert_eq!(
-            ds.get(2..).unwrap().to_bytes_blocking().unwrap().as_ref(),
-            b"345"
-        );
-        assert_eq!(
-            ds.get(..3).unwrap().to_bytes_blocking().unwrap().as_ref(),
-            b"123"
-        );
-        assert_eq!(
-            ds.get(3..3).unwrap().to_bytes_blocking().unwrap().as_ref(),
-            b""
-        );
+        assert_eq!(ds.get(..).unwrap().to_bytes_blocking().unwrap(), b"12345");
+        assert_eq!(ds.get(2..).unwrap().to_bytes_blocking().unwrap(), b"345");
+        assert_eq!(ds.get(..3).unwrap().to_bytes_blocking().unwrap(), b"123");
+        assert_eq!(ds.get(3..3).unwrap().to_bytes_blocking().unwrap(), b"");
     }
 
     #[test]
@@ -499,7 +457,6 @@ mod tests {
     #[test]
     fn chained_get() {
         let ds = DataSource::from_bytes(b"123456789".to_vec());
-        // Chain 8 times from get(1..) to exhaust the 9 bytes
         let v = ds
             .get(1..)
             .unwrap()
@@ -518,9 +475,8 @@ mod tests {
             .get(1..)
             .unwrap();
         assert_eq!(v.size(), 1);
-        assert_eq!(v.to_bytes_blocking().unwrap().as_ref(), b"9");
+        assert_eq!(v.to_bytes_blocking().unwrap(), b"9");
 
-        // One more get(1..) should fail
         assert!(v.get(1..).unwrap().get(1..).is_err());
     }
 
@@ -582,7 +538,7 @@ mod tests {
         ds.remove_prefix(6);
         assert_eq!(ds.size(), 5);
         assert_eq!(ds.base_offset(), 6);
-        assert_eq!(ds.to_bytes_blocking().unwrap().as_ref(), b"world");
+        assert_eq!(ds.to_bytes_blocking().unwrap(), b"world");
     }
 
     #[test]
@@ -602,18 +558,11 @@ mod tests {
     }
 
     #[test]
-    fn zero_copy_for_in_memory() {
-        let ds = DataSource::from_bytes(b"test".to_vec());
-        let bytes = ds.to_bytes_blocking().unwrap();
-        assert!(matches!(bytes, Cow::Borrowed(_)));
-    }
-
-    #[test]
     fn multi_reader_single() {
         let a: Arc<Vec<u8>> = Arc::new(b"hello".to_vec());
         let ds = DataSource::composite(vec![a]);
         assert_eq!(ds.size(), 5);
-        assert_eq!(ds.to_bytes_blocking().unwrap().as_ref(), b"hello");
+        assert_eq!(ds.to_bytes_blocking().unwrap(), b"hello");
     }
 
     #[test]
@@ -623,33 +572,19 @@ mod tests {
         let ds = DataSource::composite(vec![a, b]);
 
         assert_eq!(ds.size(), 11);
-        assert_eq!(ds.to_bytes_blocking().unwrap().as_ref(), b"hello world");
+        assert_eq!(ds.to_bytes_blocking().unwrap(), b"hello world");
 
-        // Sub-view within first
         assert_eq!(
-            ds.get_at(0, 5)
-                .unwrap()
-                .to_bytes_blocking()
-                .unwrap()
-                .as_ref(),
+            ds.get_at(0, 5).unwrap().to_bytes_blocking().unwrap(),
             b"hello"
         );
-        // Sub-view within second
         assert_eq!(
-            ds.get_at(6, 5)
-                .unwrap()
-                .to_bytes_blocking()
-                .unwrap()
-                .as_ref(),
+            ds.get_at(6, 5).unwrap().to_bytes_blocking().unwrap(),
             b"world"
         );
-        // Sub-view spanning both
+        // Spanning both parts
         assert_eq!(
-            ds.get_at(3, 5)
-                .unwrap()
-                .to_bytes_blocking()
-                .unwrap()
-                .as_ref(),
+            ds.get_at(3, 5).unwrap().to_bytes_blocking().unwrap(),
             b"lo wo"
         );
     }
@@ -662,33 +597,18 @@ mod tests {
         let ds = DataSource::composite(vec![a, b, c]);
 
         assert_eq!(ds.size(), 9);
-        assert_eq!(ds.to_bytes_blocking().unwrap().as_ref(), b"aaabbbccc");
+        assert_eq!(ds.to_bytes_blocking().unwrap(), b"aaabbbccc");
 
-        // Read spanning all three parts
         assert_eq!(
-            ds.get_at(2, 5)
-                .unwrap()
-                .to_bytes_blocking()
-                .unwrap()
-                .as_ref(),
+            ds.get_at(2, 5).unwrap().to_bytes_blocking().unwrap(),
             b"abbbc"
         );
-        // Read entirely in middle part
         assert_eq!(
-            ds.get_at(3, 3)
-                .unwrap()
-                .to_bytes_blocking()
-                .unwrap()
-                .as_ref(),
+            ds.get_at(3, 3).unwrap().to_bytes_blocking().unwrap(),
             b"bbb"
         );
-        // Read entirely in last part
         assert_eq!(
-            ds.get_at(6, 3)
-                .unwrap()
-                .to_bytes_blocking()
-                .unwrap()
-                .as_ref(),
+            ds.get_at(6, 3).unwrap().to_bytes_blocking().unwrap(),
             b"ccc"
         );
     }
@@ -722,6 +642,6 @@ mod tests {
         let data: Arc<Vec<u8>> = Arc::new(b"test data".to_vec());
         let ds = DataSource::from_reader(data);
         assert_eq!(ds.size(), 9);
-        assert_eq!(ds.to_bytes_blocking().unwrap().as_ref(), b"test data");
+        assert_eq!(ds.to_bytes_blocking().unwrap(), b"test data");
     }
 }

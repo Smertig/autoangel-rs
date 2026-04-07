@@ -70,8 +70,11 @@ impl BufferedFileReader {
 }
 
 impl DataReader for BufferedFileReader {
-    async fn read_at(&self, offset: u64, buf: &mut [u8]) -> Result<()> {
-        let end = offset + buf.len() as u64;
+    async fn read_at<F, T>(&self, offset: u64, len: usize, f: F) -> Result<T>
+    where
+        F: FnOnce(&[u8]) -> T,
+    {
+        let end = offset + len as u64;
         if end > self.size {
             return Err(eyre!(
                 "BufferedFileReader: read out of bounds: {}..{} (size {})",
@@ -84,22 +87,19 @@ impl DataReader for BufferedFileReader {
         // Check buffer hit
         {
             let state = self.buffer.borrow();
-            let buf_start = state.offset;
-            let buf_end = buf_start + state.len as u64;
-            if offset >= buf_start && end <= buf_end {
-                let local_start = (offset - buf_start) as usize;
-                buf.copy_from_slice(&state.data[local_start..local_start + buf.len()]);
-                return Ok(());
+            let buf_end = state.offset + state.len as u64;
+            if offset >= state.offset && end <= buf_end {
+                let local = (offset - state.offset) as usize;
+                return Ok(f(&state.data[local..local + len]));
             }
         }
 
         // Cache miss — fetch new chunk
-        self.fetch_chunk(offset, buf.len()).await?;
+        self.fetch_chunk(offset, len).await?;
 
         let state = self.buffer.borrow();
-        let local_start = (offset - state.offset) as usize;
-        buf.copy_from_slice(&state.data[local_start..local_start + buf.len()]);
-        Ok(())
+        let local = (offset - state.offset) as usize;
+        Ok(f(&state.data[local..local + len]))
     }
 
     fn size(&self) -> u64 {

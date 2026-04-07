@@ -5,7 +5,6 @@ use endiannezz::ext::EndianWriter;
 use eyre::{Result, WrapErr, bail, eyre};
 use once_cell::sync::OnceCell;
 use parking_lot::RwLock;
-use std::borrow::Cow;
 use std::collections::HashMap;
 use std::fmt::Write as _;
 use std::io::{BufWriter, Write};
@@ -101,13 +100,13 @@ impl LazyEntry {
             LazyEntry::Deferred { byte_range, parsed } => match parsed.get() {
                 Some(entry) => entry.write(out, content).await,
                 None => {
-                    let bytes = content
-                        .read_bytes_at(
+                    content
+                        .read_at(
                             byte_range.start,
                             (byte_range.end - byte_range.start) as usize,
+                            |bytes| out.write_all(bytes),
                         )
-                        .await?;
-                    out.write_all(&bytes)?;
+                        .await??;
                     Ok(())
                 }
             },
@@ -228,10 +227,10 @@ impl DataView {
             Ok(v) => v,
             Err(err) => {
                 let preview_len = content.size().min(32) as usize;
-                let context = match content.read_bytes_at(0, preview_len).await {
+                let context = match content.read_at(0, preview_len, |b| b.to_vec()).await {
                     Ok(preview) => format!(
                         "Can't parse header, possibly corrupted data: {:02X?}",
-                        preview.as_ref()
+                        preview
                     ),
                     Err(_) => "Can't parse header, possibly corrupted data".to_string(),
                 };
@@ -347,7 +346,7 @@ impl DataListView {
             config::ListOffset::Fixed(offset) => offset as u64,
         };
 
-        let prefix = data.get(..prefix_len)?.to_bytes().await?.into_owned();
+        let prefix = data.get(..prefix_len)?.to_bytes().await?;
         data.remove_prefix(prefix_len);
 
         // TODO: move to GameDialect
@@ -632,17 +631,16 @@ impl DataFieldView {
         Ok(DataFieldView::from_source(&field_data))
     }
 
-    pub async fn get_bytes<'a, R: DataReader>(
-        &'a self,
-        content: &'a DataSource<R>,
-    ) -> Result<Cow<'a, [u8]>> {
+    pub async fn get_bytes<R: DataReader>(&self, content: &DataSource<R>) -> Result<Vec<u8>> {
         match self {
             DataFieldView::ByteRange { range } => {
                 content
-                    .read_bytes_at(range.start, (range.end - range.start) as usize)
+                    .read_at(range.start, (range.end - range.start) as usize, |b| {
+                        b.to_vec()
+                    })
                     .await
             }
-            DataFieldView::Bytes(bytes) => Ok(Cow::Borrowed(bytes)),
+            DataFieldView::Bytes(bytes) => Ok(bytes.to_vec()),
         }
     }
 
@@ -651,12 +649,21 @@ impl DataFieldView {
         out: &mut BufWriter<W>,
         content: &DataSource<R>,
     ) -> Result<()> {
-        out.write_all(&self.get_bytes(content).await?)?;
+        match self {
+            DataFieldView::ByteRange { range } => {
+                content
+                    .read_at(range.start, (range.end - range.start) as usize, |b| {
+                        out.write_all(b)
+                    })
+                    .await??;
+            }
+            DataFieldView::Bytes(bytes) => out.write_all(bytes)?,
+        }
         Ok(())
     }
 
     async fn deep_clone<R: DataReader>(&self, content: &DataSource<R>) -> Result<Self> {
-        let bytes = self.get_bytes(content).await?.into_owned();
+        let bytes = self.get_bytes(content).await?;
         Ok(DataFieldView::Bytes(bytes.into_boxed_slice()))
     }
 }
@@ -694,10 +701,7 @@ mod tests {
         // Save without accessing any entries (raw byte write path)
         let mut output = Vec::new();
         pollster::block_on(data.write(&mut BufWriter::new(&mut output), &content)).unwrap();
-        assert_eq!(
-            content.to_bytes_blocking().unwrap().as_ref(),
-            output.as_slice()
-        );
+        assert_eq!(content.to_bytes_blocking().unwrap(), output);
     }
 
     #[test]
@@ -713,10 +717,7 @@ mod tests {
         }
         let mut output = Vec::new();
         pollster::block_on(data.write(&mut BufWriter::new(&mut output), &content)).unwrap();
-        assert_eq!(
-            content.to_bytes_blocking().unwrap().as_ref(),
-            output.as_slice()
-        );
+        assert_eq!(content.to_bytes_blocking().unwrap(), output);
     }
 
     #[test]
