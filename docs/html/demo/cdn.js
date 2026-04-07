@@ -1,4 +1,4 @@
-const CDN_PKG = 'https://cdn.jsdelivr.net/npm/autoangel@0.8.7';
+const CDN_PKG = 'https://cdn.jsdelivr.net/npm/autoangel@0.8.8';
 const LOCAL_PKG = '../../../../autoangel-wasm/pkg';
 
 export function resolveCDN(importMetaUrl) {
