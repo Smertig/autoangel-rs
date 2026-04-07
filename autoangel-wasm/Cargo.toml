@@ -25,6 +25,4 @@ version = "0.3"
 features = [
     "File",
     "Blob",
-    "FileSystemSyncAccessHandle",
-    "FileSystemReadWriteOptions",
 ]

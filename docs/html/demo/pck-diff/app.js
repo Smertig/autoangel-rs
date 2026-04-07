@@ -10,8 +10,6 @@ const sides = {
   right: { worker: null, pkg: null, loaded: false, fileName: null, msgId: 0, pending: new Map() },
 };
 
-let useOpfs = false;
-const forceOpfs = new URL(window.location).searchParams.has('opfs');
 let PckPackage = null;
 let PackageConfig = null;
 let diffResult = null; // { added, deleted, modified, unchanged }
@@ -82,7 +80,7 @@ function hideError() {
   dom.errorBanner.innerHTML = '';
 }
 
-// --- OPFS Worker (per side) ---
+// --- Worker (per side) ---
 
 function initWorker(side) {
   const workerUrl = new URL('../pck/pck-worker.js', import.meta.url);
@@ -116,17 +114,11 @@ function workerCall(side, msg, transfer, onProgress) {
 // --- Init WASM ---
 
 const workerAvailable = typeof Worker !== 'undefined';
-const opfsAvailable = typeof navigator !== 'undefined'
-  && typeof navigator.storage?.getDirectory === 'function'
-  && workerAvailable;
 
 if (workerAvailable) {
   try {
     initWorker('left');
     initWorker('right');
-    if (opfsAvailable && forceOpfs) {
-      useOpfs = true;
-    }
   } catch { /* fall through to in-memory */ }
 }
 
@@ -229,22 +221,15 @@ async function loadPackage(side, files) {
     sides[side].pkg = null;
   }
 
-  const onWorkerProgress = ({ phase, written, totalBytes, index, total }) => {
-    if (phase === 'write') {
-      const pct = Math.round((written / totalBytes) * 100);
-      sd.statusLine.textContent = `Loading ${label}: ${pct}%`;
-    } else if (phase === 'parse') {
+  const onWorkerProgress = ({ phase, index, total }) => {
+    if (phase === 'parse') {
       const pct = Math.round(((index + 1) / total) * 100);
       sd.statusLine.textContent = `Parsing ${label}: ${pct}%`;
     }
   };
 
   try {
-    if (sides[side].worker && useOpfs) {
-      // Legacy OPFS path
-      await workerCall(side, { type: 'parse', pckFile, pkxFiles, keys: customKeys }, undefined, onWorkerProgress);
-    } else if (sides[side].worker) {
-      // Direct file path: pass JS File objects to the worker, no OPFS copy
+    if (sides[side].worker) {
       await workerCall(side, { type: 'parseFile', pckFile, pkxFiles, keys: customKeys }, undefined, onWorkerProgress);
     } else {
       // In-memory fallback (no worker available)

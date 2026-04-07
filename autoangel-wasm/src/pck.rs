@@ -1,5 +1,4 @@
 use crate::file_reader::BufferedFileReader;
-use crate::opfs::{self, OpfsReader};
 use autoangel_core::pck::package;
 use autoangel_core::pck::package::{
     FileEntriesOptions, FileEntriesProgressFn, FileEntryProgress, ParseOptions, ParseProgress,
@@ -9,7 +8,6 @@ use autoangel_core::util::data_source::{DataReader, DataSource, MultiReader};
 use js_sys;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::prelude::*;
-use web_sys::FileSystemSyncAccessHandle;
 
 /// Metadata for a single file entry in a pck package.
 #[wasm_bindgen]
@@ -138,7 +136,6 @@ fn make_parse_options(options: &Option<JsValue>) -> ParseOptions {
 
 enum PckContent {
     Memory(DataSource<Vec<u8>>),
-    Opfs(DataSource<MultiReader<OpfsReader>>),
     File(DataSource<MultiReader<BufferedFileReader>>),
 }
 
@@ -204,62 +201,6 @@ impl PckPackage {
         })
     }
 
-    /// Open a pck package from OPFS sync access handles (Web Worker only).
-    /// Second argument is an optional options object: `{ pkxHandles?: FileSystemSyncAccessHandle[], config?: PackageConfig, onProgress?: (index: number, total: number) => void, progressIntervalMs?: number }`.
-    #[wasm_bindgen(js_name = "open")]
-    pub async fn open(
-        pck_handle: FileSystemSyncAccessHandle,
-        options: Option<JsValue>,
-    ) -> Result<PckPackage, JsError> {
-        let parse_options = make_parse_options(&options);
-        let mut handles = vec![pck_handle];
-        let mut config_val = None;
-
-        if let Some(ref opts) = options.filter(|o| o.is_object()) {
-            // Extract pkxHandles array
-            if let Some(arr) = js_sys::Reflect::get(opts, &"pkxHandles".into())
-                .ok()
-                .and_then(|v| v.dyn_into::<js_sys::Array>().ok())
-            {
-                for i in 0..arr.length() {
-                    let h: FileSystemSyncAccessHandle = arr.get(i).unchecked_into();
-                    handles.push(h);
-                }
-            }
-            // Extract config: read key1/key2/guard1/guard2 fields via Reflect
-            if let Some(cfg_val) = js_sys::Reflect::get(opts, &"config".into())
-                .ok()
-                .filter(|v| v.is_object())
-            {
-                let get_u32 = |obj: &JsValue, key: &str| -> Option<u32> {
-                    js_sys::Reflect::get(obj, &key.into())
-                        .ok()
-                        .and_then(|v| v.as_f64())
-                        .map(|v| v as u32)
-                };
-                if let (Some(k1), Some(k2), Some(g1), Some(g2)) = (
-                    get_u32(&cfg_val, "key1"),
-                    get_u32(&cfg_val, "key2"),
-                    get_u32(&cfg_val, "guard1"),
-                    get_u32(&cfg_val, "guard2"),
-                ) {
-                    config_val = Some(PackageConfig::with_keys(k1, k2, g1, g2));
-                }
-            }
-        }
-
-        let config = config_val.map_or_else(Default::default, |c| c.config);
-        let content =
-            opfs::data_source_from_handles(handles).map_err(|e| crate::format_error(&e))?;
-        let info = package::PackageInfo::parse(&content, config, parse_options)
-            .await
-            .map_err(|e| crate::format_error(&e))?;
-        Ok(PckPackage {
-            content: PckContent::Opfs(content),
-            info,
-        })
-    }
-
     /// Package version.
     #[wasm_bindgen(getter)]
     pub fn version(&self) -> u32 {
@@ -277,7 +218,6 @@ impl PckPackage {
     pub async fn get_file(&self, path: &str) -> Option<Vec<u8>> {
         match &self.content {
             PckContent::Memory(c) => get_file_inner(&self.info, c, path).await,
-            PckContent::Opfs(c) => get_file_inner(&self.info, c, path).await,
             PckContent::File(c) => get_file_inner(&self.info, c, path).await,
         }
     }
@@ -328,7 +268,6 @@ impl PckPackage {
 
         match &self.content {
             PckContent::Memory(c) => file_entries_inner(&self.info, c, options).await,
-            PckContent::Opfs(c) => file_entries_inner(&self.info, c, options).await,
             PckContent::File(c) => file_entries_inner(&self.info, c, options).await,
         }
     }

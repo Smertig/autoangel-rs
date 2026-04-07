@@ -1,10 +1,8 @@
 use crate::file_reader::BufferedFileReader;
-use crate::opfs::{self, OpfsReader};
 use autoangel_core::elements::{config, data, game::GameDialectRef, value::ReadValue};
 use autoangel_core::util::data_source::{DataReader, DataSource, MultiReader};
 use std::io::BufWriter;
 use wasm_bindgen::prelude::*;
-use web_sys::FileSystemSyncAccessHandle;
 
 /// Configuration for parsing elements.data files.
 #[wasm_bindgen]
@@ -41,10 +39,8 @@ impl ElementsConfig {
 }
 
 /// Type-erased content wrapper for elements data.
-/// Holds either an in-memory or OPFS-backed DataSource.
 enum ElementsContent {
     Memory(DataSource<Vec<u8>>),
-    Opfs(DataSource<MultiReader<OpfsReader>>),
     File(DataSource<MultiReader<BufferedFileReader>>),
 }
 
@@ -52,7 +48,6 @@ impl Clone for ElementsContent {
     fn clone(&self) -> Self {
         match self {
             ElementsContent::Memory(ds) => ElementsContent::Memory(ds.get(..).unwrap()),
-            ElementsContent::Opfs(ds) => ElementsContent::Opfs(ds.get(..).unwrap()),
             ElementsContent::File(ds) => ElementsContent::File(ds.get(..).unwrap()),
         }
     }
@@ -62,7 +57,6 @@ macro_rules! with_content {
     ($content:expr, |$c:ident| $body:expr) => {
         match $content {
             ElementsContent::Memory(ref $c) => $body,
-            ElementsContent::Opfs(ref $c) => $body,
             ElementsContent::File(ref $c) => $body,
         }
     };
@@ -114,29 +108,6 @@ impl ElementsData {
             config: view.config,
             lists: view.lists,
             content: ElementsContent::Memory(content),
-        })
-    }
-
-    /// Open elements.data from an OPFS sync access handle (Web Worker only).
-    /// The file is NOT loaded into memory — reads happen on demand.
-    /// If `config` is not provided, the header is read to determine the version.
-    #[wasm_bindgen(js_name = "open")]
-    pub async fn open(
-        handle: FileSystemSyncAccessHandle,
-        config: Option<ElementsConfig>,
-    ) -> Result<ElementsData, JsError> {
-        let content =
-            opfs::data_source_from_handles(vec![handle]).map_err(|e| crate::format_error(&e))?;
-        let config = resolve_config(&content, config).await?;
-        let view = data::DataView::parse(&content, config)
-            .await
-            .map_err(|e| crate::format_error(&e))?;
-
-        Ok(ElementsData {
-            version: view.version,
-            config: view.config,
-            lists: view.lists,
-            content: ElementsContent::Opfs(content),
         })
     }
 

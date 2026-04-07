@@ -16,8 +16,6 @@ let fileTree = null;
 let selectedPath = null;
 let selectedTreeItem = null;
 let currentEncoding = 'auto';
-let useOpfs = false;
-const forceOpfs = new URL(window.location).searchParams.has('opfs');
 let filterText = '';
 let filterTextLower = '';
 let filterDebounceTimer = 0;
@@ -69,7 +67,7 @@ function hideError() {
   dom.errorBanner.innerHTML = '';
 }
 
-// --- OPFS Worker ---
+// --- Worker ---
 
 let worker = null;
 let workerMsgId = 0;
@@ -107,17 +105,10 @@ let PckPackage = null;
 let PackageConfig = null;
 
 const workerAvailable = typeof Worker !== 'undefined';
-const opfsAvailable = typeof navigator !== 'undefined'
-  && typeof navigator.storage?.getDirectory === 'function'
-  && workerAvailable;
 
-// Always init the worker when available — it handles both 'parseFile' (direct) and 'parse' (OPFS) modes
 if (workerAvailable) {
   try {
     initWorker();
-    if (opfsAvailable && forceOpfs) {
-      useOpfs = true;
-    }
   } catch { /* fall through to in-memory */ }
 }
 
@@ -222,24 +213,15 @@ async function loadFiles(files) {
 
   let fileList, version;
 
-  const onWorkerProgress = ({ phase, written, totalBytes, index, total }) => {
-    if (phase === 'write') {
-      const pct = Math.round((written / totalBytes) * 100);
-      dom.status.textContent = `Loading ${label}: ${pct}%`;
-    } else if (phase === 'parse') {
+  const onWorkerProgress = ({ phase, index, total }) => {
+    if (phase === 'parse') {
       const pct = Math.round(((index + 1) / total) * 100);
       dom.status.textContent = `Parsing ${label}: ${pct}%`;
     }
   };
 
   try {
-    if (worker && useOpfs) {
-      // Legacy OPFS path: write files to OPFS, then open via sync access handles
-      const result = await workerCall({ type: 'parse', pckFile, pkxFiles, keys: customKeys }, undefined, onWorkerProgress);
-      fileList = result.fileList;
-      version = result.version;
-    } else if (worker) {
-      // Direct file path: pass JS File objects to the worker, no OPFS copy
+    if (worker) {
       const result = await workerCall({ type: 'parseFile', pckFile, pkxFiles, keys: customKeys }, undefined, onWorkerProgress);
       fileList = result.fileList;
       version = result.version;
