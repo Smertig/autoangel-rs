@@ -1,4 +1,4 @@
-import { classifyFiles, formatSize, getExtension, isLikelyText, detectEncoding, decodeText, IMAGE_EXTENSIONS, CANVAS_IMAGE_EXTENSIONS, ENCODINGS, HLJS_LANG, IMAGE_MIME, renderCanvasImage, initImageDecoders, escapeHtml } from '../pck-common.js';
+import { classifyFiles, formatSize, getExtension, isLikelyText, detectEncoding, decodeText, IMAGE_EXTENSIONS, CANVAS_IMAGE_EXTENSIONS, ENCODINGS, HLJS_LANG, IMAGE_MIME, renderCanvasImage, initImageDecoders, escapeHtml, showInlineProgress } from '../pck-common.js';
 import { resolveCDN } from '../cdn.js';
 
 const CDN = resolveCDN(import.meta.url);
@@ -212,8 +212,8 @@ async function loadPackage(side, files) {
 
   hideError();
   const sd = sideDom[side];
-  sd.statusLine.textContent = `Parsing ${label}\u2026`;
   sd.statusLine.classList.remove('loaded');
+  const statusFill = showInlineProgress(sd.statusLine, `Parsing ${label}\u2026`);
 
   // Free previous package for in-memory mode
   if (!sides[side].worker && sides[side].pkg) {
@@ -224,7 +224,7 @@ async function loadPackage(side, files) {
   const onWorkerProgress = ({ phase, index, total }) => {
     if (phase === 'parse') {
       const pct = Math.round(((index + 1) / total) * 100);
-      sd.statusLine.textContent = `Parsing ${label}: ${pct}%`;
+      statusFill.style.width = `${pct}%`;
     }
   };
 
@@ -244,6 +244,7 @@ async function loadPackage(side, files) {
   } catch (e) {
     showError(e.message || String(e));
     sd.statusLine.textContent = '';
+    sd.statusLine.classList.remove('has-progress');
     return;
   }
 
@@ -252,6 +253,7 @@ async function loadPackage(side, files) {
 
   sd.statusLine.textContent = `\u2713 ${label} (${formatSize(totalSize)})`;
   sd.statusLine.classList.add('loaded');
+  sd.statusLine.classList.remove('has-progress');
 
   updateCompareButton();
 }

@@ -51,6 +51,12 @@
   font-size: 13px;
 }
 
+#status.has-progress {
+  overflow: hidden;
+  max-width: 300px;
+  min-width: 120px;
+}
+
 /* --- Keys panel (pck variant: white bg, border-bottom) --- */
 
 .keys-panel {
