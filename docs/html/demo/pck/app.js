@@ -17,6 +17,7 @@ let selectedPath = null;
 let selectedTreeItem = null;
 let currentEncoding = 'auto';
 let useOpfs = false;
+const forceOpfs = new URL(window.location).searchParams.has('opfs');
 let filterText = '';
 let filterTextLower = '';
 let filterDebounceTimer = 0;
@@ -105,23 +106,27 @@ function initWorker() {
 let PckPackage = null;
 let PackageConfig = null;
 
+const workerAvailable = typeof Worker !== 'undefined';
 const opfsAvailable = typeof navigator !== 'undefined'
   && typeof navigator.storage?.getDirectory === 'function'
-  && typeof Worker !== 'undefined';
+  && workerAvailable;
 
-if (opfsAvailable) {
+// Always init the worker when available — it handles both 'parseFile' (direct) and 'parse' (OPFS) modes
+if (workerAvailable) {
   try {
     initWorker();
-    useOpfs = true;
+    if (opfsAvailable && forceOpfs) {
+      useOpfs = true;
+    }
   } catch { /* fall through to in-memory */ }
 }
 
-// Always load WASM in main thread (needed for image decoding; also used for PCK parsing in non-OPFS mode)
+// Always load WASM in main thread (needed for image decoding; also used for PCK parsing when no worker)
 const wasmMod = await import(`${CDN}/autoangel.js`);
 await wasmMod.default(`${CDN}/autoangel_bg.wasm`);
 initImageDecoders(wasmMod.decodeDds, wasmMod.decodeTga);
 
-if (!useOpfs) {
+if (!worker) {
   PckPackage = wasmMod.PckPackage;
   PackageConfig = wasmMod.PackageConfig;
 }
@@ -179,11 +184,11 @@ for (const k of ['key1', 'key2', 'guard1', 'guard2']) {
 // --- Unified file data access (works in both modes) ---
 
 async function getFileData(path) {
-  if (useOpfs) {
+  if (worker) {
     const result = await workerCall({ type: 'getFile', path });
     return new Uint8Array(result.data, result.byteOffset, result.byteLength);
   } else {
-    return pkg.getFile(path);
+    return await pkg.getFile(path);
   }
 }
 
@@ -228,18 +233,25 @@ async function loadFiles(files) {
   };
 
   try {
-    if (useOpfs) {
+    if (worker && useOpfs) {
+      // Legacy OPFS path: write files to OPFS, then open via sync access handles
       const result = await workerCall({ type: 'parse', pckFile, pkxFiles, keys: customKeys }, undefined, onWorkerProgress);
       fileList = result.fileList;
       version = result.version;
+    } else if (worker) {
+      // Direct file path: pass JS File objects to the worker, no OPFS copy
+      const result = await workerCall({ type: 'parseFile', pckFile, pkxFiles, keys: customKeys }, undefined, onWorkerProgress);
+      fileList = result.fileList;
+      version = result.version;
     } else {
+      // In-memory fallback (no worker available)
       if (pkxFiles.length > 0) {
-        showError('.pkx files require OPFS support (use a modern browser with HTTPS)');
+        showError('.pkx files require a modern browser with Web Worker support');
         return;
       }
       const pckBytes = new Uint8Array(await pckFile.arrayBuffer());
       const config = customKeys ? PackageConfig.withKeys(customKeys.key1, customKeys.key2, customKeys.guard1, customKeys.guard2) : undefined;
-      pkg = PckPackage.parse(pckBytes, config, { onProgress: (index, total) => onWorkerProgress({ phase: 'parse', index, total }) });
+      pkg = await PckPackage.parse(pckBytes, config, { onProgress: (index, total) => onWorkerProgress({ phase: 'parse', index, total }) });
       fileList = pkg.fileList();
       version = pkg.version;
     }

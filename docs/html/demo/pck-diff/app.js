@@ -11,6 +11,7 @@ const sides = {
 };
 
 let useOpfs = false;
+const forceOpfs = new URL(window.location).searchParams.has('opfs');
 let PckPackage = null;
 let PackageConfig = null;
 let diffResult = null; // { added, deleted, modified, unchanged }
@@ -114,15 +115,18 @@ function workerCall(side, msg, transfer, onProgress) {
 
 // --- Init WASM ---
 
+const workerAvailable = typeof Worker !== 'undefined';
 const opfsAvailable = typeof navigator !== 'undefined'
   && typeof navigator.storage?.getDirectory === 'function'
-  && typeof Worker !== 'undefined';
+  && workerAvailable;
 
-if (opfsAvailable) {
+if (workerAvailable) {
   try {
     initWorker('left');
     initWorker('right');
-    useOpfs = true;
+    if (opfsAvailable && forceOpfs) {
+      useOpfs = true;
+    }
   } catch { /* fall through to in-memory */ }
 }
 
@@ -130,7 +134,7 @@ const wasmMod = await import(`${CDN}/autoangel.js`);
 await wasmMod.default(`${CDN}/autoangel_bg.wasm`);
 initImageDecoders(wasmMod.decodeDds, wasmMod.decodeTga);
 
-if (!useOpfs) {
+if (!sides.left.worker) {
   PckPackage = wasmMod.PckPackage;
   PackageConfig = wasmMod.PackageConfig;
 }
@@ -220,7 +224,7 @@ async function loadPackage(side, files) {
   sd.statusLine.classList.remove('loaded');
 
   // Free previous package for in-memory mode
-  if (!useOpfs && sides[side].pkg) {
+  if (!sides[side].worker && sides[side].pkg) {
     sides[side].pkg.free();
     sides[side].pkg = null;
   }
@@ -236,16 +240,21 @@ async function loadPackage(side, files) {
   };
 
   try {
-    if (useOpfs) {
+    if (sides[side].worker && useOpfs) {
+      // Legacy OPFS path
       await workerCall(side, { type: 'parse', pckFile, pkxFiles, keys: customKeys }, undefined, onWorkerProgress);
+    } else if (sides[side].worker) {
+      // Direct file path: pass JS File objects to the worker, no OPFS copy
+      await workerCall(side, { type: 'parseFile', pckFile, pkxFiles, keys: customKeys }, undefined, onWorkerProgress);
     } else {
+      // In-memory fallback (no worker available)
       if (pkxFiles.length > 0) {
-        showError('.pkx files require OPFS support (use a modern browser with HTTPS)');
+        showError('.pkx files require a modern browser with Web Worker support');
         return;
       }
       const pckBytes = new Uint8Array(await pckFile.arrayBuffer());
       const config = customKeys ? PackageConfig.withKeys(customKeys.key1, customKeys.key2, customKeys.guard1, customKeys.guard2) : undefined;
-      sides[side].pkg = PckPackage.parse(pckBytes, config, { onProgress: (index, total) => onWorkerProgress({ phase: 'parse', index, total }) });
+      sides[side].pkg = await PckPackage.parse(pckBytes, config, { onProgress: (index, total) => onWorkerProgress({ phase: 'parse', index, total }) });
     }
   } catch (e) {
     showError(e.message || String(e));
@@ -293,11 +302,11 @@ async function getFileEntries(side) {
   };
 
   let entries;
-  if (useOpfs) {
+  if (sides[side].worker) {
     const result = await workerCall(side, { type: 'fileEntries' }, undefined, updateProgress);
     entries = result.entries;
   } else {
-    const wasmEntries = sides[side].pkg.fileEntries({
+    const wasmEntries = await sides[side].pkg.fileEntries({
       onProgress: (_path, index, total) => updateProgress({ index, total }),
     });
     entries = wasmEntries.map(e => {
@@ -660,11 +669,11 @@ function renderDiffTree(node, container, depth) {
 // --- File data fetching ---
 
 async function getFileData(side, path) {
-  if (useOpfs) {
+  if (sides[side].worker) {
     const result = await workerCall(side, { type: 'getFile', path });
     return new Uint8Array(result.data, result.byteOffset, result.byteLength);
   } else {
-    return sides[side].pkg.getFile(path);
+    return await sides[side].pkg.getFile(path);
   }
 }
 
