@@ -38,7 +38,7 @@ impl FileEntry {
         self.compressed_size
     }
 
-    /// CRC32 hash of the decompressed file content.
+    /// CRC32 hash of the compressed (on-disk) file data.
     #[wasm_bindgen(getter)]
     pub fn hash(&self) -> u32 {
         self.hash
@@ -238,8 +238,8 @@ impl PckPackage {
         self.find_prefix("")
     }
 
-    /// List all file entries with metadata (including content CRC32 hashes).
-    /// This decompresses every file to compute hashes.
+    /// List all file entries with metadata (including compressed data CRC32 hashes).
+    /// Hashes are computed from compressed (on-disk) data without decompression.
     #[wasm_bindgen(js_name = "fileEntries")]
     pub async fn file_entries(&self, options: Option<JsValue>) -> Result<Vec<FileEntry>, JsError> {
         let on_progress_fn = options.and_then(|opts| {

@@ -301,12 +301,13 @@ pub struct FileEntry {
     compressed_size: u32,
 }
 
-/// Summary of a file entry with content hash, returned by [`PackageInfo::file_entries`].
+/// Summary of a file entry with compressed data hash, returned by [`PackageInfo::file_entries`].
 #[derive(Debug)]
 pub struct FileEntrySummary<'a> {
     pub path: &'a str,
     pub size: u32,
     pub compressed_size: u32,
+    /// CRC32 hash of the **compressed** (on-disk) data.
     pub hash: u32,
 }
 
@@ -750,9 +751,9 @@ impl PackageInfo {
                 })?;
             }
 
-            let hash = match entry.get_file(content).await {
-                Some(data) => crc32fast::hash(&data),
-                None => 0,
+            let hash = match entry.get_raw_file_bytes(content).await {
+                Ok(data) => crc32fast::hash(&data),
+                Err(_) => 0,
             };
 
             results.push(FileEntrySummary {

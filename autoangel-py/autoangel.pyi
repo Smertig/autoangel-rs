@@ -331,7 +331,7 @@ class FileEntry:
     compressed_size: int
     """Compressed file size in bytes."""
     hash: int
-    """CRC32 hash of the decompressed file content."""
+    """CRC32 hash of the compressed (on-disk) file data."""
 
     def __repr__(self) -> str: ...
 
@@ -412,8 +412,8 @@ class PckPackage:
         on_progress: Optional[Callable[[str, int, int], None]] = None,
     ) -> List[FileEntry]:
         """
-        Returns list of file entries with metadata (including content hashes).
-        This decompresses every file to compute CRC32 hashes.
+        Returns list of file entries with metadata (including compressed data hashes).
+        Hashes are computed from compressed (on-disk) data without decompression.
 
         :param on_progress: Optional callback ``(path, index, total)`` called for each file.
             Raise an exception to cancel iteration.

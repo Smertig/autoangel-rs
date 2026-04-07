@@ -125,8 +125,8 @@ impl PyPackage {
         self.find_prefix("", py)
     }
 
-    /// List all file entries with metadata (including content CRC32 hashes).
-    /// This decompresses every file to compute hashes.
+    /// List all file entries with metadata (including compressed data CRC32 hashes).
+    /// Hashes are computed from compressed (on-disk) data without decompression.
     #[pyo3(signature = (*, on_progress=None))]
     fn file_entries(&self, on_progress: Option<Py<PyAny>>) -> PyResult<Vec<PyFileEntry>> {
         let options = FileEntriesOptions {
