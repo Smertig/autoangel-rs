@@ -1,0 +1,49 @@
+/* Shared demo navigation bar — sits above each demo's #app */
+
+.demo-nav {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  height: 34px;
+  background: #1a1d28;
+  flex-shrink: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.demo-nav-home {
+  color: #d4a853;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  transition: color 0.15s;
+}
+
+.demo-nav-home:hover {
+  color: #e6c876;
+}
+
+.demo-nav-links {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.demo-nav-link {
+  color: #7b8098;
+  text-decoration: none;
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.demo-nav-link:hover {
+  color: #c8cdd8;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.demo-nav-link.active {
+  color: #e0e4ee;
+  background: rgba(255, 255, 255, 0.09);
+}
