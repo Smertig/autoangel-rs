@@ -4,6 +4,12 @@ pub mod image;
 pub mod pck;
 
 use wasm_bindgen::JsError;
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen(start)]
+pub fn init() {
+    console_error_panic_hook::set_once();
+}
 
 /// Format an eyre error chain as newline-separated lines (one per cause).
 fn format_error(e: &eyre::Report) -> JsError {
