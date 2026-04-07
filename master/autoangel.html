@@ -844,7 +844,7 @@ all data entries (<code><a href="#ElementsDataEntry">ElementsDataEntry</a></code
     </div>
     <a class="headerlink" href="#FileEntry.hash"></a>
     
-            <div class="docstring"><p>CRC32 hash of the decompressed file content.</p>
+            <div class="docstring"><p>CRC32 hash of the compressed (on-disk) file data.</p>
 </div>
 
 
@@ -990,8 +990,8 @@ all data entries (<code><a href="#ElementsDataEntry">ElementsDataEntry</a></code
     </div>
     <a class="headerlink" href="#PckPackage.file_entries"></a>
     
-            <div class="docstring"><p>Returns list of file entries with metadata (including content hashes).
-This decompresses every file to compute CRC32 hashes.</p>
+            <div class="docstring"><p>Returns list of file entries with metadata (including compressed data hashes).
+Hashes are computed from compressed (on-disk) data without decompression.</p>
 
 <h6 id="parameters">Parameters</h6>
 
