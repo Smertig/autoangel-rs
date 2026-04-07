@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1775547829351,
+  "lastUpdate": 1775565128880,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -1007,6 +1007,90 @@ window.BENCHMARK_DATA = {
             "name": "PackageInfo::get_file",
             "value": 3623,
             "range": "± 5",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "a923ff3705073499ca99b743b80791698a426851",
+          "message": "async: make DataReader async and DataSource generic\n\n* DataReader::read_at is now async fn, DataSource<R> uses static dispatch via generics\n\n* New BufferedFileReader reads JS File objects with 4MB read-ahead buffer\n\n* Python API stays sync via pollster::block_on at pyo3 boundaries\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+          "timestamp": "2026-04-07T15:09:42+03:00",
+          "tree_id": "7da151cb98773335931ed16426a4beddfa44dfd4",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/a923ff3705073499ca99b743b80791698a426851"
+        },
+        "date": 1775565128318,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 35651,
+            "range": "± 118",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 117,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::access_fields",
+            "value": 71,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 160,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 23120,
+            "range": "± 64",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::iterate_lists",
+            "value": 12730,
+            "range": "± 244",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 47,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 354989,
+            "range": "± 3841",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::find_prefix",
+            "value": 331,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 3377,
+            "range": "± 4",
             "unit": "ns/iter"
           }
         ]
