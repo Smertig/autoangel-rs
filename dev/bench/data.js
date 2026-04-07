@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1775575177201,
+  "lastUpdate": 1775575177793,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -3169,6 +3169,108 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Smertig/autoangel-rs/commit/f3091e72c0705a7b4f6583205237f4bb8c621784"
         },
         "date": 1775571390844,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 71639,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 64,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 236,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 501280,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 36,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [just parsed]/allocated",
+            "value": 71639,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [just parsed]/retained",
+            "value": 58279,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [parsed + iterated]/allocated",
+            "value": 1726823,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [parsed + iterated]/retained",
+            "value": 774647,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [parsed + 3 searches]/allocated",
+            "value": 75655,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [parsed + 3 searches]/retained",
+            "value": 62103,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 861690,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 10808,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "2170701a3ce8b3b729b47d5645b8310d6bf6cc7a",
+          "message": "pck: hash compressed data in file_entries instead of decompressing\n\n* Avoids decompressing every file just to compute CRC32 hashes\n* Diff consumers can compare compressed hashes first and only\n  decompress on mismatch\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+          "timestamp": "2026-04-07T18:00:39+03:00",
+          "tree_id": "10bf3ce4328df561abda7796e41bd43b2076813f",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/2170701a3ce8b3b729b47d5645b8310d6bf6cc7a"
+        },
+        "date": 1775575177540,
         "tool": "cargo",
         "benches": [
           {
