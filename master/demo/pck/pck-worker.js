@@ -50,24 +50,20 @@ async function handleGetFile(path) {
   return { data: buf, byteOffset: data.byteOffset, byteLength: data.byteLength };
 }
 
-async function handleFileEntries(id) {
+async function handleScanEntries(id, paths) {
   if (!pkg) throw new Error('No package loaded');
-  let lastProgressTime = 0;
-  const wasmEntries = await pkg.fileEntries({
-    onProgress: (_path, index, total) => {
-      const now = performance.now();
-      if (index === 0 || index === total - 1 || now - lastProgressTime >= 1000 / 60) {
-        self.postMessage({ id, type: 'progress', index, total });
-        lastProgressTime = now;
-      }
-    }
+  await pkg.scanEntries({
+    paths,
+    intervalMs: 16,
+    onChunk: (entries) => {
+      const plain = entries.map(e => {
+        const obj = { path: e.path, size: e.size, compressedSize: e.compressedSize, hash: e.hash };
+        e.free();
+        return obj;
+      });
+      self.postMessage({ id, type: 'chunk', entries: plain });
+    },
   });
-  const entries = wasmEntries.map(e => {
-    const plain = { path: e.path, size: e.size, compressedSize: e.compressedSize, hash: e.hash };
-    e.free();
-    return plain;
-  });
-  return entries;
 }
 
 self.onmessage = async (e) => {
@@ -79,9 +75,9 @@ self.onmessage = async (e) => {
     } else if (type === 'getFile') {
       const { data, byteOffset, byteLength } = await handleGetFile(e.data.path);
       self.postMessage({ id, type: 'result', data, byteOffset, byteLength }, [data]);
-    } else if (type === 'fileEntries') {
-      const entries = await handleFileEntries(id);
-      self.postMessage({ id, type: 'result', entries });
+    } else if (type === 'scanEntries') {
+      await handleScanEntries(id, e.data.paths);
+      self.postMessage({ id, type: 'done' });
     }
   } catch (err) {
     self.postMessage({ id, type: 'error', message: err.message || String(err) });
