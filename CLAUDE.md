@@ -96,6 +96,16 @@ All crates share the same version. When bumping, update **all** of these:
 - `autoangel-wasm/README.md` — CDN URL in the installation example
 - `docs/html/demo/cdn.js` — `CDN_PKG` const (single source of truth for all demo pages)
 
+### Commit ordering when both API and demos change
+
+Demos load WASM from the published npm CDN, so they must never reference an unpublished API. When a change touches both the library API and demos that use the new API, split commits into three batches pushed separately:
+
+1. **API commits** — one or more commits changing core/py/wasm code
+2. **Version bump commit** — bump version in all crates + README, but do **NOT** update `cdn.js` (demos still reference the old published version)
+3. **Demo commits** — update `cdn.js` to the new version + demo code using the new API
+
+The owner pushes each batch manually after verifying CI passes on the previous one.
+
 ## CI
 
 GitHub Actions (`.github/workflows/build.yml`): cargo check, cross-platform tests (Windows/Ubuntu/macOS with Python 3.10), rustfmt, clippy, WASM compilation check + JS tests. Version bumps in `autoangel-py/Cargo.toml` or `autoangel-wasm/Cargo.toml` trigger PyPI publishing, npm publishing, and docs update.
