@@ -1,12 +1,13 @@
 import {
-  TEXT_EXTENSIONS, BINARY_EXTENSIONS, IMAGE_EXTENSIONS, CANVAS_IMAGE_EXTENSIONS,
+  TEXT_EXTENSIONS, BINARY_EXTENSIONS, IMAGE_EXTENSIONS, CANVAS_IMAGE_EXTENSIONS, MODEL_EXTENSIONS,
   IMAGE_MIME, HLJS_LANG, ENCODINGS,
   getExtension, formatSize, escapeHtml, classifyFiles,
   detectBOM, detectUTF16Pattern, detectEncoding, decodeText, isLikelyText,
-  renderCanvasImage, initImageDecoders,
+  renderCanvasImage, initImageDecoders, hexDumpRows,
   showInlineProgress,
 } from '../pck-common.js';
 import { resolveCDN } from '../cdn.js';
+import { renderModel, renderSkin } from './model-preview.js';
 
 const CDN = resolveCDN(import.meta.url);
 
@@ -20,6 +21,7 @@ let currentEncoding = 'auto';
 let filterText = '';
 let filterTextLower = '';
 let filterDebounceTimer = 0;
+let modelCleanup = null;
 let renderGeneration = 0;
 
 // --- DOM refs ---
@@ -452,6 +454,7 @@ async function renderTreeAsync(node, container, depth, gen) {
 function fileIcon(name) {
   const ext = getExtension(name);
   if (IMAGE_EXTENSIONS.has(ext) || CANVAS_IMAGE_EXTENSIONS.has(ext)) return '\uD83D\uDDBC\uFE0F';
+  if (MODEL_EXTENSIONS.has(ext)) return '\u25C7';
   if (TEXT_EXTENSIONS.has(ext)) return '\uD83D\uDCC4';
   return '\uD83D\uDCCE';
 }
@@ -508,16 +511,37 @@ function updateBreadcrumb(parts) {
 // --- File preview ---
 
 async function previewFile(path, encoding) {
+  const ext = getExtension(path);
+
+  // 3D model preview for ECM files
+  if (MODEL_EXTENSIONS.has(ext)) {
+    dom.actions.innerHTML = '';
+    try {
+      // Persistent viewer reuses the same canvas — just swaps the scene.
+      // Old model stays visible until render() paints the new one. No flicker.
+      const render = ext === '.ecm' ? renderModel : renderSkin;
+      modelCleanup = await render(dom.preview, wasmMod, getFileData, path);
+    } catch (e) {
+      console.error('[model] Preview failed:', e);
+      if (modelCleanup) { modelCleanup(); modelCleanup = null; }
+      dom.preview.innerHTML = '';
+      showPlaceholder(`Model preview failed for ${path}: ${e.message || e}`);
+    }
+    return;
+  }
+
+  // Clean up previous model preview when switching to non-model file
+  if (modelCleanup) { modelCleanup(); modelCleanup = null; }
+
   const data = await getFileData(path);
   if (!data) {
-    showPlaceholder('File not found or decompression failed');
+    showPlaceholder(`File not found or decompression failed: ${path}`);
     dom.actions.innerHTML = '';
     return;
   }
 
   currentEncoding = encoding || 'auto';
 
-  const ext = getExtension(path);
   const size = data.byteLength;
   const isText = isLikelyText(data, ext);
 
@@ -653,25 +677,14 @@ function showCanvasImagePreview(data, ext) {
 }
 
 function showHexDump(data) {
-  const maxBytes = 4096;
-  const bytes = data.subarray(0, maxBytes);
-  const lines = [];
-
-  for (let i = 0; i < bytes.length; i += 16) {
-    const chunk = bytes.subarray(i, i + 16);
-    const offset = i.toString(16).padStart(8, '0');
-    const hex = [...chunk].map(b => b.toString(16).padStart(2, '0')).join(' ');
-    const ascii = [...chunk].map(b => (b >= 0x20 && b <= 0x7e) ? String.fromCharCode(b) : '.').join('');
-
-    lines.push(
-      `<span class="hex-offset">${offset}</span>  ` +
-      `<span class="hex-bytes">${hex.padEnd(47)}</span>  ` +
-      `<span class="hex-ascii">${escapeHtml(ascii)}</span>`
-    );
-  }
-
-  if (data.byteLength > maxBytes) {
-    lines.push(`\n<span class="hex-offset">... ${formatSize(data.byteLength - maxBytes)} more</span>`);
+  const rows = hexDumpRows(data);
+  const lines = rows.map(r =>
+    `<span class="hex-offset">${r.offset}</span>  ` +
+    `<span class="hex-bytes">${r.hex}</span>  ` +
+    `<span class="hex-ascii">${escapeHtml(r.ascii)}</span>`
+  );
+  if (data.byteLength > 4096) {
+    lines.push(`\n<span class="hex-offset">... ${formatSize(data.byteLength - 4096)} more</span>`);
   }
 
   const div = document.createElement('div');

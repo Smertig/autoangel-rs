@@ -44,7 +44,7 @@ async function handleParseFile(id, pckFile, pkxFiles, keys) {
 async function handleGetFile(path) {
   if (!pkg) throw new Error('No package loaded');
   const data = await pkg.getFile(path);
-  if (!data) throw new Error('File not found or decompression failed');
+  if (!data) throw new Error(`File not found or decompression failed: ${path}`);
   // Return as transferable ArrayBuffer
   const buf = data.buffer;
   return { data: buf, byteOffset: data.byteOffset, byteLength: data.byteLength };

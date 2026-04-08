@@ -1,4 +1,4 @@
-import { classifyFiles, formatSize, getExtension, isLikelyText, detectEncoding, decodeText, IMAGE_EXTENSIONS, CANVAS_IMAGE_EXTENSIONS, ENCODINGS, HLJS_LANG, IMAGE_MIME, renderCanvasImage, initImageDecoders, escapeHtml, showInlineProgress } from '../pck-common.js';
+import { classifyFiles, formatSize, getExtension, isLikelyText, detectEncoding, decodeText, IMAGE_EXTENSIONS, CANVAS_IMAGE_EXTENSIONS, ENCODINGS, HLJS_LANG, IMAGE_MIME, renderCanvasImage, initImageDecoders, escapeHtml, hexDumpRows, showInlineProgress } from '../pck-common.js';
 import { resolveCDN } from '../cdn.js';
 
 const CDN = resolveCDN(import.meta.url);
@@ -1380,20 +1380,12 @@ function renderHexRegion(data, start, maxBytes, highlightOffset, label) {
 }
 
 function showHexDump(data, container) {
-  const maxBytes = 4096;
-  const bytes = data.subarray(0, maxBytes);
-  const lines = [];
-  for (let i = 0; i < bytes.length; i += 16) {
-    const chunk = bytes.subarray(i, i + 16);
-    const offset = i.toString(16).padStart(8, '0');
-    const hex = [...chunk].map(b => b.toString(16).padStart(2, '0')).join(' ');
-    const ascii = [...chunk].map(b => (b >= 0x20 && b <= 0x7e) ? String.fromCharCode(b) : '.').join('');
-    lines.push(
-      `<span class="hex-offset">${offset}</span>  <span class="hex-bytes">${hex.padEnd(47)}</span>  <span class="hex-ascii">${escapeHtml(ascii)}</span>`
-    );
-  }
-  if (data.byteLength > maxBytes) {
-    lines.push(`\n<span class="hex-offset">... ${formatSize(data.byteLength - maxBytes)} more</span>`);
+  const rows = hexDumpRows(data);
+  const lines = rows.map(r =>
+    `<span class="hex-offset">${r.offset}</span>  <span class="hex-bytes">${r.hex}</span>  <span class="hex-ascii">${escapeHtml(r.ascii)}</span>`
+  );
+  if (data.byteLength > 4096) {
+    lines.push(`\n<span class="hex-offset">... ${formatSize(data.byteLength - 4096)} more</span>`);
   }
   const div = document.createElement('div');
   div.className = 'hex-dump';
