@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1775642818409,
+  "lastUpdate": 1775642819022,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -3727,6 +3727,108 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Smertig/autoangel-rs/commit/87e32086b6c30f710655c0d8cdee5fd9632fd7f4"
         },
         "date": 1775641312998,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 71639,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 64,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 236,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 501280,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 36,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [just parsed]/allocated",
+            "value": 71639,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [just parsed]/retained",
+            "value": 58279,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [parsed + iterated]/allocated",
+            "value": 2038239,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [parsed + iterated]/retained",
+            "value": 774647,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [parsed + 3 searches]/allocated",
+            "value": 75723,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [parsed + 3 searches]/retained",
+            "value": 62103,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 865807,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 10808,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "d03a19f0fd012af89aa09c72201e4ea103c17c31",
+          "message": "pck: replace file_entries with streaming scan_entries\n\n* scan_entries(paths, on_chunk, interval_ms) streams chunks of\n  FileEntrySummary via callback. Hashes compressed (on-disk) data\n  via CRC32 without decompression\n* paths argument is required (no scan-all mode)\n* Update Python bindings, WASM bindings, type stubs, tests, docs\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+          "timestamp": "2026-04-08T07:02:00+03:00",
+          "tree_id": "0358b96caf8b1786a128cea97bccffc6aff7b28b",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/d03a19f0fd012af89aa09c72201e4ea103c17c31"
+        },
+        "date": 1775642818767,
         "tool": "cargo",
         "benches": [
           {
