@@ -1,8 +1,7 @@
 use crate::file_reader::BufferedFileReader;
 use autoangel_core::pck::package;
 use autoangel_core::pck::package::{
-    FileEntriesOptions, FileEntriesProgressFn, FileEntryProgress, ParseOptions, ParseProgress,
-    ParseProgressFn,
+    FileEntrySummary, ParseOptions, ParseProgress, ParseProgressFn, ScanEntriesOptions,
 };
 use autoangel_core::util::data_source::{DataReader, DataSource, MultiReader};
 use js_sys;
@@ -149,25 +148,40 @@ async fn get_file_inner<R: DataReader>(
     info.get_file(content, path).await
 }
 
-async fn file_entries_inner<R: DataReader>(
+async fn scan_entries_inner<R: DataReader>(
     info: &package::PackageInfo,
     content: &DataSource<R>,
-    options: FileEntriesOptions,
-) -> Result<Vec<FileEntry>, JsError> {
-    let entries = info
-        .file_entries(content, options)
+    paths: Vec<String>,
+    on_chunk_fn: js_sys::Function,
+    interval_ms: u32,
+) -> Result<(), JsError> {
+    let path_refs: Vec<&str> = paths.iter().map(|s| s.as_str()).collect();
+
+    let options = ScanEntriesOptions {
+        on_chunk: Box::new(move |entries: &[FileEntrySummary]| {
+            let arr = js_sys::Array::new_with_length(entries.len() as u32);
+            for (i, e) in entries.iter().enumerate() {
+                let fe = FileEntry {
+                    path: e.path.to_owned(),
+                    size: e.size,
+                    compressed_size: e.compressed_size,
+                    hash: e.hash,
+                };
+                arr.set(i as u32, fe.into());
+            }
+            on_chunk_fn
+                .call1(&JsValue::NULL, &arr)
+                .map_err(|e| eyre::eyre!("{:?}", e))?;
+            Ok(())
+        }),
+        interval_ms,
+    };
+
+    info.scan_entries(content, &path_refs, options)
         .await
         .map_err(|e| crate::format_error(&e))?;
 
-    Ok(entries
-        .into_iter()
-        .map(|e| FileEntry {
-            path: e.path.to_owned(),
-            size: e.size,
-            compressed_size: e.compressed_size,
-            hash: e.hash,
-        })
-        .collect())
+    Ok(())
 }
 
 /// Parsed pck/pkx package.
@@ -236,37 +250,42 @@ impl PckPackage {
         self.find_prefix("")
     }
 
-    /// List all file entries with metadata (including compressed data CRC32 hashes).
-    /// Hashes are computed from compressed (on-disk) data without decompression.
-    #[wasm_bindgen(js_name = "fileEntries")]
-    pub async fn file_entries(&self, options: Option<JsValue>) -> Result<Vec<FileEntry>, JsError> {
-        let on_progress_fn = options.and_then(|opts| {
-            if !opts.is_object() {
-                return None;
-            }
-            js_sys::Reflect::get(&opts, &"onProgress".into())
-                .ok()
-                .and_then(|v| v.dyn_into::<js_sys::Function>().ok())
-        });
+    /// Scan file entries with streaming chunks. Each chunk delivers an array of FileEntry objects.
+    /// Options: `{ onChunk: (entries: FileEntry[]) => void, intervalMs: number, paths: string[] }`.
+    #[wasm_bindgen(js_name = "scanEntries")]
+    pub async fn scan_entries(&self, options: JsValue) -> Result<(), JsError> {
+        if !options.is_object() {
+            return Err(JsError::new("scanEntries requires an options object"));
+        }
 
-        let options = FileEntriesOptions {
-            on_progress: on_progress_fn.map(|func| -> FileEntriesProgressFn {
-                Box::new(move |p: FileEntryProgress| {
-                    func.call3(
-                        &JsValue::NULL,
-                        &p.path.into(),
-                        &JsValue::from(p.index as f64),
-                        &JsValue::from(p.total as f64),
-                    )
-                    .map_err(|e| eyre::eyre!("{:?}", e))?;
-                    Ok(())
-                })
-            }),
-        };
+        let on_chunk_fn = js_sys::Reflect::get(&options, &"onChunk".into())
+            .ok()
+            .and_then(|v| v.dyn_into::<js_sys::Function>().ok())
+            .ok_or_else(|| JsError::new("scanEntries requires onChunk callback"))?;
+
+        let interval_ms = js_sys::Reflect::get(&options, &"intervalMs".into())
+            .ok()
+            .and_then(|v| v.as_f64())
+            .ok_or_else(|| JsError::new("scanEntries requires intervalMs number"))?
+            as u32;
+
+        let paths: Vec<String> = js_sys::Reflect::get(&options, &"paths".into())
+            .ok()
+            .and_then(|v| v.dyn_into::<js_sys::Array>().ok())
+            .map(|arr| {
+                (0..arr.length())
+                    .filter_map(|i| arr.get(i).as_string())
+                    .collect()
+            })
+            .ok_or_else(|| JsError::new("scanEntries requires paths array"))?;
 
         match &self.content {
-            PckContent::Memory(c) => file_entries_inner(&self.info, c, options).await,
-            PckContent::File(c) => file_entries_inner(&self.info, c, options).await,
+            PckContent::Memory(c) => {
+                scan_entries_inner(&self.info, c, paths, on_chunk_fn, interval_ms).await
+            }
+            PckContent::File(c) => {
+                scan_entries_inner(&self.info, c, paths, on_chunk_fn, interval_ms).await
+            }
         }
     }
 

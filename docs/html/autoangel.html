@@ -170,9 +170,6 @@
                     <a class="class" href="#PckPackage">PckPackage</a>
                             <ul class="memberlist">
                         <li>
-                                <a class="function" href="#PckPackage.file_entries">file_entries</a>
-                        </li>
-                        <li>
                                 <a class="function" href="#PckPackage.file_list">file_list</a>
                         </li>
                         <li>
@@ -183,6 +180,9 @@
                         </li>
                         <li>
                                 <a class="function" href="#PckPackage.save">save</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#PckPackage.scan_entries">scan_entries</a>
                         </li>
                 </ul>
 
@@ -980,35 +980,6 @@ all data entries (<code><a href="#ElementsDataEntry">ElementsDataEntry</a></code
 </div>
 
 
-                            <div id="PckPackage.file_entries" class="classattr">
-                                <div class="attr function">
-            
-        <span class="def">def</span>
-        <span class="name">file_entries</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">on_progress</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">NoneType</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="n">List</span><span class="p">[</span><span class="n"><a href="#FileEntry">FileEntry</a></span><span class="p">]</span>:</span></span>
-
-        
-    </div>
-    <a class="headerlink" href="#PckPackage.file_entries"></a>
-    
-            <div class="docstring"><p>Returns list of file entries with metadata (including compressed data hashes).
-Hashes are computed from compressed (on-disk) data without decompression.</p>
-
-<h6 id="parameters">Parameters</h6>
-
-<ul>
-<li><strong>on_progress</strong>:  Optional callback <code>(path, index, total)</code> called for each file.
-Raise an exception to cancel iteration.</li>
-</ul>
-
-<h6 id="returns">Returns</h6>
-
-<blockquote>
-  <p>All file entries in package.</p>
-</blockquote>
-</div>
-
-
-                            </div>
                             <div id="PckPackage.file_list" class="classattr">
                                 <div class="attr function">
             
@@ -1110,6 +1081,33 @@ The saved package will be identical to the original when loaded back.</p>
 
 <ul>
 <li><strong>Exception</strong>:  If any I/O error occurs during saving.</li>
+</ul>
+</div>
+
+
+                            </div>
+                            <div id="PckPackage.scan_entries" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">scan_entries</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">paths</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>,</span><span class="param">	<span class="n">on_chunk</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">List</span><span class="p">[</span><span class="n"><a href="#FileEntry">FileEntry</a></span><span class="p">]],</span> <span class="n">NoneType</span><span class="p">]</span>,</span><span class="param">	<span class="n">interval_ms</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#PckPackage.scan_entries"></a>
+    
+            <div class="docstring"><p>Scan file entries with metadata (including compressed data CRC32 hashes).
+Hashes are computed from compressed (on-disk) data without decompression.
+Results are delivered in chunks via <code>on_chunk</code> callback.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>paths</strong>:  List of file paths to scan.</li>
+<li><strong>on_chunk</strong>:  Callback receiving a list of <code><a href="#FileEntry">FileEntry</a></code> for each chunk.
+Raise an exception to cancel scanning.</li>
+<li><strong>interval_ms</strong>:  Minimum interval in milliseconds between chunk callbacks (<code>100</code> by default).
+The final chunk is always delivered regardless of throttling.</li>
 </ul>
 </div>
 

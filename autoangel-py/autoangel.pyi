@@ -406,18 +406,23 @@ class PckPackage:
         """
         ...
 
-    def file_entries(
+    def scan_entries(
         self,
         *,
-        on_progress: Optional[Callable[[str, int, int], None]] = None,
-    ) -> List[FileEntry]:
+        paths: List[str],
+        on_chunk: Callable[[List[FileEntry]], None],
+        interval_ms: int = 100,
+    ) -> None:
         """
-        Returns list of file entries with metadata (including compressed data hashes).
+        Scan file entries with metadata (including compressed data CRC32 hashes).
         Hashes are computed from compressed (on-disk) data without decompression.
+        Results are delivered in chunks via ``on_chunk`` callback.
 
-        :param on_progress: Optional callback ``(path, index, total)`` called for each file.
-            Raise an exception to cancel iteration.
-        :return: All file entries in package.
+        :param paths: List of file paths to scan.
+        :param on_chunk: Callback receiving a list of ``FileEntry`` for each chunk.
+            Raise an exception to cancel scanning.
+        :param interval_ms: Minimum interval in milliseconds between chunk callbacks (``100`` by default).
+            The final chunk is always delivered regardless of throttling.
         """
         ...
 

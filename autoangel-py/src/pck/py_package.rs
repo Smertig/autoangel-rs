@@ -1,8 +1,7 @@
 use crate::pck::py_package_config::PyPackageConfig;
 use autoangel_core::pck::package;
 use autoangel_core::pck::package::{
-    FileEntriesOptions, FileEntriesProgressFn, FileEntryProgress, PackageConfig, ParseOptions,
-    ParseProgress, ParseProgressFn,
+    PackageConfig, ParseOptions, ParseProgress, ParseProgressFn, ScanEntriesOptions,
 };
 use autoangel_core::util::data_source::{DataSource, MultiReader};
 use color_eyre::eyre;
@@ -125,34 +124,44 @@ impl PyPackage {
         self.find_prefix("", py)
     }
 
-    /// List all file entries with metadata (including compressed data CRC32 hashes).
+    /// Scan file entries with metadata (including compressed data CRC32 hashes).
     /// Hashes are computed from compressed (on-disk) data without decompression.
-    #[pyo3(signature = (*, on_progress=None))]
-    fn file_entries(&self, on_progress: Option<Py<PyAny>>) -> PyResult<Vec<PyFileEntry>> {
-        let options = FileEntriesOptions {
-            on_progress: on_progress.map(|cb| -> FileEntriesProgressFn {
-                Box::new(move |p: FileEntryProgress| {
-                    Python::attach(|py| {
-                        cb.call1(py, (p.path, p.index, p.total))
-                            .map_err(eyre::Report::from)
-                    })?;
-                    Ok(())
-                })
+    /// Results are delivered in chunks via `on_chunk` callback.
+    #[pyo3(signature = (*, paths, on_chunk, interval_ms=100))]
+    fn scan_entries(
+        &self,
+        paths: Vec<String>,
+        on_chunk: Py<PyAny>,
+        interval_ms: u32,
+    ) -> PyResult<()> {
+        let path_refs: Vec<&str> = paths.iter().map(|s| s.as_str()).collect();
+
+        let options = ScanEntriesOptions {
+            on_chunk: Box::new(|chunk| {
+                let py_entries: Vec<PyFileEntry> = chunk
+                    .iter()
+                    .map(|e| PyFileEntry {
+                        path: e.path.to_owned(),
+                        size: e.size,
+                        compressed_size: e.compressed_size,
+                        hash: e.hash,
+                    })
+                    .collect();
+                Python::attach(|py| {
+                    on_chunk
+                        .call1(py, (py_entries,))
+                        .map_err(eyre::Report::from)
+                })?;
+                Ok(())
             }),
+            interval_ms,
         };
-        let entries = with_pck_content!(self.content, |c| {
-            pollster::block_on(self.info.file_entries(c, options))?
+
+        with_pck_content!(self.content, |c| {
+            pollster::block_on(self.info.scan_entries(c, &path_refs, options))?;
         });
 
-        Ok(entries
-            .into_iter()
-            .map(|e| PyFileEntry {
-                path: e.path.to_owned(),
-                size: e.size,
-                compressed_size: e.compressed_size,
-                hash: e.hash,
-            })
-            .collect())
+        Ok(())
     }
 
     fn __repr__(&self) -> String {

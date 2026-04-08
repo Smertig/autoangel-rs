@@ -301,7 +301,7 @@ pub struct FileEntry {
     compressed_size: u32,
 }
 
-/// Summary of a file entry with compressed data hash, returned by [`PackageInfo::file_entries`].
+/// Summary of a file entry with compressed data hash, returned by [`PackageInfo::scan_entries`].
 #[derive(Debug)]
 pub struct FileEntrySummary<'a> {
     pub path: &'a str,
@@ -311,21 +311,13 @@ pub struct FileEntrySummary<'a> {
     pub hash: u32,
 }
 
-/// Progress information passed to the callback during [`PackageInfo::file_entries`].
-#[derive(Debug)]
-pub struct FileEntryProgress<'a> {
-    pub path: &'a str,
-    pub index: usize,
-    pub total: usize,
-}
+/// Callback that receives a chunk of scanned entries.
+pub type ScanEntriesChunkFn<'a> = Box<dyn FnMut(&[FileEntrySummary<'a>]) -> Result<()> + 'a>;
 
-/// Callback type for progress reporting in [`PackageInfo::file_entries`].
-pub type FileEntriesProgressFn = Box<dyn FnMut(FileEntryProgress) -> Result<()>>;
-
-/// Options for [`PackageInfo::file_entries`].
-#[derive(Default)]
-pub struct FileEntriesOptions {
-    pub on_progress: Option<FileEntriesProgressFn>,
+/// Options for [`PackageInfo::scan_entries`].
+pub struct ScanEntriesOptions<'a> {
+    pub on_chunk: ScanEntriesChunkFn<'a>,
+    pub interval_ms: u32,
 }
 
 /// Progress information passed to the callback during [`PackageInfo::parse`].
@@ -724,24 +716,34 @@ impl PackageInfo {
         }
     }
 
-    /// Return metadata and content hashes for all files in a single pass.
-    pub async fn file_entries<R: DataReader>(
-        &self,
+    /// Scan file entries and deliver results in chunks via a callback.
+    ///
+    /// When `paths` is `None`, all files are scanned. When `Some`, only the
+    /// listed paths are looked up (unknown paths are silently skipped).
+    /// The callback receives chunks of [`FileEntrySummary`] at roughly
+    /// `options.interval_ms` intervals; any remaining entries are flushed
+    /// at the end. Returning an `Err` from the callback stops iteration.
+    pub async fn scan_entries<'a, R: DataReader>(
+        &'a self,
         content: &DataSource<R>,
-        mut options: FileEntriesOptions,
-    ) -> Result<Vec<FileEntrySummary<'_>>> {
-        let total = self.files.len();
-        let mut results = Vec::with_capacity(total);
+        paths: &[&str],
+        mut options: ScanEntriesOptions<'a>,
+    ) -> Result<()> {
+        let entries: Vec<&FileEntry> = paths
+            .iter()
+            .filter_map(|p| {
+                let normalized = FileEntry::normalize_path(p);
+                self.files
+                    .binary_search_by(|e| e.normalized_name.cmp(&normalized))
+                    .ok()
+                    .map(|idx| &self.files[idx])
+            })
+            .collect();
 
-        for (index, entry) in self.files.iter().enumerate() {
-            if let Some(ref mut on_progress) = options.on_progress {
-                on_progress(FileEntryProgress {
-                    path: &entry.normalized_name,
-                    index,
-                    total,
-                })?;
-            }
+        let mut throttle = Throttle::new(options.interval_ms);
+        let mut chunk: Vec<FileEntrySummary<'_>> = Vec::new();
 
+        for entry in &entries {
             let hash: u32 = content
                 .read_at(entry.offset, entry.compressed_size as usize, |b| {
                     crc32fast::hash(b)
@@ -749,15 +751,24 @@ impl PackageInfo {
                 .await
                 .unwrap_or(0);
 
-            results.push(FileEntrySummary {
+            chunk.push(FileEntrySummary {
                 path: &entry.normalized_name,
                 size: entry.size,
                 compressed_size: entry.compressed_size,
                 hash,
             });
+
+            if throttle.allow() {
+                (options.on_chunk)(&chunk)?;
+                chunk.clear();
+            }
         }
 
-        Ok(results)
+        if !chunk.is_empty() {
+            (options.on_chunk)(&chunk)?;
+        }
+
+        Ok(())
     }
 
     pub async fn get_file<R: DataReader>(
@@ -1003,7 +1014,7 @@ mod tests {
     }
 
     #[test]
-    fn file_entries_without_progress() {
+    fn scan_entries_basic() {
         let bytes = include_test_data_bytes!("packages/configs.pck");
         let content = ds(bytes);
         let package = pollster::block_on(PackageInfo::parse(
@@ -1013,16 +1024,27 @@ mod tests {
         ))
         .unwrap();
 
-        let entries =
-            pollster::block_on(package.file_entries(&content, Default::default())).unwrap();
-        assert_eq!(entries.len(), package.file_count());
-        for entry in &entries {
-            assert!(!entry.path.is_empty());
-        }
+        let total_count = std::rc::Rc::new(std::cell::Cell::new(0usize));
+        let cb_count = total_count.clone();
+        let options = ScanEntriesOptions {
+            on_chunk: Box::new(move |chunk| {
+                cb_count.set(cb_count.get() + chunk.len());
+                Ok(())
+            }),
+            interval_ms: 0,
+        };
+
+        let all_paths: Vec<&str> = package
+            .find_prefix("")
+            .iter()
+            .map(|e| e.normalized_name.as_str())
+            .collect();
+        pollster::block_on(package.scan_entries(&content, &all_paths, options)).unwrap();
+        assert_eq!(total_count.get(), package.file_count());
     }
 
     #[test]
-    fn file_entries_progress_callback_values() {
+    fn scan_entries_chunks() {
         let bytes = include_test_data_bytes!("packages/configs.pck");
         let content = ds(bytes);
         let package = pollster::block_on(PackageInfo::parse(
@@ -1031,31 +1053,39 @@ mod tests {
             Default::default(),
         ))
         .unwrap();
-        let total = package.file_count();
 
         let collected = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
         let cb_collected = collected.clone();
-        let options = FileEntriesOptions {
-            on_progress: Some(Box::new(move |p: FileEntryProgress| {
-                cb_collected
-                    .borrow_mut()
-                    .push((p.path.to_owned(), p.index, p.total));
+        let options = ScanEntriesOptions {
+            on_chunk: Box::new(move |chunk| {
+                for entry in chunk {
+                    cb_collected.borrow_mut().push((
+                        entry.path.to_owned(),
+                        entry.size,
+                        entry.compressed_size,
+                        entry.hash,
+                    ));
+                }
                 Ok(())
-            })),
+            }),
+            interval_ms: 0,
         };
 
-        let entries = pollster::block_on(package.file_entries(&content, options)).unwrap();
+        let all_paths: Vec<&str> = package
+            .find_prefix("")
+            .iter()
+            .map(|e| e.normalized_name.as_str())
+            .collect();
+        pollster::block_on(package.scan_entries(&content, &all_paths, options)).unwrap();
         let collected = collected.borrow();
-        assert_eq!(collected.len(), total);
-        for (i, (path, index, cb_total)) in collected.iter().enumerate() {
-            assert_eq!(*index, i);
-            assert_eq!(*cb_total, total);
-            assert_eq!(path, entries[i].path);
+        assert_eq!(collected.len(), package.file_count());
+        for (path, _size, _compressed_size, _hash) in collected.iter() {
+            assert!(!path.is_empty());
         }
     }
 
     #[test]
-    fn file_entries_progress_cancellation() {
+    fn scan_entries_cancellation() {
         let bytes = include_test_data_bytes!("packages/configs.pck");
         let content = ds(bytes);
         let package = pollster::block_on(PackageInfo::parse(
@@ -1065,23 +1095,75 @@ mod tests {
         ))
         .unwrap();
 
-        let call_count = std::rc::Rc::new(std::cell::Cell::new(0usize));
-        let cb_count = call_count.clone();
-        let options = FileEntriesOptions {
-            on_progress: Some(Box::new(move |_: FileEntryProgress| {
+        let chunk_count = std::rc::Rc::new(std::cell::Cell::new(0usize));
+        let cb_count = chunk_count.clone();
+        let options = ScanEntriesOptions {
+            on_chunk: Box::new(move |_chunk| {
                 let n = cb_count.get() + 1;
                 cb_count.set(n);
                 if n >= 2 {
                     eyre::bail!("cancelled");
                 }
                 Ok(())
-            })),
+            }),
+            // Use 0 interval so every entry triggers a flush — this ensures
+            // the callback is invoked per entry so we can cancel on the 2nd.
+            interval_ms: 0,
         };
 
-        let result = pollster::block_on(package.file_entries(&content, options));
+        let all_paths: Vec<&str> = package
+            .find_prefix("")
+            .iter()
+            .map(|e| e.normalized_name.as_str())
+            .collect();
+        let result = pollster::block_on(package.scan_entries(&content, &all_paths, options));
         assert!(result.is_err());
-        assert_eq!(call_count.get(), 2);
+        assert_eq!(chunk_count.get(), 2);
         assert!(result.unwrap_err().to_string().contains("cancelled"));
+    }
+
+    #[test]
+    fn scan_entries_with_paths() {
+        let bytes = include_test_data_bytes!("packages/configs.pck");
+        let content = ds(bytes);
+        let package = pollster::block_on(PackageInfo::parse(
+            &content,
+            Default::default(),
+            Default::default(),
+        ))
+        .unwrap();
+
+        // Pick two known paths from the package and one that doesn't exist.
+        let all_files = package.find_prefix("");
+        assert!(
+            all_files.len() >= 2,
+            "need at least 2 files in test package"
+        );
+        let existing1 = &all_files[0].normalized_name;
+        let existing2 = &all_files[1].normalized_name;
+        let paths = [
+            existing1.as_str(),
+            existing2.as_str(),
+            "nonexistent\\file.txt",
+        ];
+
+        let collected = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
+        let cb_collected = collected.clone();
+        let options = ScanEntriesOptions {
+            on_chunk: Box::new(move |chunk| {
+                for entry in chunk {
+                    cb_collected.borrow_mut().push(entry.path.to_owned());
+                }
+                Ok(())
+            }),
+            interval_ms: 0,
+        };
+
+        pollster::block_on(package.scan_entries(&content, &paths, options)).unwrap();
+        let collected = collected.borrow();
+        assert_eq!(collected.len(), 2);
+        assert!(collected.contains(existing1));
+        assert!(collected.contains(existing2));
     }
 
     #[test]

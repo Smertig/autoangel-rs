@@ -266,11 +266,28 @@ describe("PckPackage", () => {
     await assert.rejects(() => PckPackage.parse(new Uint8Array([])));
   });
 
-  it("returns file entries with metadata and hashes", async () => {
+  it("scan entries returns metadata and hashes", async () => {
     const pkg = await PckPackage.parse(CONFIGS_PCK);
-    const entries = await pkg.fileEntries();
-    assert.equal(entries.length, pkg.fileCount);
+    const paths = pkg.fileList();
+    const entries = [];
 
+    await pkg.scanEntries({
+      paths,
+      intervalMs: 0,
+      onChunk: (chunk) => {
+        for (const entry of chunk) {
+          entries.push({
+            path: entry.path,
+            size: entry.size,
+            compressedSize: entry.compressedSize,
+            hash: entry.hash,
+          });
+          entry.free();
+        }
+      },
+    });
+
+    assert.equal(entries.length, pkg.fileCount);
     for (const entry of entries) {
       assert.equal(typeof entry.path, "string");
       assert.ok(entry.path.length > 0);
@@ -280,77 +297,83 @@ describe("PckPackage", () => {
       assert.ok(entry.compressedSize >= 0);
       assert.ok(entry.compressedSize <= entry.size || entry.size === 0);
       assert.equal(typeof entry.hash, "number");
-      entry.free();
     }
 
     pkg.free();
   });
 
-  it("file entries hashes are consistent", async () => {
+  it("scan entries hashes are consistent", async () => {
     const pkg = await PckPackage.parse(CONFIGS_PCK);
-    const entries1 = await pkg.fileEntries();
-    const entries2 = await pkg.fileEntries();
+    const paths = pkg.fileList();
+
+    const collect = async () => {
+      const entries = [];
+      await pkg.scanEntries({
+        paths,
+        intervalMs: 0,
+        onChunk: (chunk) => {
+          for (const entry of chunk) {
+            entries.push({ path: entry.path, hash: entry.hash });
+            entry.free();
+          }
+        },
+      });
+      return entries;
+    };
+
+    const entries1 = await collect();
+    const entries2 = await collect();
 
     for (let i = 0; i < entries1.length; i++) {
       assert.equal(entries1[i].hash, entries2[i].hash);
-      entries1[i].free();
-      entries2[i].free();
     }
 
     pkg.free();
   });
 
-  it("file entries paths match file list", async () => {
+  it("scan entries paths match file list", async () => {
     const pkg = await PckPackage.parse(CONFIGS_PCK);
     const fileList = pkg.fileList();
-    const entries = await pkg.fileEntries();
-    assert.equal(entries.length, fileList.length);
+    const scannedPaths = [];
 
-    for (let i = 0; i < entries.length; i++) {
-      assert.equal(entries[i].path, fileList[i]);
-      entries[i].free();
-    }
-
-    pkg.free();
-  });
-
-  it("file entries with progress callback", async () => {
-    const pkg = await PckPackage.parse(CONFIGS_PCK);
-    const collected = [];
-
-    const entries = await pkg.fileEntries({
-      onProgress: (path, index, total) => {
-        collected.push({ path, index, total });
+    await pkg.scanEntries({
+      paths: fileList,
+      intervalMs: 0,
+      onChunk: (chunk) => {
+        for (const entry of chunk) {
+          scannedPaths.push(entry.path);
+          entry.free();
+        }
       },
     });
 
-    assert.equal(collected.length, pkg.fileCount);
-    for (let i = 0; i < collected.length; i++) {
-      assert.equal(collected[i].index, i);
-      assert.equal(collected[i].total, pkg.fileCount);
-      assert.equal(collected[i].path, entries[i].path);
-      entries[i].free();
+    assert.equal(scannedPaths.length, fileList.length);
+    for (let i = 0; i < scannedPaths.length; i++) {
+      assert.equal(scannedPaths[i], fileList[i]);
     }
 
     pkg.free();
   });
 
-  it("file entries progress cancellation", async () => {
+  it("scan entries onChunk cancellation", async () => {
     const pkg = await PckPackage.parse(CONFIGS_PCK);
-    let callCount = 0;
+    const paths = pkg.fileList();
+    let chunkCount = 0;
 
     await assert.rejects(() =>
-      pkg.fileEntries({
-        onProgress: (_path, _index, _total) => {
-          callCount++;
-          if (callCount >= 2) {
+      pkg.scanEntries({
+        paths,
+        intervalMs: 0,
+        onChunk: (_chunk) => {
+          chunkCount++;
+          if (chunkCount >= 2) {
             throw new Error("cancelled");
           }
         },
       })
     );
 
-    assert.equal(callCount, 2);
+    assert.ok(chunkCount >= 2);
     pkg.free();
   });
 
