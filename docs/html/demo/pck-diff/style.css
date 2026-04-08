@@ -13,6 +13,8 @@
   --modified: #fab005;
   --modified-text: #e67700;
   --unchanged: #868e96;
+  --pending: #339af0;
+  --pending-text: #1971c2;
 }
 
 /* --- Phase transition animation --- */
@@ -212,6 +214,21 @@
   text-align: center;
 }
 
+#progress.inline {
+  max-width: none;
+  padding: 10px 16px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+#progress.inline .progress-title { display: none; }
+#progress.inline .progress-item { margin-bottom: 0; flex: 1; min-width: 0; }
+#progress.inline .progress-label { margin-bottom: 2px; }
+
 .progress-title {
   font-weight: 600;
   font-size: 15px;
@@ -361,6 +378,12 @@
   color: white;
 }
 
+.stat-badge.pending.active {
+  background: var(--pending);
+  border-color: var(--pending);
+  color: white;
+}
+
 .stat-badge.active:hover {
   opacity: 0.9;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
@@ -379,20 +402,6 @@
   flex: 1;
   min-height: 0;
   overflow: hidden;
-}
-
-.show-unchanged-toggle {
-  font-size: 12px;
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.show-unchanged-toggle input {
-  cursor: pointer;
 }
 
 /* --- Content header --- */
@@ -433,6 +442,7 @@
 .diff-badge.added { background: rgba(64, 192, 87, 0.15); color: var(--added-text); }
 .diff-badge.deleted { background: rgba(250, 82, 82, 0.15); color: var(--removed-text); }
 .diff-badge.modified { background: rgba(250, 176, 5, 0.15); color: var(--modified-text); }
+.diff-badge.pending { background: rgba(51, 154, 240, 0.15); color: var(--pending-text); }
 
 /* --- Tree item status styles --- */
 
@@ -443,6 +453,24 @@
 
 .tree-item.unchanged {
   opacity: 0.45;
+}
+
+.tree-item.pending .tree-label {
+  opacity: 0.7;
+}
+
+.scan-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--pending);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* When dot precedes a badge, badge doesn't need its own auto margin */
+.scan-dot + .diff-badge {
+  margin-left: 4px;
 }
 
 /* --- Scrollbar styling --- */
@@ -505,6 +533,7 @@
 .diff-banner.added { background: var(--added-bg); color: var(--added-text); }
 .diff-banner.deleted { background: var(--removed-bg); color: var(--removed-text); }
 .diff-banner.unchanged { background: #f1f3f5; color: var(--unchanged); }
+.diff-banner.pending { background: rgba(51, 154, 240, 0.08); color: var(--pending-text); }
 
 /* Image comparison */
 .image-compare { display: flex; flex-direction: column; gap: 12px; padding: 16px; align-items: center; }

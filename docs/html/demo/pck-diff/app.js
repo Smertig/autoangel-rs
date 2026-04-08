@@ -6,18 +6,69 @@ const CDN = resolveCDN(import.meta.url);
 // --- State ---
 
 const sides = {
-  left:  { worker: null, pkg: null, loaded: false, fileName: null, msgId: 0, pending: new Map() },
-  right: { worker: null, pkg: null, loaded: false, fileName: null, msgId: 0, pending: new Map() },
+  left:  { worker: null, pkg: null, loaded: false, fileName: null, msgId: 0, pending: new Map(), files: null },
+  right: { worker: null, pkg: null, loaded: false, fileName: null, msgId: 0, pending: new Map(), files: null },
 };
 
 let PckPackage = null;
 let PackageConfig = null;
-let diffResult = null; // { added, deleted, modified, unchanged }
+
+// --- Progressive diff state ---
+
+const S = Object.freeze({
+  ADDED: 'added', DELETED: 'deleted', MODIFIED: 'modified',
+  UNCHANGED: 'unchanged', PENDING: 'pending',
+});
+
+const fileStatus = new Map();
+const leftHashes = new Map();   // path → compressed hash (u32)
+const rightHashes = new Map();
+const verifyQueue = [];
+let verifierBusy = false;
+let treeUpdateTimer = 0;
+let comparisonActive = false;
+let sharedPaths = [];
+const scannedLeft = new Set();
+const scannedRight = new Set();
+
+// Incremental status counters (avoids iterating 300K entries on every update)
+const statusCounts = { added: 0, deleted: 0, modified: 0, unchanged: 0, pending: 0 };
+
+function getDiffCounts() {
+  return statusCounts;
+}
+
+function trackStatusChange(oldStatus, newStatus) {
+  if (oldStatus) statusCounts[oldStatus]--;
+  if (newStatus) statusCounts[newStatus]++;
+}
+
+function resetStatusCounts() {
+  statusCounts.added = statusCounts.deleted = statusCounts.modified = statusCounts.unchanged = statusCounts.pending = 0;
+}
+
+// Wrap fileStatus.set to auto-track counts
+const _fileStatusSet = fileStatus.set.bind(fileStatus);
+fileStatus.set = function(path, newStatus) {
+  const old = this.get(path);
+  if (old !== newStatus) trackStatusChange(old, newStatus);
+  return _fileStatusSet(path, newStatus);
+};
+const _fileStatusDelete = fileStatus.delete.bind(fileStatus);
+fileStatus.delete = function(path) {
+  const old = this.get(path);
+  if (old) statusCounts[old]--;
+  return _fileStatusDelete(path);
+};
+const _fileStatusClear = fileStatus.clear.bind(fileStatus);
+fileStatus.clear = function() {
+  resetStatusCounts();
+  return _fileStatusClear();
+};
 
 // --- Filter/selection state ---
 
-let activeFilters = new Set();  // subset of 'added', 'deleted', 'modified', 'unchanged'
-let showUnchanged = false;
+let activeFilters = new Set();  // subset of 'added', 'deleted', 'modified', 'unchanged', 'pending'
 let filterText = '';
 let filterTextLower = '';
 let filterDebounceTimer = 0;
@@ -80,35 +131,52 @@ function hideError() {
   dom.errorBanner.innerHTML = '';
 }
 
-// --- Worker (per side) ---
+// --- Worker RPC (shared by main + scanner workers) ---
 
-function initWorker(side) {
+function createWorkerRpc() {
   const workerUrl = new URL('../pck/pck-worker.js', import.meta.url);
   workerUrl.searchParams.set('cdn', CDN);
-  const w = new Worker(workerUrl, { type: 'module' });
-  w.onmessage = (e) => {
+  const worker = new Worker(workerUrl, { type: 'module' });
+  const state = { worker, msgId: 0, pending: new Map() };
+  worker.onmessage = (e) => {
     const { id, type, message, ...rest } = e.data;
-    const state = sides[side];
     const cb = state.pending.get(id);
     if (!cb) return;
-    if (type === 'progress') {
-      if (cb.onProgress) cb.onProgress(rest);
-      return;
-    }
+    if (type === 'progress') { cb.onProgress?.(rest); return; }
+    if (type === 'chunk') { cb.onChunk?.(rest); return; }
     state.pending.delete(id);
     if (type === 'error') cb.reject(new Error(message));
     else cb.resolve(rest);
   };
-  sides[side].worker = w;
+  return state;
 }
 
-function workerCall(side, msg, transfer, onProgress) {
-  const state = sides[side];
+function rpcCall(state, msg, transfer, { onProgress, onChunk } = {}) {
   return new Promise((resolve, reject) => {
     const id = ++state.msgId;
-    state.pending.set(id, { resolve, reject, onProgress });
+    state.pending.set(id, { resolve, reject, onProgress, onChunk });
     state.worker.postMessage({ id, ...msg }, transfer || []);
   });
+}
+
+function initWorker(side) {
+  const rpc = createWorkerRpc();
+  sides[side].worker = rpc.worker;
+  sides[side].rpc = rpc;
+}
+
+function workerCall(side, msg, transfer, opts) {
+  return rpcCall(sides[side].rpc, msg, transfer, opts);
+}
+
+const scanners = { left: null, right: null };
+
+function initScanner(side) {
+  scanners[side] = createWorkerRpc();
+}
+
+function scannerCall(side, msg, transfer, opts) {
+  return rpcCall(scanners[side], msg, transfer, opts);
 }
 
 // --- Init WASM ---
@@ -119,6 +187,8 @@ if (workerAvailable) {
   try {
     initWorker('left');
     initWorker('right');
+    initScanner('left');
+    initScanner('right');
   } catch { /* fall through to in-memory */ }
 }
 
@@ -230,7 +300,11 @@ async function loadPackage(side, files) {
 
   try {
     if (sides[side].worker) {
-      await workerCall(side, { type: 'parseFile', pckFile, pkxFiles, keys: customKeys }, undefined, onWorkerProgress);
+      const result = await workerCall(side, { type: 'parseFile', pckFile, pkxFiles, keys: customKeys }, undefined, { onProgress: onWorkerProgress });
+      sides[side].files = result.fileList;
+      sides[side].pckFile = pckFile;
+      sides[side].pkxFiles = pkxFiles;
+      sides[side].customKeys = customKeys;
     } else {
       // In-memory fallback (no worker available)
       if (pkxFiles.length > 0) {
@@ -240,6 +314,7 @@ async function loadPackage(side, files) {
       const pckBytes = new Uint8Array(await pckFile.arrayBuffer());
       const config = customKeys ? PackageConfig.withKeys(customKeys.key1, customKeys.key2, customKeys.guard1, customKeys.guard2) : undefined;
       sides[side].pkg = await PckPackage.parse(pckBytes, config, { onProgress: (index, total) => onWorkerProgress({ phase: 'parse', index, total }) });
+      sides[side].files = sides[side].pkg.fileList();
     }
   } catch (e) {
     showError(e.message || String(e));
@@ -270,44 +345,52 @@ dom.compareBtn.onclick = () => {
   }
 };
 
-async function getFileEntries(side) {
-  const progressItem = document.getElementById(`progress-${side}`);
-  const label = progressItem.querySelector('.progress-label');
-  const fill = progressItem.querySelector('.progress-fill');
+// --- Progressive diff state management ---
 
-  label.textContent = `Computing hashes for ${side} package...`;
-  fill.className = 'progress-fill no-transition';
-  fill.style.width = '0%';
-  // Force reflow so the 0% is applied before re-enabling transition
-  fill.offsetWidth; // eslint-disable-line no-unused-expressions
-  fill.className = 'progress-fill';
+function initFileStatus(leftFiles, rightFiles) {
+  const leftSet = new Set(leftFiles);
+  const rightSet = new Set(rightFiles);
+  fileStatus.clear();
+  leftHashes.clear();
+  rightHashes.clear();
+  verifyQueue.length = 0;
+  verifierBusy = false;
+  sharedPaths = [];
+  scannedLeft.clear();
+  scannedRight.clear();
 
-  const updateProgress = ({ index, total }) => {
-    const pct = Math.round(((index + 1) / total) * 100);
-    fill.style.width = `${pct}%`;
-    label.textContent = `Hashing ${side}: ${index + 1} / ${total}`;
-  };
-
-  let entries;
-  if (sides[side].worker) {
-    const result = await workerCall(side, { type: 'fileEntries' }, undefined, updateProgress);
-    entries = result.entries;
-  } else {
-    const wasmEntries = await sides[side].pkg.fileEntries({
-      onProgress: (_path, index, total) => updateProgress({ index, total }),
-    });
-    entries = wasmEntries.map(e => {
-      const plain = { path: e.path, size: e.size, compressedSize: e.compressedSize, hash: e.hash };
-      e.free();
-      return plain;
-    });
+  for (const p of rightFiles) {
+    if (!leftSet.has(p)) fileStatus.set(p, S.ADDED);
   }
+  for (const p of leftFiles) {
+    if (!rightSet.has(p)) fileStatus.set(p, S.DELETED);
+    else {
+      fileStatus.set(p, S.PENDING);
+      sharedPaths.push(p);
+    }
+  }
+  sharedPaths.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+}
 
-  label.textContent = `Done (${entries.length} files)`;
-  fill.style.width = '100%';
-  fill.className = 'progress-fill done';
-
-  return entries;
+function onHashChunk(side, entries) {
+  const hashes = side === 'left' ? leftHashes : rightHashes;
+  const other = side === 'left' ? rightHashes : leftHashes;
+  for (const e of entries) {
+    hashes.set(e.path, e.hash);
+    // If both sides have hashes, try to resolve
+    if (other.has(e.path) && fileStatus.get(e.path) === S.PENDING) {
+      if (hashes.get(e.path) === other.get(e.path)) {
+        fileStatus.set(e.path, S.UNCHANGED);
+      } else {
+        // Hash mismatch — queue for content verification
+        verifyQueue.push(e.path);
+        verifyTotal++;
+        updateVerifyProgress();
+        processVerifyQueue();
+      }
+    }
+  }
+  scheduleTreeUpdate();
 }
 
 function bytesEqual(a, b) {
@@ -318,42 +401,184 @@ function bytesEqual(a, b) {
   return true;
 }
 
-function classifyDiff(leftEntries, rightEntries) {
-  const leftMap = new Map(leftEntries.map(e => [e.path, e]));
-  const rightMap = new Map(rightEntries.map(e => [e.path, e]));
+async function verifyFile(path) {
+  const [leftResult, rightResult] = await Promise.all([
+    workerCall('left', { type: 'getFile', path }),
+    workerCall('right', { type: 'getFile', path }),
+  ]);
+  const leftData = new Uint8Array(leftResult.data, leftResult.byteOffset, leftResult.byteLength);
+  const rightData = new Uint8Array(rightResult.data, rightResult.byteOffset, rightResult.byteLength);
+  return bytesEqual(leftData, rightData);
+}
 
-  const added = [];    // only in right
-  const deleted = [];  // only in left
-  const modified = []; // in both, different hash
-  const unchanged = []; // in both, same hash
+function processVerifyQueue() {
+  if (verifierBusy || verifyQueue.length === 0 || !comparisonActive) return;
+  verifierBusy = true;
+  const path = verifyQueue.shift();
+  // Skip if already resolved (e.g., by user click)
+  if (fileStatus.get(path) !== S.PENDING) {
+    verifierBusy = false;
+    updateVerifyProgress(true);
+    processVerifyQueue();
+    return;
+  }
+  verifyFile(path).then((match) => {
+    if (fileStatus.get(path) === S.PENDING) {
+      fileStatus.set(path, match ? S.UNCHANGED : S.MODIFIED);
+    }
+    verifierBusy = false;
+    updateVerifyProgress(true);
+    scheduleTreeUpdate();
+    processVerifyQueue();
+  }).catch(() => {
+    if (fileStatus.get(path) === S.PENDING) {
+      fileStatus.set(path, S.MODIFIED);
+    }
+    verifierBusy = false;
+    updateVerifyProgress(true);
+    scheduleTreeUpdate();
+    processVerifyQueue();
+  });
+}
 
-  for (const [path, entry] of rightMap) {
-    if (!leftMap.has(path)) {
-      added.push({ path, right: entry });
+let verifyTotal = 0;
+let verifyDone = 0;
+
+function updateVerifyProgress(increment = false) {
+  if (increment) verifyDone++;
+  const verifyItem = document.getElementById('progress-verify');
+  const verifyLabel = verifyItem.querySelector('.progress-label');
+  const verifyFill = verifyItem.querySelector('.progress-fill');
+  verifyItem.classList.remove('hidden');
+  if (verifyTotal === 0) return;
+  const pct = Math.round((verifyDone / verifyTotal) * 100);
+  verifyFill.style.width = `${pct}%`;
+  verifyFill.className = 'progress-fill';
+  verifyLabel.textContent = `Verifying ${verifyDone} / ${verifyTotal} mismatched files...`;
+  if (verifyDone >= verifyTotal) {
+    verifyLabel.textContent = `Verified (${verifyTotal} files)`;
+    verifyFill.style.width = '100%';
+    verifyFill.className = 'progress-fill done';
+  }
+}
+
+let treeRebuildTimer = 0;
+let treePointerDown = false;
+
+// Suppress tree rebuilds while clicking to prevent mousedown/mouseup target mismatch
+document.getElementById('tree')?.addEventListener('pointerdown', () => { treePointerDown = true; });
+document.addEventListener('pointerup', () => {
+  if (treePointerDown) {
+    treePointerDown = false;
+    // Rebuild now if one was deferred
+    if (treeRebuildTimer === -1) {
+      treeRebuildTimer = 0;
+      scheduleTreeUpdate();
     }
   }
+});
 
-  for (const [path, entry] of leftMap) {
-    if (!rightMap.has(path)) {
-      deleted.push({ path, left: entry });
-    } else {
-      const rightEntry = rightMap.get(path);
-      if (entry.hash !== rightEntry.hash) {
-        modified.push({ path, left: entry, right: rightEntry });
-      } else {
-        unchanged.push({ path, left: entry, right: rightEntry });
+function scheduleTreeUpdate() {
+  if (!treeUpdateTimer) {
+    treeUpdateTimer = requestAnimationFrame(() => {
+      treeUpdateTimer = 0;
+      updateSummaryCounts();
+    });
+  }
+  if (!treeRebuildTimer) {
+    treeRebuildTimer = setTimeout(() => {
+      if (treePointerDown) {
+        treeRebuildTimer = -1; // deferred, will fire on pointerup
+        return;
       }
+      treeRebuildTimer = 0;
+      rerenderTree();
+    }, 500);
+  }
+}
+
+// --- Batch scanning with priority ---
+
+class ScanCancelled extends Error {}
+const scanDelay = Number(new URLSearchParams(location.search).get('scanDelay')) || 0;
+
+function collectBatch(side, batchSize = 1000) {
+  const scanned = side === 'left' ? scannedLeft : scannedRight;
+  const paths = [];
+  for (const p of getVisiblePendingPaths()) {
+    if (!scanned.has(p)) paths.push(p);
+    if (paths.length >= batchSize) return paths;
+  }
+  for (const p of sharedPaths) {
+    if (!scanned.has(p) && !paths.includes(p)) paths.push(p);
+    if (paths.length >= batchSize) return paths;
+  }
+  return paths;
+}
+
+async function runScanLoop(side) {
+  const scanned = side === 'left' ? scannedLeft : scannedRight;
+  const total = sharedPaths.length;
+
+  while (comparisonActive) {
+    const batchSize = scanDelay ? 10 : 1000;
+    const batch = collectBatch(side, batchSize);
+    if (batch.length === 0) break;
+    if (scanDelay) await new Promise(r => setTimeout(r, scanDelay));
+
+    const currentBatchSet = new Set(batch);
+
+    try {
+      await scannerCall(side, { type: 'scanEntries', paths: batch }, undefined, {
+        onChunk: ({ entries }) => {
+          if (!comparisonActive) throw new ScanCancelled();
+          onHashChunk(side, entries);
+          for (const e of entries) scanned.add(e.path);
+          // Update progress
+          const item = document.getElementById(`progress-${side}`);
+          const pct = Math.round((scanned.size / total) * 100);
+          item.querySelector('.progress-fill').style.width = `${pct}%`;
+          item.querySelector('.progress-label').textContent = `Hashing ${side}: ${scanned.size} / ${total}`;
+          // Cancel to reprioritize if visible pending files aren't in this batch
+          for (const p of getVisiblePendingPaths()) {
+            if (!currentBatchSet.has(p) && !scanned.has(p)) {
+              throw new ScanCancelled();
+            }
+          }
+        },
+      });
+    } catch (e) {
+      if (e instanceof ScanCancelled) continue;
+      if (comparisonActive) continue;
+      return;
     }
   }
 
-  return { added, deleted, modified, unchanged };
+  if (comparisonActive) {
+    const item = document.getElementById(`progress-${side}`);
+    item.querySelector('.progress-label').textContent = `Done (${total} shared files)`;
+    item.querySelector('.progress-fill').style.width = '100%';
+    item.querySelector('.progress-fill').className = 'progress-fill done';
+  }
+}
+
+function getVisiblePendingPaths() {
+  const paths = [];
+  const tree = document.getElementById('tree');
+  for (const el of tree.querySelectorAll('.tree-item.pending[data-path]')) {
+    const parent = el.closest('.tree-children');
+    if (!parent || parent.classList.contains('expanded')) {
+      paths.push(el.dataset.path);
+    }
+  }
+  return paths;
 }
 
 function showResults() {
-  dom.progress.classList.add('hidden');
   dom.chooser.classList.add('hidden');
   dom.results.classList.remove('hidden');
   dom.statusbar.classList.remove('hidden');
+  dom.progress.classList.add('inline');
 
   renderSummaryBar();
   diffTree = buildDiffTree();
@@ -363,19 +588,32 @@ function showResults() {
 }
 
 function handleNewCompare() {
-  diffResult = null;
+  comparisonActive = false;
+  clearTimeout(treeRebuildTimer);
+  treeRebuildTimer = 0;
+  fileStatus.clear();
+  leftHashes.clear();
+  rightHashes.clear();
+  verifyQueue.length = 0;
+  verifierBusy = false;
+  verifyTotal = 0;
+  verifyDone = 0;
+  sharedPaths = [];
+  scannedLeft.clear();
+  scannedRight.clear();
   diffTree = null;
   currentDiffState = null;
+  expandedFolders.clear();
   activeFilters.clear();
-  showUnchanged = false;
   filterText = '';
   filterTextLower = '';
   selectedPath = null;
   selectedTreeItem = null;
   document.getElementById('filter-input').value = '';
-  document.getElementById('show-unchanged').checked = false;
   dom.results.classList.add('hidden');
   dom.statusbar.classList.add('hidden');
+  dom.progress.classList.add('hidden');
+  dom.progress.classList.remove('inline');
   dom.chooser.classList.remove('hidden', 'dimmed');
   updateCompareButton();
 }
@@ -389,16 +627,15 @@ function renderSummaryBar() {
   const statsContainer = document.getElementById('summary-stats');
   statsContainer.innerHTML = '';
 
-  const badges = [
-    { status: 'added', prefix: '+', count: diffResult.added.length },
-    { status: 'deleted', prefix: '\u2212', count: diffResult.deleted.length },
-    { status: 'modified', prefix: '~', count: diffResult.modified.length },
-    { status: 'unchanged', prefix: '', count: diffResult.unchanged.length },
-  ];
+  const counts = getDiffCounts();
+  const statuses = [S.ADDED, S.DELETED, S.MODIFIED, S.UNCHANGED, S.PENDING];
+  const badges = statuses.map(s => ({ status: s, prefix: STATUS_PREFIX[s], count: counts[s] }));
 
   for (const { status, prefix, count } of badges) {
     const btn = document.createElement('button');
     btn.className = `stat-badge ${status}`;
+    btn.dataset.status = status;
+    if (status === S.PENDING && count === 0) btn.style.display = 'none';
     if (activeFilters.has(status)) btn.classList.add('active');
     btn.textContent = `${prefix}${count} ${status}`;
     btn.onclick = () => {
@@ -415,16 +652,6 @@ function renderSummaryBar() {
 
   document.getElementById('swap-btn').onclick = handleSwap;
   document.getElementById('new-compare-btn').onclick = handleNewCompare;
-
-  // Show unchanged toggle
-  const showUnchangedCheckbox = document.getElementById('show-unchanged');
-  const showUnchangedLabel = document.getElementById('show-unchanged-label');
-  showUnchangedCheckbox.checked = showUnchanged;
-  showUnchangedLabel.textContent = `Show unchanged (${diffResult.unchanged.length})`;
-  showUnchangedCheckbox.onchange = () => {
-    showUnchanged = showUnchangedCheckbox.checked;
-    rerenderTree();
-  };
 
   // Filter input
   const filterInput = document.getElementById('filter-input');
@@ -444,82 +671,78 @@ function renderSummaryBar() {
 function buildDiffTree() {
   const root = { name: '', children: new Map(), files: [] };
 
-  function addEntries(entries, status) {
-    for (const entry of entries) {
-      const parts = entry.path.split('\\');
-      let node = root;
-      for (let i = 0; i < parts.length - 1; i++) {
-        const dir = parts[i];
-        if (!node.children.has(dir)) {
-          node.children.set(dir, { name: dir, children: new Map(), files: [] });
-        }
-        node = node.children.get(dir);
+  for (const [path, status] of fileStatus) {
+    const parts = path.split('\\');
+    let node = root;
+    for (let i = 0; i < parts.length - 1; i++) {
+      const dir = parts[i];
+      if (!node.children.has(dir)) {
+        node.children.set(dir, { name: dir, children: new Map(), files: [] });
       }
-      node.files.push({
-        name: parts[parts.length - 1],
-        fullPath: entry.path,
-        status,
-        left: entry.left || null,
-        right: entry.right || null,
-      });
+      node = node.children.get(dir);
     }
+    node.files.push({
+      name: parts[parts.length - 1],
+      fullPath: path,
+      status,
+    });
   }
-
-  addEntries(diffResult.added, 'added');
-  addEntries(diffResult.deleted, 'deleted');
-  addEntries(diffResult.modified, 'modified');
-  addEntries(diffResult.unchanged, 'unchanged');
 
   return root;
 }
 
 // --- Folder status computation ---
 
-const STATUS_LETTER = { added: 'A', deleted: 'D', modified: 'M', unchanged: '' };
+const STATUS_LETTER = { added: 'A', deleted: 'D', modified: 'M', unchanged: '', pending: '\u2026' };
+const STATUS_PREFIX = { added: '+', deleted: '\u2212', modified: '~', unchanged: '', pending: '' };
 
+// Returns { status, hasPending } or null if no visible descendants.
+// status = the resolved aggregate (ignoring pending), hasPending = still scanning
 function computeFolderStatus(node) {
   const found = new Set();
+  let hasPending = false;
 
   for (const file of node.files) {
     if (!isFileVisible(file)) continue;
-    found.add(file.status);
+    const liveStatus = fileStatus.get(file.fullPath) || file.status;
+    if (liveStatus === S.PENDING) hasPending = true;
+    found.add(liveStatus);
   }
 
   for (const [, child] of node.children) {
-    const childStatus = computeFolderStatus(child);
-    if (childStatus !== null) found.add(childStatus);
+    const childResult = computeFolderStatus(child);
+    if (childResult !== null) {
+      found.add(childResult.status);
+      if (childResult.hasPending) hasPending = true;
+    }
   }
 
   if (found.size === 0) return null;
-  if (found.size === 1) return [...found][0];
-  // Mixed statuses (e.g. added + deleted) → show as modified
-  found.delete('unchanged');
-  if (found.size === 0) return 'unchanged';
-  if (found.size === 1) return [...found][0];
-  return 'modified';
+
+  // Compute resolved status (what we know so far, ignoring pending)
+  const resolved = new Set(found);
+  resolved.delete(S.PENDING);
+  resolved.delete(S.UNCHANGED);
+
+  let status;
+  if (resolved.size === 0) {
+    status = found.has(S.PENDING) ? S.PENDING : S.UNCHANGED;
+  } else if (resolved.size === 1) {
+    status = [...resolved][0];
+  } else {
+    status = S.MODIFIED;
+  }
+
+  return { status, hasPending };
 }
 
 // --- Visibility checks ---
 
 function isFileVisible(file) {
-  // Check status filters
-  if (activeFilters.size > 0 && !activeFilters.has(file.status)) return false;
-  if (!showUnchanged && file.status === 'unchanged' && !activeFilters.has('unchanged')) return false;
-
-  // Check text filter
+  const status = fileStatus.get(file.fullPath) || file.status;
+  if (activeFilters.size > 0 && !activeFilters.has(status)) return false;
   if (filterTextLower && !file.fullPath.toLowerCase().includes(filterTextLower)) return false;
-
   return true;
-}
-
-function hasFolderVisibleDescendants(node) {
-  for (const file of node.files) {
-    if (isFileVisible(file)) return true;
-  }
-  for (const [, child] of node.children) {
-    if (hasFolderVisibleDescendants(child)) return true;
-  }
-  return false;
 }
 
 function highlightLabel(el, text) {
@@ -542,23 +765,34 @@ function highlightLabel(el, text) {
 
 // --- Tree rendering ---
 
+const expandedFolders = new Set();
+
 function rerenderTree() {
   const treeContainer = document.getElementById('tree');
   treeContainer.innerHTML = '';
   if (diffTree) {
-    renderDiffTree(diffTree, treeContainer, 0);
+    renderDiffTree(diffTree, treeContainer, 0, '');
   }
 }
 
-function renderDiffTree(node, container, depth) {
-  const folders = [...node.children.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-  const files = [...node.files].sort((a, b) => a.name.localeCompare(b.name));
+function renderDiffTree(node, container, depth, prefix) {
+  const folders = [...node.children.entries()].sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true }));
+  const files = [...node.files].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
 
   const visibleFiles = files.filter(f => isFileVisible(f));
-  const visibleFolders = folders.filter(([, child]) => hasFolderVisibleDescendants(child));
+  const visibleFolders = [];
+  const folderStatuses = new Map();
+  for (const [name, child] of folders) {
+    const status = computeFolderStatus(child);
+    if (status !== null) {
+      visibleFolders.push([name, child]);
+      folderStatuses.set(name, status);
+    }
+  }
 
   for (const [name, child] of visibleFolders) {
-    const folderStatus = computeFolderStatus(child);
+    const folderPath = prefix ? prefix + '\\' + name : name;
+    const folderStatus = folderStatuses.get(name);
     const item = document.createElement('div');
 
     const row = document.createElement('div');
@@ -579,12 +813,17 @@ function renderDiffTree(node, container, depth) {
 
     row.append(arrow, icon, label);
 
-    if (folderStatus === 'unchanged') {
-      row.classList.add('unchanged');
-    } else if (folderStatus) {
+    const { status: fStatus, hasPending: fPending } = folderStatus;
+    if (fStatus === S.UNCHANGED) row.classList.add(S.UNCHANGED);
+    if (fPending) {
+      const dot = document.createElement('span');
+      dot.className = 'scan-dot';
+      row.appendChild(dot);
+    }
+    if (fStatus !== S.UNCHANGED && fStatus !== S.PENDING) {
       const badge = document.createElement('span');
-      badge.className = `diff-badge ${folderStatus}`;
-      badge.textContent = STATUS_LETTER[folderStatus];
+      badge.className = `diff-badge ${fStatus}`;
+      badge.textContent = STATUS_LETTER[fStatus];
       row.appendChild(badge);
     }
 
@@ -595,12 +834,14 @@ function renderDiffTree(node, container, depth) {
       e.stopPropagation();
       const isExpanded = childContainer.classList.contains('expanded');
       if (isExpanded) {
+        expandedFolders.delete(folderPath);
         childContainer.classList.remove('expanded');
         arrow.classList.remove('expanded');
         icon.textContent = '\uD83D\uDCC1';
       } else {
+        expandedFolders.add(folderPath);
         if (!childContainer.hasChildNodes()) {
-          renderDiffTree(child, childContainer, depth + 1);
+          renderDiffTree(child, childContainer, depth + 1, folderPath);
         }
         childContainer.classList.add('expanded');
         arrow.classList.add('expanded');
@@ -611,9 +852,11 @@ function renderDiffTree(node, container, depth) {
     item.append(row, childContainer);
     container.appendChild(item);
 
-    // Auto-expand single-child folders
-    if (visibleFolders.length + visibleFiles.length === 1) {
-      renderDiffTree(child, childContainer, depth + 1);
+    // Auto-expand single-child folders or previously expanded
+    const shouldExpand = (visibleFolders.length + visibleFiles.length === 1) || expandedFolders.has(folderPath);
+    if (shouldExpand) {
+      expandedFolders.add(folderPath);
+      renderDiffTree(child, childContainer, depth + 1, folderPath);
       childContainer.classList.add('expanded');
       arrow.classList.add('expanded');
       icon.textContent = '\uD83D\uDCC2';
@@ -621,10 +864,11 @@ function renderDiffTree(node, container, depth) {
   }
 
   for (const file of visibleFiles) {
+    const liveStatus = fileStatus.get(file.fullPath) || file.status;
     const row = document.createElement('div');
-    row.className = `tree-item ${file.status}`;
+    row.className = `tree-item ${liveStatus}`;
     row.dataset.path = file.fullPath;
-    row.dataset.status = file.status;
+    row.dataset.status = liveStatus;
     row.style.paddingLeft = `${8 + depth * 16}px`;
 
     const arrow = document.createElement('span');
@@ -640,16 +884,20 @@ function renderDiffTree(node, container, depth) {
 
     row.append(arrow, icon, label);
 
-    if (file.status !== 'unchanged') {
+    if (liveStatus === S.PENDING) {
+      const dot = document.createElement('span');
+      dot.className = 'scan-dot';
+      row.appendChild(dot);
+    } else if (liveStatus !== S.UNCHANGED) {
       const badge = document.createElement('span');
-      badge.className = `diff-badge ${file.status}`;
-      badge.textContent = STATUS_LETTER[file.status];
+      badge.className = `diff-badge ${liveStatus}`;
+      badge.textContent = STATUS_LETTER[liveStatus];
       row.appendChild(badge);
     }
 
     row.onclick = (e) => {
       e.stopPropagation();
-      selectFile(file.fullPath, file.status, row);
+      selectFile(file.fullPath, fileStatus.get(file.fullPath) || liveStatus, row);
     };
 
     if (selectedPath === file.fullPath) {
@@ -695,21 +943,35 @@ async function selectFile(path, status, treeRow) {
   currentDiffState = null;
 
   try {
-    if (status === 'modified') {
+    if (status === S.PENDING) {
+      const [leftData, rightData] = await Promise.all([
+        getFileData('left', path),
+        getFileData('right', path),
+      ]);
+      const match = leftData && rightData && bytesEqual(leftData, rightData);
+      const resolved = match ? S.UNCHANGED : S.MODIFIED;
+      fileStatus.set(path, resolved);
+      scheduleTreeUpdate();
+      if (match) {
+        previewSingleFile(rightData, path, S.UNCHANGED);
+      } else {
+        await previewModified(leftData, rightData, path);
+      }
+    } else if (status === S.MODIFIED) {
       const [leftData, rightData] = await Promise.all([
         getFileData('left', path),
         getFileData('right', path),
       ]);
       await previewModified(leftData, rightData, path);
-    } else if (status === 'added') {
+    } else if (status === S.ADDED) {
       const data = await getFileData('right', path);
-      previewSingleFile(data, path, 'added');
-    } else if (status === 'deleted') {
+      previewSingleFile(data, path, S.ADDED);
+    } else if (status === S.DELETED) {
       const data = await getFileData('left', path);
-      previewSingleFile(data, path, 'deleted');
+      previewSingleFile(data, path, S.DELETED);
     } else {
       const data = await getFileData('right', path);
-      previewSingleFile(data, path, 'unchanged');
+      previewSingleFile(data, path, S.UNCHANGED);
     }
   } catch (e) {
     preview.innerHTML = '';
@@ -1564,8 +1826,8 @@ function previewSingleFile(data, path, status) {
   // Status banner
   const banner = document.createElement('div');
   banner.className = `diff-banner ${status}`;
-  banner.textContent = status === 'added' ? 'New file (not in left package)'
-    : status === 'deleted' ? 'Removed file (not in right package)'
+  banner.textContent = status === S.ADDED ? 'New file (not in left package)'
+    : status === S.DELETED ? 'Removed file (not in right package)'
     : 'Unchanged';
   preview.appendChild(banner);
 
@@ -1665,13 +1927,37 @@ function handleSwap() {
   sideDom.left = sideDom.right;
   sideDom.right = tmpDom;
 
-  // Re-classify: added <-> deleted, modified and unchanged stay
-  if (diffResult) {
-    const newAdded = diffResult.deleted.map(e => ({ path: e.path, right: e.left }));
-    const newDeleted = diffResult.added.map(e => ({ path: e.path, left: e.right }));
-    const newModified = diffResult.modified.map(e => ({ path: e.path, left: e.right, right: e.left }));
-    const newUnchanged = diffResult.unchanged.map(e => ({ path: e.path, left: e.right, right: e.left }));
-    diffResult = { added: newAdded, deleted: newDeleted, modified: newModified, unchanged: newUnchanged };
+  // Swap scanners
+  const tmpScanner = scanners.left;
+  scanners.left = scanners.right;
+  scanners.right = tmpScanner;
+
+  // Re-classify: added <-> deleted, modified/unchanged/pending stay
+  if (fileStatus.size > 0) {
+    // Swap hashes
+    const tmpHashes = new Map(leftHashes);
+    leftHashes.clear();
+    for (const [k, v] of rightHashes) leftHashes.set(k, v);
+    rightHashes.clear();
+    for (const [k, v] of tmpHashes) rightHashes.set(k, v);
+
+    // Swap scanned sets
+    const tmpScanned = new Set(scannedLeft);
+    scannedLeft.clear();
+    for (const p of scannedRight) scannedLeft.add(p);
+    scannedRight.clear();
+    for (const p of tmpScanned) scannedRight.add(p);
+
+    // Swap file statuses
+    for (const [path, status] of fileStatus) {
+      if (status === S.ADDED) fileStatus.set(path, S.DELETED);
+      else if (status === S.DELETED) fileStatus.set(path, S.ADDED);
+    }
+
+    // Swap files arrays
+    const tmpFiles = sides.left.files;
+    sides.left.files = sides.right.files;
+    sides.right.files = tmpFiles;
   }
 
   // Clear selection and diff state
@@ -1695,11 +1981,27 @@ function handleSwap() {
 // --- Status bar ---
 
 function updateStatusBar() {
-  if (!diffResult) return;
-  const changed = diffResult.added.length + diffResult.deleted.length + diffResult.modified.length;
-  const leftTotal = diffResult.deleted.length + diffResult.modified.length + diffResult.unchanged.length;
-  const rightTotal = diffResult.added.length + diffResult.modified.length + diffResult.unchanged.length;
-  dom.status.textContent = `${changed} files changed \u00B7 ${sides.left.fileName}: ${leftTotal} files \u00B7 ${sides.right.fileName}: ${rightTotal} files`;
+  if (fileStatus.size === 0) return;
+  const counts = getDiffCounts();
+  const changed = counts.added + counts.deleted + counts.modified;
+  const pendingInfo = counts.pending > 0 ? ` \u00B7 ${counts.pending} pending` : '';
+  dom.status.textContent = `${changed} files changed${pendingInfo} \u00B7 ${sides.left.fileName}: ${sides.left.files?.length ?? 0} files \u00B7 ${sides.right.fileName}: ${sides.right.files?.length ?? 0} files`;
+}
+
+function updateSummaryCounts() {
+  const counts = getDiffCounts();
+  const statsContainer = document.getElementById('summary-stats');
+  const badges = statsContainer.querySelectorAll('.stat-badge');
+  const countMap = { added: counts.added, deleted: counts.deleted, modified: counts.modified, unchanged: counts.unchanged, pending: counts.pending };
+  for (const badge of badges) {
+    const status = badge.dataset.status;
+    if (status && countMap[status] !== undefined) {
+      const prefix = STATUS_PREFIX[status];
+      badge.textContent = `${prefix}${countMap[status]} ${status}`;
+      if (status === S.PENDING) badge.style.display = countMap[status] === 0 ? 'none' : '';
+    }
+  }
+  updateStatusBar();
 }
 
 // --- Resizable divider ---
@@ -1735,82 +2037,103 @@ function initDivider() {
   });
 }
 
+async function openPackageOnScanner(side) {
+  const s = sides[side];
+  if (!s.pckFile) return;
+  await scannerCall(side, {
+    type: 'parseFile',
+    pckFile: s.pckFile,
+    pkxFiles: s.pkxFiles || [],
+    keys: s.customKeys,
+  });
+}
+
 async function startComparison() {
   hideError();
   dom.chooser.classList.add('dimmed');
   dom.compareBtn.disabled = true;
-
-  // Show progress
-  dom.progress.classList.remove('hidden');
-  // Reset progress bars
-  for (const side of ['left', 'right']) {
-    const item = document.getElementById(`progress-${side}`);
-    const fill = item.querySelector('.progress-fill');
-    item.querySelector('.progress-label').textContent = `Computing hashes for ${side} package...`;
-    fill.className = 'progress-fill no-transition';
-    fill.style.width = '0%';
-  }
-
-  // Hide verification progress from any previous run
-  const verifyItem = document.getElementById('progress-verify');
-  verifyItem.classList.add('hidden');
+  comparisonActive = true;
 
   try {
-    // Phase 1: Get compressed hashes (parallel, no decompression)
-    const [leftResult, rightResult] = await Promise.all([
-      getFileEntries('left'),
-      getFileEntries('right'),
-    ]);
+    const leftFiles = sides.left.files;
+    const rightFiles = sides.right.files;
+    initFileStatus(leftFiles, rightFiles);
 
-    const diff = classifyDiff(leftResult, rightResult);
-
-    // Phase 2: Verify modified candidates where uncompressed sizes match.
-    // Different compressed hashes could mean same content with different compression.
-    const needsVerify = [];
-    const confirmedModified = [];
-    for (const e of diff.modified) {
-      (e.left.size === e.right.size ? needsVerify : confirmedModified).push(e);
+    // Show progress
+    dom.progress.classList.remove('hidden');
+    for (const side of ['left', 'right']) {
+      const item = document.getElementById(`progress-${side}`);
+      const fill = item.querySelector('.progress-fill');
+      item.querySelector('.progress-label').textContent = `Hashing ${side}...`;
+      fill.className = 'progress-fill no-transition';
+      fill.style.width = '0%';
     }
-    if (needsVerify.length > 0) {
+    const verifyItem = document.getElementById('progress-verify');
+    verifyItem.classList.add('hidden');
+    verifyItem.querySelector('.progress-fill').className = 'progress-fill no-transition';
+    verifyItem.querySelector('.progress-fill').style.width = '0%';
+    verifyTotal = 0;
+    verifyDone = 0;
 
-      const verifyLabel = verifyItem.querySelector('.progress-label');
-      const verifyFill = verifyItem.querySelector('.progress-fill');
-      verifyItem.classList.remove('hidden');
-      verifyFill.className = 'progress-fill no-transition';
-      verifyFill.style.width = '0%';
-      verifyFill.offsetWidth; // force reflow
-      verifyFill.className = 'progress-fill';
-
-      for (let i = 0; i < needsVerify.length; i++) {
-        const entry = needsVerify[i];
-        verifyLabel.textContent = `Verifying ${i + 1} / ${needsVerify.length} modified files...`;
-        verifyFill.style.width = `${Math.round(((i + 1) / needsVerify.length) * 100)}%`;
-
-        const [leftData, rightData] = await Promise.all([
-          getFileData('left', entry.path),
-          getFileData('right', entry.path),
-        ]);
-
-        if (leftData && rightData && bytesEqual(leftData, rightData)) {
-          diff.unchanged.push(entry);
-        } else {
-          confirmedModified.push(entry);
-        }
-      }
-
-      diff.modified = confirmedModified;
-      verifyLabel.textContent = `Verified (${needsVerify.length} files)`;
-      verifyFill.style.width = '100%';
-      verifyFill.className = 'progress-fill done';
-    }
-
-    diffResult = diff;
+    // Show tree immediately
     showResults();
+
+    // Open packages on scanner workers
+    if (sides.left.worker) {
+      await Promise.all([
+        openPackageOnScanner('left'),
+        openPackageOnScanner('right'),
+      ]);
+    }
+
+    // Run scan loops (parallel, priority-aware)
+    if (sides.left.worker) {
+      await Promise.all([runScanLoop('left'), runScanLoop('right')]);
+    } else {
+      await Promise.all([scanInMemory('left'), scanInMemory('right')]);
+    }
+
+    scheduleTreeUpdate();
   } catch (e) {
     showError(e.message || String(e));
+    comparisonActive = false;
     dom.chooser.classList.remove('dimmed');
     dom.compareBtn.disabled = false;
     dom.progress.classList.add('hidden');
+  }
+}
+
+async function scanInMemory(side) {
+  const pkg = sides[side].pkg;
+  if (!pkg) return;
+  const total = sharedPaths.length;
+  const scanned = side === 'left' ? scannedLeft : scannedRight;
+  while (comparisonActive) {
+    const batch = collectBatch(side);
+    if (batch.length === 0) break;
+    await pkg.scanEntries({
+      paths: batch,
+      intervalMs: 16,
+      onChunk: (entries) => {
+        const plain = entries.map(e => {
+          const obj = { path: e.path, size: e.size, compressedSize: e.compressedSize, hash: e.hash };
+          e.free();
+          return obj;
+        });
+        for (const e of plain) scanned.add(e.path);
+        onHashChunk(side, plain);
+        const item = document.getElementById(`progress-${side}`);
+        const pct = Math.round((scanned.size / total) * 100);
+        item.querySelector('.progress-fill').style.width = `${pct}%`;
+        item.querySelector('.progress-label').textContent = `Hashing ${side}: ${scanned.size} / ${total}`;
+      },
+    });
+  }
+  if (comparisonActive) {
+    const item = document.getElementById(`progress-${side}`);
+    item.querySelector('.progress-label').textContent = `Done (${total} shared files)`;
+    item.querySelector('.progress-fill').style.width = '100%';
+    item.querySelector('.progress-fill').className = 'progress-fill done';
   }
 }
 
@@ -1851,7 +2174,7 @@ function navigateTree(direction, skipUnchanged = false) {
   do {
     nextIdx += direction;
     if (nextIdx < 0 || nextIdx >= items.length) return; // at boundary
-  } while (skipUnchanged && items[nextIdx].dataset.status === 'unchanged');
+  } while (skipUnchanged && items[nextIdx].dataset.status === S.UNCHANGED);
 
   items[nextIdx].click();
   items[nextIdx].scrollIntoView({ block: 'nearest' });
