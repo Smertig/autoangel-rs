@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1775575380629,
+  "lastUpdate": 1775641312701,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -1595,6 +1595,90 @@ window.BENCHMARK_DATA = {
             "name": "PackageInfo::get_file",
             "value": 3629,
             "range": "± 2",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "87e32086b6c30f710655c0d8cdee5fd9632fd7f4",
+          "message": "async: callback-based DataReader, zero-alloc hot paths\n\n* DataReader::read_at now takes a FnOnce callback instead of &mut [u8],\n  enabling zero-copy processing (hash, write, decompress) directly on\n  the backing store without intermediate allocations\n* Blanket impl for AsRef<[u8]> covers Vec, Mmap, and any contiguous buffer\n* BufferedFileReader calls callback on cached chunk via RefCell::borrow\n* Removes Cow<[u8]>, as_slice, read_bytes_at, get_raw_file_bytes\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+          "timestamp": "2026-04-08T12:38:33+03:00",
+          "tree_id": "4e5a9ed24c4804853395b0e282b50373dfafebfd",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/87e32086b6c30f710655c0d8cdee5fd9632fd7f4"
+        },
+        "date": 1775641311625,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 31758,
+            "range": "± 47",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 148,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::access_fields",
+            "value": 108,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 222,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 16516,
+            "range": "± 44",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::iterate_lists",
+            "value": 28615,
+            "range": "± 53",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 66,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 249758,
+            "range": "± 334",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::find_prefix",
+            "value": 6066,
+            "range": "± 14",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 2831,
+            "range": "± 1",
             "unit": "ns/iter"
           }
         ]
