@@ -1,6 +1,7 @@
 pub mod elements;
 pub mod file_reader;
 pub mod image;
+pub mod model;
 pub mod pck;
 
 use wasm_bindgen::JsError;

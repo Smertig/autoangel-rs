@@ -4,5 +4,6 @@
 #![allow(clippy::await_holding_lock)]
 
 pub mod elements;
+pub mod model;
 pub mod pck;
 pub mod util;

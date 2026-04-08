@@ -8,3 +8,5 @@ __pycache__
 /.claude
 /.temp
 /docs/plans
+/third_party
+/docs/html/demo/model-test
