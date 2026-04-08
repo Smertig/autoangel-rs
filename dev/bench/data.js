@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1775642819022,
+  "lastUpdate": 1775643614356,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -1763,6 +1763,90 @@ window.BENCHMARK_DATA = {
             "name": "PackageInfo::get_file",
             "value": 3402,
             "range": "± 4",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "5d7fb99b867b4dc3bf29f0f5c6644c7c939a6f14",
+          "message": "pck: replace file_entries with streaming scan_entries\n\n* scan_entries(paths, on_chunk, interval_ms) streams chunks of\n  FileEntrySummary via callback. Hashes compressed (on-disk) data\n  via CRC32 without decompression\n* paths argument is required (no scan-all mode)\n* Update Python bindings, WASM bindings, type stubs, tests, docs\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+          "timestamp": "2026-04-08T13:13:08+03:00",
+          "tree_id": "4ebc29458e424f0b8d913bc4356f347a1f5f8376",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/5d7fb99b867b4dc3bf29f0f5c6644c7c939a6f14"
+        },
+        "date": 1775643613191,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 32145,
+            "range": "± 92",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 157,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::access_fields",
+            "value": 108,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 225,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 16427,
+            "range": "± 49",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::iterate_lists",
+            "value": 28527,
+            "range": "± 604",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 67,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 249667,
+            "range": "± 229",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::find_prefix",
+            "value": 6073,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 2921,
+            "range": "± 7",
             "unit": "ns/iter"
           }
         ]
