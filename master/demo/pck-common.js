@@ -4,8 +4,10 @@ export const TEXT_EXTENSIONS = new Set([
   '.txt', '.cfg', '.ini', '.xml', '.json', '.lua', '.py', '.lst',
   '.action', '.border', '.log', '.csv', '.htm', '.html', '.css',
   '.js', '.shtml', '.conf', '.properties', '.yaml', '.yml',
-  '.ecm', '.gfx',
+  '.gfx',
 ]);
+
+export const MODEL_EXTENSIONS = new Set(['.ecm', '.ski']);
 
 export const BINARY_EXTENSIONS = new Set([
   '.ani', '.dat', '.data', '.db', '.bin',
@@ -15,7 +17,7 @@ export const BINARY_EXTENSIONS = new Set([
   '.avi', '.mp4', '.wmv', '.flv', '.mkv', '.bik',
   '.ttf', '.otf', '.fon',
   '.doc', '.xls', '.ppt',
-  '.pck', '.pkx', '.smd', '.ski', '.bon', '.att', '.stck',
+  '.pck', '.pkx', '.smd', '.bon', '.att', '.stck',
 ]);
 
 export const IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.ico', '.cur', '.webp']);
@@ -151,6 +153,28 @@ export function isLikelyText(data, ext) {
   if (check.length > 0 && controlCount / check.length > 0.05) return false;
 
   return true;
+}
+
+// --- Hex dump ---
+
+/**
+ * Generate hex dump rows from binary data.
+ * @param {Uint8Array} data
+ * @param {number} [maxBytes=4096]
+ * @returns {{ offset: string, hex: string, ascii: string }[]}
+ */
+export function hexDumpRows(data, maxBytes = 4096) {
+  const bytes = data.subarray(0, maxBytes);
+  const rows = [];
+  for (let i = 0; i < bytes.length; i += 16) {
+    const chunk = bytes.subarray(i, i + 16);
+    rows.push({
+      offset: i.toString(16).padStart(8, '0'),
+      hex: [...chunk].map(b => b.toString(16).padStart(2, '0')).join(' ').padEnd(47),
+      ascii: [...chunk].map(b => (b >= 0x20 && b <= 0x7e) ? String.fromCharCode(b) : '.').join(''),
+    });
+  }
+  return rows;
 }
 
 // --- WASM image decoders (injected at init) ---

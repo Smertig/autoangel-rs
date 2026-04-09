@@ -208,3 +208,76 @@
 #preview::-webkit-scrollbar-thumb:hover {
   background: #adb5bd;
 }
+
+/* 3D model preview */
+#preview { position: relative; }
+#preview.model-active { padding: 0; background: #2a2a2a; }
+#preview canvas { display: block; width: 100%; height: 100%; }
+
+.model-toolbar {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  gap: 5px;
+  z-index: 10;
+}
+
+.model-toolbar .btn {
+  font-size: 12px;
+  padding: 5px 10px;
+  background: rgba(0, 0, 0, 0.5);
+  color: #ddd;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+.model-toolbar .btn:hover { background: rgba(0, 0, 0, 0.7); color: #fff; }
+.model-toolbar .btn-active { background: rgba(80, 120, 200, 0.6); color: #fff; border-color: rgba(80, 120, 200, 0.5); }
+
+.model-mode-group {
+  display: flex;
+  gap: 0;
+}
+.model-mode-group .btn { border-radius: 0; }
+.model-mode-group .btn:first-child { border-radius: 4px 0 0 4px; }
+.model-mode-group .btn:last-child { border-radius: 0 4px 4px 0; border-left: none; }
+
+.model-toolbar-sep {
+  width: 1px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 2px 3px;
+}
+
+.model-info {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  display: flex;
+  gap: 14px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.model-source {
+  height: 100%;
+  overflow: auto;
+  padding: 16px;
+  background: var(--surface, #f8f9fa);
+}
+.model-source pre {
+  margin: 0;
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.model-source .hex-dump {
+  white-space: pre;
+  font-size: 12px;
+  line-height: 1.6;
+}
