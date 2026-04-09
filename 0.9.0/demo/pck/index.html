@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PCK Viewer</title>
+  <link rel="stylesheet" href="../nav.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+</head>
+<body>
+  <nav class="demo-nav">
+    <a href="../" class="demo-nav-home">autoangel</a>
+    <div class="demo-nav-links">
+      <a href="../elements/" class="demo-nav-link">Elements</a>
+      <a href="../pck/" class="demo-nav-link active">PCK</a>
+      <a href="../pck-diff/" class="demo-nav-link">Diff</a>
+    </div>
+  </nav>
+  <script>if(location.search)document.querySelectorAll('.demo-nav a').forEach(a=>{if(!a.href.includes('?'))a.href+=location.search})</script>
+  <div id="app">
+    <header id="header">
+      <div id="drop" class="drop-zone">
+        <span class="drop-label">Drop <code>.pck</code> (and optional <code>.pkx*</code>) here, or</span>
+        <input type="file" id="picker" accept=".pck,.pkx,.pkx1,.pkx2,.pkx3,.pkx4,.pkx5" multiple>
+      </div>
+      <div id="status">Loading WASM&hellip;</div>
+      <button id="keys-toggle" class="keys-toggle" title="Custom encryption keys">
+        <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16.5 10.5l-3-3m0 0l-3 3m3-3v8M7 5.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z"/>
+        </svg>
+        <span>Keys</span>
+      </button>
+      <a href="https://github.com/Smertig/autoangel-rs/tree/master/docs/html/demo/pck" target="_blank" rel="noopener" class="source-link" title="View source on GitHub">
+        <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span>Source</span>
+      </a>
+    </header>
+    <div id="error-banner" class="hidden"></div>
+
+    <div id="keys-panel" class="keys-panel hidden">
+      <div class="keys-body">
+        <div class="keys-fields">
+          <label class="key-field"><span>Key 1</span><input type="text" id="key1" value="0xA8937462" spellcheck="false"></label>
+          <label class="key-field"><span>Key 2</span><input type="text" id="key2" value="0x59374231" spellcheck="false"></label>
+          <label class="key-field"><span>Guard 1</span><input type="text" id="guard1" value="0xFDFDFEEE" spellcheck="false"></label>
+          <label class="key-field"><span>Guard 2</span><input type="text" id="guard2" value="0xF00DBEEF" spellcheck="false"></label>
+        </div>
+        <div class="keys-actions">
+          <div class="keys-info" id="keys-info">Default keys. Change values and re-open a file to use custom keys.</div>
+          <button id="keys-reset" class="btn" disabled>Reset to defaults</button>
+        </div>
+      </div>
+    </div>
+
+    <main id="explorer" class="hidden">
+      <aside id="sidebar">
+        <div class="sidebar-controls">
+          <input type="text" id="filter-input" class="filter-input" placeholder="Filter files... (/)">
+        </div>
+        <div id="tree"></div>
+      </aside>
+      <div id="divider"></div>
+      <section id="content">
+        <nav id="breadcrumb"></nav>
+        <div id="preview">
+          <div class="placeholder">Select a file to preview</div>
+        </div>
+        <div id="actions"></div>
+      </section>
+    </main>
+
+    <footer id="statusbar" class="hidden">
+      <span id="filecount"></span>
+      <span id="format"></span>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/languages/ini.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/languages/xml.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/languages/json.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/languages/lua.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/languages/python.min.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
