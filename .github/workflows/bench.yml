@@ -31,10 +31,10 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Run time benchmarks
-        run: cd autoangel-core && cargo bench --bench elements --bench pck -- --output-format bencher --sample-size 10 --measurement-time 3 | tee time_output.txt
+        run: set -o pipefail && cd autoangel-core && cargo bench --bench elements --bench pck -- --output-format bencher --sample-size 10 --measurement-time 3 | tee time_output.txt
 
       - name: Run memory benchmarks
-        run: cd autoangel-core && cargo bench --bench elements_mem --bench pck_mem | tee mem_output.txt
+        run: set -o pipefail && cd autoangel-core && cargo bench --bench elements_mem --bench pck_mem | tee mem_output.txt
 
       - name: Store time benchmark result
         uses: benchmark-action/github-action-benchmark@v1.21.0
