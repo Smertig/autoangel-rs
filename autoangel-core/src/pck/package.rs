@@ -10,16 +10,16 @@ use std::path::Path;
 use subslice::SubsliceExt;
 
 #[derive(Debug, Default, Eq, PartialEq)]
-struct KeyHeader {
-    key1: u32,
-    headers_end_offset: u64,
-    key2: u32,
+pub(crate) struct KeyHeader {
+    pub(crate) key1: u32,
+    pub(crate) headers_end_offset: u64,
+    pub(crate) key2: u32,
     /// True when the on-disk format uses a 64-bit offset (16 bytes total instead of 12).
-    wide: bool,
+    pub(crate) wide: bool,
 }
 
 impl KeyHeader {
-    fn size(&self) -> usize {
+    pub(crate) fn size(&self) -> usize {
         if self.wide { 16 } else { 12 }
     }
 
@@ -66,7 +66,7 @@ impl KeyHeader {
         )
     }
 
-    fn save<W: Write>(&self, writer: &mut W) -> Result<()> {
+    pub(crate) fn save<W: Write>(&self, writer: &mut W) -> Result<()> {
         writer.write_all(&self.key1.to_le_bytes())?;
         if self.wide {
             writer.write_all(&self.headers_end_offset.to_le_bytes())?;
@@ -85,13 +85,13 @@ impl KeyHeader {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum PckVersion {
+pub(crate) enum PckVersion {
     V2,
     V3,
 }
 
 impl PckVersion {
-    fn from_raw(version: u32) -> Result<Self> {
+    pub(crate) fn from_raw(version: u32) -> Result<Self> {
         match version {
             // v2.0.1 and v2.0.2 differ only in the "safe header" check tag; binary layout is identical
             0x20001 | 0x20002 => Ok(PckVersion::V2),
@@ -103,7 +103,7 @@ impl PckVersion {
     /// Compute the 64-bit XOR key for entry_offset encryption.
     /// v2 uses the 32-bit key zero-extended to 64-bit.
     /// v3 sign-extends it (matching the Angelica Engine behavior).
-    fn entry_offset_key(self, key1: u32) -> u64 {
+    pub(crate) fn entry_offset_key(self, key1: u32) -> u64 {
         match self {
             PckVersion::V2 => key1 as u64,
             PckVersion::V3 => key1 as i32 as i64 as u64,
@@ -112,9 +112,9 @@ impl PckVersion {
 }
 
 #[derive(Debug)]
-struct PackageMetaHeader {
-    file_count: u32,
-    version: u32,
+pub(crate) struct PackageMetaHeader {
+    pub(crate) file_count: u32,
+    pub(crate) version: u32,
 }
 
 impl PackageMetaHeader {
@@ -127,7 +127,7 @@ impl PackageMetaHeader {
         })
     }
 
-    fn save<W: Write>(&self, writer: &mut W) -> Result<()> {
+    pub(crate) fn save<W: Write>(&self, writer: &mut W) -> Result<()> {
         writer.write_all(&self.file_count.to_le_bytes())?;
         writer.write_all(&self.version.to_le_bytes())?;
         Ok(())
@@ -135,13 +135,13 @@ impl PackageMetaHeader {
 }
 
 #[derive(Debug, Eq, PartialEq)]
-struct PackageHeader {
-    guard1: u32,
-    version: u32,
-    entry_offset: u64,
-    flags: u32,
-    description: [u8; 252],
-    guard2: u32,
+pub(crate) struct PackageHeader {
+    pub(crate) guard1: u32,
+    pub(crate) version: u32,
+    pub(crate) entry_offset: u64,
+    pub(crate) flags: u32,
+    pub(crate) description: [u8; 252],
+    pub(crate) guard2: u32,
 }
 
 impl PackageHeader {
@@ -175,7 +175,7 @@ impl PackageHeader {
         })
     }
 
-    fn save<W: Write>(&self, writer: &mut W, version: PckVersion) -> Result<()> {
+    pub(crate) fn save<W: Write>(&self, writer: &mut W, version: PckVersion) -> Result<()> {
         writer.write_all(&self.guard1.to_le_bytes())?;
         writer.write_all(&self.version.to_le_bytes())?;
         match version {
@@ -201,11 +201,11 @@ impl PackageHeader {
 }
 
 #[derive(Debug)]
-struct FileGbkEntry {
-    filename: [u8; 260],
-    offset: u64,
-    size: u32,
-    compressed_size: u32,
+pub(crate) struct FileGbkEntry {
+    pub(crate) filename: [u8; 260],
+    pub(crate) offset: u64,
+    pub(crate) size: u32,
+    pub(crate) compressed_size: u32,
 }
 
 impl FileGbkEntry {
@@ -220,7 +220,7 @@ impl FileGbkEntry {
         }
     }
 
-    fn save_size(version: PckVersion) -> usize {
+    pub(crate) fn save_size(version: PckVersion) -> usize {
         match version {
             PckVersion::V2 => Self::SIZE_V2,
             PckVersion::V3 => Self::SIZE_V3,
@@ -265,7 +265,7 @@ impl FileGbkEntry {
         }
     }
 
-    fn save<W: Write>(&self, writer: &mut W, version: PckVersion) -> Result<()> {
+    pub(crate) fn save<W: Write>(&self, writer: &mut W, version: PckVersion) -> Result<()> {
         writer.write_all(&self.filename)?;
         match version {
             PckVersion::V2 => {
@@ -294,11 +294,11 @@ impl FileGbkEntry {
 
 #[derive(Debug)]
 pub struct FileEntry {
-    original_name: String,
+    pub(crate) original_name: String,
     pub normalized_name: String,
-    offset: u64,
-    size: u32,
-    compressed_size: u32,
+    pub(crate) offset: u64,
+    pub(crate) size: u32,
+    pub(crate) compressed_size: u32,
 }
 
 /// Summary of a file entry with compressed data hash, returned by [`PackageInfo::scan_entries`].
@@ -385,10 +385,10 @@ impl TryInto<FileEntry> for FileGbkEntry {
 
 #[derive(Debug)]
 pub struct PackageInfo {
-    meta_header: PackageMetaHeader,
-    key_header: KeyHeader,
-    package_header: PackageHeader,
-    files: Vec<FileEntry>,
+    pub(crate) meta_header: PackageMetaHeader,
+    pub(crate) key_header: KeyHeader,
+    pub(crate) package_header: PackageHeader,
+    pub(crate) files: Vec<FileEntry>,
 }
 
 #[derive(Clone)]
@@ -408,6 +408,12 @@ impl Default for PackageConfig {
             guard2: 0xF00DBEEF,
         }
     }
+}
+
+/// Bundles a parsed package with its content source for shared ownership.
+pub struct PackageSource<R: DataReader> {
+    pub info: PackageInfo,
+    pub content: DataSource<R>,
 }
 
 impl PackageInfo {
@@ -451,31 +457,14 @@ impl PackageInfo {
         let mut new_entries = Vec::new();
 
         for old_entry in &self.files {
-            use encoding::*;
-
             content
                 .read_at(old_entry.offset, old_entry.compressed_size as usize, |b| {
                     writer.write_all(b)
                 })
                 .await??;
 
-            fn add_leading_zeros<const N: usize>(bytes: &[u8]) -> Result<[u8; N]> {
-                assert!(N > 0);
-                if bytes.len() > N - 1 {
-                    eyre::bail!("Slice is too big ({} > {})", bytes.len(), N - 1);
-                }
-
-                let mut result = [0u8; N];
-                result[..bytes.len()].copy_from_slice(bytes);
-                Ok(result)
-            }
-
-            let encoded_name = all::GBK
-                .encode(&old_entry.original_name, EncoderTrap::Strict)
-                .map_err(|s| eyre!("Decoding error: {s}"))?;
-
             new_entries.push(FileGbkEntry {
-                filename: add_leading_zeros(&encoded_name)?,
+                filename: pad_filename(&encode_gbk_filename(&old_entry.original_name)?)?,
                 offset: current_offset,
                 size: old_entry.size,
                 compressed_size: old_entry.compressed_size,
@@ -485,22 +474,7 @@ impl PackageInfo {
         }
 
         let entry_table_offset = current_offset;
-        let entry_save_size = FileGbkEntry::save_size(version);
-        let mut entry_buf = vec![0u8; entry_save_size];
-
-        for new_entry in &new_entries {
-            {
-                let mut cursor = &mut entry_buf[..];
-                new_entry.save(&mut cursor, version)?;
-            }
-
-            let compressed_entry = compress_package_entry(&entry_buf, 3);
-            let compressed_size = compressed_entry.len() as u32;
-
-            writer.write_all(&(compressed_size ^ config.key1).to_le_bytes())?;
-            writer.write_all(&(compressed_size ^ config.key1 ^ config.key2).to_le_bytes())?;
-            writer.write_all(&compressed_entry)?;
-        }
+        write_entry_table(&new_entries, version, config, writer)?;
 
         let meta_header = PackageMetaHeader {
             version: self.meta_header.version,
@@ -788,7 +762,7 @@ impl PackageInfo {
     }
 }
 
-fn compress_package_entry(data: &[u8], level: i32) -> Vec<u8> {
+pub(crate) fn compress_package_entry(data: &[u8], level: i32) -> Vec<u8> {
     miniz_oxide::deflate::compress_to_vec_zlib(data, level as u8)
 }
 
@@ -796,6 +770,48 @@ fn decompress_package_entry(
     compressed: &[u8],
 ) -> Result<Vec<u8>, miniz_oxide::inflate::DecompressError> {
     miniz_oxide::inflate::decompress_to_vec_zlib(compressed)
+}
+
+pub(crate) fn encode_gbk_filename(name: &str) -> Result<Vec<u8>> {
+    use encoding::*;
+    all::GBK
+        .encode(name, EncoderTrap::Strict)
+        .map_err(|s| eyre!("GBK encoding error: {s}"))
+}
+
+pub(crate) fn pad_filename(bytes: &[u8]) -> Result<[u8; 260]> {
+    if bytes.len() > 259 {
+        eyre::bail!("Filename too long ({} > 259)", bytes.len());
+    }
+    let mut result = [0u8; 260];
+    result[..bytes.len()].copy_from_slice(bytes);
+    Ok(result)
+}
+
+pub(crate) fn write_entry_table<W: Write>(
+    entries: &[FileGbkEntry],
+    version: PckVersion,
+    config: &PackageConfig,
+    writer: &mut W,
+) -> Result<()> {
+    let entry_save_size = FileGbkEntry::save_size(version);
+    let mut entry_buf = vec![0u8; entry_save_size];
+
+    for entry in entries {
+        {
+            let mut cursor = &mut entry_buf[..];
+            entry.save(&mut cursor, version)?;
+        }
+
+        let compressed_entry = compress_package_entry(&entry_buf, 3);
+        let compressed_size = compressed_entry.len() as u32;
+
+        writer.write_all(&(compressed_size ^ config.key1).to_le_bytes())?;
+        writer.write_all(&(compressed_size ^ config.key1 ^ config.key2).to_le_bytes())?;
+        writer.write_all(&compressed_entry)?;
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]
