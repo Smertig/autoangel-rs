@@ -439,6 +439,87 @@ class PckPackage:
         """
         ...
 
+    def to_builder(self) -> "PackageBuilder":
+        """
+        Create a builder pre-populated with this package's files.
+        The builder holds a lazy reference to this package's data.
+
+        :return: A new PackageBuilder with this package's files.
+        """
+        ...
+
+    def __repr__(self) -> str: ...
+
+
+@final
+class PackageBuilder:
+    """
+    Builder for creating or modifying pck packages.
+    """
+
+    def __init__(self) -> None:
+        """
+        Create an empty builder (from scratch).
+        """
+        ...
+
+    def add_file(self, path: str, data: bytes) -> None:
+        """
+        Add or overwrite a file. Path is normalized internally.
+
+        :param path: File path inside the package.
+        :param data: File content as bytes.
+        """
+        ...
+
+    def remove_file(self, path: str) -> bool:
+        """
+        Remove a file from the package.
+
+        :param path: File path inside the package.
+        :return: True if the file existed, False otherwise.
+        """
+        ...
+
+    def file_list(self) -> List[str]:
+        """
+        List the final set of files (source - removed + added), sorted.
+
+        :return: Sorted list of normalized file paths.
+        """
+        ...
+
+    def save(
+        self,
+        path: str,
+        *,
+        version: Optional[int] = None,
+        config: Optional[PackageConfig] = None,
+    ) -> None:
+        """
+        Save the package to a file.
+
+        :param path: Output file path.
+        :param version: Package format version (default: source version or 0x20002).
+        :param config: Package configuration. Defaults to standard Angelica Engine config.
+        """
+        ...
+
+    def to_bytes(
+        self,
+        *,
+        version: Optional[int] = None,
+        config: Optional[PackageConfig] = None,
+    ) -> bytes:
+        """
+        Serialize the package to bytes.
+
+        :param version: Package format version (default: source version or 0x20002).
+        :param config: Package configuration. Defaults to standard Angelica Engine config.
+        :return: Serialized package bytes.
+        """
+        ...
+
     def __repr__(self) -> str: ...
 
 
