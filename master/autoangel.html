@@ -146,6 +146,30 @@
 
             </li>
             <li>
+                    <a class="class" href="#PackageBuilder">PackageBuilder</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="function" href="#PackageBuilder.__init__">PackageBuilder</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#PackageBuilder.add_file">add_file</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#PackageBuilder.file_list">file_list</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#PackageBuilder.remove_file">remove_file</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#PackageBuilder.save">save</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#PackageBuilder.to_bytes">to_bytes</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
                     <a class="class" href="#PackageConfig">PackageConfig</a>
                             <ul class="memberlist">
                         <li>
@@ -183,6 +207,9 @@
                         </li>
                         <li>
                                 <a class="function" href="#PckPackage.scan_entries">scan_entries</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#PckPackage.to_builder">to_builder</a>
                         </li>
                 </ul>
 
@@ -876,6 +903,156 @@ all data entries (<code><a href="#ElementsDataEntry">ElementsDataEntry</a></code
 
                             </div>
                 </section>
+                <section id="PackageBuilder">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">PackageBuilder</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#PackageBuilder"></a>
+    
+            <div class="docstring"><p>Builder for creating or modifying pck packages.</p>
+</div>
+
+
+                            <div id="PackageBuilder.__init__" class="classattr">
+                                <div class="attr function">
+            
+        <span class="name">PackageBuilder</span><span class="signature pdoc-code condensed">()</span>
+
+        
+    </div>
+    <a class="headerlink" href="#PackageBuilder.__init__"></a>
+    
+            <div class="docstring"><p>Create an empty builder (from scratch).</p>
+</div>
+
+
+                            </div>
+                            <div id="PackageBuilder.add_file" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">add_file</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">path</span><span class="p">:</span> <span class="nb">str</span>, </span><span class="param"><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#PackageBuilder.add_file"></a>
+    
+            <div class="docstring"><p>Add or overwrite a file. Path is normalized internally.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>path</strong>:  File path inside the package.</li>
+<li><strong>data</strong>:  File content as bytes.</li>
+</ul>
+</div>
+
+
+                            </div>
+                            <div id="PackageBuilder.file_list" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">file_list</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#PackageBuilder.file_list"></a>
+    
+            <div class="docstring"><p>List the final set of files (source - removed + added), sorted.</p>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>Sorted list of normalized file paths.</p>
+</blockquote>
+</div>
+
+
+                            </div>
+                            <div id="PackageBuilder.remove_file" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">remove_file</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">path</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="nb">bool</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#PackageBuilder.remove_file"></a>
+    
+            <div class="docstring"><p>Remove a file from the package.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>path</strong>:  File path inside the package.</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>True if the file existed, False otherwise.</p>
+</blockquote>
+</div>
+
+
+                            </div>
+                            <div id="PackageBuilder.save" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">save</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">path</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">version</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="n"><a href="#PackageConfig">PackageConfig</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#PackageBuilder.save"></a>
+    
+            <div class="docstring"><p>Save the package to a file.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>path</strong>:  Output file path.</li>
+<li><strong>version: Package format version (default</strong>:  source version or 0x20002).</li>
+<li><strong>config</strong>:  Package configuration. Defaults to standard Angelica Engine config.</li>
+</ul>
+</div>
+
+
+                            </div>
+                            <div id="PackageBuilder.to_bytes" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">to_bytes</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">version</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="n"><a href="#PackageConfig">PackageConfig</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="nb">bytes</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#PackageBuilder.to_bytes"></a>
+    
+            <div class="docstring"><p>Serialize the package to bytes.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>version: Package format version (default</strong>:  source version or 0x20002).</li>
+<li><strong>config</strong>:  Package configuration. Defaults to standard Angelica Engine config.</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>Serialized package bytes.</p>
+</blockquote>
+</div>
+
+
+                            </div>
+                </section>
                 <section id="PackageConfig">
                     <div class="attr class">
             
@@ -1109,6 +1286,28 @@ Raise an exception to cancel scanning.</li>
 <li><strong>interval_ms</strong>:  Minimum interval in milliseconds between chunk callbacks (<code>100</code> by default).
 The final chunk is always delivered regardless of throttling.</li>
 </ul>
+</div>
+
+
+                            </div>
+                            <div id="PckPackage.to_builder" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">to_builder</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n"><a href="#PackageBuilder">PackageBuilder</a></span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#PckPackage.to_builder"></a>
+    
+            <div class="docstring"><p>Create a builder pre-populated with this package's files.
+The builder holds a lazy reference to this package's data.</p>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>A new PackageBuilder with this package's files.</p>
+</blockquote>
 </div>
 
 
