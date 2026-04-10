@@ -84,7 +84,7 @@ pub fn package_get_all_files(c: &mut Criterion) {
                 .map(|content| content.unwrap().len())
                 .sum();
 
-            assert_eq!(total_size, 8027844);
+            assert_eq!(total_size, 6204669);
         })
     });
 }

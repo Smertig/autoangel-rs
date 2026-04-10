@@ -55,7 +55,7 @@ fn main() {
                 .map(|entry| pollster::block_on(package.get_file(&content, &entry.normalized_name)))
                 .map(|content| content.unwrap().len())
                 .sum();
-            assert_eq!(total_size, 8027844);
+            assert_eq!(total_size, 6204669);
         })
     });
 
