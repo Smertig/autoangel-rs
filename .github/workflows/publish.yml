@@ -231,10 +231,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # update docs
+      - name: Assemble site
+        run: python scripts/assemble_site.py _site
+
       - name: Publish Docs to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs/html
+          publish_dir: _site
           destination_dir: ${{ needs.bump_tag.outputs.version }}

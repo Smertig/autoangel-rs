@@ -41,6 +41,6 @@ for member in doc.members.values():
 all_modules = {"autoangel": doc}
 html = pdoc.render.html_module(module=doc, all_modules=all_modules)
 
-output_path = PROJECT_DIR / 'docs' / 'html' / 'autoangel.html'
+output_path = PROJECT_DIR / 'docs' / 'autoangel.html'
 output_path.parent.mkdir(parents=True, exist_ok=True)
 output_path.write_text(html, encoding='utf-8', newline='\n')

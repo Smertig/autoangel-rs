@@ -37,7 +37,7 @@ cd autoangel-core && cargo bench --bench pck       # pck only
 ### Documentation
 
 ```bash
-uv run docs/rebuild.py  # rebuild HTML docs
+uv run scripts/rebuild_docs.py  # rebuild HTML docs
 ```
 
 Rebuild docs after any change to the public API: type stubs (`.pyi`), PyO3 bindings, or public Rust types/signatures. Include the regenerated docs in the commit.
@@ -78,12 +78,12 @@ To test demo viewers against a local WASM build:
 
 ```bash
 cd autoangel-wasm && wasm-pack build --target web --out-name autoangel
-uv run docs/serve.py          # no-cache dev server on port 9853
+uv run scripts/serve.py          # no-cache dev server on port 9853
 ```
 
 Then open with `?local` to use the local build instead of CDN:
-- `http://localhost:9853/docs/html/demo/pck/index.html?local`
-- `http://localhost:9853/docs/html/demo/elements/index.html?local`
+- `http://localhost:9853/demo/pck/index.html?local`
+- `http://localhost:9853/demo/elements/index.html?local`
 
 Without `?local`, the demos load WASM from the published npm CDN as usual.
 
@@ -94,7 +94,7 @@ All crates share the same version. When bumping, update **all** of these:
 - `autoangel-py/Cargo.toml`
 - `autoangel-wasm/Cargo.toml`
 - `autoangel-wasm/README.md` — CDN URL in the installation example
-- `docs/html/demo/cdn.js` — `CDN_PKG` const (single source of truth for all demo pages)
+- `demos/cdn.js` — `CDN_PKG` const (single source of truth for all demo pages)
 
 ### Commit ordering when both API and demos change
 

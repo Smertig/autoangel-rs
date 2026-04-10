@@ -22,12 +22,12 @@ jobs:
           toolchain: '1.94.1'
 
       - name: Build documentation
-        run: uv run docs/rebuild.py
+        run: uv run scripts/rebuild_docs.py
 
       - name: Check for documentation changes
         run: |
-          if [[ -n $(git status --porcelain docs/html/) ]]; then
-            echo "::error::Documentation is out of date. Please run 'uv run docs/rebuild.py' and commit the changes."
+          if [[ -n $(git status --porcelain docs/) ]]; then
+            echo "::error::Documentation is out of date. Please run 'uv run scripts/rebuild_docs.py' and commit the changes."
             git diff
             exit 1
           else
