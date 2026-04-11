@@ -1,6 +1,7 @@
 target
 Cargo.lock
 __pycache__
+node_modules
 /*.iml
 /.idea
 /.venv*

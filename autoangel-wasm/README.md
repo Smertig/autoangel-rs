@@ -171,7 +171,7 @@ wasm-pack build --target web
 wasm-pack build --target nodejs --out-dir pkg-node
 
 # Run tests (requires Node.js build)
-node --test tests/test.mjs
+npm ci && npx tsx --test tests/test.ts
 ```
 
 The crate depends on `autoangel-core` with `default-features = false` — no filesystem or mmap, all parsing works from byte arrays.
