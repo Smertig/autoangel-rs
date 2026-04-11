@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1775851198263,
+  "lastUpdate": 1775933489313,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -2111,6 +2111,102 @@ window.BENCHMARK_DATA = {
             "name": "PackageInfo::save_to",
             "value": 756153,
             "range": "± 1531",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "Smertig@users.noreply.github.com",
+            "name": "Alexander",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "1079e0a1c60542ec5916c6c0f7d785939698e56a",
+          "message": "tests: add gold-based package metadata tests for WASM and Python\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+          "timestamp": "2026-04-11T21:48:34+03:00",
+          "tree_id": "1c44c7d89b4fb2d8e6e64baedf01f2b6fe8bf6e8",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/1079e0a1c60542ec5916c6c0f7d785939698e56a"
+        },
+        "date": 1775933488172,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 32470,
+            "range": "± 904",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 114,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::access_fields",
+            "value": 62,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 161,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 22367,
+            "range": "± 40",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::iterate_lists",
+            "value": 13453,
+            "range": "± 59",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 47,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 301582,
+            "range": "± 1065",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::find_prefix",
+            "value": 332,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 3359,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_all_files",
+            "value": 9975918,
+            "range": "± 20468",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::save_to",
+            "value": 766594,
+            "range": "± 819",
             "unit": "ns/iter"
           }
         ]
