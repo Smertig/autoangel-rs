@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_FILE = path.resolve(__dirname, '../../tests/test_data/elements/elements_v102.data');
+const DATA_FILE = path.resolve(__dirname, '../../test_data/elements/elements_v102.data');
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/elements/');

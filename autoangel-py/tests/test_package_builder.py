@@ -87,7 +87,7 @@ def test_from_scratch_save_to_file():
 
 def test_from_package_save_to_file():
     """Modify an existing package via builder and save to file."""
-    original = autoangel.read_pck('../tests/test_data/packages/configs.pck')
+    original = autoangel.read_pck('../test_data/packages/configs.pck')
     builder = original.to_builder()
     builder.add_file("configs\\added.txt", b"added")
 
@@ -109,7 +109,7 @@ def test_from_package_save_to_file():
 
 def test_from_package_roundtrip():
     """Read existing package, to_builder, save, verify identical."""
-    original = autoangel.read_pck('../tests/test_data/packages/configs.pck')
+    original = autoangel.read_pck('../test_data/packages/configs.pck')
     builder = original.to_builder()
 
     data = builder.to_bytes()
@@ -122,7 +122,7 @@ def test_from_package_roundtrip():
 
 def test_add_file_to_existing():
     """Add a new file to an existing package."""
-    original = autoangel.read_pck('../tests/test_data/packages/configs.pck')
+    original = autoangel.read_pck('../test_data/packages/configs.pck')
     builder = original.to_builder()
 
     builder.add_file("configs\\new_file.txt", b"new content")
@@ -139,7 +139,7 @@ def test_add_file_to_existing():
 
 def test_remove_file_from_existing():
     """Remove a file from an existing package."""
-    original = autoangel.read_pck('../tests/test_data/packages/configs.pck')
+    original = autoangel.read_pck('../test_data/packages/configs.pck')
     original_files = original.file_list()
     assert len(original_files) > 0
     removed_path = original_files[0]
@@ -157,7 +157,7 @@ def test_remove_file_from_existing():
 
 def test_overwrite_existing_file():
     """Overwrite an existing file with new content."""
-    original = autoangel.read_pck('../tests/test_data/packages/configs.pck')
+    original = autoangel.read_pck('../test_data/packages/configs.pck')
     original_files = original.file_list()
     target_path = original_files[0]
 
@@ -173,7 +173,7 @@ def test_overwrite_existing_file():
 
 def test_remove_then_add_back():
     """Remove a file then add it back with new content."""
-    original = autoangel.read_pck('../tests/test_data/packages/configs.pck')
+    original = autoangel.read_pck('../test_data/packages/configs.pck')
     target_path = original.file_list()[0]
 
     builder = original.to_builder()
@@ -197,7 +197,7 @@ def test_add_then_remove():
 
 def test_original_usable_after_to_builder():
     """Original PckPackage remains usable after to_builder (Arc sharing)."""
-    original = autoangel.read_pck('../tests/test_data/packages/configs.pck')
+    original = autoangel.read_pck('../test_data/packages/configs.pck')
     original_files = original.file_list()
     original_content = original.get_file(original_files[0])
 
@@ -213,14 +213,14 @@ def test_remove_nonexistent_returns_false():
     builder = autoangel.PackageBuilder()
     assert builder.remove_file("data\\nonexistent.txt") is False
 
-    original = autoangel.read_pck('../tests/test_data/packages/configs.pck')
+    original = autoangel.read_pck('../test_data/packages/configs.pck')
     builder2 = original.to_builder()
     assert builder2.remove_file("definitely\\not\\here.txt") is False
 
 
 def test_remove_already_removed_returns_false():
     """Removing the same file twice: second call returns False."""
-    original = autoangel.read_pck('../tests/test_data/packages/configs.pck')
+    original = autoangel.read_pck('../test_data/packages/configs.pck')
     target_path = original.file_list()[0]
 
     builder = original.to_builder()

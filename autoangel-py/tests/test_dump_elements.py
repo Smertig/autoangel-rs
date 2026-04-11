@@ -17,7 +17,7 @@ def dump(data: ElementsData, out):
 def test_dump_elements():
     errors_num = 0
 
-    for path in glob.glob("../tests/test_data/elements/*.data"):
+    for path in glob.glob("../test_data/elements/*.data"):
         try:
             el = read_elements(path)
             gold_path = Path(f'{path}.txt')

@@ -3,7 +3,7 @@ from autoangel import *
 
 
 CONFIG_PATH = '../autoangel-core/resources/known_configs/PW_1.2.6_v7.cfg'
-ELEMENTS_V7_PATH = '../tests/test_data/elements/elements_v7.data'
+ELEMENTS_V7_PATH = '../test_data/elements/elements_v7.data'
 
 
 def test_config():

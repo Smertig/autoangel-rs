@@ -11,19 +11,19 @@ def _check_package(package: autoangel.PckPackage):
 
 
 def test_read_package_from_bytes():
-    test_path = '../tests/test_data/packages/configs.pck'
+    test_path = '../test_data/packages/configs.pck'
     with open(test_path, 'rb') as f:
         package = autoangel.read_pck_bytes(f.read())
         _check_package(package)
 
 
 def test_read_package_from_file():
-    test_path = '../tests/test_data/packages/configs.pck'
+    test_path = '../test_data/packages/configs.pck'
     _check_package(autoangel.read_pck(test_path))
 
 
 def test_scan_entries():
-    test_path = '../tests/test_data/packages/configs.pck'
+    test_path = '../test_data/packages/configs.pck'
     package = autoangel.read_pck(test_path)
     file_list = package.file_list()
 
@@ -46,7 +46,7 @@ def test_scan_entries():
 
 
 def test_scan_entry_hashes_consistent():
-    test_path = '../tests/test_data/packages/configs.pck'
+    test_path = '../test_data/packages/configs.pck'
     package = autoangel.read_pck(test_path)
 
     file_list = package.file_list()
@@ -60,7 +60,7 @@ def test_scan_entry_hashes_consistent():
 
 
 def test_file_entry_repr():
-    test_path = '../tests/test_data/packages/configs.pck'
+    test_path = '../test_data/packages/configs.pck'
     package = autoangel.read_pck(test_path)
 
     file_list = package.file_list()
@@ -77,7 +77,7 @@ def test_file_entry_repr():
 
 
 def test_pck_repr():
-    test_path = '../tests/test_data/packages/configs.pck'
+    test_path = '../test_data/packages/configs.pck'
     package = autoangel.read_pck(test_path)
     r = repr(package)
     assert r.startswith('PckPackage(')
@@ -85,7 +85,7 @@ def test_pck_repr():
 
 
 def test_scan_entries_with_paths():
-    test_path = '../tests/test_data/packages/configs.pck'
+    test_path = '../test_data/packages/configs.pck'
     package = autoangel.read_pck(test_path)
     file_list = package.file_list()
     assert len(file_list) >= 2
@@ -101,7 +101,7 @@ def test_scan_entries_with_paths():
 
 
 def test_scan_entries_cancellation():
-    test_path = '../tests/test_data/packages/configs.pck'
+    test_path = '../test_data/packages/configs.pck'
     package = autoangel.read_pck(test_path)
 
     chunk_count = 0
@@ -119,7 +119,7 @@ def test_scan_entries_cancellation():
 
 
 def test_scan_entries_chunking():
-    test_path = '../tests/test_data/packages/configs.pck'
+    test_path = '../test_data/packages/configs.pck'
     package = autoangel.read_pck(test_path)
     total_files = len(package.file_list())
 
@@ -135,7 +135,7 @@ def test_scan_entries_chunking():
 
 
 def test_read_pck_with_parse_progress():
-    test_path = '../tests/test_data/packages/configs.pck'
+    test_path = '../test_data/packages/configs.pck'
 
     collected = []
     def on_progress(index, total):
@@ -150,7 +150,7 @@ def test_read_pck_with_parse_progress():
 
 
 def test_read_pck_bytes_with_parse_progress():
-    test_path = '../tests/test_data/packages/configs.pck'
+    test_path = '../test_data/packages/configs.pck'
     with open(test_path, 'rb') as f:
         content = f.read()
 
@@ -167,7 +167,7 @@ def test_read_pck_bytes_with_parse_progress():
 
 
 def test_read_pck_parse_progress_cancellation():
-    test_path = '../tests/test_data/packages/configs.pck'
+    test_path = '../test_data/packages/configs.pck'
 
     call_count = 0
     def on_progress(index, total):
@@ -185,12 +185,12 @@ def test_read_pck_parse_progress_cancellation():
 
 
 def test_read_pck_with_pkx_paths_none():
-    test_path = '../tests/test_data/packages/configs.pck'
+    test_path = '../test_data/packages/configs.pck'
     package = autoangel.read_pck(test_path, pkx_paths=None)
     _check_package(package)
 
 
 def test_read_pck_with_empty_pkx_list():
-    test_path = '../tests/test_data/packages/configs.pck'
+    test_path = '../test_data/packages/configs.pck'
     package = autoangel.read_pck(test_path, pkx_paths=[])
     _check_package(package)

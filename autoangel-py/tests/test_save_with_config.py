@@ -4,7 +4,7 @@ import autoangel
 
 
 def test_save_with_config():
-    original_path = '../tests/test_data/packages/configs.pck'
+    original_path = '../test_data/packages/configs.pck'
     original_package = autoangel.read_pck(original_path)
 
     original_files = original_package.file_list()
