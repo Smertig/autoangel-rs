@@ -1,0 +1,5 @@
+@import '../shared/global.css';
+
+:root {
+  --sidebar-width: 300px;
+}

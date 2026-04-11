@@ -1,0 +1,20 @@
+@import '../shared/global.css';
+
+:root {
+  --sidebar-width: 300px;
+
+  /* Diff-specific colors */
+  --added: #40c057;
+  --added-bg: #e6ffec;
+  --added-text: #2b8a3e;
+  --removed: #fa5252;
+  --removed-bg: #ffebe9;
+  --removed-text: #c92a2a;
+  --modified: #fab005;
+  --modified-text: #e67700;
+  --unchanged: #868e96;
+  --pending: #339af0;
+  --pending-text: #1971c2;
+}
+
+.hidden { display: none !important; }

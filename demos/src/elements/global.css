@@ -1,0 +1,6 @@
+@import '../shared/global.css';
+
+:root {
+  --hover: #e9ecef;
+  --selected: #d0ebff;
+}

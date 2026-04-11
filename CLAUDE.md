@@ -74,18 +74,14 @@ Build: `cd autoangel-wasm && wasm-pack build --target web`
 
 ### Local demo testing
 
-To test demo viewers against a local WASM build:
-
 ```bash
-cd autoangel-wasm && wasm-pack build --target web --out-name autoangel
-uv run scripts/serve.py          # no-cache dev server on port 9853
+uv run scripts/serve.py          # Vite dev server with HMR on port 9853
+uv run scripts/serve.py --build  # production build + static serve
 ```
 
-Then open with `?local` to use the local build instead of CDN:
-- `http://localhost:9853/demo/pck/index.html?local`
-- `http://localhost:9853/demo/elements/index.html?local`
+The `?local` parameter still works for loading WASM from the local build.
 
-Without `?local`, the demos load WASM from the published npm CDN as usual.
+Demo source is in `demos/src/` (TypeScript + React). Run `cd demos && npx vitest` for unit tests.
 
 ## Version bumps
 
@@ -94,7 +90,7 @@ All crates share the same version. When bumping, update **all** of these:
 - `autoangel-py/Cargo.toml`
 - `autoangel-wasm/Cargo.toml`
 - `autoangel-wasm/README.md` — CDN URL in the installation example
-- `demos/cdn.js` — `CDN_PKG` const (single source of truth for all demo pages)
+- `demos/src/cdn.ts` — `CDN_PKG` const (single source of truth for all demo pages)
 
 ### Commit ordering when both API and demos change
 
