@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -386,6 +386,52 @@ describe("PckPackage", () => {
     );
     await assert.rejects(() => PckPackage.parse(CONFIGS_PCK, config));
   });
+});
+
+// --- Dump elements (gold-based) ---
+
+describe("dump elements", () => {
+  const elementsDir = resolve(root, "test_data/elements");
+  const dataFiles = readdirSync(elementsDir)
+    .filter((f) => f.endsWith(".data"))
+    .sort();
+
+  for (const file of dataFiles) {
+    it(`dumps ${file}`, async () => {
+      const bytes = readFileSync(resolve(elementsDir, file));
+      const data = await ElementsData.parse(bytes);
+
+      let out = `version = ${data.version}, ${data.listCount} lists:\n`;
+      try {
+        for (let li = 0; li < data.listCount; li++) {
+          const list = data.getList(li);
+          try {
+            out += `  ${list.caption} (${list.entryCount} entries)\n`;
+            for (let ei = 0; ei < list.entryCount; ei++) {
+              const entry = await list.getEntry(ei);
+              out += `    [${ei}] ${entry.toString()}\n`;
+              entry.free();
+            }
+          } finally {
+            list.free();
+          }
+        }
+      } finally {
+        data.free();
+      }
+
+      const goldPath = resolve(elementsDir, `${file}.txt`);
+      const tmpPath = resolve(elementsDir, `${file}.tmp.txt`);
+      const gold = readFileSync(goldPath, "utf-8");
+
+      if (out !== gold) {
+        writeFileSync(tmpPath, out, "utf-8");
+        assert.fail(
+          `Gold mismatch for ${file} — diff ${file}.txt vs ${file}.tmp.txt`
+        );
+      }
+    });
+  }
 });
 
 // --- Image decoding ---
