@@ -72,7 +72,7 @@ cd autoangel-wasm && wasm-pack build --target web        # WASM package
 ```bash
 cargo test -p autoangel-core                             # Rust
 cd autoangel-py && uv run pytest                         # Python
-cd autoangel-wasm && node --test tests/test.mjs          # WASM (build for Node.js first)
+cd autoangel-wasm && npm ci && npx tsx --test tests/test.ts  # WASM (build for Node.js first)
 ```
 
 ### Lint

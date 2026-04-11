@@ -64,11 +64,11 @@ PyO3 bindings exposing `autoangel-core` as the `autoangel` Python module. Uses `
 Python type stubs: `autoangel-py/autoangel.pyi`.
 
 ### autoangel-wasm
-wasm-bindgen bindings exposing `autoangel-core` as an npm package. Uses `default-features = false` (no `memmap2`/filesystem). JS tests use Node.js built-in test runner (`node:test`).
+wasm-bindgen bindings exposing `autoangel-core` as an npm package. Uses `default-features = false` (no `memmap2`/filesystem). TypeScript tests use Node.js built-in test runner (`node:test`) via `tsx`.
 
 - **`elements.rs`** — `ElementsConfig`, `ElementsData`, `ElementsDataList`, `ElementsDataEntry`
 - **`pck.rs`** — `PackageConfig`, `PckPackage`
-- **`tests/test.mjs`** — JS tests (requires `wasm-pack build --target nodejs --out-dir pkg-node` first)
+- **`tests/test.ts`** — TypeScript tests (requires `wasm-pack build --target nodejs --out-dir pkg-node` and `npm ci` first)
 
 Build: `cd autoangel-wasm && wasm-pack build --target web`
 

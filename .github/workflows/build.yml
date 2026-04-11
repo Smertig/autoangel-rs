@@ -141,8 +141,11 @@ jobs:
       - name: Build WASM for Node.js
         run: cd autoangel-wasm && wasm-pack build --target nodejs --out-dir pkg-node --out-name autoangel
 
+      - name: Install WASM test dependencies
+        run: cd autoangel-wasm && npm ci
+
       - name: Run WASM tests
-        run: cd autoangel-wasm && node --test tests/test.mjs
+        run: cd autoangel-wasm && npx tsx --test tests/test.ts
 
   build-demos:
     name: Build Demos
