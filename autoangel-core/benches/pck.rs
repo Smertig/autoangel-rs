@@ -4,7 +4,7 @@ use criterion::{Criterion, criterion_group, criterion_main};
 use std::hint::black_box;
 use std::io::Cursor;
 
-static CONFIGS_PCK: &[u8] = include_bytes!("../../tests/test_data/packages/configs.pck");
+static CONFIGS_PCK: &[u8] = include_bytes!("../../test_data/packages/configs.pck");
 
 fn configs_ds() -> DataSource<Vec<u8>> {
     DataSource::from_bytes(CONFIGS_PCK.to_vec())

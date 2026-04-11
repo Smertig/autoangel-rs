@@ -36,7 +36,7 @@ impl DropLeadingZeros for String {
 #[macro_export]
 macro_rules! get_test_data_path {
     ($file:expr) => {
-        concat!(env!("CARGO_MANIFEST_DIR"), "/../tests/test_data/", $file)
+        concat!(env!("CARGO_MANIFEST_DIR"), "/../test_data/", $file)
     };
 }
 

@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PCK_FILE = path.resolve(__dirname, '../../tests/test_data/packages/configs.pck');
+const PCK_FILE = path.resolve(__dirname, '../../test_data/packages/configs.pck');
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/pck/');

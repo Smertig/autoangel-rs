@@ -21,10 +21,10 @@ const CONFIG_TEXT = readFileSync(
   "utf-8"
 );
 const ELEMENTS_V7 = readFileSync(
-  resolve(root, "tests/test_data/elements/elements_v7.data")
+  resolve(root, "test_data/elements/elements_v7.data")
 );
 const CONFIGS_PCK = readFileSync(
-  resolve(root, "tests/test_data/packages/configs.pck")
+  resolve(root, "test_data/packages/configs.pck")
 );
 
 // --- ElementsConfig ---

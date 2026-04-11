@@ -2,7 +2,7 @@ use autoangel_core::elements::config;
 use autoangel_core::elements::data::{Data, DataEntry, DataView};
 use autoangel_core::util::data_source::DataSource;
 
-pub static ELEMENTS_V7: &[u8] = include_bytes!("../../tests/test_data/elements/elements_v7.data");
+pub static ELEMENTS_V7: &[u8] = include_bytes!("../../test_data/elements/elements_v7.data");
 pub static TEST_ENTRY_ID: u32 = 1;
 
 pub fn get_v7_config() -> config::Config {

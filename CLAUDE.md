@@ -18,7 +18,7 @@ cargo fmt --all -- --check             # check formatting
 cargo clippy --all-features            # lint
 ```
 
-Requires [uv](https://docs.astral.sh/uv/). Test data in `tests/test_data/` uses Git LFS — fetch with `git lfs pull` if tests fail on missing data.
+Requires [uv](https://docs.astral.sh/uv/). Test data in `test_data/` uses Git LFS — fetch with `git lfs pull` if tests fail on missing data.
 
 ### Python Wheel Build
 
