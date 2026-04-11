@@ -13,22 +13,22 @@ export function NavBar({ active }: NavBarProps) {
 
   return (
     <nav className={styles.nav}>
-      <a href={link('/')} className={styles.home}>autoangel</a>
+      <a href={link('../')} className={styles.home}>autoangel</a>
       <div className={styles.links}>
         <a
-          href={link('/elements/')}
+          href={link('../elements/')}
           className={`${styles.link}${active === 'elements' ? ` ${styles.active}` : ''}`}
         >
           Elements
         </a>
         <a
-          href={link('/pck/')}
+          href={link('../pck/')}
           className={`${styles.link}${active === 'pck' ? ` ${styles.active}` : ''}`}
         >
           PCK
         </a>
         <a
-          href={link('/pck-diff/')}
+          href={link('../pck-diff/')}
           className={`${styles.link}${active === 'pck-diff' ? ` ${styles.active}` : ''}`}
         >
           Diff
