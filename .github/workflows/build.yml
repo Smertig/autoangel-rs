@@ -2,7 +2,6 @@ on:
   push:
     paths-ignore:
       - 'docs/**'
-      - 'demos/**'
       - '**.md'
 
 name: CI
@@ -18,6 +17,7 @@ jobs:
       core: ${{ steps.filter.outputs.core }}
       python: ${{ steps.filter.outputs.python }}
       wasm: ${{ steps.filter.outputs.wasm }}
+      demos: ${{ steps.filter.outputs.demos }}
       ci: ${{ steps.filter.outputs.ci }}
     steps:
       - uses: actions/checkout@v4
@@ -33,6 +33,8 @@ jobs:
               - 'autoangel-py/**'
             wasm:
               - 'autoangel-wasm/**'
+            demos:
+              - 'demos/**'
             ci:
               - '.github/workflows/build.yml'
 
@@ -141,6 +143,46 @@ jobs:
 
       - name: Run WASM tests
         run: cd autoangel-wasm && node --test tests/test.mjs
+
+  build-demos:
+    name: Build Demos
+    needs: changes
+    if: needs.changes.outputs.demos == 'true' || needs.changes.outputs.ci == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Generate E2E fixtures
+        run: cd autoangel-py && uv run python ../demos/e2e/generate-fixtures.py
+
+      - name: Install dependencies
+        run: cd demos && npm ci
+
+      - name: Build demos
+        run: cd demos && npm run build
+
+      - name: Install Playwright browsers
+        run: cd demos && npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: cd demos && npx playwright test
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: demos/e2e/test-results/
 
   fmt:
     name: Rustfmt
