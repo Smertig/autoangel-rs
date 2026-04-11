@@ -434,6 +434,61 @@ describe("dump elements", () => {
   }
 });
 
+// --- Dump packages (gold-based) ---
+
+describe("dump packages", () => {
+  const packagesDir = resolve(root, "test_data/packages");
+  const pckFiles = readdirSync(packagesDir)
+    .filter((f) => f.endsWith(".pck"))
+    .sort();
+
+  for (const file of pckFiles) {
+    it(`dumps ${file}`, async () => {
+      const bytes = readFileSync(resolve(packagesDir, file));
+      const pkg = await PckPackage.parse(bytes);
+      const paths = pkg.fileList();
+      const entries = [];
+
+      try {
+        await pkg.scanEntries({
+          paths,
+          intervalMs: 0,
+          onChunk: (chunk) => {
+            for (const e of chunk) {
+              entries.push({
+                path: e.path,
+                size: e.size,
+                compressedSize: e.compressedSize,
+                hash: e.hash,
+              });
+              e.free();
+            }
+          },
+        });
+      } finally {
+        pkg.free();
+      }
+
+      let out = `${entries.length} files:\n`;
+      for (const e of entries) {
+        const hash = (e.hash >>> 0).toString(16).toUpperCase().padStart(8, "0");
+        out += `  ${e.path} (size=${e.size}, compressed=${e.compressedSize}, hash=0x${hash})\n`;
+      }
+
+      const goldPath = resolve(packagesDir, `${file}.txt`);
+      const tmpPath = resolve(packagesDir, `${file}.tmp.txt`);
+      const gold = readFileSync(goldPath, "utf-8");
+
+      if (out !== gold) {
+        writeFileSync(tmpPath, out, "utf-8");
+        assert.fail(
+          `Gold mismatch for ${file} — diff ${file}.txt vs ${file}.tmp.txt`
+        );
+      }
+    });
+  }
+});
+
 // --- Image decoding ---
 
 // Build a minimal 2x2 uncompressed RGBA DDS (B8G8R8A8_UNORM)
