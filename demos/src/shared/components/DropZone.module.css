@@ -1,0 +1,38 @@
+.dropZone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 10px 20px;
+  text-align: center;
+  transition: border-color 0.15s, background 0.15s;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.dropZone.over {
+  border-color: var(--accent);
+  background: var(--tree-selected);
+}
+
+.dropZone.compact {
+  padding: 6px 14px;
+  flex: 0 auto;
+}
+
+.dropZone.vertical {
+  flex-direction: column;
+  padding: 20px 16px;
+}
+
+.dropLabel {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.fileInput {
+  font-size: 14px;
+  cursor: pointer;
+}

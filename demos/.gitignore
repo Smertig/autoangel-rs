@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.vite
+e2e/fixtures/
+e2e/test-results/
+test-results/

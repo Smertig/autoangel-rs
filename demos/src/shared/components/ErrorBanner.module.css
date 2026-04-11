@@ -1,0 +1,46 @@
+.errorBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #fff9ed;
+  border-bottom: 1px solid #f0d9a8;
+  color: #6e5a1f;
+  font-size: 13px;
+  line-height: 1.45;
+  animation: errorSlideIn 0.2s ease-out;
+}
+
+.errorBanner::before {
+  content: '\26A0';
+  flex-shrink: 0;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.errorText {
+  flex: 1;
+  white-space: pre-line;
+}
+
+.errorDismiss {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: #a08a4a;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0 2px;
+  border-radius: 3px;
+}
+
+.errorDismiss:hover {
+  color: #6e5a1f;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+@keyframes errorSlideIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

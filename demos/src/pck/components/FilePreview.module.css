@@ -1,0 +1,58 @@
+.placeholder {
+  padding: 24px;
+  color: var(--text-muted);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.filePreviewWrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.actionsBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.fileInfo {
+  font-size: 12px;
+  color: var(--text-muted);
+  flex: 1;
+}
+
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 13px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.btnPrimary:hover {
+  background: var(--accent-hover);
+}
+
+.previewContent {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 16px;
+}

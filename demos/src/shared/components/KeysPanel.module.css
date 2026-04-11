@@ -1,0 +1,150 @@
+.keysToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-muted);
+  font-size: 13px;
+  white-space: nowrap;
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.keysToggle:hover {
+  color: var(--text);
+  background: var(--tree-hover);
+}
+
+.keysToggle.active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: #e7f5ff;
+}
+
+.keysToggle.hasCustom {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.keysToggle.hasCustom::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-left: 2px;
+}
+
+.keysPanel {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* pck-diff variant: appears inline inside the chooser as a bordered box */
+.keysPanelInline {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  flex-shrink: 0;
+}
+
+.keysPanelInline .keyField input {
+  background: var(--surface);
+}
+
+.keysBody {
+  display: flex;
+  gap: 16px;
+  padding: 12px 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.keysFields {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.keyField {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.keyField span {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.keyField input {
+  width: 120px;
+  padding: 5px 8px;
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.keyField input:focus {
+  border-color: var(--accent);
+}
+
+.keyField input.modified {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.keysActions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.keysInfo {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  max-width: 240px;
+}
+
+.keysInfo.custom {
+  color: var(--accent);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.1s, transform 0.1s;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--tree-hover);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
