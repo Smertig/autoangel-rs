@@ -1,0 +1,8 @@
+7 files:
+  models\npcs\怪物\11木元素\花苞食人花\b身高\textures\花苞食人花2.dds (size=43832, compressed=34714, hash=0x2D9404CC)
+  models\npcs\怪物\11木元素\花苞食人花\b身高\textures\花苞食人花透明2.dds (size=87536, compressed=37269, hash=0x8100B244)
+  models\npcs\怪物\11木元素\花苞食人花\b身高\利齿绿萼.ecm (size=6180, compressed=883, hash=0x0D3DF2E5)
+  models\npcs\怪物\11木元素\花苞食人花\b身高\利齿绿萼.ski (size=26626, compressed=9659, hash=0x98AC46FB)
+  models\npcs\怪物\11木元素\花苞食人花\b身高\利齿绿萼二级.ski (size=13102, compressed=5823, hash=0x40F44D24)
+  models\npcs\怪物\11木元素\花苞食人花\b身高\花苞食人花.smd (size=8890, compressed=1373, hash=0xECB58EB7)
+  models\npcs\怪物\11木元素\花苞食人花\b身高\花苞食人花_b.bon (size=200934, compressed=147385, hash=0x3149EEDE)
