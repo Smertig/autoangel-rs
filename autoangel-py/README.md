@@ -65,6 +65,29 @@ if file_content:
         f.write(file_content)
 ```
 
+### Creating and modifying pck packages
+
+```python
+from pathlib import Path
+import autoangel
+
+# Create a package from scratch
+builder = autoangel.PackageBuilder()
+builder.add_file('models/npc.ecm', Path('npc.ecm').read_bytes())
+builder.add_file('models/player.ecm', Path('player.ecm').read_bytes())
+builder.save('models.pck')
+
+# Modify an existing package
+package = autoangel.read_pck('/path/to/textures.pck')
+builder = package.to_builder()
+builder.add_file('textures/new_texture.dds', new_texture_data)
+builder.remove_file('textures/old_texture.dds')
+builder.save('textures_modified.pck')
+
+# Serialize to bytes instead of file
+raw = builder.to_bytes()
+```
+
 ## API Reference
 
 ### Functions
@@ -80,7 +103,7 @@ if file_content:
 
 ### Classes
 
-`ElementsData`, `ElementsDataList`, `ElementsDataEntry`, `ElementsConfig`, `ElementsListConfig`, `PackageConfig`, `PckPackage`
+`ElementsData`, `ElementsDataList`, `ElementsDataEntry`, `ElementsConfig`, `ElementsListConfig`, `PackageConfig`, `PckPackage`, `PackageBuilder`
 
 Full type stubs are included with the package. See [`autoangel.pyi`](autoangel.pyi) for details.
 

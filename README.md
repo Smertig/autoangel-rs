@@ -14,7 +14,7 @@ Both demos use the autoangel WASM package.
 ## Features
 
 - Parse and manipulate `elements.data` files (list structures, typed fields, roundtrip serialization)
-- Read and extract files from `*.pck`/`*.pkx` compressed packages (keyed encryption, zlib decompression)
+- Read, create, and modify `*.pck`/`*.pkx` compressed packages (keyed encryption, zlib decompression)
 - Bundled configs for known game versions (auto-detected from data version header)
 
 ## Packages

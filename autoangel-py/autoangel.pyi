@@ -442,7 +442,6 @@ class PckPackage:
     def to_builder(self) -> "PackageBuilder":
         """
         Create a builder pre-populated with this package's files.
-        The builder holds a lazy reference to this package's data.
 
         :return: A new PackageBuilder with this package's files.
         """
