@@ -32,7 +32,6 @@ export function App() {
   const [fileTree, setFileTree] = useState<TreeNode | null>(null);
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [filterText, setFilterText] = useState('');
-  const [encoding, setEncoding] = useState('auto');
   const [fileCount, setFileCount] = useState(0);
   const [version, setVersion] = useState(0);
   const [compact, setCompact] = useState(false);
@@ -182,7 +181,6 @@ export function App() {
 
   const handleSelectFile = useCallback((path: string) => {
     setSelectedPath(path);
-    setEncoding('auto');
   }, []);
 
   const handleReset = useCallback(() => {
@@ -266,8 +264,6 @@ export function App() {
                 path={selectedPath}
                 getData={getFileData}
                 wasm={wasmRef.current}
-                encoding={encoding}
-                onEncodingChange={setEncoding}
               />
             ) : (
               <div className={styles.placeholder}>Select a file to preview</div>

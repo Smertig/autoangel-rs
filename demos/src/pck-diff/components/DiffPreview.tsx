@@ -1,15 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { getExtension, isLikelyText, IMAGE_EXTENSIONS, CANVAS_IMAGE_EXTENSIONS, formatSize } from '@shared/util/files';
+import React, { useCallback, useEffect, useState } from 'react';
+import { getExtension, isLikelyText, formatSize } from '@shared/util/files';
 import { detectEncoding } from '@shared/util/encoding';
 import { bytesEqual } from '@shared/util/bytes';
-import { HexDump } from '@shared/components/HexDump';
-import { ImagePreview } from '@shared/components/ImagePreview';
-import { TextPreview } from '@shared/components/TextPreview';
 import type { AutoangelModule } from '@shared/../types/autoangel';
 import { DiffStatus, DiffStatusValue } from '../types';
-import { TextDiff } from './TextDiff';
-import { ImageDiff } from './ImageDiff';
-import { BinaryDiff } from './BinaryDiff';
+import { findFormat } from '@shared/formats/registry';
 import styles from '../App.module.css';
 
 interface DiffPreviewProps {
@@ -35,37 +30,6 @@ function DiffBanner({ status }: { status: DiffStatusValue }) {
     : status === DiffStatus.DELETED ? 'Removed file (not in right package)'
     : 'Unchanged';
   return <div className={bannerClass}>{text}</div>;
-}
-
-function SingleFileView({
-  data,
-  path,
-  status,
-  wasm,
-}: {
-  data: Uint8Array;
-  path: string;
-  status: DiffStatusValue;
-  wasm: AutoangelModule;
-}) {
-  const ext = getExtension(path);
-  const isImage = IMAGE_EXTENSIONS.has(ext) || CANVAS_IMAGE_EXTENSIONS.has(ext);
-  const isText = !isImage && isLikelyText(data, ext);
-
-  return (
-    <>
-      <DiffBanner status={status} />
-      {isImage ? (
-        <ImagePreview data={data} ext={ext} decodeDds={wasm.decodeDds} decodeTga={wasm.decodeTga} />
-      ) : isText ? (
-        <TextPreview data={data} ext={ext} showEncodingSelector={false} />
-      ) : (
-        <div style={{ padding: '16px' }}>
-          <HexDump data={data} />
-        </div>
-      )}
-    </>
-  );
 }
 
 // --- Content Header ---
@@ -122,6 +86,11 @@ export function DiffPreview({
   onResolveStatus,
 }: DiffPreviewProps) {
   const [previewState, setPreviewState] = useState<PreviewState>({ kind: 'idle' });
+
+  // Must be before early returns to satisfy rules of hooks.
+  // For 'single' state, wraps pre-loaded data as a getData callback for format.Viewer.
+  const singleData = previewState.kind === 'single' ? previewState.data : null;
+  const singleGetData = useCallback(async (_p: string) => singleData!, [singleData]);
 
   useEffect(() => {
     if (!path) {
@@ -188,44 +157,27 @@ export function DiffPreview({
   }
 
   const ext = getExtension(path);
+  const format = findFormat(ext);
 
   if (previewState.kind === 'modified') {
     const { leftData, rightData } = previewState;
-    const isText = isLikelyText(leftData, ext) && isLikelyText(rightData, ext);
-    const isImage = IMAGE_EXTENSIONS.has(ext) || CANVAS_IMAGE_EXTENSIONS.has(ext);
-
-    if (isText) {
-      return (
-        <TextDiff
-          leftData={leftData}
-          rightData={rightData}
-          path={path}
-          ext={ext}
-        />
-      );
-    }
-    if (isImage) {
-      return (
-        <ImageDiff
-          leftData={leftData}
-          rightData={rightData}
-          path={path}
-          ext={ext}
-          wasm={wasm}
-        />
-      );
-    }
-    return <BinaryDiff leftData={leftData} rightData={rightData} path={path} />;
+    return (
+      <format.Differ
+        path={path}
+        ext={ext}
+        leftData={leftData}
+        rightData={rightData}
+        wasm={wasm}
+      />
+    );
   }
 
-  // single file
+  // single file: added, deleted, or unchanged
   return (
-    <SingleFileView
-      data={previewState.data}
-      path={path}
-      status={previewState.status}
-      wasm={wasm}
-    />
+    <>
+      <DiffBanner status={previewState.status} />
+      <format.Viewer path={path} ext={ext} getData={singleGetData} wasm={wasm} />
+    </>
   );
 }
 
