@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { getExtension, isLikelyText, formatSize } from '@shared/util/files';
 import { detectEncoding } from '@shared/util/encoding';
 import { bytesEqual } from '@shared/util/bytes';
