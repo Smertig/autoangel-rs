@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -15,59 +15,75 @@ test.beforeEach(async ({ page }) => {
   }, { timeout: 15000 });
 });
 
-test('loads two packages, compares, shows correct diff counts', async ({ page }) => {
-  // Load left package
+async function loadAndCompare(page: Page) {
   const leftInput = page.locator('input[type="file"]').first();
   await leftInput.setInputFiles(LEFT_PCK);
-
-  // Load right package
   const rightInput = page.locator('input[type="file"]').nth(1);
   await rightInput.setInputFiles(RIGHT_PCK);
-
-  // Click Compare
   const compareBtn = page.locator('button:has-text("Compare")');
   await expect(compareBtn).toBeEnabled({ timeout: 10000 });
   await compareBtn.click();
-
-  // Wait for results to appear (tree items)
   await expect(page.locator('[data-path]')).not.toHaveCount(0, { timeout: 15000 });
+}
 
-  // Should show correct counts:
-  // Expected: 1 added, 1 deleted, 2 modified, 2 unchanged
-  // Check the summary stats badge area contains the expected status labels
+test('loads two packages, compares, shows correct diff counts', async ({ page }) => {
+  await loadAndCompare(page);
+
   const summaryStats = page.locator('[class*="summaryStats"]');
   await expect(summaryStats).toContainText('added');
   await expect(summaryStats).toContainText('deleted');
   await expect(summaryStats).toContainText('modified');
 
-  // At minimum, the tree should show items for all 6 unique paths
   const treeItems = page.locator('[data-path]');
   const count = await treeItems.count();
-  // We created 6 unique paths total (5 left + 1 new right, minus overlap = 6)
-  expect(count).toBeGreaterThanOrEqual(5);
+  expect(count).toBeGreaterThanOrEqual(7);
 });
 
 test('selects modified text file and shows diff', async ({ page }) => {
-  // Load both packages
-  const leftInput = page.locator('input[type="file"]').first();
-  await leftInput.setInputFiles(LEFT_PCK);
-  const rightInput = page.locator('input[type="file"]').nth(1);
-  await rightInput.setInputFiles(RIGHT_PCK);
+  await loadAndCompare(page);
 
-  // Compare
-  const compareBtn = page.locator('button:has-text("Compare")');
-  await expect(compareBtn).toBeEnabled({ timeout: 10000 });
-  await compareBtn.click();
-
-  // Wait for scanning to complete and results to show
-  await expect(page.locator('[data-path]')).not.toHaveCount(0, { timeout: 15000 });
-
-  // Click on game.ini (a modified text file)
   const gameIni = page.locator('[data-path*="game.ini"]');
   await expect(gameIni).toBeVisible({ timeout: 10000 });
   await gameIni.click();
 
-  // Should show a diff view with added/removed lines
-  // The diff should contain both old and new content
+  await expect(page.locator('[class*="diffLine"], [class*="diff-line"]')).not.toHaveCount(0, { timeout: 5000 });
+});
+
+test('selects modified image file and shows image diff', async ({ page }) => {
+  await loadAndCompare(page);
+
+  const iconPng = page.locator('[data-path*="icon.png"]');
+  await expect(iconPng).toBeVisible({ timeout: 10000 });
+  await iconPng.click();
+
+  // Should show image comparison UI (side-by-side tabs, images)
+  await expect(page.locator('img, canvas')).not.toHaveCount(0, { timeout: 5000 });
+});
+
+test('selects added image file and shows single preview', async ({ page }) => {
+  await loadAndCompare(page);
+
+  const addedPng = page.locator('[data-path*="added.png"]');
+  await expect(addedPng).toBeVisible({ timeout: 10000 });
+  await addedPng.click();
+
+  // Should show a diff banner for "new file" and an image preview
+  await expect(page.locator('[class*="diffBanner"]')).toBeVisible({ timeout: 5000 });
+  await expect(page.locator('img, canvas')).not.toHaveCount(0, { timeout: 5000 });
+});
+
+test('navigates between text and image diffs without error', async ({ page }) => {
+  await loadAndCompare(page);
+
+  // Click text file first
+  await page.locator('[data-path*="game.ini"]').click();
+  await expect(page.locator('[class*="diffLine"], [class*="diff-line"]')).not.toHaveCount(0, { timeout: 5000 });
+
+  // Switch to image file
+  await page.locator('[data-path*="icon.png"]').click();
+  await expect(page.locator('img, canvas')).not.toHaveCount(0, { timeout: 5000 });
+
+  // Switch back to text
+  await page.locator('[data-path*="game.ini"]').click();
   await expect(page.locator('[class*="diffLine"], [class*="diff-line"]')).not.toHaveCount(0, { timeout: 5000 });
 });
