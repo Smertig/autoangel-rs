@@ -6,7 +6,7 @@ export const TEXT_EXTENSIONS = new Set([
   '.txt', '.cfg', '.ini', '.xml', '.json', '.lua', '.py', '.lst',
   '.action', '.border', '.log', '.csv', '.htm', '.html', '.css',
   '.js', '.shtml', '.conf', '.properties', '.yaml', '.yml',
-  '.gfx',
+  '.gfx', '.hlsl', '.fx', '.fxh',
 ]);
 
 export const MODEL_EXTENSIONS = new Set(['.ecm', '.ski']);
@@ -53,6 +53,9 @@ export const HLJS_LANG: Record<string, string> = {
   '.css': 'css',
   '.yaml': 'yaml',
   '.yml': 'yaml',
+  '.hlsl': 'glsl',
+  '.fx': 'glsl',
+  '.fxh': 'glsl',
 };
 
 export const ENCODINGS = ['auto', 'gbk', 'utf-8', 'utf-16le', 'utf-16be', 'shift_jis', 'euc-kr', 'windows-1252', 'iso-8859-1'];
