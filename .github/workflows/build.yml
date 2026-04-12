@@ -111,7 +111,7 @@ jobs:
         run: cd autoangel-py && uv run pytest
 
   check-wasm:
-    name: Check WASM
+    name: WASM Build & Tests
     needs: changes
     if: needs.changes.outputs.core == 'true' || needs.changes.outputs.wasm == 'true' || needs.changes.outputs.ci == 'true'
     runs-on: ubuntu-24.04
@@ -148,7 +148,7 @@ jobs:
         run: cd autoangel-wasm && npx tsx --test tests/test.ts
 
   build-demos:
-    name: Build Demos
+    name: Demos Build & E2E Tests
     needs: changes
     if: needs.changes.outputs.demos == 'true' || needs.changes.outputs.ci == 'true'
     runs-on: ubuntu-24.04
@@ -220,7 +220,7 @@ jobs:
         run: cargo clippy --all-features -- -D warnings
 
   stubtest:
-    name: Stubtest
+    name: Python Stubtest
     needs: changes
     if: needs.changes.outputs.core == 'true' || needs.changes.outputs.python == 'true' || needs.changes.outputs.ci == 'true'
     runs-on: ubuntu-24.04
