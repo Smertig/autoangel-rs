@@ -10,6 +10,9 @@ pub struct SmdModel {
     pub version: u32,
     pub skeleton_path: String,
     pub skin_paths: Vec<String>,
+    /// Track set directory name (e.g. "tcks_fallen_general").
+    /// Read from file for version >= 8; `None` for older versions.
+    pub tcks_dir: Option<String>,
 }
 
 impl SmdModel {
@@ -48,10 +51,25 @@ impl SmdModel {
             offset += len;
         }
 
+        // Physique path (always present after skin paths, skip)
+        let view = data.get(offset..)?;
+        let (_, len) = read_astring(&view).await?;
+        offset += len;
+
+        // Track set directory (version >= 8 stores it explicitly)
+        let tcks_dir = if version >= 8 {
+            let view = data.get(offset..)?;
+            let (dir, _len) = read_astring(&view).await?;
+            if dir.is_empty() { None } else { Some(dir) }
+        } else {
+            None
+        };
+
         Ok(SmdModel {
             version,
             skeleton_path,
             skin_paths,
+            tcks_dir,
         })
     }
 }

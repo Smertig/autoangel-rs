@@ -4,10 +4,15 @@ import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  EcmModel,
   ElementsConfig,
   ElementsData,
   PackageConfig,
   PckPackage,
+  Skeleton,
+  SmdModel,
+  TrackSet,
+  Skin,
   decodeDds,
   decodeTga,
   type FileEntry,
@@ -436,6 +441,404 @@ describe("dump packages", () => {
       }
     });
   }
+});
+
+// --- EcmModel ---
+
+const CARNIVORE_ECM = readFileSync(resolve(root, "test_data/models/carnivore_plant/carnivore_plant.ecm"));
+const FALLEN_ECM = readFileSync(resolve(root, "test_data/models/fallen_general/fallen_general.ecm"));
+
+describe("EcmModel", () => {
+  it("parses carnivore_plant ECM", () => {
+    using ecm = EcmModel.parse(CARNIVORE_ECM);
+    assert.equal(ecm.version, 21);
+    assert.equal(ecm.skinModelPath, "carnivore_plant.SMD");
+    assert.deepEqual(ecm.additionalSkins, ["carnivore_plant.SKI"]);
+    assert.equal(ecm.boneScaleCount, 0);
+    assert.equal(ecm.newBoneScale, false);
+    assert.equal(ecm.scaleBaseBone, undefined);
+    assert.equal(ecm.childCount, 0);
+  });
+
+  it("parses fallen_general ECM with child models", () => {
+    using ecm = EcmModel.parse(FALLEN_ECM);
+    assert.equal(ecm.version, 21);
+    assert.equal(ecm.skinModelPath, "fallen_general.SMD");
+    assert.deepEqual(ecm.additionalSkins, ["fallen_general.ski"]);
+    assert.equal(ecm.boneScaleCount, 0);
+    assert.equal(ecm.childCount, 2);
+    assert.equal(ecm.childName(0), "wq_l");
+    assert.equal(ecm.childHhName(0), "HH_lefthandweapon");
+    assert.equal(ecm.childCcName(0), "CC_weapon");
+    assert.equal(ecm.childName(1), "wq_r");
+    assert.equal(ecm.childHhName(1), "HH_righthandweapon");
+  });
+
+  it("returns undefined for out-of-bounds child", () => {
+    using ecm = EcmModel.parse(CARNIVORE_ECM);
+    assert.equal(ecm.childName(999), undefined);
+    assert.equal(ecm.childPath(999), undefined);
+  });
+
+  it("returns default playback speed", () => {
+    using ecm = EcmModel.parse(CARNIVORE_ECM);
+    assert.equal(ecm.defPlaySpeed, 1.0);
+  });
+
+  it("rejects empty bytes", () => {
+    assert.throws(() => EcmModel.parse(new Uint8Array([])));
+  });
+});
+
+// --- SmdModel ---
+
+const CARNIVORE_SMD = readFileSync(resolve(root, "test_data/models/carnivore_plant/carnivore_plant.smd"));
+const FALLEN_SMD = readFileSync(resolve(root, "test_data/models/fallen_general/fallen_general.smd"));
+
+describe("SmdModel", () => {
+  it("parses carnivore_plant SMD", () => {
+    using smd = SmdModel.parse(CARNIVORE_SMD);
+    assert.equal(smd.version, 5);
+    assert.equal(smd.skinPaths.length, 1);
+    assert.ok(smd.skeletonPath.endsWith(".bon"));
+    // v5 < 8, so no tcks_dir in file
+    assert.equal(smd.tcksDir, undefined);
+  });
+
+  it("parses fallen_general SMD", () => {
+    using smd = SmdModel.parse(FALLEN_SMD);
+    assert.equal(smd.version, 5);
+    assert.equal(smd.skinPaths.length, 0);
+    assert.ok(smd.skeletonPath.endsWith(".bon"));
+  });
+
+  it("rejects empty bytes", () => {
+    assert.throws(() => SmdModel.parse(new Uint8Array([])));
+  });
+
+  it("rejects truncated file", () => {
+    assert.throws(() => SmdModel.parse(new Uint8Array(20)));
+  });
+});
+
+// --- Skeleton (BON) ---
+
+const CARNIVORE_BON = readFileSync(resolve(root, "test_data/models/carnivore_plant/\u82b1\u82de\u98df\u4eba\u82b1_b.bon"));
+const FALLEN_BON = readFileSync(resolve(root, "test_data/models/fallen_general/\u5175\u6b87\u5c06\u519b.bon"));
+
+describe("Skeleton", () => {
+  it("parses carnivore_plant skeleton", () => {
+    using skel = Skeleton.parse(CARNIVORE_BON);
+    assert.equal(skel.boneCount, 26);
+  });
+
+  it("parses fallen_general skeleton", () => {
+    using skel = Skeleton.parse(FALLEN_BON);
+    assert.equal(skel.boneCount, 33);
+  });
+
+  it("returns bone names", () => {
+    using skel = Skeleton.parse(CARNIVORE_BON);
+    const name = skel.boneName(0);
+    assert.equal(typeof name, "string");
+    assert.ok(name!.length > 0);
+  });
+
+  it("returns undefined for out-of-bounds bone name", () => {
+    using skel = Skeleton.parse(CARNIVORE_BON);
+    assert.equal(skel.boneName(9999), undefined);
+  });
+
+  it("root bone has parent -1", () => {
+    using skel = Skeleton.parse(CARNIVORE_BON);
+    assert.equal(skel.boneParent(0), -1);
+  });
+
+  it("non-root bone has valid parent", () => {
+    using skel = Skeleton.parse(CARNIVORE_BON);
+    // Find a non-root bone
+    let found = false;
+    for (let i = 1; i < skel.boneCount; i++) {
+      const p = skel.boneParent(i);
+      if (p >= 0) {
+        assert.ok(p < skel.boneCount);
+        found = true;
+        break;
+      }
+    }
+    assert.ok(found, "expected at least one non-root bone");
+  });
+
+  it("returns relative transform as 16 floats", () => {
+    using skel = Skeleton.parse(CARNIVORE_BON);
+    const m = skel.boneRelativeTransform(0);
+    assert.notEqual(m, undefined);
+    assert.equal(m!.length, 16);
+    assert.ok(m instanceof Float32Array);
+  });
+
+  it("returns init transform as 16 floats", () => {
+    using skel = Skeleton.parse(CARNIVORE_BON);
+    const m = skel.boneInitTransform(0);
+    assert.notEqual(m, undefined);
+    assert.equal(m!.length, 16);
+    assert.ok(m instanceof Float32Array);
+  });
+
+  it("boneIsFlipped returns boolean", () => {
+    using skel = Skeleton.parse(CARNIVORE_BON);
+    for (let i = 0; i < skel.boneCount; i++) {
+      assert.equal(typeof skel.boneIsFlipped(i), "boolean");
+    }
+  });
+
+  it("rejects empty bytes", () => {
+    assert.throws(() => Skeleton.parse(new Uint8Array([])));
+  });
+
+  it("rejects bad magic", () => {
+    assert.throws(() => Skeleton.parse(new Uint8Array(100)));
+  });
+});
+
+// --- Skin (SKI) ---
+
+const CARNIVORE_SKI = readFileSync(resolve(root, "test_data/models/carnivore_plant/carnivore_plant.ski"));
+const FALLEN_SKI = readFileSync(resolve(root, "test_data/models/fallen_general/fallen_general.ski"));
+
+describe("Skin", () => {
+  it("parses carnivore_plant skin", () => {
+    using skin = Skin.parse(CARNIVORE_SKI);
+    assert.equal(skin.skinMeshCount, 2);
+    assert.equal(skin.rigidMeshCount, 0);
+    assert.equal(skin.textures.length, 2);
+  });
+
+  it("parses fallen_general skin", () => {
+    using skin = Skin.parse(FALLEN_SKI);
+    assert.equal(skin.skinMeshCount, 2);
+    assert.equal(skin.textures.length, 2);
+  });
+
+  it("returns skin mesh positions as flat float array", () => {
+    using skin = Skin.parse(CARNIVORE_SKI);
+    const pos = skin.skinMeshPositions(0);
+    assert.notEqual(pos, undefined);
+    assert.ok(pos instanceof Float32Array);
+    assert.equal(pos!.length % 3, 0);
+    assert.ok(pos!.length > 0);
+  });
+
+  it("returns skin mesh normals", () => {
+    using skin = Skin.parse(CARNIVORE_SKI);
+    const normals = skin.skinMeshNormals(0);
+    assert.notEqual(normals, undefined);
+    assert.ok(normals instanceof Float32Array);
+    assert.equal(normals!.length % 3, 0);
+  });
+
+  it("returns skin mesh UVs", () => {
+    using skin = Skin.parse(CARNIVORE_SKI);
+    const uvs = skin.skinMeshUvs(0);
+    assert.notEqual(uvs, undefined);
+    assert.ok(uvs instanceof Float32Array);
+    assert.equal(uvs!.length % 2, 0);
+  });
+
+  it("returns skin mesh indices", () => {
+    using skin = Skin.parse(CARNIVORE_SKI);
+    const idx = skin.skinMeshIndices(0);
+    assert.notEqual(idx, undefined);
+    assert.ok(idx instanceof Uint16Array);
+    assert.equal(idx!.length % 3, 0, "triangle indices should be multiple of 3");
+    assert.ok(idx!.length > 0);
+  });
+
+  it("returns bone weights with 4 components per vertex", () => {
+    using skin = Skin.parse(CARNIVORE_SKI);
+    const weights = skin.skinMeshBoneWeights(0);
+    const pos = skin.skinMeshPositions(0);
+    assert.notEqual(weights, undefined);
+    assert.ok(weights instanceof Float32Array);
+    const vertCount = pos!.length / 3;
+    assert.equal(weights!.length, vertCount * 4);
+  });
+
+  it("bone weights sum to ~1.0 per vertex", () => {
+    using skin = Skin.parse(CARNIVORE_SKI);
+    const weights = skin.skinMeshBoneWeights(0)!;
+    for (let v = 0; v < weights.length / 4; v++) {
+      const sum = weights[v*4] + weights[v*4+1] + weights[v*4+2] + weights[v*4+3];
+      assert.ok(Math.abs(sum - 1.0) < 0.01, `vertex ${v} weights sum to ${sum}`);
+    }
+  });
+
+  it("bone weights w3 is non-negative", () => {
+    using skin = Skin.parse(CARNIVORE_SKI);
+    const weights = skin.skinMeshBoneWeights(0)!;
+    for (let v = 0; v < weights.length / 4; v++) {
+      assert.ok(weights[v*4+3] >= 0, `vertex ${v} w3 = ${weights[v*4+3]}`);
+    }
+  });
+
+  it("returns bone indices with 4 components per vertex", () => {
+    using skin = Skin.parse(CARNIVORE_SKI);
+    const bi = skin.skinMeshBoneIndices(0);
+    const pos = skin.skinMeshPositions(0);
+    assert.notEqual(bi, undefined);
+    assert.ok(bi instanceof Uint8Array);
+    const vertCount = pos!.length / 3;
+    assert.equal(bi!.length, vertCount * 4);
+  });
+
+  it("returns mesh name", () => {
+    using skin = Skin.parse(CARNIVORE_SKI);
+    const name = skin.skinMeshName(0);
+    assert.equal(typeof name, "string");
+  });
+
+  it("returns texture and material indices", () => {
+    using skin = Skin.parse(CARNIVORE_SKI);
+    const texIdx = skin.skinMeshTextureIndex(0);
+    const matIdx = skin.skinMeshMaterialIndex(0);
+    assert.equal(typeof texIdx, "number");
+    assert.equal(typeof matIdx, "number");
+  });
+
+  it("returns undefined for out-of-bounds mesh", () => {
+    using skin = Skin.parse(CARNIVORE_SKI);
+    assert.equal(skin.skinMeshPositions(9999), undefined);
+    assert.equal(skin.rigidMeshPositions(9999), undefined);
+  });
+
+  it("vertex count is consistent across attributes", () => {
+    using skin = Skin.parse(CARNIVORE_SKI);
+    const pos = skin.skinMeshPositions(0)!;
+    const normals = skin.skinMeshNormals(0)!;
+    const uvs = skin.skinMeshUvs(0)!;
+    const vertCount = pos.length / 3;
+    assert.equal(normals.length, vertCount * 3);
+    assert.equal(uvs.length, vertCount * 2);
+  });
+
+  it("rejects empty bytes", () => {
+    assert.throws(() => Skin.parse(new Uint8Array([])));
+  });
+
+  it("rejects bad magic", () => {
+    assert.throws(() => Skin.parse(new Uint8Array(110)));
+  });
+});
+
+// --- TrackSet (STCK) ---
+
+const STCK_V1_STATIC = readFileSync(resolve(root, "test_data/models/stck_v1_static.stck"));
+const STCK_V1_ANIM = readFileSync(resolve(root, "test_data/models/stck_v1_animated.stck"));
+const STCK_V2_STATIC = readFileSync(resolve(root, "test_data/models/stck_v2_static.stck"));
+const STCK_V2_ANIM = readFileSync(resolve(root, "test_data/models/stck_v2_animated.stck"));
+
+describe("TrackSet", () => {
+  it("parses V1 static track set", () => {
+    using ts = TrackSet.parse(STCK_V1_STATIC);
+    assert.equal(ts.version, 1);
+    assert.equal(ts.animFps, 15);
+    assert.equal(ts.trackCount, 1);
+    // 1 key × 3 floats
+    assert.equal(ts.positionKeys(0).length, 3);
+    // 1 key × 4 floats
+    assert.equal(ts.rotationKeys(0).length, 4);
+    // V1 has no frame IDs
+    assert.equal(ts.positionFrameIds(0), undefined);
+    assert.equal(ts.rotationFrameIds(0), undefined);
+  });
+
+  it("parses V1 animated track set", () => {
+    using ts = TrackSet.parse(STCK_V1_ANIM);
+    assert.equal(ts.version, 1);
+    assert.equal(ts.animFps, 15);
+    assert.equal(ts.animEnd, 70);
+    assert.equal(ts.trackCount, 5);
+
+    // Position keys are multiples of 3
+    for (let t = 0; t < ts.trackCount; t++) {
+      assert.equal(ts.positionKeys(t).length % 3, 0);
+      assert.equal(ts.rotationKeys(t).length % 4, 0);
+    }
+
+    // At least one track has more than 1 key
+    assert.ok(ts.positionKeys(1).length > 3);
+  });
+
+  it("parses V2 static track set", () => {
+    using ts = TrackSet.parse(STCK_V2_STATIC);
+    assert.equal(ts.version, 2);
+    assert.equal(ts.trackCount, 1);
+  });
+
+  it("parses V2 animated track set", () => {
+    using ts = TrackSet.parse(STCK_V2_ANIM);
+    assert.equal(ts.version, 2);
+    assert.equal(ts.animFps, 30);
+    assert.equal(ts.animEnd, 100);
+    assert.equal(ts.trackCount, 25);
+
+    // Rotation keys are always 4 floats per key (even after no-w decompression)
+    for (let t = 0; t < ts.trackCount; t++) {
+      assert.equal(ts.rotationKeys(t).length % 4, 0);
+    }
+  });
+
+  it("exposes per-track frame rates", () => {
+    using ts = TrackSet.parse(STCK_V1_ANIM);
+    assert.equal(typeof ts.positionFrameRate(0), "number");
+    assert.ok(ts.positionFrameRate(0) > 0);
+    assert.equal(typeof ts.rotationFrameRate(0), "number");
+    assert.ok(ts.rotationFrameRate(0) > 0);
+  });
+
+  it("exposes bone IDs", () => {
+    using ts = TrackSet.parse(STCK_V1_ANIM);
+    for (let t = 0; t < ts.trackCount; t++) {
+      assert.equal(typeof ts.boneId(t), "number");
+      assert.ok(ts.boneId(t) >= 0);
+    }
+  });
+
+  it("V2 compressed tracks have frame IDs", () => {
+    using ts = TrackSet.parse(STCK_V2_ANIM);
+    // At least one track should have frame IDs (compressed)
+    let foundFrameIds = false;
+    for (let t = 0; t < ts.trackCount; t++) {
+      const posIds = ts.positionFrameIds(t);
+      const rotIds = ts.rotationFrameIds(t);
+      if (posIds || rotIds) {
+        foundFrameIds = true;
+        if (posIds) {
+          assert.ok(posIds instanceof Uint16Array);
+          assert.equal(posIds.length, ts.positionKeys(t).length / 3);
+        }
+        if (rotIds) {
+          assert.ok(rotIds instanceof Uint16Array);
+          assert.equal(rotIds.length, ts.rotationKeys(t).length / 4);
+        }
+      }
+    }
+    assert.ok(foundFrameIds, "V2 animated file should have at least one compressed track");
+  });
+
+  it("exposes track length in ms", () => {
+    using ts = TrackSet.parse(STCK_V2_ANIM);
+    assert.equal(typeof ts.positionTrackLengthMs(0), "number");
+    assert.equal(typeof ts.rotationTrackLengthMs(0), "number");
+  });
+
+  it("rejects empty bytes", () => {
+    assert.throws(() => TrackSet.parse(new Uint8Array([])));
+  });
+
+  it("rejects bad magic", () => {
+    assert.throws(() => TrackSet.parse(new Uint8Array(30)));
+  });
 });
 
 // --- Image decoding ---

@@ -1,0 +1,8 @@
+7 files:
+  models\npcs\npc\2012npc\受伤的平民\tcks_受伤的平民\站立.stck (size=12300, compressed=10044, hash=0x49F9D220)
+  models\npcs\npc\2012npc\受伤的平民\tcks_受伤的平民\跪下.stck (size=8756, compressed=6674, hash=0x31D83758)
+  models\npcs\npc\2012npc\受伤的平民\textures\受伤的人.dds (size=87528, compressed=61603, hash=0x673BC70F)
+  models\npcs\npc\2012npc\受伤的平民\受伤的平民.bon (size=6550, compressed=3702, hash=0x703BA1B5)
+  models\npcs\npc\2012npc\受伤的平民\受伤的平民.ecm (size=1104, compressed=423, hash=0xCBD10663)
+  models\npcs\npc\2012npc\受伤的平民\受伤的平民.ski (size=49156, compressed=28491, hash=0xB2C55654)
+  models\npcs\npc\2012npc\受伤的平民\受伤的平民.smd (size=205, compressed=114, hash=0x71DABFF1)

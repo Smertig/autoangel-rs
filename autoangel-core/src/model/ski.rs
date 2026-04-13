@@ -13,6 +13,8 @@ pub struct Skin {
     pub skin_meshes: Vec<SkinMesh>,
     pub rigid_meshes: Vec<RigidMesh>,
     pub bone_names: Vec<String>,
+    /// Total skeleton bone count from the header (used for identity remap range in v < 9).
+    pub num_ske_bone: u32,
 }
 
 #[derive(Debug, Clone)]
@@ -94,7 +96,7 @@ impl Skin {
         let num_material = read_count(data, moxb + 28).await?;
         let num_skin_bone = read_count(data, moxb + 32).await?;
         // fMinWeight at moxb+36..moxb+40 (float, skip)
-        // iNumSkeBone at moxb+40..moxb+44
+        let num_ske_bone = data.get(moxb + 40..moxb + 44)?.as_le::<u32>().await?;
         // iNumSuppleMesh at moxb+44..moxb+48
         // iNumMuscleMesh at moxb+48..moxb+52
         // reserved: 52 bytes (moxb+52..moxb+104)
@@ -296,6 +298,7 @@ impl Skin {
             skin_meshes,
             rigid_meshes,
             bone_names,
+            num_ske_bone,
         })
     }
 }
