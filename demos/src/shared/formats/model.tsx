@@ -4,7 +4,7 @@ import { ModelViewer } from '@shared/components/ModelViewer';
 import { sideBySideDiffer } from './helpers';
 import type { FormatDescriptor, ViewerContext } from './types';
 
-function ModelFormatViewer({ path, getData, wasm }: ViewerContext) {
+function ModelFormatViewer({ path, getData, wasm, listFiles }: ViewerContext) {
   const getDataNullable = useCallback(
     async (p: string): Promise<Uint8Array | null> => {
       try { return await getData(p); }
@@ -12,7 +12,7 @@ function ModelFormatViewer({ path, getData, wasm }: ViewerContext) {
     },
     [getData],
   );
-  return <ModelViewer path={path} wasm={wasm} getData={getDataNullable} />;
+  return <ModelViewer path={path} wasm={wasm} getData={getDataNullable} listFiles={listFiles} />;
 }
 
 export const modelFormat: FormatDescriptor = {

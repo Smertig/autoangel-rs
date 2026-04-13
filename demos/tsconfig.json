@@ -10,7 +10,7 @@
     "esModuleInterop": true,
     "isolatedModules": true,
     "resolveJsonModule": true,
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable", "ESNext.Disposable"],
     "types": ["vite/client"],
     "paths": {
       "@shared/*": ["./src/shared/*"],

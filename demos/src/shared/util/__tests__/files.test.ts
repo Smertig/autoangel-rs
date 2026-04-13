@@ -28,10 +28,11 @@ describe('extension sets', () => {
     expect(TEXT_EXTENSIONS.has('.gfx')).toBe(true);
   });
 
-  it('MODEL_EXTENSIONS contains .ecm and .ski', () => {
+  it('MODEL_EXTENSIONS contains .ecm, .ski and .stck', () => {
     expect(MODEL_EXTENSIONS.has('.ecm')).toBe(true);
     expect(MODEL_EXTENSIONS.has('.ski')).toBe(true);
-    expect(MODEL_EXTENSIONS.size).toBe(2);
+    expect(MODEL_EXTENSIONS.has('.stck')).toBe(true);
+    expect(MODEL_EXTENSIONS.size).toBe(3);
   });
 
   it('BINARY_EXTENSIONS contains expected entries', () => {

@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PCK_FILE = path.resolve(__dirname, '../../test_data/packages/models_carnivore_plant.pck');
+const NPC_PCK_FILE = path.resolve(__dirname, '../../test_data/packages/models_npc_animated.pck');
 
 async function loadPck(page: Page) {
   await page.locator('input[type="file"]').setInputFiles(PCK_FILE);
@@ -23,7 +24,7 @@ async function openEcm(page: Page) {
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/pck/');
+  await page.goto('/pck/?local');
   await expect(page.locator('#app')).toContainText('Ready', { timeout: 15000 });
 });
 
@@ -73,4 +74,81 @@ test('model source view toggle works', async ({ page }) => {
 
   await page.getByText('3D').click();
   await expect(page.locator('[class*="modelContainer"] canvas')).toBeVisible();
+});
+
+// --- Animated NPC model tests ---
+
+test('renders animated NPC model with animation controls', async ({ page }) => {
+  const consoleLogs: string[] = [];
+  page.on('console', (msg) => consoleLogs.push(`[${msg.type()}] ${msg.text()}`));
+
+  // Use ?local to load WASM from local build (TrackSet is not on CDN yet)
+  await page.goto('/pck/?local');
+  await expect(page.locator('#app')).toContainText('Ready', { timeout: 15000 });
+
+  await page.locator('input[type="file"]').setInputFiles(NPC_PCK_FILE);
+  await expect(page.locator('[class*="treeItem"]')).not.toHaveCount(0, { timeout: 10000 });
+
+  // Click the .ecm file
+  await page.locator('[class*="treeItem"]').filter({ hasText: /\.ecm$/ }).first().click();
+  await expect(page.locator('[class*="modelContainer"] canvas')).toBeVisible({ timeout: 30000 });
+
+  // Model info should show
+  await expect(page.locator('[class*="modelInfo"]')).toContainText(/mesh.*verts.*tris/s, { timeout: 30000 });
+  // Debug
+  for (const l of consoleLogs.filter(l => l.includes('[model]'))) console.log(l);
+
+  // Transport bar should appear with animation controls
+  const transport = page.locator('[class*="transportBar"]');
+  await expect(transport).toBeVisible({ timeout: 10000 });
+
+  // Clip dropdown should have options
+  const clipSelect = transport.locator('select');
+  await expect(clipSelect.locator('option')).not.toHaveCount(0);
+
+  // Scrubber should be present
+  await expect(transport.locator('input[type="range"]')).toBeVisible();
+
+  // Time display should show duration
+  await expect(transport.locator('[class*="timeDisplay"]')).toContainText(/\d+\.\d+s/);
+
+  // Bones button should be visible in top toolbar
+  await expect(page.getByText('Bones')).toBeVisible();
+});
+
+test('transport bar play/pause and frame stepping', async ({ page }) => {
+  await page.goto('/pck/?local');
+  await expect(page.locator('#app')).toContainText('Ready', { timeout: 15000 });
+
+  await page.locator('input[type="file"]').setInputFiles(NPC_PCK_FILE);
+  await expect(page.locator('[class*="treeItem"]')).not.toHaveCount(0, { timeout: 10000 });
+
+  await page.locator('[class*="treeItem"]').filter({ hasText: /\.ecm$/ }).first().click();
+  const transport = page.locator('[class*="transportBar"]');
+  await expect(transport).toBeVisible({ timeout: 30000 });
+
+  // Click next frame button — should pause and advance
+  const nextBtn = transport.locator('button', { hasText: '\u23ED' });
+  await nextBtn.click();
+
+  // Time display should show a non-zero time
+  await expect(transport.locator('[class*="timeDisplay"]')).not.toContainText('0.00s / 0.00s');
+});
+
+test('shows STCK metadata for standalone .stck file', async ({ page }) => {
+  // Use ?local to load WASM from local build (TrackSet is not on CDN yet)
+  await page.goto('/pck/?local');
+  await expect(page.locator('#app')).toContainText('Ready', { timeout: 15000 });
+
+  await page.locator('input[type="file"]').setInputFiles(NPC_PCK_FILE);
+  await expect(page.locator('[class*="treeItem"]')).not.toHaveCount(0, { timeout: 10000 });
+
+  // Expand the tcks_ folder to find .stck files
+  await page.locator('[class*="treeItem"]').filter({ hasText: 'tcks_' }).click();
+  await page.locator('[class*="treeItem"]').filter({ hasText: /\.stck$/ }).first().click();
+
+  // Should show metadata table, not hex dump
+  await expect(page.getByText('STCK Track Set')).toBeVisible({ timeout: 10000 });
+  await expect(page.getByText('FPS')).toBeVisible();
+  await expect(page.getByText('Bone tracks')).toBeVisible();
 });

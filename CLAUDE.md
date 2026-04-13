@@ -20,6 +20,8 @@ cargo clippy --all-features            # lint
 
 Requires [uv](https://docs.astral.sh/uv/). Test data in `test_data/` uses Git LFS — fetch with `git lfs pull` if tests fail on missing data.
 
+**Always** set `PYTHONIOENCODING=utf-8` when running Python scripts or one-liners that may print non-ASCII text (file paths contain Chinese characters).
+
 ### Python Wheel Build
 
 Uses **maturin** as PEP 517 build backend (`autoangel-py/pyproject.toml`). CI uses `PyO3/maturin-action` for cross-platform wheel builds. `uv run` triggers maturin builds automatically via cache-keys for `.rs` file changes.

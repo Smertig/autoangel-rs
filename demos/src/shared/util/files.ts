@@ -9,7 +9,7 @@ export const TEXT_EXTENSIONS = new Set([
   '.gfx', '.hlsl', '.fx', '.fxh',
 ]);
 
-export const MODEL_EXTENSIONS = new Set(['.ecm', '.ski']);
+export const MODEL_EXTENSIONS = new Set(['.ecm', '.ski', '.stck']);
 
 export const BINARY_EXTENSIONS = new Set([
   '.ani', '.dat', '.data', '.db', '.bin',
@@ -19,7 +19,7 @@ export const BINARY_EXTENSIONS = new Set([
   '.avi', '.mp4', '.wmv', '.flv', '.mkv', '.bik',
   '.ttf', '.otf', '.fon',
   '.doc', '.xls', '.ppt',
-  '.pck', '.pkx', '.smd', '.bon', '.att', '.stck',
+  '.pck', '.pkx', '.smd', '.bon', '.att',
 ]);
 
 export const IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.ico', '.cur', '.webp']);

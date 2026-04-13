@@ -7,6 +7,7 @@ interface FilePreviewProps {
   path: string;
   getData: (path: string) => Promise<Uint8Array>;
   wasm: AutoangelModule;
+  listFiles?: (prefix: string) => string[];
 }
 
 function downloadFile(path: string, getData: (path: string) => Promise<Uint8Array>) {
@@ -20,7 +21,7 @@ function downloadFile(path: string, getData: (path: string) => Promise<Uint8Arra
   });
 }
 
-export function FilePreview({ path, getData, wasm }: FilePreviewProps) {
+export function FilePreview({ path, getData, wasm, listFiles }: FilePreviewProps) {
   const ext = getExtension(path);
   const format = findFormat(ext);
 
@@ -35,7 +36,7 @@ export function FilePreview({ path, getData, wasm }: FilePreviewProps) {
         </button>
       </div>
       <div className={styles.previewContent}>
-        <format.Viewer path={path} ext={ext} getData={getData} wasm={wasm} />
+        <format.Viewer path={path} ext={ext} getData={getData} wasm={wasm} listFiles={listFiles} />
       </div>
     </div>
   );

@@ -6,6 +6,7 @@ export interface ViewerContext {
   ext: string;
   getData: (path: string) => Promise<Uint8Array>;
   wasm: AutoangelModule;
+  listFiles?: (prefix: string) => string[];
 }
 
 // Currently pre-loads both sides because we can't compute hashes of

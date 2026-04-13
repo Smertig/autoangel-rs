@@ -39,25 +39,16 @@ def ensure_npm_install() -> None:
         print("npm install done.")
 
 
-def setup_local_wasm_link(serve_dir: pathlib.Path) -> None:
-    """Create a junction/symlink for autoangel-wasm/pkg so ?local works."""
+def copy_local_wasm_pkg(serve_dir: pathlib.Path) -> None:
+    """Copy autoangel-wasm/pkg into serve_dir so ?local works in --build mode."""
+    import shutil
     wasm_pkg = PROJECT_ROOT / "autoangel-wasm" / "pkg"
     if not wasm_pkg.exists():
         return
-    link = serve_dir / "autoangel-wasm-pkg"
-    if link.exists() or link.is_symlink():
-        return
-    if sys.platform == "win32":
-        try:
-            import _winapi
-            _winapi.CreateJunction(str(wasm_pkg), str(link))
-        except Exception as e:
-            print(f"Warning: could not create junction for local WASM: {e}")
-    else:
-        try:
-            os.symlink(wasm_pkg, link)
-        except Exception as e:
-            print(f"Warning: could not create symlink for local WASM: {e}")
+    dest = serve_dir / "autoangel-wasm-pkg"
+    if dest.exists():
+        shutil.rmtree(dest)
+    shutil.copytree(wasm_pkg, dest)
 
 
 class NoCacheHandler(http.server.SimpleHTTPRequestHandler):
@@ -100,7 +91,7 @@ def run_build_server(port: int) -> None:
     print("Build complete.")
 
     dist_dir = DEMOS_DIR / "dist"
-    setup_local_wasm_link(dist_dir)
+    copy_local_wasm_pkg(dist_dir)
 
     handler = functools.partial(NoCacheHandler, directory=str(dist_dir))
     with http.server.HTTPServer(("", port), handler) as httpd:

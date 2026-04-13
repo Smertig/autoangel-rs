@@ -11,7 +11,8 @@ export type {
   PckPackage,
   Skeleton,
   SmdModel,
-  WasmSkin,
+  Skin,
+  TrackSet,
   InitInput,
   InitOutput,
   SyncInitInput,
@@ -48,6 +49,9 @@ export interface AutoangelModule {
   // 3D model types
   EcmModel: typeof import('../../../autoangel-wasm/pkg/autoangel.d.ts').EcmModel;
   SmdModel: typeof import('../../../autoangel-wasm/pkg/autoangel.d.ts').SmdModel;
-  WasmSkin: typeof import('../../../autoangel-wasm/pkg/autoangel.d.ts').WasmSkin;
+  Skin: typeof import('../../../autoangel-wasm/pkg/autoangel.d.ts').Skin;
   Skeleton: typeof import('../../../autoangel-wasm/pkg/autoangel.d.ts').Skeleton;
+
+  // Animation types
+  TrackSet: typeof import('../../../autoangel-wasm/pkg/autoangel.d.ts').TrackSet;
 }

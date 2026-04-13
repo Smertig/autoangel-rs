@@ -24,6 +24,8 @@ export function App() {
   const wasmRef = useRef<AutoangelModule | null>(null);
   // In-memory package fallback (when no worker)
   const pkgRef = useRef<any>(null);
+  // Full file list for prefix-based discovery (e.g. STCK animation files)
+  const fileListRef = useRef<string[]>([]);
 
   // State
   const [error, setError] = useState<string | null>(null);
@@ -73,6 +75,12 @@ export function App() {
       return data;
     }
   }, [workerReady, workerCall]);
+
+  // List files by prefix (for animation discovery)
+  const listFiles = useCallback((prefix: string): string[] => {
+    const lowerPrefix = prefix.toLowerCase();
+    return fileListRef.current.filter((f) => f.toLowerCase().startsWith(lowerPrefix));
+  }, []);
 
   // Load files
   const loadFiles = useCallback(async (files: File[]) => {
@@ -144,6 +152,7 @@ export function App() {
       return;
     }
 
+    fileListRef.current = fileList;
     const tree = buildTree(fileList);
     setFileTree(tree);
     setFileCount(fileList.length);
@@ -264,6 +273,7 @@ export function App() {
                 path={selectedPath}
                 getData={getFileData}
                 wasm={wasmRef.current}
+                listFiles={listFiles}
               />
             ) : (
               <div className={styles.placeholder}>Select a file to preview</div>
