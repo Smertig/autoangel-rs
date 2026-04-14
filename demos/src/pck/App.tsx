@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { resolveCDN } from '../cdn';
 import { initWasm } from '../wasm';
 import type { AutoangelModule } from '../types/autoangel';
@@ -196,7 +196,7 @@ export function App() {
     setSelectedPath(null);
   }, []);
 
-  const selectedParts = selectedPath ? selectedPath.split('\\') : [];
+  const selectedParts = useMemo(() => selectedPath ? selectedPath.split('\\') : [], [selectedPath]);
 
   return (
     <div className={styles.appContainer}>

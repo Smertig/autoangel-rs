@@ -5,6 +5,7 @@ import { bytesEqual } from '@shared/util/bytes';
 import type { AutoangelModule } from '@shared/../types/autoangel';
 import { DiffStatus, DiffStatusValue } from '../types';
 import { findFormat } from '@shared/formats/registry';
+import { CopyButton } from '@shared/components/CopyButton';
 import styles from '../App.module.css';
 
 interface DiffPreviewProps {
@@ -54,6 +55,7 @@ export function ContentHeader({
   return (
     <div className={styles.contentHeader}>
       <span className={styles.contentPath}>{path}</span>
+      <CopyButton text={path.replaceAll('\\', '/')} />
       {leftSize != null && rightSize != null && (
         <span className={styles.contentSize}>
           {formatSize(leftSize)} &rarr; {formatSize(rightSize)}

@@ -1,3 +1,4 @@
+import { CopyButton } from '@shared/components/CopyButton';
 import styles from './Breadcrumb.module.css';
 
 interface BreadcrumbProps {
@@ -27,6 +28,9 @@ export function Breadcrumb({ parts, onReset }: BreadcrumbProps) {
           </span>
         );
       })}
+      {parts.length > 0 && (
+        <CopyButton text={parts.join('/')} />
+      )}
     </nav>
   );
 }
