@@ -13,6 +13,7 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable", "ESNext.Disposable"],
     "types": ["vite/client"],
     "paths": {
+      "autoangel": ["../autoangel-wasm/pkg"],
       "@shared/*": ["./src/shared/*"],
       "@pck/*": ["./src/pck/*"],
       "@elements/*": ["./src/elements/*"],

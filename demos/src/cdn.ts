@@ -1,4 +1,6 @@
-const CDN_PKG = 'https://cdn.jsdelivr.net/npm/autoangel@0.10.0';
+import { version } from 'autoangel/package.json';
+
+const CDN_PKG = `https://cdn.jsdelivr.net/npm/autoangel@${version}`;
 // Absolute path from Vite root — no junctions/symlinks needed.
 // Vite's server.fs.allow includes '..' so this resolves correctly.
 const LOCAL_PKG = '/autoangel-wasm-pkg';

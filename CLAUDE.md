@@ -92,7 +92,7 @@ All crates share the same version. When bumping, update **all** of these:
 - `autoangel-py/Cargo.toml`
 - `autoangel-wasm/Cargo.toml`
 - `autoangel-wasm/README.md` — CDN URL in the installation example
-- `demos/src/cdn.ts` — `CDN_PKG` const (single source of truth for all demo pages)
+- `demos/package.json` — `autoangel` devDependency version (types + CDN version for demos)
 
 ### Commit ordering when both API and demos change
 
