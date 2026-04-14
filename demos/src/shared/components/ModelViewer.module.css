@@ -297,3 +297,8 @@
 .animListItemActive:hover {
   background: rgba(123, 164, 232, 0.18);
 }
+
+.animListItemLoading {
+  opacity: 0.5;
+  pointer-events: none;
+}

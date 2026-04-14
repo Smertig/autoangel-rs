@@ -329,6 +329,32 @@ function buildSkeleton(wasm: AutoangelModule, bonData: Uint8Array): {
   }
 }
 
+// ── LRU clip cache ──
+
+class ClipCache {
+  private map = new Map<string, any>();
+  constructor(private maxSize: number) {}
+
+  get(name: string): any | undefined {
+    const clip = this.map.get(name);
+    if (clip !== undefined) {
+      this.map.delete(name);
+      this.map.set(name, clip);
+    }
+    return clip;
+  }
+
+  set(name: string, clip: any): void {
+    if (this.map.has(name)) {
+      this.map.delete(name);
+    } else if (this.map.size >= this.maxSize) {
+      const first = this.map.keys().next().value!;
+      this.map.delete(first);
+    }
+    this.map.set(name, clip);
+  }
+}
+
 // ── Animation clip builder ──
 
 function buildKeyTimes(keyCount: number, frameIds: Uint16Array | undefined, frameRate: number): Float32Array {
@@ -552,7 +578,9 @@ function mountScene(
   totalStats: SkinStats,
   sourceData: Uint8Array,
   sourceExt: string,
-  clips?: { name: string; clip: any }[],
+  animNames?: string[],
+  loadClip?: (name: string) => Promise<any | null>,
+  initialClip?: { name: string; clip: any } | null,
   skeleton?: any,
 ): void {
   const v = getViewer(container);
@@ -649,7 +677,7 @@ function mountScene(
   // ── Transport bar (bottom, only when animations exist) ──
   let transport: HTMLElement | null = null;
   let animPanel: HTMLElement | null = null;
-  if (clips && clips.length > 0) {
+  if (animNames && animNames.length > 0 && loadClip) {
     transport = document.createElement('div');
     transport.className = styles.transportBar;
 
@@ -662,8 +690,7 @@ function mountScene(
       { symbol: '\u21C4', title: 'Ping-pong', three: THREE.LoopPingPong },
     ];
 
-    const preferred = clips.find((c) => c.name.includes(PREFERRED_ANIM_HINT)) ?? clips[0];
-    let activeClip = preferred;
+    let activeClip = initialClip ?? { name: animNames[0], clip: null as any };
     const fps = 30;
 
     function getAction() {
@@ -674,7 +701,7 @@ function mountScene(
       return action && isFinite(action.time) ? action.time : 0;
     }
     function getDuration(): number {
-      return activeClip.clip.duration;
+      return activeClip.clip?.duration ?? 0;
     }
     function addSep() {
       const s = document.createElement('div');
@@ -713,7 +740,7 @@ function mountScene(
 
     const animHeader = document.createElement('div');
     animHeader.className = styles.animListHeader;
-    animHeader.textContent = `Animations (${clips.length})`;
+    animHeader.textContent = `Animations (${animNames.length})`;
     animPanel.appendChild(animHeader);
 
     const animScroll = document.createElement('div');
@@ -721,27 +748,38 @@ function mountScene(
     animPanel.appendChild(animScroll);
 
     let activeItemEl: HTMLDivElement | undefined;
-    for (const clip of clips) {
+    let loadGeneration = 0;
+    for (const clipName of animNames) {
       const item = document.createElement('div');
       item.className = styles.animListItem;
-      item.textContent = clip.name;
-      item.title = clip.name;
-      if (clip === preferred) {
+      item.textContent = clipName;
+      item.title = clipName;
+      if (initialClip && clipName === initialClip.name) {
         item.classList.add(styles.animListItemActive);
         activeItemEl = item;
       }
-      item.onclick = () => {
-        if (!v.mixer) return;
-        v.mixer.stopAllAction();
-        activeClip = clip;
-        const action = v.mixer.clipAction(clip.clip);
-        action.loop = loopModes[loopMode].three;
-        action.clampWhenFinished = loopModes[loopMode].three === THREE.LoopOnce;
-        action.play();
-        if (!playing) v.mixer.timeScale = 0;
-        if (activeItemEl) activeItemEl.classList.remove(styles.animListItemActive);
-        item.classList.add(styles.animListItemActive);
-        activeItemEl = item;
+      item.onclick = async () => {
+        if (!v.mixer || item.classList.contains(styles.animListItemLoading)) return;
+        const gen = ++loadGeneration;
+        item.classList.add(styles.animListItemLoading);
+        try {
+          const clip = await loadClip!(clipName);
+          if (!clip || gen !== loadGeneration) return;
+          v.mixer.stopAllAction();
+          activeClip = { name: clipName, clip };
+          const action = v.mixer.clipAction(clip);
+          action.loop = loopModes[loopMode].three;
+          action.clampWhenFinished = loopModes[loopMode].three === THREE.LoopOnce;
+          action.play();
+          if (!playing) v.mixer.timeScale = 0;
+          if (activeItemEl) activeItemEl.classList.remove(styles.animListItemActive);
+          item.classList.add(styles.animListItemActive);
+          activeItemEl = item;
+        } catch (e) {
+          console.warn('[model] Failed to load clip:', clipName, e);
+        } finally {
+          item.classList.remove(styles.animListItemLoading);
+        }
       };
       animScroll.appendChild(item);
     }
@@ -996,33 +1034,40 @@ async function renderModel(
     throw new Error('No skin files referenced by ECM or SMD');
   }
 
-  // Discover animation clips BEFORE building meshes so we know whether to enable skinning
-  const clips: { name: string; clip: any }[] = [];
+  // Discover animation file paths (no parsing yet — clips are loaded lazily on click)
+  const animNames: string[] = [];
+  let loadClip: ((name: string) => Promise<any | null>) | undefined;
   if (listFiles && skelData) {
-    // Use tcks_dir from SMD (v >= 8), or infer from SMD basename
     const tcksName = smdTcksDir
       || ('tcks_' + smdPath.split('\\').pop()!.replace(/\.[^.]+$/i, ''));
     const smdDir = smdPath.substring(0, smdPath.lastIndexOf('\\'));
     const trackDir = smdDir + '\\' + tcksName;
     const stckPaths = listFiles(trackDir).filter((p: string) => p.toLowerCase().endsWith('.stck'));
-    const stckResults = await Promise.all(stckPaths.map(async (stckPath: string) => {
-      try {
-        const stckData = await getFile(stckPath);
-        if (!stckData) return null;
-        const clipName = stckPath.split('\\').pop()!.replace(/\.stck$/i, '');
-        const clip = buildAnimationClip(wasm, stckData, clipName, skelData!.boneNames);
-        return clip ? { name: clipName, clip } : null;
-      } catch (e) {
-        console.warn('[model] Failed to build clip from', stckPath, e);
-        return null;
-      }
-    }));
-    for (const r of stckResults) if (r) clips.push(r);
-    console.log(`[model] Animation clips built: ${clips.length}`);
+    const stckPathByName = new Map<string, string>();
+    for (const stckPath of stckPaths) {
+      const clipName = stckPath.split('\\').pop()!.replace(/\.stck$/i, '');
+      animNames.push(clipName);
+      stckPathByName.set(clipName, stckPath);
+    }
+    console.log(`[model] Animation clips discovered: ${animNames.length}`);
+
+    const clipCache = new ClipCache(50);
+    const boneNames = skelData.boneNames;
+    loadClip = async (name: string): Promise<any | null> => {
+      const cached = clipCache.get(name);
+      if (cached) return cached;
+      const path = stckPathByName.get(name);
+      if (!path) return null;
+      const stckData = await getFile(path);
+      if (!stckData) return null;
+      const clip = buildAnimationClip(wasm, stckData, name, boneNames);
+      if (clip) clipCache.set(name, clip);
+      return clip;
+    };
   }
 
   // Only use skinning if we have animations to play
-  const useSkinning = clips.length > 0 && skelData != null;
+  const useSkinning = animNames.length > 0 && skelData != null;
 
   const group = new THREE.Group();
   // Apply foot offset as group-level Y shift (design doc section 13 step 4)
@@ -1060,17 +1105,21 @@ async function renderModel(
     throw new Error('No meshes could be built from skin files');
   }
 
-  // Set up AnimationMixer if clips are available
+  // Set up AnimationMixer and eagerly load the preferred clip
+  let initialClip: { name: string; clip: any } | null = null;
   {
     const v = getViewer(container);
     if (v.mixer) { v.mixer.stopAllAction(); v.mixer = null; }
     v.onBeforeRender = null;
-    if (clips.length > 0) {
+    if (animNames.length > 0 && loadClip) {
       v.mixer = new THREE.AnimationMixer(group);
-      const preferred = clips.find((c) => c.name.includes(PREFERRED_ANIM_HINT)) ?? clips[0];
-      v.mixer.clipAction(preferred.clip).play();
+      const preferredName = animNames.find((n) => n.includes(PREFERRED_ANIM_HINT)) ?? animNames[0];
+      const clip = await loadClip(preferredName);
+      if (clip) {
+        initialClip = { name: preferredName, clip };
+        v.mixer.clipAction(clip).play();
+      }
 
-      // Apply bone scaling each frame (mixer overwrites bone.position)
       if (skelData?.bones.some((b: any) => b.userData.wholeScale || b.userData.lenScale)) {
         const animBones = skelData!.bones;
         v.onBeforeRender = () => {
@@ -1081,8 +1130,7 @@ async function renderModel(
   }
 
   mountScene(container, group, totalStats, ecmData, '.ecm',
-    clips.length > 0 ? clips : undefined,
-    skelData?.skeleton,
+    animNames, loadClip, initialClip, skelData?.skeleton,
   );
 }
 
