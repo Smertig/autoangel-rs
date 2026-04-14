@@ -7,6 +7,8 @@ import styles from './ModelViewer.module.css';
 // "站立" (standing) — preferred default animation clip
 const PREFERRED_ANIM_HINT = '\u7AD9\u7ACB';
 
+const HIDDEN_STYLE: React.CSSProperties = { display: 'none' };
+
 interface ModelViewerProps {
   path: string;
   wasm: AutoangelModule;
@@ -1182,9 +1184,10 @@ export function ModelViewer({ path, wasm, getData, listFiles }: ModelViewerProps
     };
   }, []);
 
-  if (error) {
-    return <div className={styles.modelError}>{error}</div>;
-  }
-
-  return <div ref={containerRef} className={styles.modelContainer} />;
+  return (
+    <>
+      {error && <div className={styles.modelError}>{error}</div>}
+      <div ref={containerRef} className={styles.modelContainer} style={error ? HIDDEN_STYLE : undefined} />
+    </>
+  );
 }
