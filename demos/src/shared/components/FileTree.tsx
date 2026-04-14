@@ -2,6 +2,7 @@ import React, { useState, useCallback, useMemo, useDeferredValue, memo } from 'r
 import styles from './FileTree.module.css';
 import {
   getExtension,
+  normalizeFilter,
   IMAGE_EXTENSIONS,
   CANVAS_IMAGE_EXTENSIONS,
   TEXT_EXTENSIONS,
@@ -376,7 +377,7 @@ export function FileTree({
   // Typing stays responsive; intermediate tree renders are skipped when
   // the user types faster than React can paint.
   const deferredFilter = useDeferredValue(filterText);
-  const filterLower = useMemo(() => deferredFilter.toLowerCase(), [deferredFilter]);
+  const filterLower = useMemo(() => normalizeFilter(deferredFilter), [deferredFilter]);
   const autoExpand = filterLower.length > 0;
 
   // Pre-compute visible sets once per deferred filter change

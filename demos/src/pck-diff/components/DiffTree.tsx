@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { DiffStatus, DiffStatusValue } from '../types';
 import { HighlightedLabel } from '@shared/components/FileTree';
+import { normalizeFilter } from '@shared/util/files';
 import styles from '../App.module.css';
 import sharedStyles from '@shared/components/FileTree.module.css';
 
@@ -362,7 +363,7 @@ export function DiffTree({
 
   if (!root) return null;
 
-  const filterLower = filterText.toLowerCase();
+  const filterLower = normalizeFilter(filterText);
   const autoExpand = filterLower.length > 0;
 
   const isFileVisible = (file: DiffTreeFile): boolean => {
