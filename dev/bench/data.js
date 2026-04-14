@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1775933489886,
+  "lastUpdate": 1776162939538,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -2207,6 +2207,102 @@ window.BENCHMARK_DATA = {
             "name": "PackageInfo::save_to",
             "value": 766594,
             "range": "± 819",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "f75325c95e8c418274cd5399c8c3aafb5f9a1639",
+          "message": "refactor: add STCK parser, ECM bone scaling, and WASM model bindings\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+          "timestamp": "2026-04-13T20:17:43+03:00",
+          "tree_id": "312315603672b1ee34d23f9c8b5b29ddc5b6a6b6",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/f75325c95e8c418274cd5399c8c3aafb5f9a1639"
+        },
+        "date": 1776162938951,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 32401,
+            "range": "± 185",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 121,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::access_fields",
+            "value": 62,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 166,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 19489,
+            "range": "± 21",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::iterate_lists",
+            "value": 13004,
+            "range": "± 8",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 45,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 270990,
+            "range": "± 113",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::find_prefix",
+            "value": 280,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 3193,
+            "range": "± 16",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_all_files",
+            "value": 10781534,
+            "range": "± 9021",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::save_to",
+            "value": 1521527,
+            "range": "± 4483",
             "unit": "ns/iter"
           }
         ]
