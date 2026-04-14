@@ -1,9 +1,92 @@
 import type { AutoangelModule } from '../../types/autoangel';
 
+// ── Shared path helpers ──
+// These encode Angelica Engine archive path conventions used by both
+// the 3D renderer and the dependency collector.
+
+/** Resolve a basename relative to a parent file's directory, lowercased. */
 export function resolveRelative(parentPath: string, basename: string): string {
   const dir = parentPath.substring(0, parentPath.lastIndexOf('\\') + 1);
   return (dir + basename).toLowerCase();
 }
+
+/**
+ * Resolve a file reference that may be absolute (contains `\`) or relative.
+ * Absolute paths are just lowercased; relative ones are resolved against parentPath.
+ */
+export function resolvePath(refPath: string, parentPath: string): string {
+  return refPath.includes('\\') ? refPath.toLowerCase() : resolveRelative(parentPath, refPath);
+}
+
+/**
+ * Build candidate archive paths for a texture referenced by a SKI file.
+ * The engine tries three locations in order: textures/ subdir, tex_<skinname>/ subdir, bare.
+ */
+export function textureCandidates(skiArchivePath: string, texName: string): string[] {
+  const skiBasename = skiArchivePath.split('\\').pop()!.replace(/\.ski$/i, '');
+  return [
+    resolveRelative(skiArchivePath, 'textures\\' + texName),
+    resolveRelative(skiArchivePath, 'tex_' + skiBasename + '\\' + texName),
+    resolveRelative(skiArchivePath, texName),
+  ];
+}
+
+/**
+ * Merge skin paths from SMD and ECM additional skins into a single deduplicated list.
+ * SMD skins are relative to smdPath; ECM additional skins may be absolute or relative to ecmPath.
+ */
+export function collectSkinPaths(
+  smdPath: string,
+  smdSkinPaths: string[],
+  ecmPath: string,
+  ecmAdditionalSkins: string[],
+): string[] {
+  const paths: string[] = [];
+  for (const sp of smdSkinPaths) {
+    if (sp) paths.push(resolveRelative(smdPath, sp));
+  }
+  for (const sp of ecmAdditionalSkins) {
+    const resolved = resolvePath(sp, ecmPath);
+    if (!paths.includes(resolved)) paths.push(resolved);
+  }
+  return paths;
+}
+
+/**
+ * Try to load a SKI file, falling back to a `models\` prefix if the direct path fails.
+ * Some archives store skins under models/ but reference them without the prefix.
+ */
+export async function tryLoadSki(
+  skiPath: string,
+  getFile: (path: string) => Promise<Uint8Array | null>,
+): Promise<{ data: Uint8Array; archivePath: string } | null> {
+  let data = await getFile(skiPath);
+  if (data) return { data, archivePath: skiPath };
+  if (!skiPath.startsWith('models\\')) {
+    const withPrefix = 'models\\' + skiPath;
+    data = await getFile(withPrefix);
+    if (data) return { data, archivePath: withPrefix };
+  }
+  return null;
+}
+
+/**
+ * Discover STCK animation file paths for a model.
+ * Uses SMD's tcksDir if available, otherwise constructs `tcks_<modelname>`.
+ */
+export function discoverStckPaths(
+  smdPath: string,
+  smdTcksDir: string | undefined,
+  listFiles: (prefix: string) => string[],
+): string[] {
+  const tcksName = smdTcksDir
+    || ('tcks_' + smdPath.split('\\').pop()!.replace(/\.[^.]+$/i, ''));
+  const smdDir = smdPath.substring(0, smdPath.lastIndexOf('\\'));
+  const trackDir = smdDir + '\\' + tcksName;
+  return listFiles(trackDir).filter((p: string) => p.toLowerCase().endsWith('.stck'));
+}
+
+// ── Dependency collector ──
 
 async function tryGet(
   getData: (path: string) => Promise<Uint8Array>,
@@ -13,8 +96,8 @@ async function tryGet(
   catch { return null; }
 }
 
-async function collectSki(
-  getData: (path: string) => Promise<Uint8Array>,
+async function collectSkiTextures(
+  getFile: (path: string) => Promise<Uint8Array | null>,
   wasm: AutoangelModule,
   skiData: Uint8Array,
   skiArchivePath: string,
@@ -24,17 +107,11 @@ async function collectSki(
 
   using skin = wasm.Skin.parse(skiData);
   const textureNames: string[] = skin.textures || [];
-  const skiBasename = skiArchivePath.split('\\').pop()!.replace(/\.ski$/i, '');
 
   for (const texName of textureNames) {
-    const candidates = [
-      resolveRelative(skiArchivePath, 'textures\\' + texName),
-      resolveRelative(skiArchivePath, 'tex_' + skiBasename + '\\' + texName),
-      resolveRelative(skiArchivePath, texName),
-    ];
-    for (const tp of candidates) {
+    for (const tp of textureCandidates(skiArchivePath, texName)) {
       if (files.has(tp)) break;
-      const texData = await tryGet(getData, tp);
+      const texData = await getFile(tp);
       if (texData) {
         files.set(tp, texData);
         break;
@@ -57,24 +134,21 @@ export async function collectEcmDependencies(
 ): Promise<Map<string, Uint8Array>> {
   const files = new Map<string, Uint8Array>();
   const visited = new Set<string>();
+  const getFile = (path: string) => tryGet(getData, path);
 
   async function collect(ecmPath: string): Promise<void> {
     const normalizedEcm = ecmPath.toLowerCase();
     if (visited.has(normalizedEcm)) return;
     visited.add(normalizedEcm);
 
-    const ecmData = await tryGet(getData, normalizedEcm);
+    const ecmData = await getFile(normalizedEcm);
     if (!ecmData) return;
     files.set(normalizedEcm, ecmData);
 
     using ecm = wasm.EcmModel.parse(ecmData);
 
-    const smdRelPath = ecm.skinModelPath;
-    const smdPath = smdRelPath.includes('\\')
-      ? smdRelPath.toLowerCase()
-      : resolveRelative(normalizedEcm, smdRelPath);
-
-    const smdData = await tryGet(getData, smdPath);
+    const smdPath = resolvePath(ecm.skinModelPath, normalizedEcm);
+    const smdData = await getFile(smdPath);
     let smdSkinPaths: string[] = [];
     let smdTcksDir: string | undefined;
 
@@ -86,46 +160,28 @@ export async function collectEcmDependencies(
 
       const bonRelPath: string = smd.skeletonPath;
       if (bonRelPath) {
-        const bonPath = bonRelPath.includes('\\')
-          ? bonRelPath.toLowerCase()
-          : resolveRelative(smdPath, bonRelPath);
-        const bonData = await tryGet(getData, bonPath);
+        const bonPath = resolvePath(bonRelPath, smdPath);
+        const bonData = await getFile(bonPath);
         if (bonData) files.set(bonPath, bonData);
       }
     }
 
-    const allSkinPaths: string[] = [];
-    for (const sp of smdSkinPaths) {
-      if (sp) allSkinPaths.push(resolveRelative(smdPath, sp));
-    }
-    for (const sp of ecm.additionalSkins || []) {
-      const resolved = sp.includes('\\') ? sp.toLowerCase() : resolveRelative(normalizedEcm, sp);
-      if (!allSkinPaths.includes(resolved)) allSkinPaths.push(resolved);
-    }
+    const allSkinPaths = collectSkinPaths(
+      smdPath, smdSkinPaths, normalizedEcm, ecm.additionalSkins || [],
+    );
 
     for (const skiPath of allSkinPaths) {
       if (files.has(skiPath)) continue;
-      let skiData = await tryGet(getData, skiPath);
-      let skiArchivePath = skiPath;
-      if (!skiData && !skiPath.startsWith('models\\')) {
-        const withPrefix = 'models\\' + skiPath;
-        skiData = await tryGet(getData, withPrefix);
-        if (skiData) skiArchivePath = withPrefix;
-      }
-      if (skiData) {
-        await collectSki(getData, wasm, skiData, skiArchivePath, files);
+      const ski = await tryLoadSki(skiPath, getFile);
+      if (ski) {
+        await collectSkiTextures(getFile, wasm, ski.data, ski.archivePath, files);
       }
     }
 
     if (listFiles && smdData) {
-      const tcksName = smdTcksDir
-        || ('tcks_' + smdPath.split('\\').pop()!.replace(/\.[^.]+$/i, ''));
-      const smdDir = smdPath.substring(0, smdPath.lastIndexOf('\\'));
-      const trackDir = smdDir + '\\' + tcksName;
-      const stckPaths = listFiles(trackDir).filter((p: string) => p.toLowerCase().endsWith('.stck'));
-      for (const stckPath of stckPaths) {
+      for (const stckPath of discoverStckPaths(smdPath, smdTcksDir, listFiles)) {
         if (files.has(stckPath)) continue;
-        const stckData = await tryGet(getData, stckPath);
+        const stckData = await getFile(stckPath);
         if (stckData) files.set(stckPath, stckData);
       }
     }
@@ -133,10 +189,7 @@ export async function collectEcmDependencies(
     for (let i = 0; i < ecm.childCount; i++) {
       const childRel = ecm.childPath(i);
       if (!childRel) continue;
-      const childPath = childRel.includes('\\')
-        ? childRel.toLowerCase()
-        : resolveRelative(normalizedEcm, childRel);
-      await collect(childPath);
+      await collect(resolvePath(childRel, normalizedEcm));
     }
   }
 

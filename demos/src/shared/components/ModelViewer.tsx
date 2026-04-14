@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { AutoangelModule, TrackSet } from '../../types/autoangel';
 import { detectEncoding, decodeText } from '@shared/util/encoding';
 import { hexDumpRows } from '@shared/util/hex';
+import { resolvePath, textureCandidates, collectSkinPaths, tryLoadSki, discoverStckPaths } from '@shared/util/model-dependencies';
 import styles from './ModelViewer.module.css';
 
 // "站立" (standing) — preferred default animation clip
@@ -31,13 +32,6 @@ async function ensureThree(): Promise<void> {
     OrbitControls = addons.OrbitControls;
   })();
   return threeLoading;
-}
-
-// ── Path helpers ──
-
-function resolveRelative(parentPath: string, basename: string): string {
-  const dir = parentPath.substring(0, parentPath.lastIndexOf('\\') + 1);
-  return (dir + basename).toLowerCase();
 }
 
 // ── Texture helpers ──
@@ -441,15 +435,9 @@ async function loadSkinFile(
     }
 
     const textureNames: string[] = skin.textures || [];
-    const skiBasename = skiArchivePath.split('\\').pop()!.replace(/\.ski$/i, '');
     const textures = await Promise.all(
       textureNames.map(async (texName: string) => {
-        const candidates = [
-          resolveRelative(skiArchivePath, 'textures\\' + texName),
-          resolveRelative(skiArchivePath, 'tex_' + skiBasename + '\\' + texName),
-          resolveRelative(skiArchivePath, texName),
-        ];
-        for (const tp of candidates) {
+        for (const tp of textureCandidates(skiArchivePath, texName)) {
           const texData = await getFile(tp);
           if (texData) return ddsToThreeTexture(wasm, texData);
         }
@@ -1005,10 +993,7 @@ async function renderModel(
   if (!ecmData) throw new Error(`File not found: ${ecmPath}`);
   using ecm = wasm.EcmModel.parse(ecmData);
 
-  const smdRelPath = ecm.skinModelPath;
-  const smdPath = smdRelPath.includes('\\')
-    ? smdRelPath.toLowerCase()
-    : resolveRelative(ecmPath, smdRelPath);
+  const smdPath = resolvePath(ecm.skinModelPath, ecmPath);
   const smdData = await getFile(smdPath);
   let smdSkinPaths: string[] = [];
   let smdTcksDir: string | undefined;
@@ -1019,9 +1004,7 @@ async function renderModel(
     smdTcksDir = smd.tcksDir;
     const bonRelPath: string = smd.skeletonPath;
     if (bonRelPath) {
-      const bonPath = bonRelPath.includes('\\')
-        ? bonRelPath.toLowerCase()
-        : resolveRelative(smdPath, bonRelPath);
+      const bonPath = resolvePath(bonRelPath, smdPath);
       const bonData = await getFile(bonPath);
       if (bonData) {
         try {
@@ -1047,14 +1030,7 @@ async function renderModel(
     console.log(`[model] Bone scaling: ${boneScaleInfo.entries.length} entries, footOffset=${skelData.footOffset.toFixed(3)}`);
   }
 
-  const allSkinPaths: string[] = [];
-  for (const sp of smdSkinPaths) {
-    if (sp) allSkinPaths.push(resolveRelative(smdPath, sp));
-  }
-  for (const sp of (ecm.additionalSkins || [])) {
-    const resolved = sp.includes('\\') ? sp.toLowerCase() : resolveRelative(ecmPath, sp);
-    if (!allSkinPaths.includes(resolved)) allSkinPaths.push(resolved);
-  }
+  const allSkinPaths = collectSkinPaths(smdPath, smdSkinPaths, ecmPath, ecm.additionalSkins || []);
   if (allSkinPaths.length === 0) {
     throw new Error('No skin files referenced by ECM or SMD');
   }
@@ -1063,11 +1039,7 @@ async function renderModel(
   const animNames: string[] = [];
   let loadClip: ((name: string) => Promise<any>) | undefined;
   if (listFiles && skelData) {
-    const tcksName = smdTcksDir
-      || ('tcks_' + smdPath.split('\\').pop()!.replace(/\.[^.]+$/i, ''));
-    const smdDir = smdPath.substring(0, smdPath.lastIndexOf('\\'));
-    const trackDir = smdDir + '\\' + tcksName;
-    const stckPaths = listFiles(trackDir).filter((p: string) => p.toLowerCase().endsWith('.stck'));
+    const stckPaths = discoverStckPaths(smdPath, smdTcksDir, listFiles);
     const stckPathByName = new Map<string, string>();
     for (const stckPath of stckPaths) {
       const clipName = stckPath.split('\\').pop()!.replace(/\.stck$/i, '');
@@ -1110,16 +1082,10 @@ async function renderModel(
   }
 
   for (const skiPath of allSkinPaths) {
-    let skiData = await getFile(skiPath);
-    let skiArchivePath = skiPath;
-    if (!skiData && !skiPath.startsWith('models\\')) {
-      const withPrefix = 'models\\' + skiPath;
-      skiData = await getFile(withPrefix);
-      if (skiData) skiArchivePath = withPrefix;
-    }
-    if (!skiData) { console.warn('[model] SKI not found:', skiPath); continue; }
+    const ski = await tryLoadSki(skiPath, getFile);
+    if (!ski) { console.warn('[model] SKI not found:', skiPath); continue; }
 
-    const { meshes, stats } = await loadSkinFile(wasm, getFile, skiArchivePath, skiData, useSkinning ? skelData!.skeleton : undefined, useSkinning ? skelData!.boneNames : undefined);
+    const { meshes, stats } = await loadSkinFile(wasm, getFile, ski.archivePath, ski.data, useSkinning ? skelData!.skeleton : undefined, useSkinning ? skelData!.boneNames : undefined);
     for (const m of meshes) group.add(m);
     totalStats.verts += stats.verts;
     totalStats.tris += stats.tris;
