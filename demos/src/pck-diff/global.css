@@ -15,6 +15,69 @@
   --unchanged: #868e96;
   --pending: #339af0;
   --pending-text: #1971c2;
+
+  /* Diff badge backgrounds (semi-transparent) */
+  --badge-added-bg: rgba(64, 192, 87, 0.15);
+  --badge-deleted-bg: rgba(250, 82, 82, 0.15);
+  --badge-modified-bg: rgba(250, 176, 5, 0.15);
+  --badge-pending-bg: rgba(51, 154, 240, 0.15);
+
+  /* Diff banner backgrounds */
+  --banner-added-bg: #e6ffec;
+  --banner-deleted-bg: #ffebe9;
+  --banner-unchanged-bg: #f1f3f5;
+  --banner-pending-bg: rgba(51, 154, 240, 0.08);
+
+  /* Drop zone tints */
+  --drop-left-bg: rgba(250, 82, 82, 0.04);
+  --drop-left-border: rgba(250, 82, 82, 0.2);
+  --drop-left-active-border: #fa5252;
+  --drop-left-active-bg: rgba(250, 82, 82, 0.08);
+  --drop-right-bg: rgba(34, 139, 230, 0.04);
+  --drop-right-border: rgba(34, 139, 230, 0.2);
+  --drop-right-active-bg: rgba(34, 139, 230, 0.08);
+
+  /* Diff blank line */
+  --diff-blank: #f8f9fa;
+
+  /* Loaded status */
+  --loaded-text: #2b8a3e;
+}
+
+[data-theme="dark"] {
+  --added: #51cf66;
+  --added-bg: #1a3324;
+  --added-text: #69db7c;
+  --removed: #ff6b6b;
+  --removed-bg: #3d1f1f;
+  --removed-text: #ff8787;
+  --modified: #fcc419;
+  --modified-text: #ffd43b;
+  --unchanged: #909296;
+  --pending: #4dabf7;
+  --pending-text: #74c0fc;
+
+  --badge-added-bg: rgba(81, 207, 102, 0.15);
+  --badge-deleted-bg: rgba(255, 107, 107, 0.15);
+  --badge-modified-bg: rgba(252, 196, 25, 0.15);
+  --badge-pending-bg: rgba(77, 171, 247, 0.15);
+
+  --banner-added-bg: #1a3324;
+  --banner-deleted-bg: #3d1f1f;
+  --banner-unchanged-bg: #2c2e33;
+  --banner-pending-bg: rgba(77, 171, 247, 0.08);
+
+  --drop-left-bg: rgba(255, 107, 107, 0.04);
+  --drop-left-border: rgba(255, 107, 107, 0.2);
+  --drop-left-active-border: #ff6b6b;
+  --drop-left-active-bg: rgba(255, 107, 107, 0.1);
+  --drop-right-bg: rgba(77, 171, 247, 0.04);
+  --drop-right-border: rgba(77, 171, 247, 0.2);
+  --drop-right-active-bg: rgba(77, 171, 247, 0.1);
+
+  --diff-blank: #25262b;
+
+  --loaded-text: #69db7c;
 }
 
 .hidden { display: none !important; }

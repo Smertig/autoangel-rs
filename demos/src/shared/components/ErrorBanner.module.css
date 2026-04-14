@@ -3,9 +3,9 @@
   align-items: flex-start;
   gap: 8px;
   padding: 10px 16px;
-  background: #fff9ed;
-  border-bottom: 1px solid #f0d9a8;
-  color: #6e5a1f;
+  background: var(--warning-bg);
+  border-bottom: 1px solid var(--warning-border);
+  color: var(--warning-text);
   font-size: 13px;
   line-height: 1.45;
   animation: errorSlideIn 0.2s ease-out;
@@ -27,7 +27,7 @@
   flex-shrink: 0;
   background: none;
   border: none;
-  color: #a08a4a;
+  color: var(--warning-text-muted);
   cursor: pointer;
   font-size: 16px;
   line-height: 1;
@@ -36,7 +36,7 @@
 }
 
 .errorDismiss:hover {
-  color: #6e5a1f;
+  color: var(--warning-text);
   background: rgba(0, 0, 0, 0.06);
 }
 

@@ -4,3 +4,8 @@
   --hover: #e9ecef;
   --selected: #d0ebff;
 }
+
+[data-theme="dark"] {
+  --hover: #2c2e33;
+  --selected: #1b3a5c;
+}

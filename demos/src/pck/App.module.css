@@ -104,12 +104,12 @@
 }
 
 .previewArea::-webkit-scrollbar-thumb {
-  background: #ced4da;
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
 }
 
 .previewArea::-webkit-scrollbar-thumb:hover {
-  background: #adb5bd;
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* Placeholder text */

@@ -65,7 +65,7 @@
 .configToggleActive {
   color: var(--accent);
   border-color: var(--accent);
-  background: #e7f5ff;
+  background: var(--accent-light);
 }
 
 .configToggleHasConfig {
@@ -131,7 +131,7 @@
 }
 
 .configLeft textarea::placeholder {
-  color: #adb5bd;
+  color: var(--placeholder);
   font-style: italic;
 }
 
@@ -155,10 +155,10 @@
 
 .configError {
   font-size: 12px;
-  color: #c92a2a;
+  color: var(--error-text);
   line-height: 1.4;
-  background: #fff5f5;
-  border: 1px solid #ffc9c9;
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
   border-radius: var(--radius);
   padding: 6px 10px;
   word-break: break-word;
@@ -291,12 +291,12 @@
 }
 
 .panelContent::-webkit-scrollbar-thumb {
-  background: #ced4da;
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
 }
 
 .panelContent::-webkit-scrollbar-thumb:hover {
-  background: #adb5bd;
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* ---- Dividers ---- */
@@ -365,12 +365,12 @@
 }
 
 .detailContent::-webkit-scrollbar-thumb {
-  background: #ced4da;
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
 }
 
 .detailContent::-webkit-scrollbar-thumb:hover {
-  background: #adb5bd;
+  background: var(--scrollbar-thumb-hover);
 }
 
 .placeholder {
@@ -415,8 +415,8 @@
   font-size: 12px;
 }
 
-.stringValue { color: #2b8a3e; }
-.numberValue { color: #1864ab; }
+.stringValue { color: var(--syntax-string); }
+.numberValue { color: var(--syntax-number); }
 .bytesValue  { color: var(--text-muted); font-size: 11px; }
 
 .bytesToggle {

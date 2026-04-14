@@ -21,12 +21,12 @@
 }
 
 .sidebar::-webkit-scrollbar-thumb {
-  background: #ced4da;
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
 }
 
 .sidebar::-webkit-scrollbar-thumb:hover {
-  background: #adb5bd;
+  background: var(--scrollbar-thumb-hover);
 }
 
 .divider {
