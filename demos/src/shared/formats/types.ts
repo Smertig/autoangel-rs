@@ -20,9 +20,15 @@ export interface DifferContext {
   wasm: AutoangelModule;
 }
 
+export interface DownloadAction {
+  label: string;
+  onClick: () => Promise<void>;
+}
+
 export interface FormatDescriptor {
   name: string;
   matches(ext: string): boolean;
   Viewer: ComponentType<ViewerContext>;
   Differ: ComponentType<DifferContext>;
+  downloadActions?: (ctx: ViewerContext) => DownloadAction[] | undefined;
 }

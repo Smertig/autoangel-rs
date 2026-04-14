@@ -56,3 +56,37 @@
   overflow: auto;
   padding: 16px;
 }
+
+.downloadGroup {
+  position: relative;
+}
+
+.downloadMenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  min-width: 200px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.downloadMenuItem {
+  display: block;
+  width: 100%;
+  padding: 8px 14px;
+  font-size: 13px;
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.downloadMenuItem:hover {
+  background: var(--tree-hover);
+}
