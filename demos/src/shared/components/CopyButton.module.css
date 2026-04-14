@@ -20,5 +20,5 @@
 }
 
 .copyBtn.copied {
-  color: #40c057;
+  color: var(--success);
 }

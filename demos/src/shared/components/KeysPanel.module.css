@@ -21,7 +21,7 @@
 .keysToggle.active {
   color: var(--accent);
   border-color: var(--accent);
-  background: #e7f5ff;
+  background: var(--accent-light);
 }
 
 .keysToggle.hasCustom {

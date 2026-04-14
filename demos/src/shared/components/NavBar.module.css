@@ -45,3 +45,21 @@
   color: #e0e4ee;
   background: rgba(255, 255, 255, 0.09);
 }
+
+.themeToggle {
+  background: none;
+  border: none;
+  color: #7b8098;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+  line-height: 1;
+  margin-left: 4px;
+}
+
+.themeToggle:hover {
+  color: #e0e4ee;
+  background: rgba(255, 255, 255, 0.06);
+}
