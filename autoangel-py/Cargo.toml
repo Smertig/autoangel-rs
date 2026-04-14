@@ -1,6 +1,6 @@
 [package]
 name = "autoangel-py"
-version = "0.10.0"
+version = "0.10.1"
 authors = ["Smertig <akaraevz@mail.ru>"]
 edition = "2024"
 
