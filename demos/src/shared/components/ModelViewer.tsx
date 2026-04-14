@@ -646,6 +646,7 @@ function mountScene(
 
   // ── Transport bar (bottom, only when animations exist) ──
   let transport: HTMLElement | null = null;
+  let animPanel: HTMLElement | null = null;
   if (clips && clips.length > 0) {
     transport = document.createElement('div');
     transport.className = styles.transportBar;
@@ -704,29 +705,46 @@ function mountScene(
       seekTo(t);
     }
 
-    // Clip dropdown
-    const clipSelect = document.createElement('select');
-    clipSelect.className = styles.transportSelect;
-    for (const { name } of clips) {
-      const opt = document.createElement('option');
-      opt.value = name;
-      opt.textContent = name;
-      clipSelect.appendChild(opt);
+    // Animation list panel
+    animPanel = document.createElement('div');
+    animPanel.className = styles.animListPanel;
+
+    const animHeader = document.createElement('div');
+    animHeader.className = styles.animListHeader;
+    animHeader.textContent = `Animations (${clips.length})`;
+    animPanel.appendChild(animHeader);
+
+    const animScroll = document.createElement('div');
+    animScroll.className = styles.animListScroll;
+    animPanel.appendChild(animScroll);
+
+    let activeItemEl: HTMLDivElement | undefined;
+    for (const clip of clips) {
+      const item = document.createElement('div');
+      item.className = styles.animListItem;
+      item.textContent = clip.name;
+      item.title = clip.name;
+      if (clip === preferred) {
+        item.classList.add(styles.animListItemActive);
+        activeItemEl = item;
+      }
+      item.onclick = () => {
+        if (!v.mixer) return;
+        v.mixer.stopAllAction();
+        activeClip = clip;
+        const action = v.mixer.clipAction(clip.clip);
+        action.loop = loopModes[loopMode].three;
+        action.clampWhenFinished = loopModes[loopMode].three === THREE.LoopOnce;
+        action.play();
+        if (!playing) v.mixer.timeScale = 0;
+        if (activeItemEl) activeItemEl.classList.remove(styles.animListItemActive);
+        item.classList.add(styles.animListItemActive);
+        activeItemEl = item;
+      };
+      animScroll.appendChild(item);
     }
-    clipSelect.value = preferred.name;
-    clipSelect.onchange = () => {
-      const chosen = clips.find((c) => c.name === clipSelect.value);
-      if (!chosen || !v.mixer) return;
-      v.mixer.stopAllAction();
-      activeClip = chosen;
-      const action = v.mixer.clipAction(chosen.clip);
-      action.loop = loopModes[loopMode].three;
-      action.clampWhenFinished = loopModes[loopMode].three === THREE.LoopOnce;
-      action.play();
-      if (!playing) v.mixer.timeScale = 0;
-    };
-    transport.appendChild(clipSelect);
-    addSep();
+
+    if (activeItemEl) requestAnimationFrame(() => activeItemEl!.scrollIntoView({ block: 'nearest' }));
 
     // Prev frame
     const prevBtn = document.createElement('button');
@@ -865,6 +883,7 @@ function mountScene(
     modeSrc.classList.remove(styles.btnActive);
     const children: Node[] = [canvas, toolbar, info];
     if (transport) children.push(transport);
+    if (animPanel) children.push(animPanel);
     container.replaceChildren(...children);
     wireBtn.style.display = bgBtn.style.display = resetBtn.style.display = '';
     if (bonesBtn) bonesBtn.style.display = '';
@@ -879,6 +898,7 @@ function mountScene(
 
   const children: Node[] = [canvas, toolbar, info];
   if (transport) children.push(transport);
+  if (animPanel) children.push(animPanel);
   container.replaceChildren(...children);
 }
 

@@ -114,16 +114,6 @@
   line-height: 1.6;
 }
 
-.animSelect {
-  padding: 2px 4px;
-  font-size: 12px;
-  background: #333;
-  color: #fff;
-  border: 1px solid #555;
-  border-radius: 3px;
-  max-width: 160px;
-}
-
 .transportBar {
   position: absolute;
   bottom: 0;
@@ -235,18 +225,75 @@
   flex-shrink: 0;
 }
 
-.transportSelect {
-  padding: 2px 4px;
-  font-size: 11px;
-  background: #333;
-  color: #ddd;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 3px;
-  max-width: 140px;
+.animListPanel {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  max-height: calc(100% - 52px);
+  width: 150px;
+  display: flex;
+  flex-direction: column;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  z-index: 10;
+  overflow: hidden;
+}
+
+.animListHeader {
+  padding: 6px 10px;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   flex-shrink: 0;
 }
 
-.transportSelect option {
-  background: #333;
-  color: #ddd;
+.animListScroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.animListScroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.animListScroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.animListScroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+}
+
+.animListItem {
+  padding: 4px 10px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.12s, color 0.12s;
+}
+
+.animListItem:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.animListItemActive {
+  color: #7ba4e8;
+  background: rgba(123, 164, 232, 0.12);
+}
+
+.animListItemActive:hover {
+  background: rgba(123, 164, 232, 0.18);
 }
