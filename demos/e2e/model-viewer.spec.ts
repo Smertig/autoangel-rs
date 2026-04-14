@@ -102,9 +102,10 @@ test('renders animated NPC model with animation controls', async ({ page }) => {
   const transport = page.locator('[class*="transportBar"]');
   await expect(transport).toBeVisible({ timeout: 10000 });
 
-  // Clip dropdown should have options
-  const clipSelect = transport.locator('select');
-  await expect(clipSelect.locator('option')).not.toHaveCount(0);
+  // Animation list panel should have items
+  const animPanel = page.locator('[class*="animListPanel"]');
+  await expect(animPanel).toBeVisible({ timeout: 10000 });
+  await expect(animPanel.locator('[class*="animListItem"]')).not.toHaveCount(0);
 
   // Scrubber should be present
   await expect(transport.locator('input[type="range"]')).toBeVisible();
