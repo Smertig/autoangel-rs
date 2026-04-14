@@ -12,3 +12,4 @@ node_modules
 /third_party
 /demos/model-test
 test-results
+/.worktrees
