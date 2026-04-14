@@ -570,6 +570,24 @@ function getViewer(container: HTMLElement): Viewer {
   return viewer;
 }
 
+// ── Clip-error toast ──
+
+function showClipToast(container: HTMLElement, message: string): void {
+  const existing = container.querySelector('[data-clip-toast]');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.className = styles.clipToast;
+  toast.setAttribute('data-clip-toast', '');
+  toast.textContent = message;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add(styles.clipToastOut);
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
+}
+
 // ── Scene mount ──
 
 function mountScene(
@@ -579,7 +597,7 @@ function mountScene(
   sourceData: Uint8Array,
   sourceExt: string,
   animNames?: string[],
-  loadClip?: (name: string) => Promise<any | null>,
+  loadClip?: (name: string) => Promise<any>,
   initialClip?: { name: string; clip: any } | null,
   skeleton?: any,
 ): void {
@@ -761,10 +779,12 @@ function mountScene(
       item.onclick = async () => {
         if (!v.mixer || item.classList.contains(styles.animListItemLoading)) return;
         const gen = ++loadGeneration;
+        item.classList.remove(styles.animListItemFailed);
+        item.title = clipName;
         item.classList.add(styles.animListItemLoading);
         try {
           const clip = await loadClip!(clipName);
-          if (!clip || gen !== loadGeneration) return;
+          if (gen !== loadGeneration) return;
           v.mixer.stopAllAction();
           activeClip = { name: clipName, clip };
           const action = v.mixer.clipAction(clip);
@@ -776,7 +796,12 @@ function mountScene(
           item.classList.add(styles.animListItemActive);
           activeItemEl = item;
         } catch (e) {
+          if (gen !== loadGeneration) return;
           console.warn('[model] Failed to load clip:', clipName, e);
+          const msg = e instanceof Error ? e.message : 'Failed to load animation';
+          item.classList.add(styles.animListItemFailed);
+          item.title = `${clipName} — ${msg} (click to retry)`;
+          showClipToast(container, msg);
         } finally {
           item.classList.remove(styles.animListItemLoading);
         }
@@ -1036,7 +1061,7 @@ async function renderModel(
 
   // Discover animation file paths (no parsing yet — clips are loaded lazily on click)
   const animNames: string[] = [];
-  let loadClip: ((name: string) => Promise<any | null>) | undefined;
+  let loadClip: ((name: string) => Promise<any>) | undefined;
   if (listFiles && skelData) {
     const tcksName = smdTcksDir
       || ('tcks_' + smdPath.split('\\').pop()!.replace(/\.[^.]+$/i, ''));
@@ -1053,15 +1078,16 @@ async function renderModel(
 
     const clipCache = new ClipCache(50);
     const boneNames = skelData.boneNames;
-    loadClip = async (name: string): Promise<any | null> => {
+    loadClip = async (name: string): Promise<any> => {
       const cached = clipCache.get(name);
       if (cached) return cached;
       const path = stckPathByName.get(name);
-      if (!path) return null;
+      if (!path) throw new Error('Animation path not in track directory');
       const stckData = await getFile(path);
-      if (!stckData) return null;
+      if (!stckData) throw new Error('Failed to read STCK file from archive');
       const clip = buildAnimationClip(wasm, stckData, name, boneNames);
-      if (clip) clipCache.set(name, clip);
+      if (!clip) throw new Error('No bone tracks matched or zero duration');
+      clipCache.set(name, clip);
       return clip;
     };
   }
@@ -1114,10 +1140,12 @@ async function renderModel(
     if (animNames.length > 0 && loadClip) {
       v.mixer = new THREE.AnimationMixer(group);
       const preferredName = animNames.find((n) => n.includes(PREFERRED_ANIM_HINT)) ?? animNames[0];
-      const clip = await loadClip(preferredName);
-      if (clip) {
+      try {
+        const clip = await loadClip(preferredName);
         initialClip = { name: preferredName, clip };
         v.mixer.clipAction(clip).play();
+      } catch (e) {
+        console.warn('[model] Failed to load initial clip:', preferredName, e);
       }
 
       if (skelData?.bones.some((b: any) => b.userData.wholeScale || b.userData.lenScale)) {

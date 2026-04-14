@@ -302,3 +302,52 @@
   opacity: 0.5;
   pointer-events: none;
 }
+
+.animListItemFailed {
+  color: rgba(210, 150, 50, 0.7);
+  padding-right: 20px;
+  position: relative;
+}
+
+.animListItemFailed:hover {
+  color: rgba(210, 150, 50, 0.9);
+  background: rgba(210, 150, 50, 0.08);
+}
+
+.animListItemFailed::after {
+  content: '\26A0';
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 9px;
+  opacity: 0.7;
+}
+
+.clipToast {
+  position: absolute;
+  top: 6px;
+  left: calc(6px + 150px + 8px);
+  max-width: 240px;
+  padding: 7px 11px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: rgba(210, 150, 50, 0.9);
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(210, 150, 50, 0.2);
+  border-radius: 5px;
+  z-index: 11;
+  pointer-events: none;
+  animation: clipToastIn 0.15s ease-out;
+}
+
+.clipToastOut {
+  opacity: 0;
+  transition: opacity 0.3s ease-out;
+}
+
+@keyframes clipToastIn {
+  from { opacity: 0; transform: translateX(-4px); }
+  to { opacity: 1; transform: translateX(0); }
+}
