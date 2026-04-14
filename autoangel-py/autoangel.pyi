@@ -5,6 +5,11 @@ It supports the following file formats:
 
 - `elements.data` - load with `read_elements`, view, modify and save through the `ElementsData` object.
 - `*.pck`/`*.pkx` - load with `read_pck`, explore through the `PckPackage` object.
+- `*.ecm` - load with `read_ecm`, inspect composite model structure through the `EcmModel` object.
+- `*.smd` - load with `read_smd`, inspect skin model data through the `SmdModel` object.
+- `*.bon` - load with `read_skeleton`, inspect skeleton bones and hooks through the `Skeleton` object.
+- `*.ski` - load with `read_skin`, inspect meshes, textures and materials through the `Skin` object.
+- `*.stck` - load with `read_track_set`, inspect animation tracks through the `TrackSet` object.
 
 ## Quick Start
 
@@ -614,5 +619,213 @@ def read_pck_bytes(
         The last entry is always reported regardless of throttling.
     :return: Object describing parsed package.
     :raises Exception: If package has invalid internal structure.
+    """
+    ...
+
+
+# --- Model types ---
+
+
+@final
+class BoneScaleEntry:
+    """Bone scale entry from an ECM model."""
+    bone_index: int
+    scale: tuple[float, float, float]
+    scale_type: Optional[int]
+
+
+@final
+class ChildModel:
+    """Child model attachment from an ECM model."""
+    name: str
+    path: str
+    hh_name: str
+    cc_name: str
+
+
+@final
+class EcmModel:
+    """Parsed ECM (composite model) file."""
+    version: int
+    skin_model_path: str
+    additional_skins: List[str]
+    org_color: int
+    src_blend: int
+    dest_blend: int
+    outer_floats: List[float]
+    new_bone_scale: bool
+    bone_scales: List[BoneScaleEntry]
+    scale_base_bone: Optional[str]
+    def_play_speed: float
+    child_models: List[ChildModel]
+
+
+@final
+class SmdModel:
+    """Parsed SMD (skin model data) file."""
+    version: int
+    skeleton_path: str
+    skin_paths: List[str]
+    tcks_dir: Optional[str]
+
+
+@final
+class Bone:
+    """A single bone in a skeleton."""
+    name: str
+    parent: int
+    children: List[int]
+    mat_relative: List[float]
+    mat_bone_init: List[float]
+    is_fake: bool
+    is_flipped: bool
+
+
+@final
+class Hook:
+    """A hook (attachment point) in a skeleton."""
+    name: str
+    hook_type: int
+    bone_index: int
+    transform: List[float]
+
+
+@final
+class Skeleton:
+    """Parsed BON (skeleton) file."""
+    version: int
+    bones: List[Bone]
+    hooks: List[Hook]
+
+
+@final
+class Material:
+    """A material definition from a skin file."""
+    name: str
+    ambient: tuple[float, float, float, float]
+    diffuse: tuple[float, float, float, float]
+    emissive: tuple[float, float, float, float]
+    specular: tuple[float, float, float, float]
+    power: float
+    two_sided: bool
+
+
+@final
+class SkinMesh:
+    """A weighted (skeletal) mesh from a skin file."""
+    name: str
+    texture_index: int
+    material_index: int
+    positions: List[float]
+    normals: List[float]
+    uvs: List[float]
+    indices: List[int]
+    bone_weights: List[float]
+    bone_indices: List[int]
+
+
+@final
+class RigidMesh:
+    """A rigid (static) mesh from a skin file."""
+    name: str
+    bone_index: int
+    texture_index: int
+    material_index: int
+    positions: List[float]
+    normals: List[float]
+    uvs: List[float]
+    indices: List[int]
+
+
+@final
+class Skin:
+    """Parsed SKI (skin) file containing meshes, textures, and materials."""
+    version: int
+    textures: List[str]
+    materials: List[Material]
+    skin_meshes: List[SkinMesh]
+    rigid_meshes: List[RigidMesh]
+    bone_names: List[str]
+    num_ske_bone: int
+
+
+@final
+class Track:
+    """A single animation track (position or rotation keyframes)."""
+    frame_rate: int
+    track_length_ms: int
+    keys: List[float]
+    key_frame_ids: Optional[List[int]]
+
+
+@final
+class BoneTrack:
+    """Per-bone animation track data."""
+    bone_id: int
+    position: Track
+    rotation: Track
+
+
+@final
+class TrackSet:
+    """Parsed STCK (skeleton track set) file."""
+    version: int
+    anim_start: int
+    anim_end: int
+    anim_fps: int
+    bone_tracks: List[BoneTrack]
+
+
+def read_ecm(data: bytes) -> EcmModel:
+    """
+    Parse an ECM (composite model) file from bytes.
+
+    :param data: Raw ECM file content.
+    :return: Parsed ECM model.
+    :raises ValueError: If the data is not a valid ECM file.
+    """
+    ...
+
+
+def read_smd(data: bytes) -> SmdModel:
+    """
+    Parse an SMD (skin model data) file from bytes.
+
+    :param data: Raw SMD file content.
+    :return: Parsed SMD model.
+    :raises ValueError: If the data is not a valid SMD file.
+    """
+    ...
+
+
+def read_skeleton(data: bytes) -> Skeleton:
+    """
+    Parse a BON (skeleton) file from bytes.
+
+    :param data: Raw BON file content.
+    :return: Parsed skeleton.
+    :raises ValueError: If the data is not a valid BON file.
+    """
+    ...
+
+
+def read_skin(data: bytes) -> Skin:
+    """
+    Parse a SKI (skin) file from bytes.
+
+    :param data: Raw SKI file content.
+    :return: Parsed skin.
+    :raises ValueError: If the data is not a valid SKI file.
+    """
+    ...
+
+
+def read_track_set(data: bytes) -> TrackSet:
+    """
+    Parse a STCK (skeleton track set) file from bytes.
+
+    :param data: Raw STCK file content.
+    :return: Parsed track set.
+    :raises ValueError: If the data is not a valid STCK file.
     """
     ...
