@@ -162,8 +162,16 @@ jobs:
           node-version: '20'
 
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
 
       - uses: astral-sh/setup-uv@v6
+
+      - name: Install wasm-pack
+        run: curl -sSL https://rustwasm.github.io/wasm-pack/installer/init.sh | sh
+
+      - name: Build WASM for web
+        run: cd autoangel-wasm && wasm-pack build --target web --out-name autoangel
 
       - name: Generate E2E fixtures
         run: cd autoangel-py && uv run python ../demos/e2e/generate-fixtures.py
