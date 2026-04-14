@@ -1,4 +1,5 @@
 pub mod elements;
+pub mod model;
 pub mod pck;
 pub mod util;
 
@@ -10,7 +11,7 @@ mod build {
     include!(concat!(env!("OUT_DIR"), "/built.rs"));
 }
 
-/// Library for working with Angelica Engine game files (elements.data, pck/pkx).
+/// Library for working with Angelica Engine game files (elements.data, pck/pkx, ecm/smd/bon/ski/stck).
 #[pymodule(gil_used = true)]
 pub fn autoangel(py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     color_eyre::install()?;
@@ -18,6 +19,7 @@ pub fn autoangel(py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("__build__", pyo3_built!(py, build))?;
     pck::fill_module(m)?;
     elements::fill_module(m)?;
+    model::fill_module(m)?;
 
     Ok(())
 }
