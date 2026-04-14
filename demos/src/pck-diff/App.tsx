@@ -1,5 +1,6 @@
 import React, {
   useCallback,
+  useDeferredValue,
   useEffect,
   useReducer,
   useRef,
@@ -680,6 +681,8 @@ export function App() {
   // --- Render ---
 
   const { phase, left, right, selectedPath, filterText, activeFilters, error } = state;
+  const deferredFilter = useDeferredValue(filterText);
+  const isFiltering = filterText !== deferredFilter;
   const engine = engineRef.current;
   const counts = engine.statusCounts;
 
@@ -795,7 +798,7 @@ export function App() {
               className={styles.sidebar}
               onPointerDown={() => { treePointerDownRef.current = true; }}
             >
-              <div className={styles.sidebarControls}>
+              <div className={styles.sidebarControls} data-filtering={isFiltering || undefined}>
                 <input
                   id="diff-filter-input"
                   type="text"

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { resolveCDN } from '../cdn';
 import { initWasm } from '../wasm';
 import type { AutoangelModule } from '../types/autoangel';
@@ -162,6 +162,9 @@ export function App() {
     setCompact(true);
   }, [workerReady, workerCall, customKeys]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const deferredFilter = useDeferredValue(filterText);
+  const isFiltering = filterText !== deferredFilter;
+
   // Filter input ref (for keyboard shortcut focus)
   const filterInputRef = useRef<HTMLInputElement>(null);
 
@@ -240,7 +243,7 @@ export function App() {
           minWidth={180}
           sidebar={
             <>
-              <div className={styles.sidebarControls}>
+              <div className={styles.sidebarControls} data-filtering={isFiltering || undefined}>
                 <input
                   ref={filterInputRef}
                   type="text"

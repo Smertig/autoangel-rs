@@ -394,6 +394,25 @@
   padding: 8px 12px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebarControls[data-filtering]::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 30%;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+  animation: filterSlide 0.8s linear infinite;
+}
+
+@keyframes filterSlide {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(333%); }
 }
 
 .filterInput {
