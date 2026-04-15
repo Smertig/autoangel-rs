@@ -38,9 +38,10 @@ describe('downloadActions', () => {
     const format = findFormat('.ecm');
     const actions = format.downloadActions?.(mockCtx('.ecm'));
     expect(actions).toBeDefined();
-    expect(actions!.length).toBe(2);
+    expect(actions!.length).toBe(3);
     expect(actions![0].label).toContain('Download file');
     expect(actions![1].label).toContain('ZIP');
+    expect(actions![2].label).toContain('PCK');
   });
 
   it('model format returns undefined for .ski', () => {

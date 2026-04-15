@@ -35,6 +35,20 @@ async function downloadModelZip(ctx: ViewerContext): Promise<void> {
   downloadBlob(new Blob([zipped.buffer as ArrayBuffer], { type: 'application/zip' }), basename + '.zip');
 }
 
+async function downloadModelPck(ctx: ViewerContext): Promise<void> {
+  const { path, getData, wasm, listFiles } = ctx;
+  const files = await collectEcmDependencies(wasm, path, getData, listFiles);
+
+  using builder = new wasm.PckBuilder();
+  for (const [filePath, data] of files) {
+    builder.addFile(filePath, data);
+  }
+  const pckBytes = builder.toBytes();
+
+  const basename = path.split(/[\\/]/).pop()!.replace(/\.ecm$/i, '');
+  downloadBlob(new Blob([pckBytes.buffer as ArrayBuffer], { type: 'application/octet-stream' }), basename + '.pck');
+}
+
 export const modelFormat: FormatDescriptor = {
   name: 'model',
   matches: (ext) => MODEL_EXTENSIONS.has(ext),
@@ -50,6 +64,10 @@ export const modelFormat: FormatDescriptor = {
       {
         label: '⬇ Download model (ZIP)',
         onClick: () => downloadModelZip(ctx),
+      },
+      {
+        label: '⬇ Download model (PCK)',
+        onClick: () => downloadModelPck(ctx),
       },
     ];
   },
