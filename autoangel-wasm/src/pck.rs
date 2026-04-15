@@ -1,10 +1,13 @@
 use crate::file_reader::BufferedFileReader;
+use autoangel_core::pck::builder::PackageBuilder;
 use autoangel_core::pck::package;
 use autoangel_core::pck::package::{
-    FileEntrySummary, ParseOptions, ParseProgress, ParseProgressFn, ScanEntriesOptions,
+    FileEntrySummary, PackageSource, ParseOptions, ParseProgress, ParseProgressFn,
+    ScanEntriesOptions,
 };
 use autoangel_core::util::data_source::{DataReader, DataSource, MultiReader};
 use js_sys;
+use std::sync::Arc;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::prelude::*;
 
@@ -133,9 +136,18 @@ fn make_parse_options(options: &Option<JsValue>) -> ParseOptions {
     }
 }
 
-enum PckContent {
-    Memory(DataSource<Vec<u8>>),
-    File(DataSource<MultiReader<BufferedFileReader>>),
+enum AnyPackageSource {
+    Memory(Arc<PackageSource<Vec<u8>>>),
+    File(Arc<PackageSource<MultiReader<BufferedFileReader>>>),
+}
+
+macro_rules! with_source {
+    ($source:expr, |$s:ident| $body:expr) => {
+        match &$source {
+            AnyPackageSource::Memory($s) => $body,
+            AnyPackageSource::File($s) => $body,
+        }
+    };
 }
 
 // -- Async helper functions for dispatching across content variants --
@@ -187,8 +199,7 @@ async fn scan_entries_inner<R: DataReader>(
 /// Parsed pck/pkx package.
 #[wasm_bindgen]
 pub struct PckPackage {
-    content: PckContent,
-    info: package::PackageInfo,
+    source: AnyPackageSource,
 }
 
 #[wasm_bindgen]
@@ -208,40 +219,40 @@ impl PckPackage {
             .await
             .map_err(|e| crate::format_error(&e))?;
         Ok(PckPackage {
-            content: PckContent::Memory(content),
-            info,
+            source: AnyPackageSource::Memory(Arc::new(PackageSource { info, content })),
         })
     }
 
     /// Package version.
     #[wasm_bindgen(getter)]
     pub fn version(&self) -> u32 {
-        self.info.version()
+        with_source!(self.source, |s| s.info.version())
     }
 
     /// Number of files in the package.
     #[wasm_bindgen(getter, js_name = "fileCount")]
     pub fn file_count(&self) -> usize {
-        self.info.file_count()
+        with_source!(self.source, |s| s.info.file_count())
     }
 
     /// Get decompressed file content by path. Returns null if not found.
     #[wasm_bindgen(js_name = "getFile")]
     pub async fn get_file(&self, path: &str) -> Option<Vec<u8>> {
-        match &self.content {
-            PckContent::Memory(c) => get_file_inner(&self.info, c, path).await,
-            PckContent::File(c) => get_file_inner(&self.info, c, path).await,
+        match &self.source {
+            AnyPackageSource::Memory(s) => get_file_inner(&s.info, &s.content, path).await,
+            AnyPackageSource::File(s) => get_file_inner(&s.info, &s.content, path).await,
         }
     }
 
     /// Find files matching a path prefix. Returns an array of normalized file paths.
     #[wasm_bindgen(js_name = "findPrefix")]
     pub fn find_prefix(&self, prefix: &str) -> Vec<String> {
-        self.info
+        with_source!(self.source, |s| s
+            .info
             .find_prefix(prefix)
             .iter()
             .map(|e| e.normalized_name.clone())
-            .collect()
+            .collect())
     }
 
     /// List all file paths in the package.
@@ -279,12 +290,12 @@ impl PckPackage {
             })
             .ok_or_else(|| JsError::new("scanEntries requires paths array"))?;
 
-        match &self.content {
-            PckContent::Memory(c) => {
-                scan_entries_inner(&self.info, c, paths, on_chunk_fn, interval_ms).await
+        match &self.source {
+            AnyPackageSource::Memory(s) => {
+                scan_entries_inner(&s.info, &s.content, paths, on_chunk_fn, interval_ms).await
             }
-            PckContent::File(c) => {
-                scan_entries_inner(&self.info, c, paths, on_chunk_fn, interval_ms).await
+            AnyPackageSource::File(s) => {
+                scan_entries_inner(&s.info, &s.content, paths, on_chunk_fn, interval_ms).await
             }
         }
     }
@@ -339,8 +350,102 @@ impl PckPackage {
             .await
             .map_err(|e| crate::format_error(&e))?;
         Ok(PckPackage {
-            content: PckContent::File(content),
-            info,
+            source: AnyPackageSource::File(Arc::new(PackageSource { info, content })),
         })
+    }
+
+    /// Create a builder pre-populated with this package's files.
+    #[wasm_bindgen(js_name = "toBuilder")]
+    pub fn to_builder(&self) -> PckBuilder {
+        match &self.source {
+            AnyPackageSource::Memory(s) => PckBuilder {
+                inner: BuilderInner::Bytes(PackageBuilder::from_package(Arc::clone(s))),
+            },
+            AnyPackageSource::File(s) => PckBuilder {
+                inner: BuilderInner::File(PackageBuilder::from_package(Arc::clone(s))),
+            },
+        }
+    }
+}
+
+enum BuilderInner {
+    Bytes(PackageBuilder<Vec<u8>>),
+    File(PackageBuilder<MultiReader<BufferedFileReader>>),
+}
+
+/// Builder for creating or modifying pck packages.
+#[wasm_bindgen]
+pub struct PckBuilder {
+    inner: BuilderInner,
+}
+
+#[wasm_bindgen]
+impl PckBuilder {
+    /// Create an empty PckBuilder (from scratch).
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> Self {
+        Self {
+            inner: BuilderInner::Bytes(PackageBuilder::new()),
+        }
+    }
+
+    /// Create a builder pre-populated with an existing package's files.
+    #[wasm_bindgen(js_name = "fromPackage")]
+    pub fn from_package(pkg: &PckPackage) -> Self {
+        pkg.to_builder()
+    }
+
+    /// Add or overwrite a file in the builder.
+    #[wasm_bindgen(js_name = "addFile")]
+    pub fn add_file(&mut self, path: &str, data: &[u8]) {
+        match &mut self.inner {
+            BuilderInner::Bytes(b) => b.add_file(path, data.to_vec()),
+            BuilderInner::File(b) => b.add_file(path, data.to_vec()),
+        }
+    }
+
+    /// Remove a file from the builder. Returns true if the file was present.
+    #[wasm_bindgen(js_name = "removeFile")]
+    pub fn remove_file(&mut self, path: &str) -> bool {
+        match &mut self.inner {
+            BuilderInner::Bytes(b) => b.remove_file(path),
+            BuilderInner::File(b) => b.remove_file(path),
+        }
+    }
+
+    /// List all file paths that will be present in the built package.
+    #[wasm_bindgen(js_name = "fileList")]
+    pub fn file_list(&self) -> Vec<String> {
+        match &self.inner {
+            BuilderInner::Bytes(b) => b.file_list().into_iter().map(|s| s.to_string()).collect(),
+            BuilderInner::File(b) => b.file_list().into_iter().map(|s| s.to_string()).collect(),
+        }
+    }
+
+    /// Number of files in the builder.
+    #[wasm_bindgen(getter, js_name = "fileCount")]
+    pub fn file_count(&self) -> usize {
+        match &self.inner {
+            BuilderInner::Bytes(b) => b.file_count(),
+            BuilderInner::File(b) => b.file_count(),
+        }
+    }
+
+    /// Serialize the package to bytes.
+    #[wasm_bindgen(js_name = "toBytes")]
+    pub fn to_bytes(&self, config: Option<PackageConfig>) -> Result<Vec<u8>, JsError> {
+        let config: package::PackageConfig = config.map_or_else(Default::default, |c| c.config);
+        let bytes = match &self.inner {
+            BuilderInner::Bytes(b) => pollster::block_on(b.to_bytes(b.default_version(), &config)),
+            BuilderInner::File(b) => pollster::block_on(b.to_bytes(b.default_version(), &config)),
+        }
+        .map_err(|e| crate::format_error(&e))?;
+        Ok(bytes)
+    }
+}
+
+impl Default for PckBuilder {
+    fn default() -> Self {
+        Self::new()
     }
 }

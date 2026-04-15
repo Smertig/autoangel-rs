@@ -64,7 +64,7 @@ See subcrate READMEs for full examples.
 ```bash
 cargo build                                              # all crates
 cd autoangel-py && uv run maturin build --release        # Python wheel
-cd autoangel-wasm && wasm-pack build --target web        # WASM package
+cd autoangel-wasm && wasm-pack build --target web --out-name autoangel  # WASM package
 ```
 
 ### Test

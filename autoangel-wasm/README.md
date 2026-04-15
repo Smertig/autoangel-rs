@@ -73,7 +73,7 @@ const data = ElementsData.parse(bytes);
 data.free();
 ```
 
-Build for Node.js with `wasm-pack build --target nodejs --out-dir pkg-node`.
+Build for Node.js with `wasm-pack build --target nodejs --out-dir pkg-node --out-name autoangel`.
 
 ## Memory Management
 
@@ -165,14 +165,16 @@ Requires Rust (1.94.1+), [wasm-pack](https://rustwasm.github.io/wasm-pack/), and
 
 ```bash
 # Build for browser
-wasm-pack build --target web
+wasm-pack build --target web --out-name autoangel
 
 # Build for Node.js
-wasm-pack build --target nodejs --out-dir pkg-node
+wasm-pack build --target nodejs --out-dir pkg-node --out-name autoangel
 
 # Run tests (requires Node.js build)
 npm ci && npx tsx --test tests/test.ts
 ```
+
+> **Note:** Always pass `--out-name autoangel` so output files are named `autoangel.js` / `autoangel.d.ts`. Tests and demos depend on this name.
 
 The crate depends on `autoangel-core` with `default-features = false` — no filesystem or mmap, all parsing works from byte arrays.
 

@@ -69,10 +69,12 @@ Python type stubs: `autoangel-py/autoangel.pyi`.
 wasm-bindgen bindings exposing `autoangel-core` as an npm package. Uses `default-features = false` (no `memmap2`/filesystem). TypeScript tests use Node.js built-in test runner (`node:test`) via `tsx`.
 
 - **`elements.rs`** — `ElementsConfig`, `ElementsData`, `ElementsDataList`, `ElementsDataEntry`
-- **`pck.rs`** — `PackageConfig`, `PckPackage`
-- **`tests/test.ts`** — TypeScript tests (requires `wasm-pack build --target nodejs --out-dir pkg-node` and `npm ci` first)
+- **`pck.rs`** — `PackageConfig`, `PckPackage`, `PckBuilder`
+- **`tests/test.ts`** — TypeScript tests (requires `wasm-pack build --target nodejs --out-dir pkg-node --out-name autoangel` and `npm ci` first)
 
-Build: `cd autoangel-wasm && wasm-pack build --target web`
+Build: `cd autoangel-wasm && wasm-pack build --target web --out-name autoangel`
+
+**Important:** Always pass `--out-name autoangel` to wasm-pack so the output files are named `autoangel.js`/`autoangel.d.ts` instead of the default `autoangel_wasm.js`. Tests and demos import from `autoangel.js`.
 
 ### Local demo testing
 

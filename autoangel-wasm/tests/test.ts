@@ -8,6 +8,7 @@ import {
   ElementsConfig,
   ElementsData,
   PackageConfig,
+  PckBuilder,
   PckPackage,
   Skeleton,
   SmdModel,
@@ -390,6 +391,108 @@ describe("dump elements", () => {
       }
     });
   }
+});
+
+// --- PckBuilder ---
+
+describe("PckBuilder", () => {
+  it("creates empty package", async () => {
+    using builder = new PckBuilder();
+    assert.equal(builder.fileCount, 0);
+    assert.deepEqual(builder.fileList(), []);
+
+    const bytes = builder.toBytes();
+    using pkg = await PckPackage.parse(bytes);
+    assert.equal(pkg.fileCount, 0);
+  });
+
+  it("from-scratch roundtrip", async () => {
+    using builder = new PckBuilder();
+    builder.addFile("configs\\test.ini", new TextEncoder().encode("[Test]\nkey=value"));
+    builder.addFile("configs\\other.ini", new TextEncoder().encode("[Other]\nfoo=bar"));
+
+    assert.equal(builder.fileCount, 2);
+    const list = builder.fileList();
+    assert.equal(list.length, 2);
+    assert.ok(list.includes("configs\\test.ini"));
+    assert.ok(list.includes("configs\\other.ini"));
+
+    const bytes = builder.toBytes();
+    using pkg = await PckPackage.parse(bytes);
+    assert.equal(pkg.fileCount, 2);
+
+    const content = await pkg.getFile("configs\\test.ini");
+    assert.deepEqual(content, new TextEncoder().encode("[Test]\nkey=value"));
+  });
+
+  it("normalizes paths", () => {
+    using builder = new PckBuilder();
+    builder.addFile("Textures/Foo.DDS", new Uint8Array([1, 2, 3]));
+    assert.deepEqual(builder.fileList(), ["textures\\foo.dds"]);
+  });
+
+  it("removes files", () => {
+    using builder = new PckBuilder();
+    builder.addFile("data\\a.txt", new Uint8Array([1]));
+    assert.equal(builder.removeFile("data\\a.txt"), true);
+    assert.equal(builder.removeFile("data\\a.txt"), false);
+    assert.equal(builder.fileCount, 0);
+  });
+
+  it("from existing package", async () => {
+    using pkg = await PckPackage.parse(CONFIGS_PCK);
+    const originalCount = pkg.fileCount;
+    const originalFiles = pkg.fileList();
+
+    using builder = PckBuilder.fromPackage(pkg);
+    assert.equal(builder.fileCount, originalCount);
+
+    builder.addFile("configs\\added.txt", new TextEncoder().encode("added"));
+    assert.equal(builder.fileCount, originalCount + 1);
+
+    const bytes = builder.toBytes();
+    using rebuilt = await PckPackage.parse(bytes);
+
+    assert.equal(rebuilt.fileCount, originalCount + 1);
+    const addedContent = await rebuilt.getFile("configs\\added.txt");
+    assert.deepEqual(addedContent, new TextEncoder().encode("added"));
+
+    // Original files still intact
+    for (const path of originalFiles) {
+      const original = await pkg.getFile(path);
+      const rebuiltContent = await rebuilt.getFile(path);
+      assert.deepEqual(rebuiltContent, original, `Content mismatch: ${path}`);
+    }
+  });
+
+  it("package remains usable after fromPackage", async () => {
+    using pkg = await PckPackage.parse(CONFIGS_PCK);
+    const files = pkg.fileList();
+    const firstContent = await pkg.getFile(files[0]);
+
+    using _builder = PckBuilder.fromPackage(pkg);
+
+    // Original still works
+    assert.deepEqual(pkg.fileList(), files);
+    assert.deepEqual(await pkg.getFile(files[0]), firstContent);
+  });
+
+  it("toBuilder method works", async () => {
+    using pkg = await PckPackage.parse(CONFIGS_PCK);
+    using builder = pkg.toBuilder();
+    assert.equal(builder.fileCount, pkg.fileCount);
+  });
+
+  it("remove from existing package", async () => {
+    using pkg = await PckPackage.parse(CONFIGS_PCK);
+    const originalFiles = pkg.fileList();
+    assert.ok(originalFiles.length > 0);
+
+    using builder = PckBuilder.fromPackage(pkg);
+    assert.equal(builder.removeFile(originalFiles[0]), true);
+    assert.equal(builder.removeFile(originalFiles[0]), false);
+    assert.equal(builder.fileCount, originalFiles.length - 1);
+  });
 });
 
 // --- Dump packages (gold-based) ---
