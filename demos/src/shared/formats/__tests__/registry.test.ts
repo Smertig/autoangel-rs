@@ -24,6 +24,9 @@ describe('findFormat', () => {
   it('returns model for .ski', () => {
     expect(findFormat('.ski').name).toBe('model');
   });
+  it('returns gfx for .gfx', () => {
+    expect(findFormat('.gfx').name).toBe('gfx');
+  });
 });
 
 describe('downloadActions', () => {

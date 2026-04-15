@@ -25,7 +25,7 @@ describe('extension sets', () => {
     expect(TEXT_EXTENSIONS.has('.xml')).toBe(true);
     expect(TEXT_EXTENSIONS.has('.json')).toBe(true);
     expect(TEXT_EXTENSIONS.has('.lua')).toBe(true);
-    expect(TEXT_EXTENSIONS.has('.gfx')).toBe(true);
+    expect(TEXT_EXTENSIONS.has('.gfx')).toBe(false);
   });
 
   it('MODEL_EXTENSIONS contains .ecm, .ski and .stck', () => {

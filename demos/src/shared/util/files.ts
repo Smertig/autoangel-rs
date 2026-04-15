@@ -6,7 +6,7 @@ export const TEXT_EXTENSIONS = new Set([
   '.txt', '.cfg', '.ini', '.xml', '.json', '.lua', '.py', '.lst',
   '.action', '.border', '.log', '.csv', '.htm', '.html', '.css',
   '.js', '.shtml', '.conf', '.properties', '.yaml', '.yml',
-  '.gfx', '.hlsl', '.fx', '.fxh',
+  '.hlsl', '.fx', '.fxh',
 ]);
 
 export const MODEL_EXTENSIONS = new Set(['.ecm', '.ski', '.stck']);
