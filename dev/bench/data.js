@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1776257192670,
+  "lastUpdate": 1776266079309,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -2591,6 +2591,102 @@ window.BENCHMARK_DATA = {
             "name": "PackageInfo::save_to",
             "value": 1182535,
             "range": "± 1651",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "790a5a724a1f241d3739ee334c4181d1ad95d116",
+          "message": "feat: add GFX parser, ECM event parsing, WASM/Python bindings\n\n* New gfx.rs: parse .gfx effect files (text format, GBK-encoded) —\n  container header + per-element base headers with body preserved as\n  raw text lines\n\n* Extend ecm.rs to parse CoGfx entries and CombineAct event blocks\n  instead of skipping them. Handles all version gates from v13 to v71+\n  (tested against 5688 real ECM files with 100% pass rate)\n\n* WASM: GfxEffect + EcmModel event/combineAction/coGfx accessors\n* Python: read_gfx() + GfxEffect class, EcmModel event accessors\n* Regenerated docs\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+          "timestamp": "2026-04-15T18:09:46+03:00",
+          "tree_id": "079bb43ac26b5c4ab643c361d3c8a8347ee71e9c",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/790a5a724a1f241d3739ee334c4181d1ad95d116"
+        },
+        "date": 1776266078365,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 34183,
+            "range": "± 221",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 132,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::access_fields",
+            "value": 63,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 161,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 23561,
+            "range": "± 128",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::iterate_lists",
+            "value": 12699,
+            "range": "± 206",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 46,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 291552,
+            "range": "± 338",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::find_prefix",
+            "value": 309,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 3380,
+            "range": "± 8",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_all_files",
+            "value": 10062326,
+            "range": "± 47878",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::save_to",
+            "value": 764680,
+            "range": "± 2011",
             "unit": "ns/iter"
           }
         ]
