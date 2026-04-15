@@ -19,6 +19,48 @@ pub struct ChildModel {
     pub cc_name: String,
 }
 
+/// A visual/sound event triggered during animation or as persistent CoGfx.
+#[derive(Debug, Clone, Default)]
+pub struct EcmEvent {
+    pub event_type: i32, // 100=GFX, 101=Sound, 102+=other
+    pub start_time: i32,
+    pub time_span: i32, // -1 = infinite
+    pub once: bool,
+    pub fx_file_path: String,
+    pub hook_name: String,
+    pub hook_offset: [f32; 3],
+    pub hook_yaw: f32,
+    pub hook_pitch: f32,
+    pub hook_rot: f32,
+    pub bind_parent: bool,
+    pub fade_out: i32,
+    pub use_model_alpha: bool,
+    // EventType 100 (GFX) only:
+    pub gfx_scale: Option<f32>,
+    pub gfx_speed: Option<f32>,
+    // EventType 101 (Sound) only:
+    pub volume: Option<i32>,
+    pub min_dist: Option<f32>,
+    pub max_dist: Option<f32>,
+    pub force_2d: Option<bool>,
+    pub is_loop: Option<bool>,
+}
+
+#[derive(Debug, Clone)]
+pub struct BaseAction {
+    pub name: String,
+    pub start_time: i32,
+    pub loop_count: i32,
+}
+
+#[derive(Debug, Clone)]
+pub struct CombineAction {
+    pub name: String,
+    pub loop_count: i32,
+    pub base_actions: Vec<BaseAction>,
+    pub events: Vec<EcmEvent>,
+}
+
 #[derive(Debug, Clone)]
 pub struct EcmModel {
     pub version: u32,
@@ -33,6 +75,202 @@ pub struct EcmModel {
     pub scale_base_bone: Option<String>,
     pub def_play_speed: f32,
     pub child_models: Vec<ChildModel>,
+    pub co_gfx: Vec<EcmEvent>,
+    pub combine_actions: Vec<CombineAction>,
+}
+
+/// Parse a single event block (EventType 100–104). The format varies by ECM
+/// version and event type. For event types we don't fully understand (102–104+),
+/// we skip lines until the next known boundary key.
+fn parse_event(r: &mut Lines, version: u32) -> Result<EcmEvent> {
+    let event_type = r.read_int("EventType")?;
+
+    // Event base: StartTime/FxStartTime, TimeSpan, Once
+    // v<18: only FxStartTime, no TimeSpan, no Once
+    // v18-19: StartTime + Once, no TimeSpan
+    // v>=20: StartTime + TimeSpan + Once
+    let start_time = if version >= 18 {
+        r.read_int("StartTime")?
+    } else {
+        r.read_int("FxStartTime")?
+    };
+    let time_span = if version >= 20 {
+        r.read_int("TimeSpan")?
+    } else {
+        -1
+    };
+    let once = if version >= 18 {
+        r.read_int("Once")? != 0
+    } else {
+        false
+    };
+
+    // Event types 102+ (ChildAct, Color, Attack, etc.) have completely different
+    // field layouts. Skip until the next event/action/section boundary.
+    if event_type != 100 && event_type != 101 {
+        while !r.done() {
+            let key = r.peek_key();
+            if matches!(
+                key,
+                Some("EventType")
+                    | Some("EventCount")
+                    | Some("CombineActName")
+                    | Some("AddiSkinCount")
+                    | Some("ScriptCount")
+                    | Some("ChildCount")
+            ) {
+                break;
+            }
+            r.next_line()?;
+        }
+        return Ok(EcmEvent {
+            event_type,
+            start_time,
+            time_span,
+            once,
+            ..Default::default()
+        });
+    }
+
+    // FX_BASE fields (shared by EventType 100 and 101)
+    // v54+: FxFileNum + list, else single FxFilePath
+    let fx_file_path = if version >= 54 {
+        let num = r.read_int("FxFileNum")? as usize;
+        let first = if num > 0 {
+            r.read_value("FxFilePath")?.to_string()
+        } else {
+            String::new()
+        };
+        // Skip remaining file paths (random selection in engine)
+        for _ in 1..num {
+            r.next_line()?;
+        }
+        first
+    } else {
+        r.read_value("FxFilePath")?.to_string()
+    };
+
+    let hook_name = r.read_value("HookName")?.to_string();
+    let hook_offset = r.read_vec3("HookOffset")?;
+    let hook_yaw = r.read_float("HookYaw")?;
+    let hook_pitch = r.read_float("HookPitch")?;
+    let hook_rot = if version >= 19 {
+        r.read_float("HookRot")?
+    } else {
+        0.0
+    };
+    let bind_parent = r.read_int("BindParent")? != 0;
+    let fade_out = if version >= 15 {
+        r.read_int("FadeOut")?
+    } else {
+        0 // v<=14: FadeOut appears in GFX_INFO section instead
+    };
+    let use_model_alpha = if version >= 18 {
+        r.read_int("UseModelAlpha")? != 0
+    } else {
+        false
+    };
+    // v59+: CustomPath, v62+: CustomData — skip
+    if version >= 59 {
+        r.next_line()?; // CustomPath
+    }
+    if version >= 62 {
+        r.next_line()?; // CustomData
+    }
+
+    let mut gfx_scale = None;
+    let mut gfx_speed = None;
+    let mut volume = None;
+    let mut min_dist = None;
+    let mut max_dist = None;
+    let mut force_2d = None;
+    let mut is_loop = None;
+
+    if event_type == 100 {
+        // GFX_INFO fields
+        gfx_scale = Some(r.read_float("GfxScale")?);
+        if version >= 22 {
+            r.read_float("GfxAlpha")?; // skip, not stored
+        }
+        gfx_speed = Some(r.read_float("GfxSpeed")?);
+        // v<=14: FadeOut appears here (in GFX_INFO section) instead of in FX_BASE
+        if version <= 14 {
+            r.read_int("FadeOut")?; // already stored as 0 above; just consume
+        }
+        if version >= 23 {
+            r.next_line()?; // GfxOuterPath
+        }
+        if version >= 35 {
+            r.next_line()?; // GfxRelToECM
+        }
+        if version >= 54 {
+            r.next_line()?; // GfxDelayTime
+        }
+        if version >= 66 {
+            r.next_line()?; // GfxRotWithModel
+        }
+        if version >= 71 {
+            r.next_line()?; // GfxUseFixedPoint
+        }
+        let gfx_param_count = r.read_int("GfxParamCount")? as usize;
+        for _ in 0..gfx_param_count {
+            // Each param: ParamEleName, ParamId, ParamDataType, ParamDataIsCmd, ParamDataHook
+            r.next_line()?; // ParamEleName
+            r.next_line()?; // ParamId
+            r.next_line()?; // ParamDataType
+            r.next_line()?; // ParamDataIsCmd
+            r.next_line()?; // ParamDataHook
+        }
+    } else if event_type == 101 {
+        // SFX_INFO fields
+        r.read_int("SoundVer")?;
+        force_2d = Some(r.read_int("Force2D")? != 0);
+        is_loop = Some(r.read_int("IsLoop")? != 0);
+        if version >= 54 {
+            r.next_line()?; // VolMin
+            r.next_line()?; // VolMax
+            if version >= 65 {
+                r.next_line()?; // AbsoluteVolume
+            }
+            r.next_line()?; // PitchMin
+            r.next_line()?; // PitchMax
+        } else {
+            volume = Some(r.read_int("Volume")?);
+        }
+        min_dist = Some(r.read_float("MinDist")?);
+        max_dist = Some(r.read_float("MaxDist")?);
+        if version >= 65 {
+            r.next_line()?; // FixSpeed
+            r.next_line()?; // SilentHeader
+        }
+        if version >= 71 {
+            r.next_line()?; // PercentStart
+            r.next_line()?; // Group
+        }
+    }
+
+    Ok(EcmEvent {
+        event_type,
+        start_time,
+        time_span,
+        once,
+        fx_file_path,
+        hook_name,
+        hook_offset,
+        hook_yaw,
+        hook_pitch,
+        hook_rot,
+        bind_parent,
+        fade_out,
+        use_model_alpha,
+        gfx_scale,
+        gfx_speed,
+        volume,
+        min_dist,
+        max_dist,
+        force_2d,
+        is_loop,
+    })
 }
 
 impl EcmModel {
@@ -66,6 +304,8 @@ impl EcmModel {
         let mut def_play_speed = 1.0_f32;
         let mut additional_skins = Vec::new();
         let mut child_models = Vec::new();
+        let mut co_gfx = Vec::new();
+        let mut combine_actions = Vec::new();
 
         if version >= 33 && r.peek_key() == Some("AutoUpdata") {
             r.read_int("AutoUpdata")?;
@@ -134,16 +374,112 @@ impl EcmModel {
             r.read_int("RenderEdge")?;
         }
 
-        // Everything between here and AddiSkinCount varies greatly by version:
-        // pixel shader fields (v >= 57), ChannelCount/ChannelMask blocks, CoGfx
-        // entries (full GFX event blocks), and combined actions (format differs
-        // between v21 and v67+). The spec says to skip combined actions and
-        // CoGfx for rendering. Scan forward to AddiSkinCount by key.
+        // Scan forward to CoGfxNum/ComActCount/AddiSkinCount, skipping any
+        // version-specific fields (pixel shader, channel mask, etc. in v>=57).
         while !r.done() {
-            if r.peek_key() == Some("AddiSkinCount") {
+            let key = r.peek_key();
+            if matches!(
+                key,
+                Some("CoGfxNum") | Some("ComActCount") | Some("AddiSkinCount")
+            ) {
                 break;
             }
             r.next_line()?;
+        }
+
+        // Read counts: CoGfxNum then ComActCount (both before the actual data)
+        let co_gfx_count = if !r.done() && r.peek_key() == Some("CoGfxNum") {
+            r.read_int("CoGfxNum")? as usize
+        } else {
+            0
+        };
+        let com_act_count = if !r.done() && r.peek_key() == Some("ComActCount") {
+            r.read_int("ComActCount")? as usize
+        } else {
+            0
+        };
+
+        // v68+: AudioEventGroupEnable × 11
+        if version >= 68 {
+            for _ in 0..11 {
+                r.next_line()?;
+            }
+        }
+        // v70+: ParticleBonesCount + bone indices
+        if version >= 70 {
+            let particle_bones_count = r.read_int("ParticleBonesCount")? as usize;
+            for _ in 0..particle_bones_count {
+                r.next_line()?;
+            }
+        }
+
+        // CoGfx persistent events (loaded AFTER ComActCount + AudioGroup + ParticleBones)
+        for _ in 0..co_gfx_count {
+            co_gfx.push(parse_event(&mut r, version)?);
+        }
+
+        // Combined actions
+        {
+            for _ in 0..com_act_count {
+                let name = r.read_value("CombineActName")?.to_string();
+                let loop_count = if version >= 3 {
+                    r.read_int("LoopCount")?
+                } else {
+                    0
+                };
+
+                // v30+: RankCount + per-rank "Channel: %d, Rank: %d" lines
+                if version >= 30 {
+                    let rank_count = r.read_int("RankCount")? as usize;
+                    for _ in 0..rank_count {
+                        r.next_line()?; // "Channel: %d, Rank: %d"
+                    }
+                }
+                // v32+: EventChannel
+                if version >= 32 {
+                    r.read_int("EventChannel")?;
+                }
+                // v40+: PlaySpeed
+                if version >= 40 {
+                    r.read_float("PlaySpeed")?;
+                }
+                // v49+: StopChildAct, ResetMtl
+                if version >= 49 {
+                    r.read_int("StopChildAct")?;
+                    r.read_int("ResetMtl")?;
+                }
+
+                let base_act_count = r.read_int("BaseActCount")? as usize;
+                let mut base_actions = Vec::with_capacity(base_act_count);
+                for _ in 0..base_act_count {
+                    let base_name = r.read_value("BaseActName")?.to_string();
+                    let act_start_time = r.read_int("ActStartTime")?;
+                    // v36+: LoopMinNum + LoopMaxNum instead of LoopCount
+                    let base_loop_count = if version >= 36 {
+                        let min_loops = r.read_int("LoopMinNum")?;
+                        r.read_int("LoopMaxNum")?; // skip max, use min
+                        min_loops
+                    } else {
+                        r.read_int("LoopCount")?
+                    };
+                    base_actions.push(BaseAction {
+                        name: base_name,
+                        start_time: act_start_time,
+                        loop_count: base_loop_count,
+                    });
+                }
+                let event_count = r.read_int("EventCount")? as usize;
+                let mut events = Vec::with_capacity(event_count);
+                for _ in 0..event_count {
+                    events.push(parse_event(&mut r, version)?);
+                }
+                combine_actions.push(CombineAction {
+                    name,
+                    loop_count,
+                    base_actions,
+                    events,
+                });
+            }
         }
 
         // Additional skins
@@ -180,6 +516,8 @@ impl EcmModel {
             scale_base_bone,
             def_play_speed,
             child_models,
+            co_gfx,
+            combine_actions,
         })
     }
 }
@@ -234,6 +572,8 @@ mod tests {
         assert_eq!(ecm.bone_scales.len(), 0);
         assert_eq!(ecm.child_models.len(), 0);
         assert_eq!(ecm.org_color, 0xFFFFFFFF);
+        assert!(ecm.co_gfx.is_empty());
+        assert_eq!(ecm.combine_actions.len(), 19);
     }
 
     #[test]
@@ -270,5 +610,22 @@ mod tests {
         assert_eq!(ecm.bone_scales[0].bone_index, 5);
         assert!(ecm.bone_scales[0].scale_type.is_none());
         assert_eq!(ecm.scale_base_bone, Some("Bip01 R Foot".to_string()));
+    }
+
+    #[test]
+    fn parse_fallen_general_events() {
+        let bytes = include_test_data_bytes!("models/fallen_general/fallen_general.ecm");
+        let ecm = EcmModel::parse(bytes).unwrap();
+        assert_eq!(ecm.combine_actions.len(), 16);
+        // First action has 1 GFX event (EventType 100)
+        let act0 = &ecm.combine_actions[0];
+        assert_eq!(act0.events.len(), 1);
+        assert_eq!(act0.events[0].event_type, 100);
+        assert!((act0.events[0].gfx_scale.unwrap() - 0.8).abs() < 0.01);
+        // Fourth action (index 3) has 1 sound event (EventType 101)
+        let act3 = &ecm.combine_actions[3];
+        assert_eq!(act3.events.len(), 1);
+        assert_eq!(act3.events[0].event_type, 101);
+        assert_eq!(act3.events[0].volume, Some(100));
     }
 }

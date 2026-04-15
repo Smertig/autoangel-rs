@@ -116,10 +116,40 @@
                                 <a class="variable" href="#EcmModel.child_models">child_models</a>
                         </li>
                         <li>
+                                <a class="variable" href="#EcmModel.co_gfx_count">co_gfx_count</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#EcmModel.co_gfx_fx_file_path">co_gfx_fx_file_path</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmModel.combine_action_count">combine_action_count</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#EcmModel.combine_action_event_count">combine_action_event_count</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#EcmModel.combine_action_loop_count">combine_action_loop_count</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#EcmModel.combine_action_name">combine_action_name</a>
+                        </li>
+                        <li>
                                 <a class="variable" href="#EcmModel.def_play_speed">def_play_speed</a>
                         </li>
                         <li>
                                 <a class="variable" href="#EcmModel.dest_blend">dest_blend</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#EcmModel.event_fx_file_path">event_fx_file_path</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#EcmModel.event_hook_name">event_hook_name</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#EcmModel.event_start_time">event_start_time</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#EcmModel.event_type">event_type</a>
                         </li>
                         <li>
                                 <a class="variable" href="#EcmModel.new_bone_scale">new_bone_scale</a>
@@ -258,6 +288,39 @@
                         </li>
                         <li>
                                 <a class="variable" href="#FileEntry.size">size</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#GfxEffect">GfxEffect</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#GfxEffect.default_alpha">default_alpha</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#GfxEffect.default_scale">default_scale</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#GfxEffect.element_body_text">element_body_text</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#GfxEffect.element_count">element_count</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#GfxEffect.element_name">element_name</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#GfxEffect.element_tex_file">element_tex_file</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#GfxEffect.element_type">element_type</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#GfxEffect.play_speed">play_speed</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#GfxEffect.version">version</a>
                         </li>
                 </ul>
 
@@ -554,6 +617,9 @@
                     <a class="function" href="#read_elements_config_string">read_elements_config_string</a>
             </li>
             <li>
+                    <a class="function" href="#read_gfx">read_gfx</a>
+            </li>
+            <li>
                     <a class="function" href="#read_pck">read_pck</a>
             </li>
             <li>
@@ -599,6 +665,7 @@ autoangel    </h1>
 <li><code>*.bon</code> - load with <code><a href="#read_skeleton">read_skeleton</a></code>, inspect skeleton bones and hooks through the <code><a href="#Skeleton">Skeleton</a></code> object.</li>
 <li><code>*.ski</code> - load with <code><a href="#read_skin">read_skin</a></code>, inspect meshes, textures and materials through the <code><a href="#Skin">Skin</a></code> object.</li>
 <li><code>*.stck</code> - load with <code><a href="#read_track_set">read_track_set</a></code>, inspect animation tracks through the <code><a href="#TrackSet">TrackSet</a></code> object.</li>
+<li><code>*.gfx</code> - load with <code><a href="#read_gfx">read_gfx</a></code>, inspect visual effect elements through the <code><a href="#GfxEffect">GfxEffect</a></code> object.</li>
 </ul>
 
 <h2 id="quick-start">Quick Start</h2>
@@ -1031,6 +1098,92 @@ This should work for you, if you don't use exotic game version (otherwise, you s
     
 
                             </div>
+                            <div id="EcmModel.co_gfx_count" class="classattr">
+                                <div class="attr variable">
+            <span class="name">co_gfx_count</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmModel.co_gfx_count"></a>
+    
+            <div class="docstring"><p>Number of persistent CoGfx events.</p>
+</div>
+
+
+                            </div>
+                            <div id="EcmModel.co_gfx_fx_file_path" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">co_gfx_fx_file_path</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">i</span><span class="p">:</span> <span class="nb">int</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmModel.co_gfx_fx_file_path"></a>
+    
+            <div class="docstring"><p>FX file path of persistent CoGfx event at index <code>i</code>.</p>
+</div>
+
+
+                            </div>
+                            <div id="EcmModel.combine_action_count" class="classattr">
+                                <div class="attr variable">
+            <span class="name">combine_action_count</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmModel.combine_action_count"></a>
+    
+            <div class="docstring"><p>Number of combined actions.</p>
+</div>
+
+
+                            </div>
+                            <div id="EcmModel.combine_action_event_count" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">combine_action_event_count</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">i</span><span class="p">:</span> <span class="nb">int</span></span><span class="return-annotation">) -> <span class="nb">int</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmModel.combine_action_event_count"></a>
+    
+            <div class="docstring"><p>Number of events in combined action at index <code>i</code>.</p>
+</div>
+
+
+                            </div>
+                            <div id="EcmModel.combine_action_loop_count" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">combine_action_loop_count</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">i</span><span class="p">:</span> <span class="nb">int</span></span><span class="return-annotation">) -> <span class="nb">int</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmModel.combine_action_loop_count"></a>
+    
+            <div class="docstring"><p>Loop count of combined action at index <code>i</code>.</p>
+</div>
+
+
+                            </div>
+                            <div id="EcmModel.combine_action_name" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">combine_action_name</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">i</span><span class="p">:</span> <span class="nb">int</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmModel.combine_action_name"></a>
+    
+            <div class="docstring"><p>Name of combined action at index <code>i</code>.</p>
+</div>
+
+
+                            </div>
                             <div id="EcmModel.def_play_speed" class="classattr">
                                 <div class="attr variable">
             <span class="name">def_play_speed</span><span class="annotation">: float</span>
@@ -1051,6 +1204,68 @@ This should work for you, if you don't use exotic game version (otherwise, you s
     <a class="headerlink" href="#EcmModel.dest_blend"></a>
     
     
+
+                            </div>
+                            <div id="EcmModel.event_fx_file_path" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">event_fx_file_path</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">action_idx</span><span class="p">:</span> <span class="nb">int</span>, </span><span class="param"><span class="n">event_idx</span><span class="p">:</span> <span class="nb">int</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmModel.event_fx_file_path"></a>
+    
+            <div class="docstring"><p>FX file path of event <code>event_idx</code> in combined action <code>action_idx</code>.</p>
+</div>
+
+
+                            </div>
+                            <div id="EcmModel.event_hook_name" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">event_hook_name</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">action_idx</span><span class="p">:</span> <span class="nb">int</span>, </span><span class="param"><span class="n">event_idx</span><span class="p">:</span> <span class="nb">int</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmModel.event_hook_name"></a>
+    
+            <div class="docstring"><p>Hook name of event <code>event_idx</code> in combined action <code>action_idx</code>.</p>
+</div>
+
+
+                            </div>
+                            <div id="EcmModel.event_start_time" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">event_start_time</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">action_idx</span><span class="p">:</span> <span class="nb">int</span>, </span><span class="param"><span class="n">event_idx</span><span class="p">:</span> <span class="nb">int</span></span><span class="return-annotation">) -> <span class="nb">int</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmModel.event_start_time"></a>
+    
+            <div class="docstring"><p>Start time (ms) of event <code>event_idx</code> in combined action <code>action_idx</code>.</p>
+</div>
+
+
+                            </div>
+                            <div id="EcmModel.event_type" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">event_type</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">action_idx</span><span class="p">:</span> <span class="nb">int</span>, </span><span class="param"><span class="n">event_idx</span><span class="p">:</span> <span class="nb">int</span></span><span class="return-annotation">) -> <span class="nb">int</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmModel.event_type"></a>
+    
+            <div class="docstring"><p>Event type of event <code>event_idx</code> in combined action <code>action_idx</code>.</p>
+
+<p>100 = GFX, 101 = Sound.</p>
+</div>
+
 
                             </div>
                             <div id="EcmModel.new_bone_scale" class="classattr">
@@ -1672,6 +1887,138 @@ all data entries (<code><a href="#ElementsDataEntry">ElementsDataEntry</a></code
             <div class="docstring"><p>Uncompressed file size in bytes.</p>
 </div>
 
+
+                            </div>
+                </section>
+                <section id="GfxEffect">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">GfxEffect</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#GfxEffect"></a>
+    
+            <div class="docstring"><p>Parsed GFX (visual effect) file.</p>
+</div>
+
+
+                            <div id="GfxEffect.default_alpha" class="classattr">
+                                <div class="attr variable">
+            <span class="name">default_alpha</span><span class="annotation">: float</span>
+
+        
+    </div>
+    <a class="headerlink" href="#GfxEffect.default_alpha"></a>
+    
+    
+
+                            </div>
+                            <div id="GfxEffect.default_scale" class="classattr">
+                                <div class="attr variable">
+            <span class="name">default_scale</span><span class="annotation">: float</span>
+
+        
+    </div>
+    <a class="headerlink" href="#GfxEffect.default_scale"></a>
+    
+    
+
+                            </div>
+                            <div id="GfxEffect.element_body_text" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">element_body_text</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">i</span><span class="p">:</span> <span class="nb">int</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#GfxEffect.element_body_text"></a>
+    
+            <div class="docstring"><p>Element-type-specific body lines for element at index <code>i</code>, joined by newlines.</p>
+</div>
+
+
+                            </div>
+                            <div id="GfxEffect.element_count" class="classattr">
+                                <div class="attr variable">
+            <span class="name">element_count</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#GfxEffect.element_count"></a>
+    
+    
+
+                            </div>
+                            <div id="GfxEffect.element_name" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">element_name</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">i</span><span class="p">:</span> <span class="nb">int</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#GfxEffect.element_name"></a>
+    
+            <div class="docstring"><p>Name of element at index <code>i</code>.</p>
+</div>
+
+
+                            </div>
+                            <div id="GfxEffect.element_tex_file" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">element_tex_file</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">i</span><span class="p">:</span> <span class="nb">int</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#GfxEffect.element_tex_file"></a>
+    
+            <div class="docstring"><p>Texture file path for element at index <code>i</code>.</p>
+</div>
+
+
+                            </div>
+                            <div id="GfxEffect.element_type" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">element_type</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">i</span><span class="p">:</span> <span class="nb">int</span></span><span class="return-annotation">) -> <span class="nb">int</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#GfxEffect.element_type"></a>
+    
+            <div class="docstring"><p>Numeric element type ID for element at index <code>i</code>.</p>
+
+<p>Common values: 120 = ParticlePoint, 110 = Trail, 100 = Decal3D, etc.</p>
+</div>
+
+
+                            </div>
+                            <div id="GfxEffect.play_speed" class="classattr">
+                                <div class="attr variable">
+            <span class="name">play_speed</span><span class="annotation">: float</span>
+
+        
+    </div>
+    <a class="headerlink" href="#GfxEffect.play_speed"></a>
+    
+    
+
+                            </div>
+                            <div id="GfxEffect.version" class="classattr">
+                                <div class="attr variable">
+            <span class="name">version</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#GfxEffect.version"></a>
+    
+    
 
                             </div>
                 </section>
@@ -3047,6 +3394,39 @@ If no config specified, one of predefined will be used.</li>
 
 <ul>
 <li><strong>Exception</strong>:  If config has invalid internal structure.</li>
+</ul>
+</div>
+
+
+                </section>
+                <section id="read_gfx">
+                    <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">read_gfx</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span></span><span class="return-annotation">) -> <span class="n"><a href="#GfxEffect">GfxEffect</a></span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#read_gfx"></a>
+    
+            <div class="docstring"><p>Parse a GFX (visual effect) file from bytes.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>data</strong>:  Raw GFX file content.</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>Parsed GFX effect.</p>
+</blockquote>
+
+<h6 id="raises">Raises</h6>
+
+<ul>
+<li><strong>ValueError</strong>:  If the data is not a valid GFX file.</li>
 </ul>
 </div>
 

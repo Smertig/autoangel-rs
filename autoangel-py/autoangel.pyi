@@ -10,6 +10,7 @@ It supports the following file formats:
 - `*.bon` - load with `read_skeleton`, inspect skeleton bones and hooks through the `Skeleton` object.
 - `*.ski` - load with `read_skin`, inspect meshes, textures and materials through the `Skin` object.
 - `*.stck` - load with `read_track_set`, inspect animation tracks through the `TrackSet` object.
+- `*.gfx` - load with `read_gfx`, inspect visual effect elements through the `GfxEffect` object.
 
 ## Quick Start
 
@@ -658,6 +659,44 @@ class EcmModel:
     scale_base_bone: Optional[str]
     def_play_speed: float
     child_models: List[ChildModel]
+    combine_action_count: int
+    co_gfx_count: int
+
+    def combine_action_name(self, i: int) -> str:
+        """Name of combined action at index ``i``."""
+        ...
+
+    def combine_action_loop_count(self, i: int) -> int:
+        """Loop count of combined action at index ``i``."""
+        ...
+
+    def combine_action_event_count(self, i: int) -> int:
+        """Number of events in combined action at index ``i``."""
+        ...
+
+    def event_type(self, action_idx: int, event_idx: int) -> int:
+        """
+        Event type of event ``event_idx`` in combined action ``action_idx``.
+
+        100 = GFX, 101 = Sound.
+        """
+        ...
+
+    def event_fx_file_path(self, action_idx: int, event_idx: int) -> str:
+        """FX file path of event ``event_idx`` in combined action ``action_idx``."""
+        ...
+
+    def event_start_time(self, action_idx: int, event_idx: int) -> int:
+        """Start time (ms) of event ``event_idx`` in combined action ``action_idx``."""
+        ...
+
+    def event_hook_name(self, action_idx: int, event_idx: int) -> str:
+        """Hook name of event ``event_idx`` in combined action ``action_idx``."""
+        ...
+
+    def co_gfx_fx_file_path(self, i: int) -> str:
+        """FX file path of persistent CoGfx event at index ``i``."""
+        ...
 
 
 @final
@@ -776,6 +815,36 @@ class TrackSet:
     bone_tracks: List[BoneTrack]
 
 
+@final
+class GfxEffect:
+    """Parsed GFX (visual effect) file."""
+    version: int
+    default_scale: float
+    play_speed: float
+    default_alpha: float
+    element_count: int
+
+    def element_type(self, i: int) -> int:
+        """
+        Numeric element type ID for element at index ``i``.
+
+        Common values: 120 = ParticlePoint, 110 = Trail, 100 = Decal3D, etc.
+        """
+        ...
+
+    def element_name(self, i: int) -> str:
+        """Name of element at index ``i``."""
+        ...
+
+    def element_tex_file(self, i: int) -> str:
+        """Texture file path for element at index ``i``."""
+        ...
+
+    def element_body_text(self, i: int) -> str:
+        """Element-type-specific body lines for element at index ``i``, joined by newlines."""
+        ...
+
+
 def read_ecm(data: bytes) -> EcmModel:
     """
     Parse an ECM (composite model) file from bytes.
@@ -827,5 +896,16 @@ def read_track_set(data: bytes) -> TrackSet:
     :param data: Raw STCK file content.
     :return: Parsed track set.
     :raises ValueError: If the data is not a valid STCK file.
+    """
+    ...
+
+
+def read_gfx(data: bytes) -> GfxEffect:
+    """
+    Parse a GFX (visual effect) file from bytes.
+
+    :param data: Raw GFX file content.
+    :return: Parsed GFX effect.
+    :raises ValueError: If the data is not a valid GFX file.
     """
     ...

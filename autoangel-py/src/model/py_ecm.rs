@@ -1,4 +1,5 @@
 use autoangel_core::model::ecm;
+use pyo3::exceptions::PyIndexError;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
@@ -84,6 +85,18 @@ struct PyEcmModel {
     inner: ecm::EcmModel,
 }
 
+impl PyEcmModel {
+    fn get_event(&self, action_idx: usize, event_idx: usize) -> PyResult<&ecm::EcmEvent> {
+        let action = self.inner.combine_actions.get(action_idx).ok_or_else(|| {
+            PyIndexError::new_err(format!("action index {action_idx} out of range"))
+        })?;
+        action
+            .events
+            .get(event_idx)
+            .ok_or_else(|| PyIndexError::new_err(format!("event index {event_idx} out of range")))
+    }
+}
+
 #[pymethods]
 impl PyEcmModel {
     #[getter]
@@ -155,6 +168,82 @@ impl PyEcmModel {
             .iter()
             .map(|c| PyChildModel { inner: c.clone() })
             .collect()
+    }
+
+    /// Number of combined actions.
+    #[getter]
+    fn combine_action_count(&self) -> usize {
+        self.inner.combine_actions.len()
+    }
+
+    /// Name of combined action at index `i`.
+    fn combine_action_name(&self, i: usize) -> PyResult<&str> {
+        let action = self
+            .inner
+            .combine_actions
+            .get(i)
+            .ok_or_else(|| PyIndexError::new_err(format!("action index {i} out of range")))?;
+        Ok(&action.name)
+    }
+
+    /// Loop count of combined action at index `i`.
+    fn combine_action_loop_count(&self, i: usize) -> PyResult<i32> {
+        let action = self
+            .inner
+            .combine_actions
+            .get(i)
+            .ok_or_else(|| PyIndexError::new_err(format!("action index {i} out of range")))?;
+        Ok(action.loop_count)
+    }
+
+    /// Number of events in combined action at index `i`.
+    fn combine_action_event_count(&self, i: usize) -> PyResult<usize> {
+        let action = self
+            .inner
+            .combine_actions
+            .get(i)
+            .ok_or_else(|| PyIndexError::new_err(format!("action index {i} out of range")))?;
+        Ok(action.events.len())
+    }
+
+    /// Event type of event `event_idx` in action `action_idx`.
+    fn event_type(&self, action_idx: usize, event_idx: usize) -> PyResult<i32> {
+        let event = self.get_event(action_idx, event_idx)?;
+        Ok(event.event_type)
+    }
+
+    /// FX file path of event `event_idx` in action `action_idx`.
+    fn event_fx_file_path(&self, action_idx: usize, event_idx: usize) -> PyResult<&str> {
+        let event = self.get_event(action_idx, event_idx)?;
+        Ok(&event.fx_file_path)
+    }
+
+    /// Start time (ms) of event `event_idx` in action `action_idx`.
+    fn event_start_time(&self, action_idx: usize, event_idx: usize) -> PyResult<i32> {
+        let event = self.get_event(action_idx, event_idx)?;
+        Ok(event.start_time)
+    }
+
+    /// Hook name of event `event_idx` in action `action_idx`.
+    fn event_hook_name(&self, action_idx: usize, event_idx: usize) -> PyResult<&str> {
+        let event = self.get_event(action_idx, event_idx)?;
+        Ok(&event.hook_name)
+    }
+
+    /// Number of persistent CoGfx events.
+    #[getter]
+    fn co_gfx_count(&self) -> usize {
+        self.inner.co_gfx.len()
+    }
+
+    /// FX file path of persistent CoGfx event at index `i`.
+    fn co_gfx_fx_file_path(&self, i: usize) -> PyResult<&str> {
+        let event = self
+            .inner
+            .co_gfx
+            .get(i)
+            .ok_or_else(|| PyIndexError::new_err(format!("co_gfx index {i} out of range")))?;
+        Ok(&event.fx_file_path)
     }
 
     fn __repr__(&self) -> String {

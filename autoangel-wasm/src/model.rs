@@ -1,6 +1,107 @@
 use autoangel_core::util::data_source::DataSource;
 use wasm_bindgen::prelude::*;
 
+/// Parsed GFX (visual effect) file.
+#[wasm_bindgen]
+pub struct GfxEffect {
+    inner: autoangel_core::model::gfx::GfxEffect,
+}
+
+#[wasm_bindgen]
+impl GfxEffect {
+    /// Parse a GFX file from bytes.
+    #[wasm_bindgen]
+    pub fn parse(data: &[u8]) -> Result<GfxEffect, JsError> {
+        let inner = autoangel_core::model::gfx::GfxEffect::parse(data)
+            .map_err(|e| crate::format_error(&e))?;
+        Ok(GfxEffect { inner })
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn version(&self) -> u32 {
+        self.inner.version
+    }
+
+    #[wasm_bindgen(getter, js_name = "defaultScale")]
+    pub fn default_scale(&self) -> f32 {
+        self.inner.default_scale
+    }
+
+    #[wasm_bindgen(getter, js_name = "playSpeed")]
+    pub fn play_speed(&self) -> f32 {
+        self.inner.play_speed
+    }
+
+    #[wasm_bindgen(getter, js_name = "defaultAlpha")]
+    pub fn default_alpha(&self) -> f32 {
+        self.inner.default_alpha
+    }
+
+    #[wasm_bindgen(getter, js_name = "elementCount")]
+    pub fn element_count(&self) -> usize {
+        self.inner.elements.len()
+    }
+
+    #[wasm_bindgen(js_name = "elementType")]
+    pub fn element_type(&self, i: usize) -> u32 {
+        self.inner
+            .elements
+            .get(i)
+            .map_or(0, |e| e.element_type.to_id())
+    }
+
+    #[wasm_bindgen(js_name = "elementName")]
+    pub fn element_name(&self, i: usize) -> Option<String> {
+        self.inner.elements.get(i).map(|e| e.name.clone())
+    }
+
+    #[wasm_bindgen(js_name = "elementTexFile")]
+    pub fn element_tex_file(&self, i: usize) -> Option<String> {
+        self.inner.elements.get(i).map(|e| e.tex_file.clone())
+    }
+
+    #[wasm_bindgen(js_name = "elementSrcBlend")]
+    pub fn element_src_blend(&self, i: usize) -> i32 {
+        self.inner.elements.get(i).map_or(0, |e| e.src_blend)
+    }
+
+    #[wasm_bindgen(js_name = "elementDestBlend")]
+    pub fn element_dest_blend(&self, i: usize) -> i32 {
+        self.inner.elements.get(i).map_or(0, |e| e.dest_blend)
+    }
+
+    #[wasm_bindgen(js_name = "elementTexRow")]
+    pub fn element_tex_row(&self, i: usize) -> i32 {
+        self.inner.elements.get(i).map_or(0, |e| e.tex_row)
+    }
+
+    #[wasm_bindgen(js_name = "elementTexCol")]
+    pub fn element_tex_col(&self, i: usize) -> i32 {
+        self.inner.elements.get(i).map_or(0, |e| e.tex_col)
+    }
+
+    #[wasm_bindgen(js_name = "elementRepeatCount")]
+    pub fn element_repeat_count(&self, i: usize) -> i32 {
+        self.inner.elements.get(i).map_or(0, |e| e.repeat_count)
+    }
+
+    #[wasm_bindgen(js_name = "elementIsDummy")]
+    pub fn element_is_dummy(&self, i: usize) -> bool {
+        self.inner.elements.get(i).is_some_and(|e| e.is_dummy != 0)
+    }
+
+    #[wasm_bindgen(js_name = "elementPriority")]
+    pub fn element_priority(&self, i: usize) -> i32 {
+        self.inner.elements.get(i).map_or(0, |e| e.priority)
+    }
+
+    /// Raw body text (element-specific fields + KeyPointSet).
+    #[wasm_bindgen(js_name = "elementBodyText")]
+    pub fn element_body_text(&self, i: usize) -> Option<String> {
+        self.inner.elements.get(i).map(|e| e.body_lines.join("\n"))
+    }
+}
+
 /// Parsed ECM (composite model) file.
 #[wasm_bindgen]
 pub struct EcmModel {
@@ -108,6 +209,128 @@ impl EcmModel {
     #[wasm_bindgen(js_name = "childCcName")]
     pub fn child_cc_name(&self, i: usize) -> Option<String> {
         self.inner.child_models.get(i).map(|c| c.cc_name.clone())
+    }
+
+    // Combined actions
+
+    /// Number of combined actions defined in this ECM.
+    #[wasm_bindgen(getter, js_name = "combineActionCount")]
+    pub fn combine_action_count(&self) -> usize {
+        self.inner.combine_actions.len()
+    }
+
+    /// Name of the combined action at the given index.
+    #[wasm_bindgen(js_name = "combineActionName")]
+    pub fn combine_action_name(&self, i: usize) -> Option<String> {
+        self.inner.combine_actions.get(i).map(|a| a.name.clone())
+    }
+
+    /// Loop count of the combined action at the given index.
+    #[wasm_bindgen(js_name = "combineActionLoopCount")]
+    pub fn combine_action_loop_count(&self, i: usize) -> i32 {
+        self.inner
+            .combine_actions
+            .get(i)
+            .map_or(0, |a| a.loop_count)
+    }
+
+    /// Number of events in the combined action at the given index.
+    #[wasm_bindgen(js_name = "combineActionEventCount")]
+    pub fn combine_action_event_count(&self, i: usize) -> usize {
+        self.inner
+            .combine_actions
+            .get(i)
+            .map_or(0, |a| a.events.len())
+    }
+
+    /// Number of base actions in the combined action at the given index.
+    #[wasm_bindgen(js_name = "combineActionBaseActionCount")]
+    pub fn combine_action_base_action_count(&self, i: usize) -> usize {
+        self.inner
+            .combine_actions
+            .get(i)
+            .map_or(0, |a| a.base_actions.len())
+    }
+
+    /// Name of the base action at (action_idx, base_idx).
+    #[wasm_bindgen(js_name = "combineActionBaseActionName")]
+    pub fn combine_action_base_action_name(
+        &self,
+        action_idx: usize,
+        base_idx: usize,
+    ) -> Option<String> {
+        self.inner
+            .combine_actions
+            .get(action_idx)
+            .and_then(|a| a.base_actions.get(base_idx))
+            .map(|b| b.name.clone())
+    }
+
+    // Events within combined actions (double-indexed)
+
+    /// Event type for the event at (action_idx, event_idx).
+    #[wasm_bindgen(js_name = "eventType")]
+    pub fn event_type(&self, action_idx: usize, event_idx: usize) -> i32 {
+        self.inner
+            .combine_actions
+            .get(action_idx)
+            .and_then(|a| a.events.get(event_idx))
+            .map_or(0, |e| e.event_type)
+    }
+
+    /// FX file path for the event at (action_idx, event_idx).
+    #[wasm_bindgen(js_name = "eventFxFilePath")]
+    pub fn event_fx_file_path(&self, action_idx: usize, event_idx: usize) -> Option<String> {
+        self.inner
+            .combine_actions
+            .get(action_idx)
+            .and_then(|a| a.events.get(event_idx))
+            .map(|e| e.fx_file_path.clone())
+    }
+
+    /// Start time for the event at (action_idx, event_idx).
+    #[wasm_bindgen(js_name = "eventStartTime")]
+    pub fn event_start_time(&self, action_idx: usize, event_idx: usize) -> i32 {
+        self.inner
+            .combine_actions
+            .get(action_idx)
+            .and_then(|a| a.events.get(event_idx))
+            .map_or(0, |e| e.start_time)
+    }
+
+    /// Hook name for the event at (action_idx, event_idx).
+    #[wasm_bindgen(js_name = "eventHookName")]
+    pub fn event_hook_name(&self, action_idx: usize, event_idx: usize) -> Option<String> {
+        self.inner
+            .combine_actions
+            .get(action_idx)
+            .and_then(|a| a.events.get(event_idx))
+            .map(|e| e.hook_name.clone())
+    }
+
+    /// GFX scale for the event at (action_idx, event_idx) (1.0 if not a GFX event or out of bounds).
+    #[wasm_bindgen(js_name = "eventGfxScale")]
+    pub fn event_gfx_scale(&self, action_idx: usize, event_idx: usize) -> f32 {
+        self.inner
+            .combine_actions
+            .get(action_idx)
+            .and_then(|a| a.events.get(event_idx))
+            .and_then(|e| e.gfx_scale)
+            .unwrap_or(1.0)
+    }
+
+    // CoGfx persistent events
+
+    /// Number of persistent CoGfx events attached to this ECM.
+    #[wasm_bindgen(getter, js_name = "coGfxCount")]
+    pub fn co_gfx_count(&self) -> usize {
+        self.inner.co_gfx.len()
+    }
+
+    /// FX file path for the CoGfx event at the given index.
+    #[wasm_bindgen(js_name = "coGfxFxFilePath")]
+    pub fn co_gfx_fx_file_path(&self, i: usize) -> Option<String> {
+        self.inner.co_gfx.get(i).map(|e| e.fx_file_path.clone())
     }
 }
 
