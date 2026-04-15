@@ -1,0 +1,3267 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="pdoc 16.0.0"/>
+    <title>autoangel API documentation</title>
+
+    <style>/*! * Bootstrap Reboot v5.0.0 (https://getbootstrap.com/) * Copyright 2011-2021 The Bootstrap Authors * Copyright 2011-2021 Twitter, Inc. * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE) * Forked from Normalize.css, licensed MIT (https://github.com/necolas/normalize.css/blob/master/LICENSE.md) */*,::after,::before{box-sizing:border-box}@media (prefers-reduced-motion:no-preference){:root{scroll-behavior:smooth}}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";font-size:1rem;font-weight:400;line-height:1.5;color:#212529;background-color:#fff;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}hr{margin:1rem 0;color:inherit;background-color:currentColor;border:0;opacity:.25}hr:not([size]){height:1px}h1,h2,h3,h4,h5,h6{margin-top:0;margin-bottom:.5rem;font-weight:500;line-height:1.2}h1{font-size:calc(1.375rem + 1.5vw)}@media (min-width:1200px){h1{font-size:2.5rem}}h2{font-size:calc(1.325rem + .9vw)}@media (min-width:1200px){h2{font-size:2rem}}h3{font-size:calc(1.3rem + .6vw)}@media (min-width:1200px){h3{font-size:1.75rem}}h4{font-size:calc(1.275rem + .3vw)}@media (min-width:1200px){h4{font-size:1.5rem}}h5{font-size:1.25rem}h6{font-size:1rem}p{margin-top:0;margin-bottom:1rem}abbr[data-bs-original-title],abbr[title]{-webkit-text-decoration:underline dotted;text-decoration:underline dotted;cursor:help;-webkit-text-decoration-skip-ink:none;text-decoration-skip-ink:none}address{margin-bottom:1rem;font-style:normal;line-height:inherit}ol,ul{padding-left:2rem}dl,ol,ul{margin-top:0;margin-bottom:1rem}ol ol,ol ul,ul ol,ul ul{margin-bottom:0}dt{font-weight:700}dd{margin-bottom:.5rem;margin-left:0}blockquote{margin:0 0 1rem}b,strong{font-weight:bolder}small{font-size:.875em}mark{padding:.2em;background-color:#fcf8e3}sub,sup{position:relative;font-size:.75em;line-height:0;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}a{color:#0d6efd;text-decoration:underline}a:hover{color:#0a58ca}a:not([href]):not([class]),a:not([href]):not([class]):hover{color:inherit;text-decoration:none}code,kbd,pre,samp{font-family:SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:1em;direction:ltr;unicode-bidi:bidi-override}pre{display:block;margin-top:0;margin-bottom:1rem;overflow:auto;font-size:.875em}pre code{font-size:inherit;color:inherit;word-break:normal}code{font-size:.875em;color:#d63384;word-wrap:break-word}a>code{color:inherit}kbd{padding:.2rem .4rem;font-size:.875em;color:#fff;background-color:#212529;border-radius:.2rem}kbd kbd{padding:0;font-size:1em;font-weight:700}figure{margin:0 0 1rem}img,svg{vertical-align:middle}table{caption-side:bottom;border-collapse:collapse}caption{padding-top:.5rem;padding-bottom:.5rem;color:#6c757d;text-align:left}th{text-align:inherit;text-align:-webkit-match-parent}tbody,td,tfoot,th,thead,tr{border-color:inherit;border-style:solid;border-width:0}label{display:inline-block}button{border-radius:0}button:focus:not(:focus-visible){outline:0}button,input,optgroup,select,textarea{margin:0;font-family:inherit;font-size:inherit;line-height:inherit}button,select{text-transform:none}[role=button]{cursor:pointer}select{word-wrap:normal}select:disabled{opacity:1}[list]::-webkit-calendar-picker-indicator{display:none}[type=button],[type=reset],[type=submit],button{-webkit-appearance:button}[type=button]:not(:disabled),[type=reset]:not(:disabled),[type=submit]:not(:disabled),button:not(:disabled){cursor:pointer}::-moz-focus-inner{padding:0;border-style:none}textarea{resize:vertical}fieldset{min-width:0;padding:0;margin:0;border:0}legend{float:left;width:100%;padding:0;margin-bottom:.5rem;font-size:calc(1.275rem + .3vw);line-height:inherit}@media (min-width:1200px){legend{font-size:1.5rem}}legend+*{clear:left}::-webkit-datetime-edit-day-field,::-webkit-datetime-edit-fields-wrapper,::-webkit-datetime-edit-hour-field,::-webkit-datetime-edit-minute,::-webkit-datetime-edit-month-field,::-webkit-datetime-edit-text,::-webkit-datetime-edit-year-field{padding:0}::-webkit-inner-spin-button{height:auto}[type=search]{outline-offset:-2px;-webkit-appearance:textfield}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-color-swatch-wrapper{padding:0}::file-selector-button{font:inherit}::-webkit-file-upload-button{font:inherit;-webkit-appearance:button}output{display:inline-block}iframe{border:0}summary{display:list-item;cursor:pointer}progress{vertical-align:baseline}[hidden]{display:none!important}</style>
+    <style>/*! syntax-highlighting.css */pre{line-height:125%;}span.linenos{color:inherit; background-color:transparent; padding-left:5px; padding-right:20px;}.pdoc-code .hll{background-color:#ffffcc}.pdoc-code{background:#f8f8f8;}.pdoc-code .c{color:#3D7B7B; font-style:italic}.pdoc-code .err{border:1px solid #FF0000}.pdoc-code .k{color:#008000; font-weight:bold}.pdoc-code .o{color:#666666}.pdoc-code .ch{color:#3D7B7B; font-style:italic}.pdoc-code .cm{color:#3D7B7B; font-style:italic}.pdoc-code .cp{color:#9C6500}.pdoc-code .cpf{color:#3D7B7B; font-style:italic}.pdoc-code .c1{color:#3D7B7B; font-style:italic}.pdoc-code .cs{color:#3D7B7B; font-style:italic}.pdoc-code .gd{color:#A00000}.pdoc-code .ge{font-style:italic}.pdoc-code .gr{color:#E40000}.pdoc-code .gh{color:#000080; font-weight:bold}.pdoc-code .gi{color:#008400}.pdoc-code .go{color:#717171}.pdoc-code .gp{color:#000080; font-weight:bold}.pdoc-code .gs{font-weight:bold}.pdoc-code .gu{color:#800080; font-weight:bold}.pdoc-code .gt{color:#0044DD}.pdoc-code .kc{color:#008000; font-weight:bold}.pdoc-code .kd{color:#008000; font-weight:bold}.pdoc-code .kn{color:#008000; font-weight:bold}.pdoc-code .kp{color:#008000}.pdoc-code .kr{color:#008000; font-weight:bold}.pdoc-code .kt{color:#B00040}.pdoc-code .m{color:#666666}.pdoc-code .s{color:#BA2121}.pdoc-code .na{color:#687822}.pdoc-code .nb{color:#008000}.pdoc-code .nc{color:#0000FF; font-weight:bold}.pdoc-code .no{color:#880000}.pdoc-code .nd{color:#AA22FF}.pdoc-code .ni{color:#717171; font-weight:bold}.pdoc-code .ne{color:#CB3F38; font-weight:bold}.pdoc-code .nf{color:#0000FF}.pdoc-code .nl{color:#767600}.pdoc-code .nn{color:#0000FF; font-weight:bold}.pdoc-code .nt{color:#008000; font-weight:bold}.pdoc-code .nv{color:#19177C}.pdoc-code .ow{color:#AA22FF; font-weight:bold}.pdoc-code .w{color:#bbbbbb}.pdoc-code .mb{color:#666666}.pdoc-code .mf{color:#666666}.pdoc-code .mh{color:#666666}.pdoc-code .mi{color:#666666}.pdoc-code .mo{color:#666666}.pdoc-code .sa{color:#BA2121}.pdoc-code .sb{color:#BA2121}.pdoc-code .sc{color:#BA2121}.pdoc-code .dl{color:#BA2121}.pdoc-code .sd{color:#BA2121; font-style:italic}.pdoc-code .s2{color:#BA2121}.pdoc-code .se{color:#AA5D1F; font-weight:bold}.pdoc-code .sh{color:#BA2121}.pdoc-code .si{color:#A45A77; font-weight:bold}.pdoc-code .sx{color:#008000}.pdoc-code .sr{color:#A45A77}.pdoc-code .s1{color:#BA2121}.pdoc-code .ss{color:#19177C}.pdoc-code .bp{color:#008000}.pdoc-code .fm{color:#0000FF}.pdoc-code .vc{color:#19177C}.pdoc-code .vg{color:#19177C}.pdoc-code .vi{color:#19177C}.pdoc-code .vm{color:#19177C}.pdoc-code .il{color:#666666}</style>
+    <style>/*! theme.css */:root{--pdoc-background:#fff;}.pdoc{--text:#212529;--muted:#6c757d;--link:#3660a5;--link-hover:#1659c5;--code:#f8f8f8;--active:#fff598;--accent:#eee;--accent2:#c1c1c1;--nav-hover:rgba(255, 255, 255, 0.5);--name:#0066BB;--def:#008800;--annotation:#007020;}</style>
+    <style>/*! layout.css */html, body{width:100%;height:100%;}html, main{scroll-behavior:smooth;}body{background-color:var(--pdoc-background);}@media (max-width:769px){#navtoggle{cursor:pointer;position:absolute;width:50px;height:40px;top:1rem;right:1rem;border-color:var(--text);color:var(--text);display:flex;opacity:0.8;z-index:999;}#navtoggle:hover{opacity:1;}#togglestate + div{display:none;}#togglestate:checked + div{display:inherit;}main, header{padding:2rem 3vw;}header + main{margin-top:-3rem;}.git-button{display:none !important;}nav input[type="search"]{max-width:77%;}nav input[type="search"]:first-child{margin-top:-6px;}nav input[type="search"]:valid ~ *{display:none !important;}}@media (min-width:770px){:root{--sidebar-width:clamp(12.5rem, 28vw, 22rem);}nav{position:fixed;overflow:auto;height:100vh;width:var(--sidebar-width);}main, header{padding:3rem 2rem 3rem calc(var(--sidebar-width) + 3rem);width:calc(54rem + var(--sidebar-width));max-width:100%;}header + main{margin-top:-4rem;}#navtoggle{display:none;}}#togglestate{position:absolute;height:0;opacity:0;}nav.pdoc{--pad:clamp(0.5rem, 2vw, 1.75rem);--indent:1.5rem;background-color:var(--accent);border-right:1px solid var(--accent2);box-shadow:0 0 20px rgba(50, 50, 50, .2) inset;padding:0 0 0 var(--pad);overflow-wrap:anywhere;scrollbar-width:thin; scrollbar-color:var(--accent2) transparent; z-index:1}nav.pdoc::-webkit-scrollbar{width:.4rem; }nav.pdoc::-webkit-scrollbar-thumb{background-color:var(--accent2); }nav.pdoc > div{padding:var(--pad) 0;}nav.pdoc .module-list-button{display:inline-flex;align-items:center;color:var(--text);border-color:var(--muted);margin-bottom:1rem;}nav.pdoc .module-list-button:hover{border-color:var(--text);}nav.pdoc input[type=search]{display:block;outline-offset:0;width:calc(100% - var(--pad));}nav.pdoc .logo{max-width:calc(100% - var(--pad));max-height:35vh;display:block;margin:0 auto 1rem;transform:translate(calc(-.5 * var(--pad)), 0);}nav.pdoc ul{list-style:none;padding-left:0;}nav.pdoc > div > ul{margin-left:calc(0px - var(--pad));}nav.pdoc li a{padding:.2rem 0 .2rem calc(var(--pad) + var(--indent));}nav.pdoc > div > ul > li > a{padding-left:var(--pad);}nav.pdoc li{transition:all 100ms;}nav.pdoc li:hover{background-color:var(--nav-hover);}nav.pdoc a, nav.pdoc a:hover{color:var(--text);}nav.pdoc a{display:block;}nav.pdoc > h2:first-of-type{margin-top:1.5rem;}nav.pdoc .class:before{content:"class ";color:var(--muted);}nav.pdoc .function:after{content:"()";color:var(--muted);}nav.pdoc footer:before{content:"";display:block;width:calc(100% - var(--pad));border-top:solid var(--accent2) 1px;margin-top:1.5rem;padding-top:.5rem;}nav.pdoc footer{font-size:small;}</style>
+    <style>/*! content.css */.pdoc{color:var(--text);box-sizing:border-box;line-height:1.5;background:none;}.pdoc .pdoc-button{cursor:pointer;display:inline-block;border:solid black 1px;border-radius:2px;font-size:.75rem;padding:calc(0.5em - 1px) 1em;transition:100ms all;}.pdoc .alert{padding:1rem 1rem 1rem calc(1.5rem + 24px);border:1px solid transparent;border-radius:.25rem;background-repeat:no-repeat;background-position:.75rem center;margin-bottom:1rem;}.pdoc .alert > em{display:none;}.pdoc .alert > *:last-child{margin-bottom:0;}.pdoc .alert.note{color:#084298;background-color:#cfe2ff;border-color:#b6d4fe;background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22%23084298%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M8%2016A8%208%200%201%200%208%200a8%208%200%200%200%200%2016zm.93-9.412-1%204.705c-.07.34.029.533.304.533.194%200%20.487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703%200-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381%202.29-.287zM8%205.5a1%201%200%201%201%200-2%201%201%200%200%201%200%202z%22/%3E%3C/svg%3E");}.pdoc .alert.tip{color:#0a3622;background-color:#d1e7dd;border-color:#a3cfbb;background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22%230a3622%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M2%206a6%206%200%201%201%2010.174%204.31c-.203.196-.359.4-.453.619l-.762%201.769A.5.5%200%200%201%2010.5%2013a.5.5%200%200%201%200%201%20.5.5%200%200%201%200%201l-.224.447a1%201%200%200%201-.894.553H6.618a1%201%200%200%201-.894-.553L5.5%2015a.5.5%200%200%201%200-1%20.5.5%200%200%201%200-1%20.5.5%200%200%201-.46-.302l-.761-1.77a2%202%200%200%200-.453-.618A5.98%205.98%200%200%201%202%206m6-5a5%205%200%200%200-3.479%208.592c.263.254.514.564.676.941L5.83%2012h4.342l.632-1.467c.162-.377.413-.687.676-.941A5%205%200%200%200%208%201%22/%3E%3C/svg%3E");}.pdoc .alert.important{color:#055160;background-color:#cff4fc;border-color:#9eeaf9;background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22%23055160%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M2%200a2%202%200%200%200-2%202v12a2%202%200%200%200%202%202h12a2%202%200%200%200%202-2V2a2%202%200%200%200-2-2zm6%204c.535%200%20.954.462.9.995l-.35%203.507a.552.552%200%200%201-1.1%200L7.1%204.995A.905.905%200%200%201%208%204m.002%206a1%201%200%201%201%200%202%201%201%200%200%201%200-2%22/%3E%3C/svg%3E");}.pdoc .alert.warning{color:#664d03;background-color:#fff3cd;border-color:#ffecb5;background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22%23664d03%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M8.982%201.566a1.13%201.13%200%200%200-1.96%200L.165%2013.233c-.457.778.091%201.767.98%201.767h13.713c.889%200%201.438-.99.98-1.767L8.982%201.566zM8%205c.535%200%20.954.462.9.995l-.35%203.507a.552.552%200%200%201-1.1%200L7.1%205.995A.905.905%200%200%201%208%205zm.002%206a1%201%200%201%201%200%202%201%201%200%200%201%200-2z%22/%3E%3C/svg%3E");}.pdoc .alert.caution{color:#842029;background-color:#f8d7da;border-color:#f5c2c7;background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22%23842029%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M11.46.146A.5.5%200%200%200%2011.107%200H4.893a.5.5%200%200%200-.353.146L.146%204.54A.5.5%200%200%200%200%204.893v6.214a.5.5%200%200%200%20.146.353l4.394%204.394a.5.5%200%200%200%20.353.146h6.214a.5.5%200%200%200%20.353-.146l4.394-4.394a.5.5%200%200%200%20.146-.353V4.893a.5.5%200%200%200-.146-.353zM8%204c.535%200%20.954.462.9.995l-.35%203.507a.552.552%200%200%201-1.1%200L7.1%204.995A.905.905%200%200%201%208%204m.002%206a1%201%200%201%201%200%202%201%201%200%200%201%200-2%22/%3E%3C/svg%3E");}.pdoc .alert.danger{color:#842029;background-color:#f8d7da;border-color:#f5c2c7;background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22%23842029%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M5.52.359A.5.5%200%200%201%206%200h4a.5.5%200%200%201%20.474.658L8.694%206H12.5a.5.5%200%200%201%20.395.807l-7%209a.5.5%200%200%201-.873-.454L6.823%209.5H3.5a.5.5%200%200%201-.48-.641l2.5-8.5z%22/%3E%3C/svg%3E");}.pdoc .visually-hidden{position:absolute !important;width:1px !important;height:1px !important;padding:0 !important;margin:-1px !important;overflow:hidden !important;clip:rect(0, 0, 0, 0) !important;white-space:nowrap !important;border:0 !important;}.pdoc h1, .pdoc h2, .pdoc h3{font-weight:300;margin:.3em 0;padding:.2em 0;}.pdoc > section:not(.module-info) h1{font-size:1.5rem;font-weight:500;}.pdoc > section:not(.module-info) h2{font-size:1.4rem;font-weight:500;}.pdoc > section:not(.module-info) h3{font-size:1.3rem;font-weight:500;}.pdoc > section:not(.module-info) h4{font-size:1.2rem;}.pdoc > section:not(.module-info) h5{font-size:1.1rem;}.pdoc a{text-decoration:none;color:var(--link);}.pdoc a:hover{color:var(--link-hover);}.pdoc blockquote{margin-left:2rem;}.pdoc pre{border-top:1px solid var(--accent2);border-bottom:1px solid var(--accent2);margin-top:0;margin-bottom:1em;padding:.5rem 0 .5rem .5rem;overflow-x:auto;background-color:var(--code);}.pdoc code{color:var(--text);padding:.2em .4em;margin:0;font-size:85%;background-color:var(--accent);border-radius:6px;}.pdoc a > code{color:inherit;}.pdoc pre > code{display:inline-block;font-size:inherit;background:none;border:none;padding:0;}.pdoc > section:not(.module-info){margin-bottom:1.5rem;}.pdoc .modulename{margin-top:0;font-weight:bold;}.pdoc .modulename a{color:var(--link);transition:100ms all;}.pdoc .git-button{float:right;border:solid var(--link) 1px;}.pdoc .git-button:hover{background-color:var(--link);color:var(--pdoc-background);}.view-source-toggle-state,.view-source-toggle-state ~ .pdoc-code{display:none;}.view-source-toggle-state:checked ~ .pdoc-code{display:block;}.view-source-button{display:inline-block;float:right;font-size:.75rem;line-height:1.5rem;color:var(--muted);padding:0 .4rem 0 1.3rem;cursor:pointer;text-indent:-2px;}.view-source-button > span{visibility:hidden;}.module-info .view-source-button{float:none;display:flex;justify-content:flex-end;margin:-1.2rem .4rem -.2rem 0;}.view-source-button::before{position:absolute;content:"View Source";display:list-item;list-style-type:disclosure-closed;}.view-source-toggle-state:checked ~ .attr .view-source-button::before,.view-source-toggle-state:checked ~ .view-source-button::before{list-style-type:disclosure-open;}.pdoc .docstring{margin-bottom:1.5rem;}.pdoc section:not(.module-info) .docstring{margin-left:clamp(0rem, 5vw - 2rem, 1rem);}.pdoc .docstring .pdoc-code{margin-left:1em;margin-right:1em;}.pdoc h1:target,.pdoc h2:target,.pdoc h3:target,.pdoc h4:target,.pdoc h5:target,.pdoc h6:target,.pdoc .pdoc-code > pre > span:target{background-color:var(--active);box-shadow:-1rem 0 0 0 var(--active);}.pdoc .pdoc-code > pre > span:target{display:block;}.pdoc div:target > .attr,.pdoc section:target > .attr,.pdoc dd:target > a{background-color:var(--active);}.pdoc *{scroll-margin:2rem;}.pdoc .pdoc-code .linenos{user-select:none;}.pdoc .attr:hover{filter:contrast(0.95);}.pdoc section, .pdoc .classattr{position:relative;}.pdoc .headerlink{--width:clamp(1rem, 3vw, 2rem);position:absolute;top:0;left:calc(0rem - var(--width));transition:all 100ms ease-in-out;opacity:0;}.pdoc .headerlink::before{content:"#";display:block;text-align:center;width:var(--width);height:2.3rem;line-height:2.3rem;font-size:1.5rem;}.pdoc .attr:hover ~ .headerlink,.pdoc *:target > .headerlink,.pdoc .headerlink:hover{opacity:1;}.pdoc .attr{display:block;margin:.5rem 0 .5rem;padding:.4rem .4rem .4rem 1rem;background-color:var(--accent);overflow-x:auto;}.pdoc .classattr{margin-left:2rem;}.pdoc .decorator-deprecated{color:#842029;}.pdoc .decorator-deprecated ~ span{filter:grayscale(1) opacity(0.8);}.pdoc .name{color:var(--name);font-weight:bold;}.pdoc .def{color:var(--def);font-weight:bold;}.pdoc .signature{background-color:transparent;}.pdoc .param, .pdoc .return-annotation{white-space:pre;}.pdoc .signature.multiline .param{display:block;}.pdoc .signature.condensed .param{display:inline-block;}.pdoc .annotation{color:var(--annotation);}.pdoc .view-value-toggle-state,.pdoc .view-value-toggle-state ~ .default_value{display:none;}.pdoc .view-value-toggle-state:checked ~ .default_value{display:inherit;}.pdoc .view-value-button{font-size:.5rem;vertical-align:middle;border-style:dashed;margin-top:-0.1rem;}.pdoc .view-value-button:hover{background:white;}.pdoc .view-value-button::before{content:"show";text-align:center;width:2.2em;display:inline-block;}.pdoc .view-value-toggle-state:checked ~ .view-value-button::before{content:"hide";}.pdoc .inherited{margin-left:2rem;}.pdoc .inherited dt{font-weight:700;}.pdoc .inherited dt, .pdoc .inherited dd{display:inline;margin-left:0;margin-bottom:.5rem;}.pdoc .inherited dd:not(:last-child):after{content:", ";}.pdoc .inherited .class:before{content:"class ";}.pdoc .inherited .function a:after{content:"()";}.pdoc .search-result .docstring{overflow:auto;max-height:25vh;}.pdoc .search-result.focused > .attr{background-color:var(--active);}.pdoc .attribution{margin-top:2rem;display:block;opacity:0.5;transition:all 200ms;filter:grayscale(100%);}.pdoc .attribution:hover{opacity:1;filter:grayscale(0%);}.pdoc .attribution img{margin-left:5px;height:27px;vertical-align:bottom;width:50px;transition:all 200ms;}.pdoc table{display:block;width:max-content;max-width:100%;overflow:auto;margin-bottom:1rem;}.pdoc table th{font-weight:600;}.pdoc table th, .pdoc table td{padding:6px 13px;border:1px solid var(--accent2);}</style>
+    <style>/*! custom.css */</style></head>
+<body>
+    <nav class="pdoc">
+        <label id="navtoggle" for="togglestate" class="pdoc-button"><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'><path stroke-linecap='round' stroke="currentColor" stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/></svg></label>
+        <input id="togglestate" type="checkbox" aria-hidden="true" tabindex="-1">
+        <div>
+
+
+            <h2>Contents</h2>
+            <ul>
+  <li><a href="#quick-start">Quick Start</a></li>
+</ul>
+
+
+
+            <h2>API Documentation</h2>
+                <ul class="memberlist">
+            <li>
+                    <a class="class" href="#Bone">Bone</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#Bone.children">children</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Bone.is_fake">is_fake</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Bone.is_flipped">is_flipped</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Bone.mat_bone_init">mat_bone_init</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Bone.mat_relative">mat_relative</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Bone.name">name</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Bone.parent">parent</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#BoneScaleEntry">BoneScaleEntry</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#BoneScaleEntry.bone_index">bone_index</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#BoneScaleEntry.scale">scale</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#BoneScaleEntry.scale_type">scale_type</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#BoneTrack">BoneTrack</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#BoneTrack.bone_id">bone_id</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#BoneTrack.position">position</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#BoneTrack.rotation">rotation</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#ChildModel">ChildModel</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#ChildModel.cc_name">cc_name</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#ChildModel.hh_name">hh_name</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#ChildModel.name">name</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#ChildModel.path">path</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#EcmModel">EcmModel</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#EcmModel.additional_skins">additional_skins</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmModel.bone_scales">bone_scales</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmModel.child_models">child_models</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmModel.def_play_speed">def_play_speed</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmModel.dest_blend">dest_blend</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmModel.new_bone_scale">new_bone_scale</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmModel.org_color">org_color</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmModel.outer_floats">outer_floats</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmModel.scale_base_bone">scale_base_bone</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmModel.skin_model_path">skin_model_path</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmModel.src_blend">src_blend</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmModel.version">version</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#ElementsConfig">ElementsConfig</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#ElementsConfig.lists">lists</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#ElementsConfig.name">name</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#ElementsData">ElementsData</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="function" href="#ElementsData.find_entry">find_entry</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#ElementsData.save">save</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#ElementsData.save_bytes">save_bytes</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#ElementsData.version">version</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#ElementsDataEntry">ElementsDataEntry</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="function" href="#ElementsDataEntry.copy">copy</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#ElementsDataEntry.keys">keys</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#ElementsDataList">ElementsDataList</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="function" href="#ElementsDataList.append">append</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#ElementsDataList.config">config</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#ElementsListConfig">ElementsListConfig</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#ElementsListConfig.caption">caption</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#ElementsListConfig.data_type">data_type</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#ElementsListConfig.fields">fields</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#ElementsListConfig.offset">offset</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#ElementsListConfig.space_id">space_id</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#ElementsListConfigArray">ElementsListConfigArray</a>
+                            <ul class="memberlist">
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#ElementsMetaField">ElementsMetaField</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#ElementsMetaField.name">name</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#ElementsMetaField.type">type</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#ElementsMetaFieldArray">ElementsMetaFieldArray</a>
+                            <ul class="memberlist">
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#FileEntry">FileEntry</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#FileEntry.compressed_size">compressed_size</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#FileEntry.hash">hash</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#FileEntry.path">path</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#FileEntry.size">size</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#Hook">Hook</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#Hook.bone_index">bone_index</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Hook.hook_type">hook_type</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Hook.name">name</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Hook.transform">transform</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#Material">Material</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#Material.ambient">ambient</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Material.diffuse">diffuse</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Material.emissive">emissive</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Material.name">name</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Material.power">power</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Material.specular">specular</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Material.two_sided">two_sided</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#PackageBuilder">PackageBuilder</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="function" href="#PackageBuilder.__init__">PackageBuilder</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#PackageBuilder.add_file">add_file</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#PackageBuilder.file_list">file_list</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#PackageBuilder.remove_file">remove_file</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#PackageBuilder.save">save</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#PackageBuilder.to_bytes">to_bytes</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#PackageConfig">PackageConfig</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="function" href="#PackageConfig.__init__">PackageConfig</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#PackageConfig.guard1">guard1</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#PackageConfig.guard2">guard2</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#PackageConfig.key1">key1</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#PackageConfig.key2">key2</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#PckPackage">PckPackage</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="function" href="#PckPackage.file_list">file_list</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#PckPackage.find_prefix">find_prefix</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#PckPackage.get_file">get_file</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#PckPackage.save">save</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#PckPackage.scan_entries">scan_entries</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#PckPackage.to_builder">to_builder</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#RigidMesh">RigidMesh</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#RigidMesh.bone_index">bone_index</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#RigidMesh.indices">indices</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#RigidMesh.material_index">material_index</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#RigidMesh.name">name</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#RigidMesh.normals">normals</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#RigidMesh.positions">positions</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#RigidMesh.texture_index">texture_index</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#RigidMesh.uvs">uvs</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#Skeleton">Skeleton</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#Skeleton.bones">bones</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Skeleton.hooks">hooks</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Skeleton.version">version</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#Skin">Skin</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#Skin.bone_names">bone_names</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Skin.materials">materials</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Skin.num_ske_bone">num_ske_bone</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Skin.rigid_meshes">rigid_meshes</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Skin.skin_meshes">skin_meshes</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Skin.textures">textures</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Skin.version">version</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#SkinMesh">SkinMesh</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#SkinMesh.bone_indices">bone_indices</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SkinMesh.bone_weights">bone_weights</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SkinMesh.indices">indices</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SkinMesh.material_index">material_index</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SkinMesh.name">name</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SkinMesh.normals">normals</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SkinMesh.positions">positions</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SkinMesh.texture_index">texture_index</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SkinMesh.uvs">uvs</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#SmdModel">SmdModel</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#SmdModel.skeleton_path">skeleton_path</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SmdModel.skin_paths">skin_paths</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SmdModel.tcks_dir">tcks_dir</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SmdModel.version">version</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#Track">Track</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#Track.frame_rate">frame_rate</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Track.key_frame_ids">key_frame_ids</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Track.keys">keys</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Track.track_length_ms">track_length_ms</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#TrackSet">TrackSet</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#TrackSet.anim_end">anim_end</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#TrackSet.anim_fps">anim_fps</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#TrackSet.anim_start">anim_start</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#TrackSet.bone_tracks">bone_tracks</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#TrackSet.version">version</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="function" href="#read_ecm">read_ecm</a>
+            </li>
+            <li>
+                    <a class="function" href="#read_elements">read_elements</a>
+            </li>
+            <li>
+                    <a class="function" href="#read_elements_bytes">read_elements_bytes</a>
+            </li>
+            <li>
+                    <a class="function" href="#read_elements_config">read_elements_config</a>
+            </li>
+            <li>
+                    <a class="function" href="#read_elements_config_string">read_elements_config_string</a>
+            </li>
+            <li>
+                    <a class="function" href="#read_pck">read_pck</a>
+            </li>
+            <li>
+                    <a class="function" href="#read_pck_bytes">read_pck_bytes</a>
+            </li>
+            <li>
+                    <a class="function" href="#read_skeleton">read_skeleton</a>
+            </li>
+            <li>
+                    <a class="function" href="#read_skin">read_skin</a>
+            </li>
+            <li>
+                    <a class="function" href="#read_smd">read_smd</a>
+            </li>
+            <li>
+                    <a class="function" href="#read_track_set">read_track_set</a>
+            </li>
+    </ul>
+
+
+
+        <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
+            built with <span class="visually-hidden">pdoc</span><img
+                alt="pdoc logo"
+                src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20role%3D%22img%22%20aria-label%3D%22pdoc%20logo%22%20width%3D%22300%22%20height%3D%22160%22%20viewBox%3D%220%200%20150%2080%22%3E%3Ctitle%3Epdoc%3C/title%3E%3Cpath%20d%3D%22M132.316%2048.886c.276-4.679%202.342-6.698%204.409-7.982s4.27-1.165%206.751-1.055c1.586.07%203.044.156%204.222-.482%201.142-.619%202.026-1.932%202.162-3.739.268-3.576-1.929-5.368-5.006-5.551s-7.599.524-10.517%201.606c-4.455%201.652-8.588%206.606-9.552%208.992s-2.342%206.193-1.745%2010.873%202.664%209.221%205.878%2011.79%205.878%203.808%2010.103%204.312%203.444.229%206.062.229%205.006-2.202%204.914-4.909-2.296-5.001-4.501-4.863-3.077.505-5.281.229-7.715-2.064-7.899-9.451z%22%20fill%3D%22%23198754%22/%3E%3Ccircle%20cx%3D%22101.504%22%20cy%3D%2248.943%22%20r%3D%2214.208%22%20fill%3D%22none%22%20stroke%3D%22%23198754%22%20stroke-width%3D%229.354%22/%3E%3Cpath%20d%3D%22M87.81.002c-3.637.065-5.001.454-7.014%201.232s-3.443%201.363-6.3%204.282c-1.723%201.76-3.148%205.019-3.776%207.329-.413%201.521-.316%202.63-.316%202.63l-.195%2034.612c.065%205.774-6.755%208.305-9.612%208.37s-9.678-1.038-9.743-9.408%207.128-9.521%208.362-9.521c1.413-.13%202.526-.021%203.718-.016%202.071.009%204.157-.778%204.092-4.671s-4.157-4.736-4.157-4.736c-6.3-.843-11.43%202.206-11.43%202.206S40.917%2038.15%2041.372%2049.634%2051.568%2068.19%2061.311%2068.125s18.316-7.007%2018.445-17.193l.13-22.772c.046-2.291%202.683-3.644%204.476-4.203.745-.232%201.694-.274%201.694-.274l10.457-.13s4.871-.324%207.729-3.114%204.352-6.294%204.352-6.294.974-3.049.13-4.606-.195-1.233-2.792-3.309-8.573-4.477-8.573-4.477S91.447-.063%2087.81.002zM0%2047.169l.065%2028.417S0%2080.127%204.481%2079.997s5.072-3.866%205.049-4.152l-.113-28.482s1.624-7.656%209.937-7.721%2010.002%206.942%2010.002%208.499-.909%2010.51-9.093%2010.51c-.948%200-2.99-.567-4.145-.272-3.919%201-3.194%204.554-3.194%204.554s.065%205.061%207.404%204.996%2018.575-6.034%2018.575-19.074S26.953%2030.04%2019.549%2029.91%201.234%2035.296%200%2047.169z%22%20fill%3D%22%23198754%22/%3E%3Cg%20transform%3D%22matrix%28.325601%200%200%20.325256%20-10.32669%20-45.802786%29%22%3E%3Ccircle%20cx%3D%22297.554%22%20cy%3D%22172.286%22%20r%3D%2216.5%22%20fill%3D%22%23fff%22/%3E%3Cellipse%20cx%3D%22297.709%22%20cy%3D%22172.642%22%20rx%3D%2211.071%22%20ry%3D%2210.871%22%20fill%3D%22%23105a48%22/%3E%3Ccircle%20cx%3D%22304.104%22%20cy%3D%22167.667%22%20r%3D%224.5%22%20fill%3D%22%23fff%22/%3E%3C/g%3E%3Cpath%20d%3D%22M94.661%2017.032l.893-1.476s.99.714%201.916.925%201.575.114%202.955.114l14.565-.162c1.283-.032%203.085-.762%203.02-3.293s-.373-3.503-.373-3.503l1.283-.487s.52.503.877%201.573.309%201.995.292%202.66-.227%201.541-.227%201.541%201.564-.308%202.359-1.038.823-.779%201.489-1.508.812-.86.812-.86.552-.13.877.26.341.957.065%201.46-1.672%202.206-3.247%203.066-2.76%201.427-3.929%201.768-3.848.73-7.063.714l-10.944-.114s-2.143-.081-3.02-.373-2.241-.973-2.598-1.265z%22%20fill%3D%22%23d36d49%22/%3E%3Cg%20fill%3D%22%23105a48%22%3E%3Cellipse%20cx%3D%2293.052%22%20cy%3D%2243.567%22%20rx%3D%22.869%22%20ry%3D%221.014%22%20transform%3D%22rotate%28341.022%29%22/%3E%3Cellipse%20cx%3D%22104.3%22%20cy%3D%22-16.184%22%20rx%3D%22.865%22%20ry%3D%221.009%22%20transform%3D%22rotate%2814.786%29%22/%3E%3C/g%3E%3C/svg%3E"/>
+        </a>
+</div>
+    </nav>
+    <main class="pdoc">
+            <section class="module-info">
+                    <h1 class="modulename">
+autoangel    </h1>
+
+                        <div class="docstring"><p>AutoAngel is a general-purpose library designed to make it easy to work with angelica engine game files.</p>
+
+<p>It supports the following file formats:</p>
+
+<ul>
+<li><code>elements.data</code> - load with <code><a href="#read_elements">read_elements</a></code>, view, modify and save through the <code><a href="#ElementsData">ElementsData</a></code> object.</li>
+<li><code>*.pck</code>/<code>*.pkx</code> - load with <code><a href="#read_pck">read_pck</a></code>, explore through the <code><a href="#PckPackage">PckPackage</a></code> object.</li>
+<li><code>*.ecm</code> - load with <code><a href="#read_ecm">read_ecm</a></code>, inspect composite model structure through the <code><a href="#EcmModel">EcmModel</a></code> object.</li>
+<li><code>*.smd</code> - load with <code><a href="#read_smd">read_smd</a></code>, inspect skin model data through the <code><a href="#SmdModel">SmdModel</a></code> object.</li>
+<li><code>*.bon</code> - load with <code><a href="#read_skeleton">read_skeleton</a></code>, inspect skeleton bones and hooks through the <code><a href="#Skeleton">Skeleton</a></code> object.</li>
+<li><code>*.ski</code> - load with <code><a href="#read_skin">read_skin</a></code>, inspect meshes, textures and materials through the <code><a href="#Skin">Skin</a></code> object.</li>
+<li><code>*.stck</code> - load with <code><a href="#read_track_set">read_track_set</a></code>, inspect animation tracks through the <code><a href="#TrackSet">TrackSet</a></code> object.</li>
+</ul>
+
+<h2 id="quick-start">Quick Start</h2>
+
+<h3 id="working-with-elementsdata">Working with elements.data</h3>
+
+<p>Let's start with importing <code><a href="">autoangel</a></code>:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">autoangel</span>
+</code></pre>
+</div>
+
+<p>Now you can load any <code>elements.data</code> you want using <code><a href="#read_elements">read_elements</a></code>:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="n">data</span> <span class="o">=</span> <span class="n"><a href="#read_elements">autoangel.read_elements</a></span><span class="p">(</span><span class="s1">&#39;/path/to/elements.data&#39;</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>By default <code><a href="#read_elements">read_elements</a></code> will try to use one of the bundled config.
+This should work for you, if you don't use exotic game version (otherwise, you should load config with <code><a href="#read_elements_config">read_elements_config</a></code> and pass it manually).</p>
+
+<p>You can inspect <code>data</code>:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Version: </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">version</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Number of lists: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>You can explore all the entries among all the lists. For example:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="n">weapons_list</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+
+<span class="c1"># print list name</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;List: </span><span class="si">{</span><span class="n">weapons_list</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">caption</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="c1"># print first 10 entries in list</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+  <span class="n">weapon</span> <span class="o">=</span> <span class="n">weapons_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+  <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;ID: </span><span class="si">{</span><span class="n">weapon</span><span class="o">.</span><span class="n">ID</span><span class="si">}</span><span class="s1">, name: </span><span class="si">{</span><span class="n">weapon</span><span class="o">.</span><span class="n">Name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>You can also modify anything you want like changing durability of all the weapons:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="k">for</span> <span class="n">weapon</span> <span class="ow">in</span> <span class="n">weapons_list</span><span class="p">:</span>
+  <span class="n">weapon</span><span class="o">.</span><span class="n">durability_min</span> <span class="o">=</span> <span class="n">weapon</span><span class="o">.</span><span class="n">durability_max</span> <span class="o">=</span> <span class="mi">99999</span>
+</code></pre>
+</div>
+
+<p>All the modifications won't affect original <code>elements.data</code> until you save it:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="n">data</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;elements2.data&#39;</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<h3 id="working-with-pckpkx">Working with pck/pkx</h3>
+
+<p>You can load a pck package using <code><a href="#read_pck">read_pck</a></code>:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">autoangel</span>
+
+<span class="c1"># Load a single pck file</span>
+<span class="n">package</span> <span class="o">=</span> <span class="n"><a href="#read_pck">autoangel.read_pck</a></span><span class="p">(</span><span class="s1">&#39;/path/to/package.pck&#39;</span><span class="p">)</span>
+
+<span class="c1"># Load a pck file with its corresponding pkx file</span>
+<span class="n">package</span> <span class="o">=</span> <span class="n"><a href="#read_pck">autoangel.read_pck</a></span><span class="p">(</span><span class="s1">&#39;/path/to/package.pck&#39;</span><span class="p">,</span> <span class="s1">&#39;/path/to/package.pkx&#39;</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>Once you have a <code><a href="#PckPackage">PckPackage</a></code> object, you can explore its contents:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="c1"># Get a list of all files in the package</span>
+<span class="n">file_list</span> <span class="o">=</span> <span class="n">package</span><span class="o">.</span><span class="n">file_list</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Number of files: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">file_list</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="c1"># Find files with a specific prefix</span>
+<span class="n">textures</span> <span class="o">=</span> <span class="n">package</span><span class="o">.</span><span class="n">find_prefix</span><span class="p">(</span><span class="s1">&#39;textures/&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Number of texture files: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">textures</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="c1"># Get the content of a specific file</span>
+<span class="n">file_content</span> <span class="o">=</span> <span class="n">package</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span><span class="s1">&#39;path/to/file.txt&#39;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">file_content</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;File content: </span><span class="si">{</span><span class="n">file_content</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;File not found&#39;</span><span class="p">)</span>
+</code></pre>
+</div>
+</div>
+
+                        <input id="mod-autoangel-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+
+                        <label class="view-source-button" for="mod-autoangel-view-source"><span>View Source</span></label>
+
+                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">1</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">.autoangel</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+</span><span id="L-2"><a href="#L-2"><span class="linenos">2</span></a>
+</span><span id="L-3"><a href="#L-3"><span class="linenos">3</span></a><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">autoangel</span><span class="o">.</span><span class="vm">__doc__</span>
+</span><span id="L-4"><a href="#L-4"><span class="linenos">4</span></a><span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">autoangel</span><span class="p">,</span> <span class="s2">&quot;__all__&quot;</span><span class="p">):</span>
+</span><span id="L-5"><a href="#L-5"><span class="linenos">5</span></a>    <span class="n">__all__</span> <span class="o">=</span> <span class="n">autoangel</span><span class="o">.</span><span class="n">__all__</span>
+</span></pre></div>
+
+
+            </section>
+                <section id="Bone">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">Bone</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#Bone"></a>
+    
+            <div class="docstring"><p>A single bone in a skeleton.</p>
+</div>
+
+
+                            <div id="Bone.children" class="classattr">
+                                <div class="attr variable">
+            <span class="name">children</span><span class="annotation">: List[int]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Bone.children"></a>
+    
+            <div class="docstring"><p>Indices of child bones.</p>
+</div>
+
+
+                            </div>
+                            <div id="Bone.is_fake" class="classattr">
+                                <div class="attr variable">
+            <span class="name">is_fake</span><span class="annotation">: bool</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Bone.is_fake"></a>
+    
+            <div class="docstring"><p>Whether this bone is a fake (non-rendering) bone.</p>
+</div>
+
+
+                            </div>
+                            <div id="Bone.is_flipped" class="classattr">
+                                <div class="attr variable">
+            <span class="name">is_flipped</span><span class="annotation">: bool</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Bone.is_flipped"></a>
+    
+            <div class="docstring"><p>Whether this bone is flipped.</p>
+</div>
+
+
+                            </div>
+                            <div id="Bone.mat_bone_init" class="classattr">
+                                <div class="attr variable">
+            <span class="name">mat_bone_init</span><span class="annotation">: List[float]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Bone.mat_bone_init"></a>
+    
+            <div class="docstring"><p>Initial bone-space transform matrix (column-major, 4x4 = 16 floats).</p>
+</div>
+
+
+                            </div>
+                            <div id="Bone.mat_relative" class="classattr">
+                                <div class="attr variable">
+            <span class="name">mat_relative</span><span class="annotation">: List[float]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Bone.mat_relative"></a>
+    
+            <div class="docstring"><p>Relative transform matrix (column-major, 4x4 = 16 floats).</p>
+</div>
+
+
+                            </div>
+                            <div id="Bone.name" class="classattr">
+                                <div class="attr variable">
+            <span class="name">name</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Bone.name"></a>
+    
+            <div class="docstring"><p>Bone name.</p>
+</div>
+
+
+                            </div>
+                            <div id="Bone.parent" class="classattr">
+                                <div class="attr variable">
+            <span class="name">parent</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Bone.parent"></a>
+    
+            <div class="docstring"><p>Parent bone index (-1 if root).</p>
+</div>
+
+
+                            </div>
+                </section>
+                <section id="BoneScaleEntry">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">BoneScaleEntry</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#BoneScaleEntry"></a>
+    
+            <div class="docstring"><p>Bone scale entry from an ECM model.</p>
+</div>
+
+
+                            <div id="BoneScaleEntry.bone_index" class="classattr">
+                                <div class="attr variable">
+            <span class="name">bone_index</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#BoneScaleEntry.bone_index"></a>
+    
+    
+
+                            </div>
+                            <div id="BoneScaleEntry.scale" class="classattr">
+                                <div class="attr variable">
+            <span class="name">scale</span><span class="annotation">: tuple[float, float, float]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#BoneScaleEntry.scale"></a>
+    
+            <div class="docstring"><p>Scale as (x, y, z) tuple.</p>
+</div>
+
+
+                            </div>
+                            <div id="BoneScaleEntry.scale_type" class="classattr">
+                                <div class="attr variable">
+            <span class="name">scale_type</span><span class="annotation">: int | None</span>
+
+        
+    </div>
+    <a class="headerlink" href="#BoneScaleEntry.scale_type"></a>
+    
+            <div class="docstring"><p>Old format scale type; <code>None</code> for BoneScaleEx (new format).</p>
+</div>
+
+
+                            </div>
+                </section>
+                <section id="BoneTrack">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">BoneTrack</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#BoneTrack"></a>
+    
+            <div class="docstring"><p>Per-bone animation track data.</p>
+</div>
+
+
+                            <div id="BoneTrack.bone_id" class="classattr">
+                                <div class="attr variable">
+            <span class="name">bone_id</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#BoneTrack.bone_id"></a>
+    
+            <div class="docstring"><p>Bone identifier.</p>
+</div>
+
+
+                            </div>
+                            <div id="BoneTrack.position" class="classattr">
+                                <div class="attr variable">
+            <span class="name">position</span><span class="annotation">: <a href="#Track">Track</a></span>
+
+        
+    </div>
+    <a class="headerlink" href="#BoneTrack.position"></a>
+    
+            <div class="docstring"><p>Position track for this bone.</p>
+</div>
+
+
+                            </div>
+                            <div id="BoneTrack.rotation" class="classattr">
+                                <div class="attr variable">
+            <span class="name">rotation</span><span class="annotation">: <a href="#Track">Track</a></span>
+
+        
+    </div>
+    <a class="headerlink" href="#BoneTrack.rotation"></a>
+    
+            <div class="docstring"><p>Rotation track for this bone.</p>
+</div>
+
+
+                            </div>
+                </section>
+                <section id="ChildModel">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">ChildModel</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#ChildModel"></a>
+    
+            <div class="docstring"><p>Child model attachment from an ECM model.</p>
+</div>
+
+
+                            <div id="ChildModel.cc_name" class="classattr">
+                                <div class="attr variable">
+            <span class="name">cc_name</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#ChildModel.cc_name"></a>
+    
+            <div class="docstring"><p>Child connection point (CC).</p>
+</div>
+
+
+                            </div>
+                            <div id="ChildModel.hh_name" class="classattr">
+                                <div class="attr variable">
+            <span class="name">hh_name</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#ChildModel.hh_name"></a>
+    
+            <div class="docstring"><p>Parent hook name (HH).</p>
+</div>
+
+
+                            </div>
+                            <div id="ChildModel.name" class="classattr">
+                                <div class="attr variable">
+            <span class="name">name</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#ChildModel.name"></a>
+    
+    
+
+                            </div>
+                            <div id="ChildModel.path" class="classattr">
+                                <div class="attr variable">
+            <span class="name">path</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#ChildModel.path"></a>
+    
+    
+
+                            </div>
+                </section>
+                <section id="EcmModel">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">EcmModel</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#EcmModel"></a>
+    
+            <div class="docstring"><p>Parsed ECM (composite model) file.</p>
+</div>
+
+
+                            <div id="EcmModel.additional_skins" class="classattr">
+                                <div class="attr variable">
+            <span class="name">additional_skins</span><span class="annotation">: List[str]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmModel.additional_skins"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmModel.bone_scales" class="classattr">
+                                <div class="attr variable">
+            <span class="name">bone_scales</span><span class="annotation">: List[<a href="#BoneScaleEntry">BoneScaleEntry</a>]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmModel.bone_scales"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmModel.child_models" class="classattr">
+                                <div class="attr variable">
+            <span class="name">child_models</span><span class="annotation">: List[<a href="#ChildModel">ChildModel</a>]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmModel.child_models"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmModel.def_play_speed" class="classattr">
+                                <div class="attr variable">
+            <span class="name">def_play_speed</span><span class="annotation">: float</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmModel.def_play_speed"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmModel.dest_blend" class="classattr">
+                                <div class="attr variable">
+            <span class="name">dest_blend</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmModel.dest_blend"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmModel.new_bone_scale" class="classattr">
+                                <div class="attr variable">
+            <span class="name">new_bone_scale</span><span class="annotation">: bool</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmModel.new_bone_scale"></a>
+    
+            <div class="docstring"><p>Whether BoneScaleEx (new) format is used for bone scaling.</p>
+</div>
+
+
+                            </div>
+                            <div id="EcmModel.org_color" class="classattr">
+                                <div class="attr variable">
+            <span class="name">org_color</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmModel.org_color"></a>
+    
+            <div class="docstring"><p>Original color as ARGB hex value.</p>
+</div>
+
+
+                            </div>
+                            <div id="EcmModel.outer_floats" class="classattr">
+                                <div class="attr variable">
+            <span class="name">outer_floats</span><span class="annotation">: List[float]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmModel.outer_floats"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmModel.scale_base_bone" class="classattr">
+                                <div class="attr variable">
+            <span class="name">scale_base_bone</span><span class="annotation">: str | None</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmModel.scale_base_bone"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmModel.skin_model_path" class="classattr">
+                                <div class="attr variable">
+            <span class="name">skin_model_path</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmModel.skin_model_path"></a>
+    
+            <div class="docstring"><p>Path to the skin model (SMD) file.</p>
+</div>
+
+
+                            </div>
+                            <div id="EcmModel.src_blend" class="classattr">
+                                <div class="attr variable">
+            <span class="name">src_blend</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmModel.src_blend"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmModel.version" class="classattr">
+                                <div class="attr variable">
+            <span class="name">version</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmModel.version"></a>
+    
+    
+
+                            </div>
+                </section>
+                <section id="ElementsConfig">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">ElementsConfig</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#ElementsConfig"></a>
+    
+            <div class="docstring"><p>Configuration for elements.data.</p>
+
+<h6 id="attributes">Attributes:</h6>
+
+<ul>
+<li><strong>lists:</strong>  <strong>elements.data</strong> lists configs</li>
+<li><strong>name:</strong>  name of config specified when parsing it (i.e. file name)</li>
+</ul>
+</div>
+
+
+                            <div id="ElementsConfig.lists" class="classattr">
+                                <div class="attr variable">
+            <span class="name">lists</span><span class="annotation">: <a href="#ElementsListConfigArray">ElementsListConfigArray</a></span>
+
+        
+    </div>
+    <a class="headerlink" href="#ElementsConfig.lists"></a>
+    
+            <div class="docstring"><p>List configs.</p>
+</div>
+
+
+                            </div>
+                            <div id="ElementsConfig.name" class="classattr">
+                                <div class="attr variable">
+            <span class="name">name</span><span class="annotation">: str | None</span>
+
+        
+    </div>
+    <a class="headerlink" href="#ElementsConfig.name"></a>
+    
+            <div class="docstring"><p>Config name.</p>
+</div>
+
+
+                            </div>
+                </section>
+                <section id="ElementsData">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">ElementsData</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#ElementsData"></a>
+    
+            <div class="docstring"><p>Object describing parsed <strong>elements.data</strong>. It also works as immutable array of data lists (<code><a href="#ElementsDataList">ElementsDataList</a></code>).</p>
+
+<p>Implements basic list interface such as <code>len(..)</code> and <code>__getitem__</code>.</p>
+
+<h6 id="attributes">Attributes:</h6>
+
+<ul>
+<li><strong>version:</strong>  <strong>elements.data</strong> version</li>
+</ul>
+
+<p>See also: <code><a href="#ElementsDataList">ElementsDataList</a></code></p>
+</div>
+
+
+                            <div id="ElementsData.find_entry" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">find_entry</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="nb">id</span><span class="p">:</span> <span class="nb">int</span>,</span><span class="param">	<span class="n">space_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">allow_unknown</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span></span><span class="return-annotation">) -> <span class="n"><a href="#ElementsDataEntry">ElementsDataEntry</a></span> <span class="o">|</span> <span class="kc">None</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#ElementsData.find_entry"></a>
+    
+            <div class="docstring"><p>Find entry by ID and space ID.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>id</strong>:  Entry ID</li>
+<li><strong>space_id</strong>:  Optional space ID (<code>None</code> by default).
+If <code>None</code>, find among all the lists, otherwise - only in lists with specified space_id.</li>
+<li><strong>allow_unknown</strong>:  If set, include lists with <code>"unknown"</code> space_id in search, otherwise - ignore them (<code>True</code> by default).</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>Found entry or <code>None</code></p>
+</blockquote>
+</div>
+
+
+                            </div>
+                            <div id="ElementsData.save" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">save</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">path</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#ElementsData.save"></a>
+    
+            <div class="docstring"><p>Saves <strong>elements.data</strong> to file at <code>path</code>.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>path</strong>:  Path to output file</li>
+</ul>
+
+<h6 id="raises">Raises</h6>
+
+<ul>
+<li><strong>Exception</strong>:  If any I/O error occurs</li>
+</ul>
+</div>
+
+
+                            </div>
+                            <div id="ElementsData.save_bytes" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">save_bytes</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="nb">bytes</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#ElementsData.save_bytes"></a>
+    
+            <div class="docstring"><p>Saves <strong>elements.data</strong> to byte array.</p>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>Serialized <strong>elements.data</strong></p>
+</blockquote>
+</div>
+
+
+                            </div>
+                            <div id="ElementsData.version" class="classattr">
+                                <div class="attr variable">
+            <span class="name">version</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#ElementsData.version"></a>
+    
+            <div class="docstring"><p>elements.data version.</p>
+</div>
+
+
+                            </div>
+                </section>
+                <section id="ElementsDataEntry">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">ElementsDataEntry</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#ElementsDataEntry"></a>
+    
+            <div class="docstring"><p>Single data entry.</p>
+
+<p>Implements basic <code>dict[str, object]</code>-like and object-like interface such as <code>len(..)</code>, <code>__getattr__</code>, <code>__setattr__</code>, <code>__getitem__</code>, <code>__setitem__</code> and <code>__contains__</code>.</p>
+
+<p>Number of fields, its names and types depend on <strong>elements.data</strong> version and list config.
+Use <code>entry.keys()</code> to get field names.</p>
+
+<p>One can access fields with either <code>entry['name']</code> (by key) or <code>entry.name</code> (as an attribute) syntax.</p>
+
+<p>Each field can be read and modified and has one of the following types:</p>
+
+<ul>
+<li><code>int</code></li>
+<li><code>float</code></li>
+<li><code>str</code></li>
+<li><code>bytes</code></li>
+</ul>
+
+<p>See also: <code><a href="#ElementsListConfig">ElementsListConfig</a></code></p>
+</div>
+
+
+                            <div id="ElementsDataEntry.copy" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">copy</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n"><a href="#ElementsDataEntry">ElementsDataEntry</a></span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#ElementsDataEntry.copy"></a>
+    
+            <div class="docstring"><p>Get deep copy of <code>self</code>.</p>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>Deep copy of entry</p>
+</blockquote>
+</div>
+
+
+                            </div>
+                            <div id="ElementsDataEntry.keys" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">keys</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#ElementsDataEntry.keys"></a>
+    
+            <div class="docstring"><p>Get entry field names</p>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>Field names</p>
+</blockquote>
+</div>
+
+
+                            </div>
+                </section>
+                <section id="ElementsDataList">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">ElementsDataList</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#ElementsDataList"></a>
+    
+            <div class="docstring"><p>Contains data of specific list in <strong>elements.data</strong> such as list info (like <code><a href="#ElementsListConfig">ElementsListConfig</a></code>) and
+all data entries (<code><a href="#ElementsDataEntry">ElementsDataEntry</a></code>). Implements basic list interface such as <code>len(..)</code>, <code>__getitem__</code> and <code>__setitem__</code>.</p>
+
+<h6 id="attributes">Attributes:</h6>
+
+<ul>
+<li><strong>config:</strong>  list config</li>
+</ul>
+
+<p>See also: <code><a href="#ElementsDataEntry">ElementsDataEntry</a></code>.</p>
+</div>
+
+
+                            <div id="ElementsDataList.append" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">append</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">entry</span><span class="p">:</span> <span class="n"><a href="#ElementsDataEntry">ElementsDataEntry</a></span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#ElementsDataList.append"></a>
+    
+            <div class="docstring"><p>Append <code>entry</code> at the end of list.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>entry</strong>:  New entry</li>
+</ul>
+
+<h6 id="raises">Raises</h6>
+
+<ul>
+<li><strong>ValueError</strong>:  If <code>entry</code> comes from a list with a different config</li>
+</ul>
+</div>
+
+
+                            </div>
+                            <div id="ElementsDataList.config" class="classattr">
+                                <div class="attr variable">
+            <span class="name">config</span><span class="annotation">: <a href="#ElementsListConfig">ElementsListConfig</a></span>
+
+        
+    </div>
+    <a class="headerlink" href="#ElementsDataList.config"></a>
+    
+            <div class="docstring"><p>List config.</p>
+</div>
+
+
+                            </div>
+                </section>
+                <section id="ElementsListConfig">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">ElementsListConfig</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#ElementsListConfig"></a>
+    
+            <div class="docstring"><p>Configuration for a list in elements.data.</p>
+
+<h6 id="attributes">Attributes:</h6>
+
+<ul>
+<li><strong>caption:</strong>  list caption</li>
+<li><strong>data_type:</strong>  list data type</li>
+<li><strong>fields:</strong>  array of fields</li>
+<li><strong>offset:</strong>  list offset</li>
+<li><strong>space_id:</strong>  list space id (may be <code>"unknown"</code>)</li>
+</ul>
+</div>
+
+
+                            <div id="ElementsListConfig.caption" class="classattr">
+                                <div class="attr variable">
+            <span class="name">caption</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#ElementsListConfig.caption"></a>
+    
+            <div class="docstring"><p>List caption.</p>
+</div>
+
+
+                            </div>
+                            <div id="ElementsListConfig.data_type" class="classattr">
+                                <div class="attr variable">
+            <span class="name">data_type</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#ElementsListConfig.data_type"></a>
+    
+            <div class="docstring"><p>List data type.</p>
+</div>
+
+
+                            </div>
+                            <div id="ElementsListConfig.fields" class="classattr">
+                                <div class="attr variable">
+            <span class="name">fields</span><span class="annotation">: <a href="#ElementsMetaFieldArray">ElementsMetaFieldArray</a></span>
+
+        
+    </div>
+    <a class="headerlink" href="#ElementsListConfig.fields"></a>
+    
+            <div class="docstring"><p>Array of fields.</p>
+</div>
+
+
+                            </div>
+                            <div id="ElementsListConfig.offset" class="classattr">
+                                <div class="attr variable">
+            <span class="name">offset</span><span class="annotation">: int | Literal[&#39;AUTO&#39;]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#ElementsListConfig.offset"></a>
+    
+            <div class="docstring"><p>List offset.</p>
+</div>
+
+
+                            </div>
+                            <div id="ElementsListConfig.space_id" class="classattr">
+                                <div class="attr variable">
+            <span class="name">space_id</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#ElementsListConfig.space_id"></a>
+    
+            <div class="docstring"><p>List space ID.</p>
+</div>
+
+
+                            </div>
+                </section>
+                <section id="ElementsListConfigArray">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">ElementsListConfigArray</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#ElementsListConfigArray"></a>
+    
+            <div class="docstring"><p>Array of list configurations.</p>
+</div>
+
+
+                </section>
+                <section id="ElementsMetaField">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">ElementsMetaField</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#ElementsMetaField"></a>
+    
+            <div class="docstring"><p>Field metadata.</p>
+
+<h6 id="attributes">Attributes:</h6>
+
+<ul>
+<li><strong>name:</strong>  field name</li>
+<li><strong>type:</strong>  field type</li>
+</ul>
+</div>
+
+
+                            <div id="ElementsMetaField.name" class="classattr">
+                                <div class="attr variable">
+            <span class="name">name</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#ElementsMetaField.name"></a>
+    
+            <div class="docstring"><p>Field name.</p>
+</div>
+
+
+                            </div>
+                            <div id="ElementsMetaField.type" class="classattr">
+                                <div class="attr variable">
+            <span class="name">type</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#ElementsMetaField.type"></a>
+    
+            <div class="docstring"><p>Field type.</p>
+</div>
+
+
+                            </div>
+                </section>
+                <section id="ElementsMetaFieldArray">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">ElementsMetaFieldArray</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#ElementsMetaFieldArray"></a>
+    
+            <div class="docstring"><p>Array of field metadata.</p>
+</div>
+
+
+                </section>
+                <section id="FileEntry">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">FileEntry</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#FileEntry"></a>
+    
+            <div class="docstring"><p>Metadata for a single file entry in a pck package.</p>
+</div>
+
+
+                            <div id="FileEntry.compressed_size" class="classattr">
+                                <div class="attr variable">
+            <span class="name">compressed_size</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#FileEntry.compressed_size"></a>
+    
+            <div class="docstring"><p>Compressed file size in bytes.</p>
+</div>
+
+
+                            </div>
+                            <div id="FileEntry.hash" class="classattr">
+                                <div class="attr variable">
+            <span class="name">hash</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#FileEntry.hash"></a>
+    
+            <div class="docstring"><p>CRC32 hash of the compressed (on-disk) file data.</p>
+</div>
+
+
+                            </div>
+                            <div id="FileEntry.path" class="classattr">
+                                <div class="attr variable">
+            <span class="name">path</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#FileEntry.path"></a>
+    
+            <div class="docstring"><p>Normalized file path (lowercase, backslash-separated).</p>
+</div>
+
+
+                            </div>
+                            <div id="FileEntry.size" class="classattr">
+                                <div class="attr variable">
+            <span class="name">size</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#FileEntry.size"></a>
+    
+            <div class="docstring"><p>Uncompressed file size in bytes.</p>
+</div>
+
+
+                            </div>
+                </section>
+                <section id="Hook">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">Hook</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#Hook"></a>
+    
+            <div class="docstring"><p>A hook (attachment point) in a skeleton.</p>
+</div>
+
+
+                            <div id="Hook.bone_index" class="classattr">
+                                <div class="attr variable">
+            <span class="name">bone_index</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Hook.bone_index"></a>
+    
+            <div class="docstring"><p>Index of the bone this hook is attached to.</p>
+</div>
+
+
+                            </div>
+                            <div id="Hook.hook_type" class="classattr">
+                                <div class="attr variable">
+            <span class="name">hook_type</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Hook.hook_type"></a>
+    
+            <div class="docstring"><p>Hook type identifier.</p>
+</div>
+
+
+                            </div>
+                            <div id="Hook.name" class="classattr">
+                                <div class="attr variable">
+            <span class="name">name</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Hook.name"></a>
+    
+            <div class="docstring"><p>Hook name.</p>
+</div>
+
+
+                            </div>
+                            <div id="Hook.transform" class="classattr">
+                                <div class="attr variable">
+            <span class="name">transform</span><span class="annotation">: List[float]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Hook.transform"></a>
+    
+            <div class="docstring"><p>Hook transform matrix (column-major, 4x4 = 16 floats).</p>
+</div>
+
+
+                            </div>
+                </section>
+                <section id="Material">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">Material</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#Material"></a>
+    
+            <div class="docstring"><p>A material definition from a skin file.</p>
+</div>
+
+
+                            <div id="Material.ambient" class="classattr">
+                                <div class="attr variable">
+            <span class="name">ambient</span><span class="annotation">: tuple[float, float, float, float]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Material.ambient"></a>
+    
+            <div class="docstring"><p>Ambient color as (r, g, b, a) tuple.</p>
+</div>
+
+
+                            </div>
+                            <div id="Material.diffuse" class="classattr">
+                                <div class="attr variable">
+            <span class="name">diffuse</span><span class="annotation">: tuple[float, float, float, float]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Material.diffuse"></a>
+    
+            <div class="docstring"><p>Diffuse color as (r, g, b, a) tuple.</p>
+</div>
+
+
+                            </div>
+                            <div id="Material.emissive" class="classattr">
+                                <div class="attr variable">
+            <span class="name">emissive</span><span class="annotation">: tuple[float, float, float, float]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Material.emissive"></a>
+    
+            <div class="docstring"><p>Emissive color as (r, g, b, a) tuple.</p>
+</div>
+
+
+                            </div>
+                            <div id="Material.name" class="classattr">
+                                <div class="attr variable">
+            <span class="name">name</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Material.name"></a>
+    
+            <div class="docstring"><p>Material name.</p>
+</div>
+
+
+                            </div>
+                            <div id="Material.power" class="classattr">
+                                <div class="attr variable">
+            <span class="name">power</span><span class="annotation">: float</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Material.power"></a>
+    
+            <div class="docstring"><p>Specular power.</p>
+</div>
+
+
+                            </div>
+                            <div id="Material.specular" class="classattr">
+                                <div class="attr variable">
+            <span class="name">specular</span><span class="annotation">: tuple[float, float, float, float]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Material.specular"></a>
+    
+            <div class="docstring"><p>Specular color as (r, g, b, a) tuple.</p>
+</div>
+
+
+                            </div>
+                            <div id="Material.two_sided" class="classattr">
+                                <div class="attr variable">
+            <span class="name">two_sided</span><span class="annotation">: bool</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Material.two_sided"></a>
+    
+            <div class="docstring"><p>Whether the material is two-sided.</p>
+</div>
+
+
+                            </div>
+                </section>
+                <section id="PackageBuilder">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">PackageBuilder</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#PackageBuilder"></a>
+    
+            <div class="docstring"><p>Builder for creating or modifying pck packages.</p>
+</div>
+
+
+                            <div id="PackageBuilder.__init__" class="classattr">
+                                <div class="attr function">
+            
+        <span class="name">PackageBuilder</span><span class="signature pdoc-code condensed">()</span>
+
+        
+    </div>
+    <a class="headerlink" href="#PackageBuilder.__init__"></a>
+    
+            <div class="docstring"><p>Create an empty builder (from scratch).</p>
+</div>
+
+
+                            </div>
+                            <div id="PackageBuilder.add_file" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">add_file</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">path</span><span class="p">:</span> <span class="nb">str</span>, </span><span class="param"><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#PackageBuilder.add_file"></a>
+    
+            <div class="docstring"><p>Add or overwrite a file. Path is normalized internally.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>path</strong>:  File path inside the package.</li>
+<li><strong>data</strong>:  File content as bytes.</li>
+</ul>
+</div>
+
+
+                            </div>
+                            <div id="PackageBuilder.file_list" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">file_list</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#PackageBuilder.file_list"></a>
+    
+            <div class="docstring"><p>List the final set of files (source - removed + added), sorted.</p>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>Sorted list of normalized file paths.</p>
+</blockquote>
+</div>
+
+
+                            </div>
+                            <div id="PackageBuilder.remove_file" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">remove_file</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">path</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="nb">bool</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#PackageBuilder.remove_file"></a>
+    
+            <div class="docstring"><p>Remove a file from the package.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>path</strong>:  File path inside the package.</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>True if the file existed, False otherwise.</p>
+</blockquote>
+</div>
+
+
+                            </div>
+                            <div id="PackageBuilder.save" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">save</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="n">path</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">version</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="n"><a href="#PackageConfig">PackageConfig</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#PackageBuilder.save"></a>
+    
+            <div class="docstring"><p>Save the package to a file.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>path</strong>:  Output file path.</li>
+<li><strong>version: Package format version (default</strong>:  source version or 0x20002).</li>
+<li><strong>config</strong>:  Package configuration. Defaults to standard Angelica Engine config.</li>
+</ul>
+</div>
+
+
+                            </div>
+                            <div id="PackageBuilder.to_bytes" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">to_bytes</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">version</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="n"><a href="#PackageConfig">PackageConfig</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="nb">bytes</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#PackageBuilder.to_bytes"></a>
+    
+            <div class="docstring"><p>Serialize the package to bytes.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>version: Package format version (default</strong>:  source version or 0x20002).</li>
+<li><strong>config</strong>:  Package configuration. Defaults to standard Angelica Engine config.</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>Serialized package bytes.</p>
+</blockquote>
+</div>
+
+
+                            </div>
+                </section>
+                <section id="PackageConfig">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">PackageConfig</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#PackageConfig"></a>
+    
+            <div class="docstring"><p>Configuration for pck package encryption keys and guard values.</p>
+</div>
+
+
+                            <div id="PackageConfig.__init__" class="classattr">
+                                <div class="attr function">
+            
+        <span class="name">PackageConfig</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">key1</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2828235874</span>,</span><span class="param">	<span class="n">key2</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1496793649</span>,</span><span class="param">	<span class="n">guard1</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4261281518</span>,</span><span class="param">	<span class="n">guard2</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4027432687</span></span>)</span>
+
+        
+    </div>
+    <a class="headerlink" href="#PackageConfig.__init__"></a>
+    
+            <div class="docstring"><p>Create a new PackageConfig with optional custom values.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>key1</strong>:  First key value.</li>
+<li><strong>key2</strong>:  Second key value.</li>
+<li><strong>guard1</strong>:  First guard value.</li>
+<li><strong>guard2</strong>:  Second guard value.</li>
+</ul>
+</div>
+
+
+                            </div>
+                            <div id="PackageConfig.guard1" class="classattr">
+                                <div class="attr variable">
+            <span class="name">guard1</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#PackageConfig.guard1"></a>
+    
+            <div class="docstring"><p>First guard value.</p>
+</div>
+
+
+                            </div>
+                            <div id="PackageConfig.guard2" class="classattr">
+                                <div class="attr variable">
+            <span class="name">guard2</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#PackageConfig.guard2"></a>
+    
+            <div class="docstring"><p>Second guard value.</p>
+</div>
+
+
+                            </div>
+                            <div id="PackageConfig.key1" class="classattr">
+                                <div class="attr variable">
+            <span class="name">key1</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#PackageConfig.key1"></a>
+    
+            <div class="docstring"><p>First key value.</p>
+</div>
+
+
+                            </div>
+                            <div id="PackageConfig.key2" class="classattr">
+                                <div class="attr variable">
+            <span class="name">key2</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#PackageConfig.key2"></a>
+    
+            <div class="docstring"><p>Second key value.</p>
+</div>
+
+
+                            </div>
+                </section>
+                <section id="PckPackage">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">PckPackage</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#PckPackage"></a>
+    
+            <div class="docstring"><p>Object describing parsed pck package.</p>
+</div>
+
+
+                            <div id="PckPackage.file_list" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">file_list</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#PckPackage.file_list"></a>
+    
+            <div class="docstring"><p>Returns list of file paths in package.</p>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>All paths in package.</p>
+</blockquote>
+</div>
+
+
+                            </div>
+                            <div id="PckPackage.find_prefix" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">find_prefix</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#PckPackage.find_prefix"></a>
+    
+            <div class="docstring"><p>Finds all files in archive with path prefixed by <code>prefix</code>.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>prefix</strong>:  Path prefix.</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>All paths in package prefixed by <code>prefix</code> or empty list if no files were found.</p>
+</blockquote>
+</div>
+
+
+                            </div>
+                            <div id="PckPackage.get_file" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">get_file</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">path</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="nb">bytes</span> <span class="o">|</span> <span class="kc">None</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#PckPackage.get_file"></a>
+    
+            <div class="docstring"><p>Get file content by its path.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>path</strong>:  Path to file inside package.</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p><code>None</code> if file not found. Otherwise, returns file content.</p>
+</blockquote>
+</div>
+
+
+                            </div>
+                            <div id="PckPackage.save" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">save</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">path</span><span class="p">:</span> <span class="nb">str</span>, </span><span class="param"><span class="n">config</span><span class="p">:</span> <span class="n"><a href="#PackageConfig">PackageConfig</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#PckPackage.save"></a>
+    
+            <div class="docstring"><p>Save the package to a file.</p>
+
+<p>This method saves the package to a file at the specified path.
+The saved package will be identical to the original when loaded back.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>path</strong>:  Path where to save the package.</li>
+<li><strong>config</strong>:  Custom package configuration. Defaults to None.</li>
+</ul>
+
+<h6 id="raises">Raises</h6>
+
+<ul>
+<li><strong>Exception</strong>:  If any I/O error occurs during saving.</li>
+</ul>
+</div>
+
+
+                            </div>
+                            <div id="PckPackage.scan_entries" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">scan_entries</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="bp">self</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">paths</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>,</span><span class="param">	<span class="n">on_chunk</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">List</span><span class="p">[</span><span class="n"><a href="#FileEntry">FileEntry</a></span><span class="p">]],</span> <span class="n">NoneType</span><span class="p">]</span>,</span><span class="param">	<span class="n">interval_ms</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span></span><span class="return-annotation">) -> <span class="kc">None</span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#PckPackage.scan_entries"></a>
+    
+            <div class="docstring"><p>Scan file entries with metadata (including compressed data CRC32 hashes).
+Hashes are computed from compressed (on-disk) data without decompression.
+Results are delivered in chunks via <code>on_chunk</code> callback.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>paths</strong>:  List of file paths to scan.</li>
+<li><strong>on_chunk</strong>:  Callback receiving a list of <code><a href="#FileEntry">FileEntry</a></code> for each chunk.
+Raise an exception to cancel scanning.</li>
+<li><strong>interval_ms</strong>:  Minimum interval in milliseconds between chunk callbacks (<code>100</code> by default).
+The final chunk is always delivered regardless of throttling.</li>
+</ul>
+</div>
+
+
+                            </div>
+                            <div id="PckPackage.to_builder" class="classattr">
+                                <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">to_builder</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="n"><a href="#PackageBuilder">PackageBuilder</a></span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#PckPackage.to_builder"></a>
+    
+            <div class="docstring"><p>Create a builder pre-populated with this package's files.</p>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>A new PackageBuilder with this package's files.</p>
+</blockquote>
+</div>
+
+
+                            </div>
+                </section>
+                <section id="RigidMesh">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">RigidMesh</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#RigidMesh"></a>
+    
+            <div class="docstring"><p>A rigid (static) mesh from a skin file.</p>
+</div>
+
+
+                            <div id="RigidMesh.bone_index" class="classattr">
+                                <div class="attr variable">
+            <span class="name">bone_index</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#RigidMesh.bone_index"></a>
+    
+            <div class="docstring"><p>Index of the bone this mesh is attached to.</p>
+</div>
+
+
+                            </div>
+                            <div id="RigidMesh.indices" class="classattr">
+                                <div class="attr variable">
+            <span class="name">indices</span><span class="annotation">: List[int]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#RigidMesh.indices"></a>
+    
+            <div class="docstring"><p>Triangle indices.</p>
+</div>
+
+
+                            </div>
+                            <div id="RigidMesh.material_index" class="classattr">
+                                <div class="attr variable">
+            <span class="name">material_index</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#RigidMesh.material_index"></a>
+    
+            <div class="docstring"><p>Index of the material used by this mesh (-1 = none).</p>
+</div>
+
+
+                            </div>
+                            <div id="RigidMesh.name" class="classattr">
+                                <div class="attr variable">
+            <span class="name">name</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#RigidMesh.name"></a>
+    
+            <div class="docstring"><p>Mesh name.</p>
+</div>
+
+
+                            </div>
+                            <div id="RigidMesh.normals" class="classattr">
+                                <div class="attr variable">
+            <span class="name">normals</span><span class="annotation">: List[float]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#RigidMesh.normals"></a>
+    
+            <div class="docstring"><p>Flat array of vertex normals [x0, y0, z0, x1, y1, z1, ...].</p>
+</div>
+
+
+                            </div>
+                            <div id="RigidMesh.positions" class="classattr">
+                                <div class="attr variable">
+            <span class="name">positions</span><span class="annotation">: List[float]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#RigidMesh.positions"></a>
+    
+            <div class="docstring"><p>Flat array of vertex positions [x0, y0, z0, x1, y1, z1, ...].</p>
+</div>
+
+
+                            </div>
+                            <div id="RigidMesh.texture_index" class="classattr">
+                                <div class="attr variable">
+            <span class="name">texture_index</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#RigidMesh.texture_index"></a>
+    
+            <div class="docstring"><p>Index of the texture used by this mesh (-1 = none).</p>
+</div>
+
+
+                            </div>
+                            <div id="RigidMesh.uvs" class="classattr">
+                                <div class="attr variable">
+            <span class="name">uvs</span><span class="annotation">: List[float]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#RigidMesh.uvs"></a>
+    
+            <div class="docstring"><p>Flat array of UV coordinates [u0, v0, u1, v1, ...].</p>
+</div>
+
+
+                            </div>
+                </section>
+                <section id="Skeleton">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">Skeleton</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#Skeleton"></a>
+    
+            <div class="docstring"><p>Parsed BON (skeleton) file.</p>
+</div>
+
+
+                            <div id="Skeleton.bones" class="classattr">
+                                <div class="attr variable">
+            <span class="name">bones</span><span class="annotation">: List[<a href="#Bone">Bone</a>]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Skeleton.bones"></a>
+    
+            <div class="docstring"><p>List of bones in the skeleton.</p>
+</div>
+
+
+                            </div>
+                            <div id="Skeleton.hooks" class="classattr">
+                                <div class="attr variable">
+            <span class="name">hooks</span><span class="annotation">: List[<a href="#Hook">Hook</a>]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Skeleton.hooks"></a>
+    
+            <div class="docstring"><p>List of hook attachment points.</p>
+</div>
+
+
+                            </div>
+                            <div id="Skeleton.version" class="classattr">
+                                <div class="attr variable">
+            <span class="name">version</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Skeleton.version"></a>
+    
+            <div class="docstring"><p>BON format version.</p>
+</div>
+
+
+                            </div>
+                </section>
+                <section id="Skin">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">Skin</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#Skin"></a>
+    
+            <div class="docstring"><p>Parsed SKI (skin) file containing meshes, textures, and materials.</p>
+</div>
+
+
+                            <div id="Skin.bone_names" class="classattr">
+                                <div class="attr variable">
+            <span class="name">bone_names</span><span class="annotation">: List[str]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Skin.bone_names"></a>
+    
+            <div class="docstring"><p>Bone names referenced by this skin.</p>
+</div>
+
+
+                            </div>
+                            <div id="Skin.materials" class="classattr">
+                                <div class="attr variable">
+            <span class="name">materials</span><span class="annotation">: List[<a href="#Material">Material</a>]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Skin.materials"></a>
+    
+            <div class="docstring"><p>Materials defined in this skin.</p>
+</div>
+
+
+                            </div>
+                            <div id="Skin.num_ske_bone" class="classattr">
+                                <div class="attr variable">
+            <span class="name">num_ske_bone</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Skin.num_ske_bone"></a>
+    
+            <div class="docstring"><p>Total skeleton bone count from the header (identity remap range for SKI version &lt; 9).</p>
+</div>
+
+
+                            </div>
+                            <div id="Skin.rigid_meshes" class="classattr">
+                                <div class="attr variable">
+            <span class="name">rigid_meshes</span><span class="annotation">: List[<a href="#RigidMesh">RigidMesh</a>]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Skin.rigid_meshes"></a>
+    
+            <div class="docstring"><p>Rigid (bone-attached) meshes.</p>
+</div>
+
+
+                            </div>
+                            <div id="Skin.skin_meshes" class="classattr">
+                                <div class="attr variable">
+            <span class="name">skin_meshes</span><span class="annotation">: List[<a href="#SkinMesh">SkinMesh</a>]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Skin.skin_meshes"></a>
+    
+            <div class="docstring"><p>Skinned (weighted) meshes.</p>
+</div>
+
+
+                            </div>
+                            <div id="Skin.textures" class="classattr">
+                                <div class="attr variable">
+            <span class="name">textures</span><span class="annotation">: List[str]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Skin.textures"></a>
+    
+            <div class="docstring"><p>Texture file paths referenced by this skin.</p>
+</div>
+
+
+                            </div>
+                            <div id="Skin.version" class="classattr">
+                                <div class="attr variable">
+            <span class="name">version</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Skin.version"></a>
+    
+            <div class="docstring"><p>SKI format version.</p>
+</div>
+
+
+                            </div>
+                </section>
+                <section id="SkinMesh">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">SkinMesh</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#SkinMesh"></a>
+    
+            <div class="docstring"><p>A weighted (skeletal) mesh from a skin file.</p>
+</div>
+
+
+                            <div id="SkinMesh.bone_indices" class="classattr">
+                                <div class="attr variable">
+            <span class="name">bone_indices</span><span class="annotation">: List[int]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SkinMesh.bone_indices"></a>
+    
+            <div class="docstring"><p>Flat array of bone indices [b0, b1, b2, b3, ...] per vertex (4 indices each).</p>
+</div>
+
+
+                            </div>
+                            <div id="SkinMesh.bone_weights" class="classattr">
+                                <div class="attr variable">
+            <span class="name">bone_weights</span><span class="annotation">: List[float]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SkinMesh.bone_weights"></a>
+    
+            <div class="docstring"><p>Flat array of bone weights [w0, w1, w2, w3, ...] per vertex (4 weights each, w3 derived).</p>
+</div>
+
+
+                            </div>
+                            <div id="SkinMesh.indices" class="classattr">
+                                <div class="attr variable">
+            <span class="name">indices</span><span class="annotation">: List[int]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SkinMesh.indices"></a>
+    
+            <div class="docstring"><p>Triangle indices.</p>
+</div>
+
+
+                            </div>
+                            <div id="SkinMesh.material_index" class="classattr">
+                                <div class="attr variable">
+            <span class="name">material_index</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SkinMesh.material_index"></a>
+    
+            <div class="docstring"><p>Index of the material used by this mesh (-1 = none).</p>
+</div>
+
+
+                            </div>
+                            <div id="SkinMesh.name" class="classattr">
+                                <div class="attr variable">
+            <span class="name">name</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SkinMesh.name"></a>
+    
+            <div class="docstring"><p>Mesh name.</p>
+</div>
+
+
+                            </div>
+                            <div id="SkinMesh.normals" class="classattr">
+                                <div class="attr variable">
+            <span class="name">normals</span><span class="annotation">: List[float]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SkinMesh.normals"></a>
+    
+            <div class="docstring"><p>Flat array of vertex normals [x0, y0, z0, x1, y1, z1, ...].</p>
+</div>
+
+
+                            </div>
+                            <div id="SkinMesh.positions" class="classattr">
+                                <div class="attr variable">
+            <span class="name">positions</span><span class="annotation">: List[float]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SkinMesh.positions"></a>
+    
+            <div class="docstring"><p>Flat array of vertex positions [x0, y0, z0, x1, y1, z1, ...].</p>
+</div>
+
+
+                            </div>
+                            <div id="SkinMesh.texture_index" class="classattr">
+                                <div class="attr variable">
+            <span class="name">texture_index</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SkinMesh.texture_index"></a>
+    
+            <div class="docstring"><p>Index of the texture used by this mesh (-1 = none).</p>
+</div>
+
+
+                            </div>
+                            <div id="SkinMesh.uvs" class="classattr">
+                                <div class="attr variable">
+            <span class="name">uvs</span><span class="annotation">: List[float]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SkinMesh.uvs"></a>
+    
+            <div class="docstring"><p>Flat array of UV coordinates [u0, v0, u1, v1, ...].</p>
+</div>
+
+
+                            </div>
+                </section>
+                <section id="SmdModel">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">SmdModel</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#SmdModel"></a>
+    
+            <div class="docstring"><p>Parsed SMD (skin model data) file.</p>
+</div>
+
+
+                            <div id="SmdModel.skeleton_path" class="classattr">
+                                <div class="attr variable">
+            <span class="name">skeleton_path</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SmdModel.skeleton_path"></a>
+    
+            <div class="docstring"><p>Path to the skeleton file.</p>
+</div>
+
+
+                            </div>
+                            <div id="SmdModel.skin_paths" class="classattr">
+                                <div class="attr variable">
+            <span class="name">skin_paths</span><span class="annotation">: List[str]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SmdModel.skin_paths"></a>
+    
+            <div class="docstring"><p>Skin texture paths.</p>
+</div>
+
+
+                            </div>
+                            <div id="SmdModel.tcks_dir" class="classattr">
+                                <div class="attr variable">
+            <span class="name">tcks_dir</span><span class="annotation">: str | None</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SmdModel.tcks_dir"></a>
+    
+            <div class="docstring"><p>Directory for TCKS animation files (may be None).</p>
+</div>
+
+
+                            </div>
+                            <div id="SmdModel.version" class="classattr">
+                                <div class="attr variable">
+            <span class="name">version</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SmdModel.version"></a>
+    
+            <div class="docstring"><p>SMD format version.</p>
+</div>
+
+
+                            </div>
+                </section>
+                <section id="Track">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">Track</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#Track"></a>
+    
+            <div class="docstring"><p>A single animation track (position or rotation keyframes).</p>
+</div>
+
+
+                            <div id="Track.frame_rate" class="classattr">
+                                <div class="attr variable">
+            <span class="name">frame_rate</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Track.frame_rate"></a>
+    
+            <div class="docstring"><p>Frame rate of this track.</p>
+</div>
+
+
+                            </div>
+                            <div id="Track.key_frame_ids" class="classattr">
+                                <div class="attr variable">
+            <span class="name">key_frame_ids</span><span class="annotation">: List[int] | None</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Track.key_frame_ids"></a>
+    
+            <div class="docstring"><p>Per-key frame IDs; <code>None</code> for V1 files.</p>
+</div>
+
+
+                            </div>
+                            <div id="Track.keys" class="classattr">
+                                <div class="attr variable">
+            <span class="name">keys</span><span class="annotation">: List[float]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Track.keys"></a>
+    
+            <div class="docstring"><p>Flat keyframe data: 3 floats per key (position) or 4 floats per key (rotation).</p>
+</div>
+
+
+                            </div>
+                            <div id="Track.track_length_ms" class="classattr">
+                                <div class="attr variable">
+            <span class="name">track_length_ms</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Track.track_length_ms"></a>
+    
+            <div class="docstring"><p>Track length in milliseconds.</p>
+</div>
+
+
+                            </div>
+                </section>
+                <section id="TrackSet">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">TrackSet</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#TrackSet"></a>
+    
+            <div class="docstring"><p>Parsed STCK (skeleton track set) file.</p>
+</div>
+
+
+                            <div id="TrackSet.anim_end" class="classattr">
+                                <div class="attr variable">
+            <span class="name">anim_end</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#TrackSet.anim_end"></a>
+    
+            <div class="docstring"><p>Animation end frame.</p>
+</div>
+
+
+                            </div>
+                            <div id="TrackSet.anim_fps" class="classattr">
+                                <div class="attr variable">
+            <span class="name">anim_fps</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#TrackSet.anim_fps"></a>
+    
+            <div class="docstring"><p>Animation frames per second.</p>
+</div>
+
+
+                            </div>
+                            <div id="TrackSet.anim_start" class="classattr">
+                                <div class="attr variable">
+            <span class="name">anim_start</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#TrackSet.anim_start"></a>
+    
+            <div class="docstring"><p>Animation start frame.</p>
+</div>
+
+
+                            </div>
+                            <div id="TrackSet.bone_tracks" class="classattr">
+                                <div class="attr variable">
+            <span class="name">bone_tracks</span><span class="annotation">: List[<a href="#BoneTrack">BoneTrack</a>]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#TrackSet.bone_tracks"></a>
+    
+            <div class="docstring"><p>Per-bone animation tracks.</p>
+</div>
+
+
+                            </div>
+                            <div id="TrackSet.version" class="classattr">
+                                <div class="attr variable">
+            <span class="name">version</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#TrackSet.version"></a>
+    
+            <div class="docstring"><p>STCK format version.</p>
+</div>
+
+
+                            </div>
+                </section>
+                <section id="read_ecm">
+                    <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">read_ecm</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span></span><span class="return-annotation">) -> <span class="n"><a href="#EcmModel">EcmModel</a></span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#read_ecm"></a>
+    
+            <div class="docstring"><p>Parse an ECM (composite model) file from bytes.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>data</strong>:  Raw ECM file content.</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>Parsed ECM model.</p>
+</blockquote>
+
+<h6 id="raises">Raises</h6>
+
+<ul>
+<li><strong>ValueError</strong>:  If the data is not a valid ECM file.</li>
+</ul>
+</div>
+
+
+                </section>
+                <section id="read_elements">
+                    <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">read_elements</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">elements_path</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="n"><a href="#ElementsConfig">ElementsConfig</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="n"><a href="#ElementsData">ElementsData</a></span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#read_elements"></a>
+    
+            <div class="docstring"><p>Parses <strong>elements.data</strong> from file <code>elements_path</code> and returns <code><a href="#ElementsData">ElementsData</a></code>.
+Doesn't load file content into memory, uses memory-mapped I/O - so file cannot be modified while <code><a href="#ElementsData">ElementsData</a></code> is alive.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>elements_path</strong>:  Path to <strong>elements.data</strong>.</li>
+<li><strong>config</strong>:  Optional config describing <strong>elements.data</strong> structure (<code>None</code> by default).
+If no config specified, one of predefined will be used.</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>Object describing parsed <strong>elements.data</strong>.</p>
+</blockquote>
+
+<h6 id="raises">Raises</h6>
+
+<ul>
+<li><strong>Exception</strong>:  If any I/O error occurs, <strong>elements.data</strong> has invalid internal structure or config has incompatible version.</li>
+</ul>
+</div>
+
+
+                </section>
+                <section id="read_elements_bytes">
+                    <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">read_elements_bytes</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">content</span><span class="p">:</span> <span class="nb">bytes</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="n"><a href="#ElementsConfig">ElementsConfig</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></span><span class="return-annotation">) -> <span class="n"><a href="#ElementsData">ElementsData</a></span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#read_elements_bytes"></a>
+    
+            <div class="docstring"><p>Parses <strong>elements.data</strong> from byte array <code>content</code> and returns <code><a href="#ElementsData">ElementsData</a></code>.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>content</strong>:  Content of <strong>elements.data</strong>.</li>
+<li><strong>config</strong>:  Optional config describing <strong>elements.data</strong> structure (<code>None</code> by default).
+If no config specified, one of predefined will be used.</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>Object describing parsed <strong>elements.data</strong>.</p>
+</blockquote>
+
+<h6 id="raises">Raises</h6>
+
+<ul>
+<li><strong>Exception</strong>:  If <strong>elements.data</strong> has invalid internal structure or config has incompatible version.</li>
+</ul>
+</div>
+
+
+                </section>
+                <section id="read_elements_config">
+                    <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">read_elements_config</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">path</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="n"><a href="#ElementsConfig">ElementsConfig</a></span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#read_elements_config"></a>
+    
+            <div class="docstring"><p>Parses <strong>elements.data</strong> config from file at path <code>path</code> and returns <code><a href="#ElementsConfig">ElementsConfig</a></code> describing parsed file.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>path</strong>:  Path to elements config.</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>Object describing parsed config.</p>
+</blockquote>
+
+<h6 id="raises">Raises</h6>
+
+<ul>
+<li><strong>Exception</strong>:  If any I/O error occurs or config has invalid internal structure.</li>
+</ul>
+</div>
+
+
+                </section>
+                <section id="read_elements_config_string">
+                    <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">read_elements_config_string</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">content</span><span class="p">:</span> <span class="nb">str</span></span><span class="return-annotation">) -> <span class="n"><a href="#ElementsConfig">ElementsConfig</a></span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#read_elements_config_string"></a>
+    
+            <div class="docstring"><p>Parses <strong>elements.data</strong> config from string <code>content</code> and returns <code><a href="#ElementsConfig">ElementsConfig</a></code> describing parsed file.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>content</strong>:  String containing elements config.</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>Object describing parsed config.</p>
+</blockquote>
+
+<h6 id="raises">Raises</h6>
+
+<ul>
+<li><strong>Exception</strong>:  If config has invalid internal structure.</li>
+</ul>
+</div>
+
+
+                </section>
+                <section id="read_pck">
+                    <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">read_pck</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">pck_path</span><span class="p">:</span> <span class="nb">str</span>,</span><span class="param">	<span class="n">pkx_paths</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="n"><a href="#PackageConfig">PackageConfig</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">on_progress</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">NoneType</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">progress_interval_ms</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span></span><span class="return-annotation">) -> <span class="n"><a href="#PckPackage">PckPackage</a></span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#read_pck"></a>
+    
+            <div class="docstring"><p>Parses pck package from file at path <code>pck_path</code> (and optionally pkx file(s)) and returns <code><a href="#PckPackage">PckPackage</a></code> describing parsed file(s).
+Doesn't load file content into memory, uses memory-mapped I/O - so file(s) cannot be modified while <code><a href="#PckPackage">PckPackage</a></code> is alive.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>pck_path</strong>:  Path to pck package.</li>
+<li><strong>pkx_paths</strong>:  Optional pkx path(s) — a single string or list of strings (<code>None</code> by default).</li>
+<li><strong>config</strong>:  Custom package configuration. Defaults to None.</li>
+<li><strong>on_progress</strong>:  Optional callback <code>(index, total)</code> called for each file entry during parsing.
+Raise an exception to cancel parsing.</li>
+<li><strong>progress_interval_ms</strong>:  Minimum interval in milliseconds between progress callbacks (<code>0</code> by default — no throttling).
+The last entry is always reported regardless of throttling.</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>Object describing parsed package.</p>
+</blockquote>
+
+<h6 id="raises">Raises</h6>
+
+<ul>
+<li><strong>Exception</strong>:  If any I/O error occurs or package has invalid internal structure.</li>
+</ul>
+</div>
+
+
+                </section>
+                <section id="read_pck_bytes">
+                    <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">read_pck_bytes</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">content</span><span class="p">:</span> <span class="nb">bytes</span>,</span><span class="param">	<span class="n">config</span><span class="p">:</span> <span class="n"><a href="#PackageConfig">PackageConfig</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="o">*</span>,</span><span class="param">	<span class="n">on_progress</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">NoneType</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">progress_interval_ms</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span></span><span class="return-annotation">) -> <span class="n"><a href="#PckPackage">PckPackage</a></span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#read_pck_bytes"></a>
+    
+            <div class="docstring"><p>Parses package from byte array <code>content</code> and returns <code><a href="#PckPackage">PckPackage</a></code>.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>content</strong>:  Content of package.</li>
+<li><strong>config</strong>:  Custom package configuration. Defaults to None.</li>
+<li><strong>on_progress</strong>:  Optional callback <code>(index, total)</code> called for each file entry during parsing.
+Raise an exception to cancel parsing.</li>
+<li><strong>progress_interval_ms</strong>:  Minimum interval in milliseconds between progress callbacks (<code>0</code> by default — no throttling).
+The last entry is always reported regardless of throttling.</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>Object describing parsed package.</p>
+</blockquote>
+
+<h6 id="raises">Raises</h6>
+
+<ul>
+<li><strong>Exception</strong>:  If package has invalid internal structure.</li>
+</ul>
+</div>
+
+
+                </section>
+                <section id="read_skeleton">
+                    <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">read_skeleton</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span></span><span class="return-annotation">) -> <span class="n"><a href="#Skeleton">Skeleton</a></span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#read_skeleton"></a>
+    
+            <div class="docstring"><p>Parse a BON (skeleton) file from bytes.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>data</strong>:  Raw BON file content.</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>Parsed skeleton.</p>
+</blockquote>
+
+<h6 id="raises">Raises</h6>
+
+<ul>
+<li><strong>ValueError</strong>:  If the data is not a valid BON file.</li>
+</ul>
+</div>
+
+
+                </section>
+                <section id="read_skin">
+                    <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">read_skin</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span></span><span class="return-annotation">) -> <span class="n"><a href="#Skin">Skin</a></span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#read_skin"></a>
+    
+            <div class="docstring"><p>Parse a SKI (skin) file from bytes.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>data</strong>:  Raw SKI file content.</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>Parsed skin.</p>
+</blockquote>
+
+<h6 id="raises">Raises</h6>
+
+<ul>
+<li><strong>ValueError</strong>:  If the data is not a valid SKI file.</li>
+</ul>
+</div>
+
+
+                </section>
+                <section id="read_smd">
+                    <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">read_smd</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span></span><span class="return-annotation">) -> <span class="n"><a href="#SmdModel">SmdModel</a></span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#read_smd"></a>
+    
+            <div class="docstring"><p>Parse an SMD (skin model data) file from bytes.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>data</strong>:  Raw SMD file content.</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>Parsed SMD model.</p>
+</blockquote>
+
+<h6 id="raises">Raises</h6>
+
+<ul>
+<li><strong>ValueError</strong>:  If the data is not a valid SMD file.</li>
+</ul>
+</div>
+
+
+                </section>
+                <section id="read_track_set">
+                    <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">read_track_set</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span></span><span class="return-annotation">) -> <span class="n"><a href="#TrackSet">TrackSet</a></span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#read_track_set"></a>
+    
+            <div class="docstring"><p>Parse a STCK (skeleton track set) file from bytes.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>data</strong>:  Raw STCK file content.</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>Parsed track set.</p>
+</blockquote>
+
+<h6 id="raises">Raises</h6>
+
+<ul>
+<li><strong>ValueError</strong>:  If the data is not a valid STCK file.</li>
+</ul>
+</div>
+
+
+                </section>
+    </main>
+</body>
+</html>
