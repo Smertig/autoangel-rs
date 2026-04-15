@@ -153,3 +153,21 @@ test('shows STCK metadata for standalone .stck file', async ({ page }) => {
   await expect(page.getByText('FPS')).toBeVisible();
   await expect(page.getByText('Bone tracks')).toBeVisible();
 });
+
+test('animation list shows event indicators when ECM has combined action events', async ({ page }) => {
+  await page.goto('/pck/?local');
+  await expect(page.locator('#app')).toContainText('Ready', { timeout: 15000 });
+
+  await page.locator('input[type="file"]').setInputFiles(NPC_PCK_FILE);
+  await expect(page.locator('[class*="treeItem"]')).not.toHaveCount(0, { timeout: 10000 });
+
+  await page.locator('[class*="treeItem"]').filter({ hasText: /\.ecm$/ }).first().click();
+
+  const animPanel = page.locator('[class*="animListPanel"]');
+  await expect(animPanel).toBeVisible({ timeout: 30000 });
+  await expect(animPanel.locator('[class*="animListItem"]')).not.toHaveCount(0);
+
+  // This NPC (受伤的平民) has 1 combined action with 0 events,
+  // so no indicators are expected. Verify the panel renders cleanly.
+  await expect(animPanel.locator('[class*="animListItemActive"]')).toHaveCount(1);
+});

@@ -576,6 +576,56 @@ function showClipToast(container: HTMLElement, message: string): void {
   }, 3500);
 }
 
+// ── Animation event metadata ──
+
+const EVENT_GFX = 100 as const;
+const EVENT_SOUND = 101 as const;
+
+interface AnimEvent {
+  type: typeof EVENT_GFX | typeof EVENT_SOUND;
+  filePath: string; // basename only
+  startTime: number; // ms, 0 if not set
+  hookName: string; // empty if not set
+}
+
+/** Build a map from STCK animation name stem → events from ECM combined actions. */
+function buildAnimEventMap(ecm: any, animNames: string[]): Map<string, AnimEvent[]> {
+  const animSet = new Set(animNames);
+  const result = new Map<string, AnimEvent[]>();
+  const actionCount: number = ecm.combineActionCount ?? 0;
+  for (let i = 0; i < actionCount; i++) {
+    const eventCount: number = ecm.combineActionEventCount(i);
+    if (eventCount === 0) continue;
+    const baseCount: number = ecm.combineActionBaseActionCount(i);
+    for (let b = 0; b < baseCount; b++) {
+      const baseName: string | undefined = ecm.combineActionBaseActionName(i, b);
+      if (!baseName || !animSet.has(baseName)) continue;
+      // Collect events for this combined action
+      const events: AnimEvent[] = [];
+      for (let e = 0; e < eventCount; e++) {
+        const evType: number = ecm.eventType(i, e);
+        if (evType !== EVENT_GFX && evType !== EVENT_SOUND) continue;
+        const rawPath: string = ecm.eventFxFilePath(i, e) ?? '';
+        const basePath = rawPath.replace(/\\/g, '/').split('/').pop() ?? rawPath;
+        events.push({
+          type: evType as 100 | 101,
+          filePath: basePath,
+          startTime: ecm.eventStartTime(i, e) ?? 0,
+          hookName: ecm.eventHookName(i, e) ?? '',
+        });
+      }
+      if (events.length === 0) continue;
+      const existing = result.get(baseName);
+      if (existing) {
+        existing.push(...events);
+      } else {
+        result.set(baseName, events);
+      }
+    }
+  }
+  return result;
+}
+
 // ── Scene mount ──
 
 function mountScene(
@@ -588,6 +638,7 @@ function mountScene(
   loadClip?: (name: string) => Promise<any>,
   initialClip?: { name: string; clip: any } | null,
   skeleton?: any,
+  animEventMap?: Map<string, AnimEvent[]>,
 ): void {
   const v = getViewer(container);
   v.onFrameUpdate = null;
@@ -683,6 +734,7 @@ function mountScene(
   // ── Transport bar (bottom, only when animations exist) ──
   let transport: HTMLElement | null = null;
   let animPanel: HTMLElement | null = null;
+  let tooltipEl: HTMLElement | null = null;
   if (animNames && animNames.length > 0 && loadClip) {
     transport = document.createElement('div');
     transport.className = styles.transportBar;
@@ -758,8 +810,28 @@ function mountScene(
     for (const clipName of animNames) {
       const item = document.createElement('div');
       item.className = styles.animListItem;
-      item.textContent = clipName;
       item.title = clipName;
+
+      // Clip name label
+      const nameEl = document.createElement('span');
+      nameEl.className = styles.animListItemName;
+      nameEl.textContent = clipName;
+      item.appendChild(nameEl);
+
+      // Small event count indicator (details shown in timeline ticks)
+      const events = animEventMap?.get(clipName);
+      if (events && events.length > 0) {
+        const gfxCount = events.filter(e => e.type === EVENT_GFX).length;
+        const sndCount = events.filter(e => e.type === EVENT_SOUND).length;
+        const indicator = document.createElement('span');
+        indicator.className = styles.animEventIndicator;
+        const parts: string[] = [];
+        if (gfxCount > 0) parts.push(`\u2726${gfxCount}`);
+        if (sndCount > 0) parts.push(`\u266A${sndCount}`);
+        indicator.textContent = parts.join(' ');
+        nameEl.appendChild(indicator);
+      }
+
       if (initialClip && clipName === initialClip.name) {
         item.classList.add(styles.animListItemActive);
         activeItemEl = item;
@@ -783,6 +855,7 @@ function mountScene(
           if (activeItemEl) activeItemEl.classList.remove(styles.animListItemActive);
           item.classList.add(styles.animListItemActive);
           activeItemEl = item;
+          rebuildEventLane(clipName);
         } catch (e) {
           if (gen !== loadGeneration) return;
           console.warn('[model] Failed to load clip:', clipName, e);
@@ -824,8 +897,15 @@ function mountScene(
     transport.appendChild(nextBtn);
     addSep();
 
-    // Scrubber
+    // Scrubber + event timeline
     let scrubbing = false;
+    const scrubWrap = document.createElement('div');
+    scrubWrap.className = styles.scrubberWrap;
+
+    const eventLane = document.createElement('div');
+    eventLane.className = styles.eventLane;
+    scrubWrap.appendChild(eventLane);
+
     const scrubber = document.createElement('input');
     scrubber.type = 'range';
     scrubber.className = styles.scrubber;
@@ -841,7 +921,77 @@ function mountScene(
       if (playing) pause();
       seekTo(t);
     };
-    transport.appendChild(scrubber);
+    scrubWrap.appendChild(scrubber);
+    transport.appendChild(scrubWrap);
+
+    // Shared tooltip element — added to container via replaceChildren to survive mode switches
+    const tooltip = document.createElement('div');
+    tooltip.className = styles.eventTooltip;
+    tooltipEl = tooltip;
+
+    function showTooltip(tick: HTMLElement, ev: AnimEvent) {
+      const isGfx = ev.type === EVENT_GFX;
+      const prefix = isGfx ? '\u2726 GFX' : '\u266A Sound';
+      const typeClass = isGfx ? styles.eventTooltipGfx : styles.eventTooltipSound;
+      tooltip.className = `${styles.eventTooltip} ${typeClass} ${styles.eventTooltipVisible}`;
+      tooltip.innerHTML = '';
+
+      const header = document.createElement('div');
+      header.className = styles.eventTooltipHeader;
+      header.textContent = prefix;
+      tooltip.appendChild(header);
+
+      const file = document.createElement('div');
+      file.className = styles.eventTooltipFile;
+      file.textContent = ev.filePath;
+      tooltip.appendChild(file);
+
+      if (ev.startTime > 0) {
+        const time = document.createElement('div');
+        time.className = styles.eventTooltipDetail;
+        time.textContent = `@ ${ev.startTime}ms`;
+        tooltip.appendChild(time);
+      }
+      if (ev.hookName) {
+        const hook = document.createElement('div');
+        hook.className = styles.eventTooltipDetail;
+        hook.textContent = `hook: ${ev.hookName}`;
+        tooltip.appendChild(hook);
+      }
+
+      // Position above the tick, in container coordinates
+      const containerRect = container.getBoundingClientRect();
+      const tickRect = tick.getBoundingClientRect();
+      const tickCenterX = tickRect.left + tickRect.width / 2 - containerRect.left;
+      const tipWidth = 200;
+      let left = tickCenterX - tipWidth / 2;
+      left = Math.max(4, Math.min(left, containerRect.width - tipWidth - 4));
+      tooltip.style.left = `${left}px`;
+      tooltip.style.bottom = `${containerRect.bottom - tickRect.top + 4}px`;
+    }
+
+    function hideTooltip() {
+      tooltip.classList.remove(styles.eventTooltipVisible);
+    }
+
+    /** Rebuild event tick marks on the timeline lane for the given clip. */
+    function rebuildEventLane(clipName: string) {
+      eventLane.replaceChildren();
+      hideTooltip();
+      const events = animEventMap?.get(clipName);
+      const dur = getDuration();
+      if (!events || events.length === 0 || dur <= 0) return;
+      for (const ev of events) {
+        const pct = Math.min(100, Math.max(0, (ev.startTime / 1000) / dur * 100));
+        const tick = document.createElement('div');
+        tick.className = ev.type === EVENT_GFX ? styles.eventTickGfx : styles.eventTickSound;
+        tick.style.left = `${pct}%`;
+        tick.onmouseenter = () => showTooltip(tick, ev);
+        tick.onmouseleave = hideTooltip;
+        eventLane.appendChild(tick);
+      }
+    }
+    rebuildEventLane(activeClip.name);
 
     // Time display
     const timeEl = document.createElement('span');
@@ -937,6 +1087,7 @@ function mountScene(
     const children: Node[] = [canvas, toolbar, info];
     if (transport) children.push(transport);
     if (animPanel) children.push(animPanel);
+    if (tooltipEl) children.push(tooltipEl);
     container.replaceChildren(...children);
     wireBtn.style.display = bgBtn.style.display = resetBtn.style.display = '';
     if (bonesBtn) bonesBtn.style.display = '';
@@ -952,6 +1103,7 @@ function mountScene(
   const children: Node[] = [canvas, toolbar, info];
   if (transport) children.push(transport);
   if (animPanel) children.push(animPanel);
+  if (tooltipEl) children.push(tooltipEl);
   container.replaceChildren(...children);
 }
 
@@ -1064,6 +1216,9 @@ async function renderModel(
     };
   }
 
+  // Build event map while ecm is still alive (before using-scope cleanup)
+  const animEventMap = animNames.length > 0 ? buildAnimEventMap(ecm, animNames) : undefined;
+
   // Only use skinning if we have animations to play
   const useSkinning = animNames.length > 0 && skelData != null;
 
@@ -1124,7 +1279,7 @@ async function renderModel(
   }
 
   mountScene(container, group, totalStats, ecmData, '.ecm',
-    animNames, loadClip, initialClip, skelData?.skeleton,
+    animNames, loadClip, initialClip, skelData?.skeleton, animEventMap,
   );
 }
 

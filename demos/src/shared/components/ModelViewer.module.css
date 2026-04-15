@@ -162,8 +162,120 @@
   padding: 0 6px;
 }
 
-.scrubber {
+.scrubberWrap {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.eventLane {
+  position: relative;
+  height: 6px;
+  flex-shrink: 0;
+}
+
+.eventLane:empty {
+  display: none;
+}
+
+.eventTickGfx,
+.eventTickSound {
+  position: absolute;
+  top: 0;
+  width: 3px;
+  height: 100%;
+  border-radius: 1px;
+  transform: translateX(-50%);
+  opacity: 0.7;
+  transition: opacity 0.15s, transform 0.15s;
+  cursor: default;
+  /* Wider hit area via transparent padding */
+  padding: 0 4px;
+  background-clip: content-box;
+}
+
+.eventTickGfx:hover,
+.eventTickSound:hover {
+  opacity: 1;
+  transform: translateX(-50%) scaleY(1.5);
+}
+
+.eventTickGfx {
+  background: #d4a04a;
+  box-shadow: 0 0 4px rgba(212, 160, 74, 0.4);
+}
+
+.eventTickSound {
+  background: #5b9bd5;
+  box-shadow: 0 0 4px rgba(91, 155, 213, 0.4);
+}
+
+/* ── Event tooltip ── */
+
+.eventTooltip {
+  position: absolute;
+  max-width: 220px;
+  padding: 6px 8px;
+  background: rgba(20, 20, 24, 0.92);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  font-size: 10px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.75);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.12s, transform 0.12s;
+  z-index: 50;
+  white-space: nowrap;
+}
+
+.eventTooltipVisible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.eventTooltipGfx {
+  border-color: rgba(212, 160, 74, 0.3);
+}
+
+.eventTooltipSound {
+  border-color: rgba(91, 155, 213, 0.3);
+}
+
+.eventTooltipHeader {
+  font-weight: 600;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.eventTooltipGfx .eventTooltipHeader {
+  color: #d4a04a;
+}
+
+.eventTooltipSound .eventTooltipHeader {
+  color: #5b9bd5;
+}
+
+.eventTooltipFile {
+  color: rgba(255, 255, 255, 0.9);
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  word-break: break-all;
+  white-space: normal;
+}
+
+.eventTooltipDetail {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 9px;
+}
+
+.scrubber {
+  width: 100%;
   height: 4px;
   -webkit-appearance: none;
   appearance: none;
@@ -229,7 +341,7 @@
   position: absolute;
   top: 6px;
   left: 6px;
-  max-height: calc(100% - 52px);
+  max-height: min(50%, 300px);
   width: 150px;
   display: flex;
   flex-direction: column;
@@ -278,9 +390,7 @@
   font-size: 11px;
   color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
-  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
   transition: background 0.12s, color 0.12s;
 }
 
@@ -322,6 +432,19 @@
   transform: translateY(-50%);
   font-size: 9px;
   opacity: 0.7;
+}
+
+.animListItemName {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.animEventIndicator {
+  margin-left: 4px;
+  font-size: 9px;
+  color: rgba(212, 160, 74, 0.6);
 }
 
 .clipToast {
