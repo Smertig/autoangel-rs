@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1776193956720,
+  "lastUpdate": 1776257192174,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -2495,6 +2495,102 @@ window.BENCHMARK_DATA = {
             "name": "PackageInfo::save_to",
             "value": 1219905,
             "range": "± 943",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "10c1db4b12bf6717733fa080a990f92765b9dc89",
+          "message": "cleanup: bump version to 0.10.2",
+          "timestamp": "2026-04-15T09:18:00+03:00",
+          "tree_id": "8cdce080a65609335e7adf207d246e8dd3a6b2b6",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/10c1db4b12bf6717733fa080a990f92765b9dc89"
+        },
+        "date": 1776257191379,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 27534,
+            "range": "± 156",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 96,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::access_fields",
+            "value": 49,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 130,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 15375,
+            "range": "± 29",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::iterate_lists",
+            "value": 9903,
+            "range": "± 9",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 35,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 230637,
+            "range": "± 3434",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::find_prefix",
+            "value": 3551,
+            "range": "± 21",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 2581,
+            "range": "± 8",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_all_files",
+            "value": 8349246,
+            "range": "± 51772",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::save_to",
+            "value": 1182535,
+            "range": "± 1651",
             "unit": "ns/iter"
           }
         ]
