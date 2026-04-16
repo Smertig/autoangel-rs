@@ -7,7 +7,7 @@ const PCK_FILE = path.resolve(__dirname, '../../test_data/packages/models_carniv
 const NPC_PCK_FILE = path.resolve(__dirname, '../../test_data/packages/models_npc_animated.pck');
 
 async function loadPck(page: Page) {
-  await page.locator('input[type="file"]').setInputFiles(PCK_FILE);
+  await page.getByTestId('package-add').locator('input[type="file"]').setInputFiles(PCK_FILE);
   await expect(page.locator('[class*="treeItem"]')).not.toHaveCount(0, { timeout: 10000 });
 }
 
@@ -25,7 +25,7 @@ async function openEcm(page: Page) {
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/pck/?local');
-  await expect(page.locator('#app')).toContainText('Ready', { timeout: 15000 });
+  await expect(page.getByTestId('empty-drop-panel')).toBeVisible({ timeout: 15000 });
 });
 
 test('loads model package and shows file tree', async ({ page }) => {
@@ -84,9 +84,9 @@ test('renders animated NPC model with animation controls', async ({ page }) => {
 
   // Use ?local to load WASM from local build (TrackSet is not on CDN yet)
   await page.goto('/pck/?local');
-  await expect(page.locator('#app')).toContainText('Ready', { timeout: 15000 });
+  await expect(page.getByTestId('empty-drop-panel')).toBeVisible({ timeout: 15000 });
 
-  await page.locator('input[type="file"]').setInputFiles(NPC_PCK_FILE);
+  await page.getByTestId('package-add').locator('input[type="file"]').setInputFiles(NPC_PCK_FILE);
   await expect(page.locator('[class*="treeItem"]')).not.toHaveCount(0, { timeout: 10000 });
 
   // Click the .ecm file
@@ -119,9 +119,9 @@ test('renders animated NPC model with animation controls', async ({ page }) => {
 
 test('transport bar play/pause and frame stepping', async ({ page }) => {
   await page.goto('/pck/?local');
-  await expect(page.locator('#app')).toContainText('Ready', { timeout: 15000 });
+  await expect(page.getByTestId('empty-drop-panel')).toBeVisible({ timeout: 15000 });
 
-  await page.locator('input[type="file"]').setInputFiles(NPC_PCK_FILE);
+  await page.getByTestId('package-add').locator('input[type="file"]').setInputFiles(NPC_PCK_FILE);
   await expect(page.locator('[class*="treeItem"]')).not.toHaveCount(0, { timeout: 10000 });
 
   await page.locator('[class*="treeItem"]').filter({ hasText: /\.ecm$/ }).first().click();
@@ -139,9 +139,9 @@ test('transport bar play/pause and frame stepping', async ({ page }) => {
 test('shows STCK metadata for standalone .stck file', async ({ page }) => {
   // Use ?local to load WASM from local build (TrackSet is not on CDN yet)
   await page.goto('/pck/?local');
-  await expect(page.locator('#app')).toContainText('Ready', { timeout: 15000 });
+  await expect(page.getByTestId('empty-drop-panel')).toBeVisible({ timeout: 15000 });
 
-  await page.locator('input[type="file"]').setInputFiles(NPC_PCK_FILE);
+  await page.getByTestId('package-add').locator('input[type="file"]').setInputFiles(NPC_PCK_FILE);
   await expect(page.locator('[class*="treeItem"]')).not.toHaveCount(0, { timeout: 10000 });
 
   // Expand the tcks_ folder to find .stck files
@@ -156,9 +156,9 @@ test('shows STCK metadata for standalone .stck file', async ({ page }) => {
 
 test('animation list shows event indicators when ECM has combined action events', async ({ page }) => {
   await page.goto('/pck/?local');
-  await expect(page.locator('#app')).toContainText('Ready', { timeout: 15000 });
+  await expect(page.getByTestId('empty-drop-panel')).toBeVisible({ timeout: 15000 });
 
-  await page.locator('input[type="file"]').setInputFiles(NPC_PCK_FILE);
+  await page.getByTestId('package-add').locator('input[type="file"]').setInputFiles(NPC_PCK_FILE);
   await expect(page.locator('[class*="treeItem"]')).not.toHaveCount(0, { timeout: 10000 });
 
   await page.locator('[class*="treeItem"]').filter({ hasText: /\.ecm$/ }).first().click();

@@ -12,6 +12,7 @@ import {
   formatSize,
   escapeHtml,
   classifyFiles,
+  classifyMultiPackageDrop,
   isLikelyText,
 } from '../files';
 
@@ -274,6 +275,111 @@ describe('classifyFiles', () => {
     expect(result.pck?.name).toBe('data.pck');
     // .pkx has order 0, .pkx2 has order 2
     expect(result.pkxFiles.map(f => f.name)).toEqual(['data.pkx', 'data.pkx2']);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// classifyMultiPackageDrop
+// ---------------------------------------------------------------------------
+
+describe('classifyMultiPackageDrop', () => {
+  it('returns empty packages array for empty input', () => {
+    const result = classifyMultiPackageDrop([]);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.packages).toEqual([]);
+    }
+  });
+
+  it('returns a single package for a single .pck file with no pkx', () => {
+    const result = classifyMultiPackageDrop([makeFile('gfx.pck')]);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.packages).toHaveLength(1);
+      expect(result.packages[0].stem).toBe('gfx');
+      expect(result.packages[0].pck.name).toBe('gfx.pck');
+      expect(result.packages[0].pkxFiles).toHaveLength(0);
+    }
+  });
+
+  it('groups a .pck with matching .pkx and .pkx1 into one package, pkx sorted', () => {
+    const result = classifyMultiPackageDrop([
+      makeFile('models.pkx1'),
+      makeFile('models.pck'),
+      makeFile('models.pkx'),
+    ]);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.packages).toHaveLength(1);
+      expect(result.packages[0].stem).toBe('models');
+      expect(result.packages[0].pck.name).toBe('models.pck');
+      expect(result.packages[0].pkxFiles.map(f => f.name)).toEqual(['models.pkx', 'models.pkx1']);
+    }
+  });
+
+  it('matches stems case-insensitively (Models.PCK + models.PKX)', () => {
+    const result = classifyMultiPackageDrop([
+      makeFile('Models.PCK'),
+      makeFile('models.PKX'),
+    ]);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.packages).toHaveLength(1);
+      expect(result.packages[0].stem).toBe('models');
+      expect(result.packages[0].pck.name).toBe('Models.PCK');
+      expect(result.packages[0].pkxFiles.map(f => f.name)).toEqual(['models.PKX']);
+    }
+  });
+
+  it('returns multiple packages sorted by stem', () => {
+    const result = classifyMultiPackageDrop([
+      makeFile('models.pck'),
+      makeFile('models.pkx'),
+      makeFile('gfx.pck'),
+    ]);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.packages).toHaveLength(2);
+      expect(result.packages[0].stem).toBe('gfx');
+      expect(result.packages[0].pck.name).toBe('gfx.pck');
+      expect(result.packages[0].pkxFiles).toHaveLength(0);
+      expect(result.packages[1].stem).toBe('models');
+      expect(result.packages[1].pck.name).toBe('models.pck');
+      expect(result.packages[1].pkxFiles.map(f => f.name)).toEqual(['models.pkx']);
+    }
+  });
+
+  it('returns an error for an orphan .pkx with no matching .pck', () => {
+    const result = classifyMultiPackageDrop([makeFile('models.pkx')]);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBe('Orphan .pkx: models.pkx has no matching .pck');
+    }
+  });
+
+  it('returns an error when two .pck files share the same stem', () => {
+    const result = classifyMultiPackageDrop([
+      makeFile('data.pck'),
+      makeFile('data.pck'),
+    ]);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBe('Ambiguous drop: two .pck with stem data');
+    }
+  });
+
+  it('silently ignores unrelated files', () => {
+    const result = classifyMultiPackageDrop([
+      makeFile('gfx.pck'),
+      makeFile('readme.txt'),
+    ]);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.packages).toHaveLength(1);
+      expect(result.packages[0].stem).toBe('gfx');
+      expect(result.packages[0].pck.name).toBe('gfx.pck');
+      expect(result.packages[0].pkxFiles).toHaveLength(0);
+    }
   });
 });
 

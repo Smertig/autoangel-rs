@@ -123,6 +123,14 @@
   height: 100%;
 }
 
+/* Duplicate-path badge in file tree — shows which package this entry belongs to */
+.dupSuffix {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: 8px;
+  opacity: 0.7;
+}
+
 /* Status bar */
 .statusBar {
   padding: 4px 16px;

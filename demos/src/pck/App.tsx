@@ -1,166 +1,150 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { resolveCDN } from '../cdn';
 import { initWasm } from '../wasm';
 import type { AutoangelModule } from '../types/autoangel';
-import { classifyFiles, formatSize } from '@shared/util/files';
+import { classifyMultiPackageDrop, type PackageDrop } from '@shared/util/files';
 import { NavBar } from '@shared/components/NavBar';
-import { DropZone } from '@shared/components/DropZone';
 import { ErrorBanner } from '@shared/components/ErrorBanner';
 import { ResizableSidebar } from '@shared/components/ResizableSidebar';
-import { InlineProgress } from '@shared/components/InlineProgress';
-import { FileTree, buildTree, type TreeNode } from '@shared/components/FileTree';
+import { FileTree, type TreeFile } from '@shared/components/FileTree';
 import { KeysPanel, type KeyConfig } from '@shared/components/KeysPanel';
 import { SourceLink } from '@shared/components/SourceLink';
-import { useWorker } from '@shared/hooks/useWorker';
-import { useWorkerInit } from '@shared/hooks/useWorkerInit';
 import { Breadcrumb } from './components/Breadcrumb';
 import { FilePreview } from './components/FilePreview';
+import { PackageChipRow } from './components/PackageChipRow';
+import { EmptyDropPanel } from './components/EmptyDropPanel';
+import { mergePackageTrees, type TaggedTreeFile } from './merge-tree';
+import { PackageRemovedError, usePackageSlots } from './usePackageSlots';
 import styles from './App.module.css';
 
 const cdn = resolveCDN();
 
+interface SelectedFile {
+  pkgId: number;
+  path: string;
+}
+
 export function App() {
-  // WASM ref (for image decoding and in-memory fallback)
+  // WASM ref (for image decoding and format viewers in FilePreview)
   const wasmRef = useRef<AutoangelModule | null>(null);
-  // In-memory package fallback (when no worker)
-  const pkgRef = useRef<any>(null);
-  // Full file list for prefix-based discovery (e.g. STCK animation files)
-  const fileListRef = useRef<string[]>([]);
 
   // State
   const [error, setError] = useState<string | null>(null);
-  const [status, setStatus] = useState('Loading WASM…');
-  const [progress, setProgress] = useState<number | null>(null);
-  const [fileTree, setFileTree] = useState<TreeNode | null>(null);
-  const [selectedPath, setSelectedPath] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>('Loading WASM…');
+  const [selectedFile, setSelectedFile] = useState<SelectedFile | null>(null);
   const [filterText, setFilterText] = useState('');
-  const [fileCount, setFileCount] = useState(0);
-  const [version, setVersion] = useState(0);
-  const [compact, setCompact] = useState(false);
   const [customKeys, setCustomKeys] = useState<KeyConfig | null>(null);
   const [keysOpen, setKeysOpen] = useState(false);
 
-  // Worker
-  const worker = useWorker(() => {
-    return new Worker(new URL('./pck-worker.ts', import.meta.url), { type: 'module' });
-  });
-  const { call: workerCall, ready: workerReady } = worker;
+  // Multi-package slot state
+  const { slots, loadingEntries, loadPackages, removeSlot, replaceSlot, getFile } = usePackageSlots(cdn);
 
-  // Effect 1: main-thread WASM init (runs once on mount)
+  // Main-thread WASM init (runs once on mount) — needed for FilePreview image decoders
   useEffect(() => {
-    initWasm(cdn).then((mod) => {
-      wasmRef.current = mod;
-      setStatus('Ready. Open a .pck file.');
-    }).catch((e: unknown) => {
-      setError(`Failed to load WASM: ${e instanceof Error ? e.message : String(e)}`);
-      setStatus('Error loading WASM.');
-    });
+    initWasm(cdn)
+      .then((mod) => {
+        wasmRef.current = mod;
+        setStatus(null);
+      })
+      .catch((e: unknown) => {
+        setError(`Failed to load WASM: ${e instanceof Error ? e.message : String(e)}`);
+        setStatus('Error loading WASM.');
+      });
   }, []);
 
-  // Effect 2: worker init (runs once when worker becomes ready)
-  useWorkerInit(worker, cdn);
-
-  // Get file data (worker or in-memory fallback)
-  const getFileData = useCallback(async (path: string): Promise<Uint8Array> => {
-    if (workerReady) {
-      const result = await workerCall<{ data: ArrayBuffer; byteOffset: number; byteLength: number }>(
-        { type: 'getFile', path },
-      );
-      return new Uint8Array(result.data, result.byteOffset, result.byteLength);
-    } else {
-      const pkg = pkgRef.current;
-      if (!pkg) throw new Error('No package loaded');
-      const data = await pkg.getFile(path);
-      if (!data) throw new Error(`File not found or decompression failed: ${path}`);
-      return data;
+  // Clear selection if its owning slot was removed
+  useEffect(() => {
+    if (selectedFile && !slots.some((s) => s.pkgId === selectedFile.pkgId)) {
+      setSelectedFile(null);
     }
-  }, [workerReady, workerCall]);
+  }, [slots, selectedFile]);
 
-  // List files by prefix (for animation discovery)
-  const listFiles = useCallback((prefix: string): string[] => {
-    const lowerPrefix = prefix.toLowerCase();
-    return fileListRef.current.filter((f) => f.toLowerCase().startsWith(lowerPrefix));
-  }, []);
+  // Merged tree across all loaded packages
+  const mergedTree = useMemo(
+    () =>
+      slots.length === 0
+        ? null
+        : mergePackageTrees(slots.map((s) => ({ tree: s.tree, pkgIndex: s.pkgId }))),
+    [slots],
+  );
 
-  // Load files
-  const loadFiles = useCallback(async (files: File[]) => {
-    const { pck: pckFile, pkxFiles } = classifyFiles(files);
-    if (!pckFile) {
-      setError('No .pck file found.');
-      return;
-    }
+  // O(1) pkgId -> slot lookup, used by callbacks below
+  const slotLookup = useMemo(
+    () => new Map(slots.map((s) => [s.pkgId, s])),
+    [slots],
+  );
 
-    const label =
-      pkxFiles.length > 0
-        ? `${pckFile.name} + ${pkxFiles.map((f) => f.name).join(' + ')}`
-        : pckFile.name;
-    const totalSize = pckFile.size + pkxFiles.reduce((s, f) => s + f.size, 0);
+  // Narrow selection to just the pkgId so callbacks don't rebuild on every
+  // path change within the same package.
+  const selectedPkgId = selectedFile?.pkgId ?? null;
 
-    setError(null);
-    setStatus(`Parsing ${label} (${formatSize(totalSize)})…`);
-    setProgress(0);
-    setSelectedPath(null);
-    setFileTree(null);
+  // Get file data for the selected slot. If the slot is removed mid-call,
+  // `getFile` rejects with `PackageRemovedError`; the selection-clearing
+  // effect above drops the preview on the next render, so we don't surface
+  // that rejection to the error banner.
+  const getFileData = useCallback(
+    (path: string): Promise<Uint8Array> => {
+      if (selectedPkgId === null) return Promise.reject(new PackageRemovedError());
+      return getFile(selectedPkgId, path);
+    },
+    [selectedPkgId, getFile],
+  );
 
-    // Free previous in-memory package
-    if (pkgRef.current) {
-      pkgRef.current.free();
-      pkgRef.current = null;
-    }
+  // List files by prefix, scoped to the selected file's package
+  const listFiles = useCallback(
+    (prefix: string): string[] => {
+      if (selectedPkgId === null) return [];
+      const slot = slotLookup.get(selectedPkgId);
+      if (!slot) return [];
+      const lower = prefix.toLowerCase();
+      return slot.fileList.filter((f) => f.toLowerCase().startsWith(lower));
+    },
+    [selectedPkgId, slotLookup],
+  );
 
-    let fileList: string[];
-    let ver: number;
-
-    try {
-      if (workerReady) {
-        const result = await workerCall<{ fileList: string[]; version: number; fileCount: number }>(
-          { type: 'parseFile', pckFile, pkxFiles, keys: customKeys ?? undefined },
-          undefined,
-          {
-            onProgress: ({ phase, index, total }: { phase: string; index: number; total: number }) => {
-              if (phase === 'parse') {
-                setProgress(Math.round(((index + 1) / total) * 100));
-              }
-            },
-          },
-        );
-        fileList = result.fileList;
-        ver = result.version;
-      } else {
-        // In-memory fallback
-        if (!wasmRef.current) throw new Error('WASM not loaded');
-        if (pkxFiles.length > 0) {
-          throw new Error('.pkx files require a modern browser with Web Worker support');
-        }
-        const { PckPackage, PackageConfig } = wasmRef.current as any;
-        const pckBytes = new Uint8Array(await pckFile.arrayBuffer());
-        const config = customKeys
-          ? PackageConfig.withKeys(customKeys.key1, customKeys.key2, customKeys.guard1, customKeys.guard2)
-          : undefined;
-        pkgRef.current = await PckPackage.parse(pckBytes, config, {
-          onProgress: (index: number, total: number) => {
-            setProgress(Math.round(((index + 1) / total) * 100));
-          },
-        });
-        fileList = pkgRef.current.fileList();
-        ver = pkgRef.current.version;
+  // Handle file drop / picker: classify and load. Drops whose stem matches an
+  // already-loaded slot are routed to `replaceSlot` (preserves color). The
+  // rest go through `loadPackages`.
+  const handleDrop = useCallback(
+    async (files: File[]) => {
+      const result = classifyMultiPackageDrop(files);
+      if (!result.ok) {
+        setError(result.error);
+        return;
       }
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : String(e));
-      setProgress(null);
-      setStatus('Error parsing file.');
-      return;
-    }
+      if (result.packages.length === 0) {
+        setError('No .pck file found.');
+        return;
+      }
 
-    fileListRef.current = fileList;
-    const tree = buildTree(fileList);
-    setFileTree(tree);
-    setFileCount(fileList.length);
-    setVersion(ver);
-    setStatus(label);
-    setProgress(null);
-    setCompact(true);
-  }, [workerReady, workerCall, customKeys]); // eslint-disable-line react-hooks/exhaustive-deps
+      const stemToPkgId = new Map(slots.map((s) => [s.stem, s.pkgId]));
+      const replacements: Array<{ pkgId: number; drop: PackageDrop }> = [];
+      const additions: PackageDrop[] = [];
+      for (const drop of result.packages) {
+        const existing = stemToPkgId.get(drop.stem);
+        if (existing !== undefined) replacements.push({ pkgId: existing, drop });
+        else additions.push(drop);
+      }
+
+      const errors: string[] = [];
+      await Promise.all([
+        ...replacements.map((r) =>
+          replaceSlot(r.pkgId, r.drop, customKeys).catch((e: unknown) => {
+            errors.push(e instanceof Error ? e.message : String(e));
+          }),
+        ),
+        additions.length > 0
+          ? loadPackages(additions, customKeys).catch((e: unknown) => {
+              errors.push(e instanceof Error ? e.message : String(e));
+            })
+          : Promise.resolve(),
+      ]);
+
+      setError(errors.length > 0 ? errors.join('; ') : null);
+    },
+    [slots, loadPackages, replaceSlot, customKeys],
+  );
 
   const deferredFilter = useDeferredValue(filterText);
   const isFiltering = filterText !== deferredFilter;
@@ -179,7 +163,7 @@ export function App() {
         }
         return;
       }
-      if (!fileTree) return;
+      if (!mergedTree) return;
       if (e.key === '/') {
         e.preventDefault();
         filterInputRef.current?.focus();
@@ -189,39 +173,77 @@ export function App() {
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [fileTree]);
+  }, [mergedTree]);
 
-  const handleSelectFile = useCallback((path: string) => {
-    setSelectedPath(path);
-  }, []);
+  // Selecting a file from the merged tree: the clicked leaf carries its
+  // `pkgIndex` via the `TaggedTreeFile` tag, so duplicate siblings are
+  // disambiguated automatically.
+  const handleSelectFile = useCallback(
+    (file: TreeFile) =>
+      setSelectedFile({ pkgId: (file as TaggedTreeFile).pkgIndex, path: file.fullPath }),
+    [],
+  );
 
   const handleReset = useCallback(() => {
-    setSelectedPath(null);
+    setSelectedFile(null);
   }, []);
 
-  const selectedParts = useMemo(() => selectedPath ? selectedPath.split('\\') : [], [selectedPath]);
+  const selectedParts = useMemo(
+    () => (selectedFile ? selectedFile.path.split('\\') : []),
+    [selectedFile],
+  );
+
+  // Slot for the currently-selected file (for Breadcrumb label/color)
+  const selectedSlot = useMemo(
+    () => (selectedPkgId !== null ? slotLookup.get(selectedPkgId) ?? null : null),
+    [slotLookup, selectedPkgId],
+  );
+
+  // Per-row color stripe: only show when multiple packages are loaded
+  const fileRowStyle = useCallback(
+    (file: TreeFile): CSSProperties | undefined => {
+      if (slots.length < 2) return undefined;
+      const pkgIndex = (file as TaggedTreeFile).pkgIndex;
+      const slot = slotLookup.get(pkgIndex);
+      return slot ? { borderLeft: `2px solid ${slot.color}` } : undefined;
+    },
+    [slots.length, slotLookup],
+  );
+
+  // Badge for duplicate leaves: show which package this entry belongs to.
+  // Siblings at the same fullPath render as separate rows, each with its own
+  // package-name suffix.
+  const renderFileBadge = useCallback(
+    (file: TreeFile) => {
+      const tagged = file as TaggedTreeFile;
+      if (!tagged.duplicate) return null;
+      const slot = slotLookup.get(tagged.pkgIndex);
+      if (!slot) return null;
+      return <span className={styles.dupSuffix}>{slot.stem}.pck</span>;
+    },
+    [slotLookup],
+  );
+
+  // Footer aggregates
+  const totalFiles = useMemo(() => slots.reduce((n, s) => n + s.fileCount, 0), [slots]);
+  const commonVersion = useMemo(() => {
+    if (slots.length === 0) return null;
+    const first = slots[0].version;
+    return slots.every((s) => s.version === first) ? first : null;
+  }, [slots]);
 
   return (
     <div className={styles.appContainer}>
       <NavBar active="pck" />
       <header className={styles.header}>
-        <DropZone
-          accept=".pck,.pkx,.pkx1,.pkx2,.pkx3,.pkx4,.pkx5"
-          multiple
-          compact={compact}
-          label={
-            <>
-              Drop <code>.pck</code> (and optional <code>.pkx*</code>) here, or{' '}
-            </>
-          }
-          onFiles={loadFiles}
+        <PackageChipRow
+          slots={slots}
+          loadingEntries={loadingEntries}
+          onRemove={removeSlot}
+          onDrop={handleDrop}
         />
 
-        {progress !== null ? (
-          <InlineProgress text={status} progress={progress} />
-        ) : (
-          <span className={styles.status}>{status}</span>
-        )}
+        {status !== null && <span className={styles.status}>{status}</span>}
 
         <KeysPanel
           open={keysOpen}
@@ -237,7 +259,9 @@ export function App() {
 
       <ErrorBanner message={error} onDismiss={() => setError(null)} />
 
-      {fileTree && (
+      {!mergedTree && <EmptyDropPanel onDrop={handleDrop} />}
+
+      {mergedTree && (
         <ResizableSidebar
           initialWidth={300}
           minWidth={180}
@@ -260,20 +284,28 @@ export function App() {
                 />
               </div>
               <FileTree
-                root={fileTree}
-                selectedPath={selectedPath}
+                root={mergedTree}
+                selectedPath={selectedFile?.path ?? null}
                 filterText={filterText}
                 onSelectFile={handleSelectFile}
+                renderFileBadge={renderFileBadge}
+                fileRowStyle={fileRowStyle}
+                suppressRootAutoExpand={slots.length + loadingEntries.length > 1}
               />
             </>
           }
         >
-          <Breadcrumb parts={selectedParts} onReset={handleReset} />
+          <Breadcrumb
+            parts={selectedParts}
+            onReset={handleReset}
+            packageLabel={selectedSlot ? `${selectedSlot.stem}.pck` : undefined}
+            packageColor={selectedSlot?.color}
+          />
 
           <div className={styles.previewArea}>
-            {selectedPath && wasmRef.current ? (
+            {selectedFile && wasmRef.current ? (
               <FilePreview
-                path={selectedPath}
+                path={selectedFile.path}
                 getData={getFileData}
                 wasm={wasmRef.current}
                 listFiles={listFiles}
@@ -285,10 +317,12 @@ export function App() {
         </ResizableSidebar>
       )}
 
-      {fileTree && (
+      {mergedTree && (
         <footer className={styles.statusBar}>
-          <span>{fileCount} files</span>
-          <span>format v0x{version.toString(16).toUpperCase()}</span>
+          <span>
+            {slots.length} {slots.length === 1 ? 'package' : 'packages'} · {totalFiles} files
+            {commonVersion !== null && ` · v0x${commonVersion.toString(16).toUpperCase()}`}
+          </span>
         </footer>
       )}
     </div>

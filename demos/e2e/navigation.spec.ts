@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 const PAGES = [
-  { path: '/pck/', name: 'PCK', readyText: 'Ready' },
+  { path: '/pck/', name: 'PCK', readyText: '+ Add packages' },
   { path: '/elements/', name: 'Elements', readyText: 'Ready' },
   { path: '/pck-diff/', name: 'Diff', readyText: 'PCK Diff' },
 ];

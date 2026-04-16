@@ -1,0 +1,118 @@
+.chip {
+  position: relative;
+  flex: 0 0 180px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 10px 6px 14px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  transition: border-color 120ms, border-style 0ms;
+}
+
+/* Loading state: dashed border while parsing. No left color bar (the
+ * color identity is conveyed by the growing bottom bar instead). */
+.chip[data-state='loading'] {
+  border-style: dashed;
+}
+
+.chip[data-state='loading']::before {
+  display: none;
+}
+
+.chip[data-state='loading'] .stem,
+.chip[data-state='loading'] .meta {
+  color: var(--text-muted);
+}
+
+.chip::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  background: var(--pkg-color);
+  border-radius: 1px;
+}
+
+/* Bottom progress bar (loading only). Width is set inline per chip. */
+.progressBar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 0;
+  transition: width 120ms linear;
+}
+
+.stem {
+  font-size: 13px;
+  color: var(--text);
+  padding-right: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 120ms, color 120ms, background 120ms;
+}
+
+.chip:hover .remove,
+.remove:focus-visible {
+  opacity: 1;
+}
+
+.remove:hover {
+  color: var(--text);
+  background: var(--tree-hover);
+}
+
+.remove:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-radius: var(--radius);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .chip {
+    animation: chipIn 150ms ease-out;
+  }
+
+  @keyframes chipIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* Indeterminate sweep — parse started but no numeric progress yet. */
+  .progressBar[data-indeterminate='true'] {
+    width: 30% !important;
+    animation: barSweep 1.2s ease-in-out infinite;
+  }
+
+  @keyframes barSweep {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(333%); }
+  }
+}

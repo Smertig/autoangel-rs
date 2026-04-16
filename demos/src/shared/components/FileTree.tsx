@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useDeferredValue, memo } from 'react';
+import React, { useState, useCallback, useMemo, useDeferredValue, useEffect, memo } from 'react';
 import styles from './FileTree.module.css';
 import {
   getExtension,
@@ -29,16 +29,29 @@ export interface TreeNode {
 
 // --- buildTree ---
 
-function sortNode(node: TreeNode): void {
+/** Construct an empty `TreeNode`. Shared so all tree producers agree on shape. */
+export function emptyTreeNode(name: string = ''): TreeNode {
+  return { name, children: new Map(), files: [], sortedChildren: [], sortedFiles: [] };
+}
+
+/**
+ * Populate `sortedChildren` and `sortedFiles` on every node, recursively.
+ * The optional `fileCompare` lets callers add a tiebreaker (e.g. `pkgIndex`
+ * for merged trees with duplicate entries).
+ */
+export function sortTree(
+  node: TreeNode,
+  fileCompare: (a: TreeFile, b: TreeFile) => number = (a, b) => a.name.localeCompare(b.name),
+): void {
   node.sortedChildren = [...node.children.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-  node.sortedFiles = [...node.files].sort((a, b) => a.name.localeCompare(b.name));
+  node.sortedFiles = [...node.files].sort(fileCompare);
   for (const [, child] of node.sortedChildren) {
-    sortNode(child);
+    sortTree(child, fileCompare);
   }
 }
 
 export function buildTree(paths: string[]): TreeNode {
-  const root: TreeNode = { name: '', children: new Map(), files: [], sortedChildren: [], sortedFiles: [] };
+  const root = emptyTreeNode();
 
   for (const path of paths) {
     const parts = path.split('\\');
@@ -46,15 +59,47 @@ export function buildTree(paths: string[]): TreeNode {
     for (let i = 0; i < parts.length - 1; i++) {
       const dir = parts[i];
       if (!node.children.has(dir)) {
-        node.children.set(dir, { name: dir, children: new Map(), files: [], sortedChildren: [], sortedFiles: [] });
+        node.children.set(dir, emptyTreeNode(dir));
       }
       node = node.children.get(dir)!;
     }
     node.files.push({ name: parts[parts.length - 1], fullPath: path, fullPathLower: path.toLowerCase() });
   }
 
-  sortNode(root);
+  sortTree(root);
   return root;
+}
+
+/**
+ * Walk the tree and return the paths of every folder whose parent has exactly
+ * one child entry (folder or file). These are the folders we want to auto-
+ * expand so single-child chains feel continuous.
+ *
+ * When `suppressRoot` is set, skip the root-level child. Callers use this
+ * when more than one top-level package is expected but only one has arrived
+ * so far — otherwise that single package would visually "open itself" while
+ * peer packages still loading stay collapsed, producing an inconsistent tree.
+ */
+export function collectSingleChildPaths(
+  root: TreeNode,
+  opts: { suppressRoot?: boolean } = {},
+): string[] {
+  const out: string[] = [];
+  function walk(node: TreeNode, path: string) {
+    const isRoot = path === '';
+    const skip = isRoot && opts.suppressRoot;
+    if (!skip && node.files.length === 0 && node.children.size === 1) {
+      const [[childName]] = node.children;
+      const childPath = path ? `${path}\\${childName}` : childName;
+      out.push(childPath);
+    }
+    for (const [name, child] of node.children) {
+      const childPath = path ? `${path}\\${name}` : name;
+      walk(child, childPath);
+    }
+  }
+  walk(root, '');
+  return out;
 }
 
 // --- Default file icon ---
@@ -128,11 +173,19 @@ interface FileTreeProps {
   root: TreeNode | null;
   selectedPath: string | null;
   filterText: string;
-  onSelectFile: (path: string) => void;
+  onSelectFile: (file: TreeFile) => void;
   getFileStatus?: (path: string) => string | undefined;
-  renderFileBadge?: (path: string) => React.ReactNode;
+  renderFileBadge?: (file: TreeFile) => React.ReactNode;
   renderFolderBadge?: (node: TreeNode, folderPath: string) => React.ReactNode;
   fileIcon?: (name: string) => string;
+  /** Per-file row style. Callers should pass a referentially-stable function (wrap in useCallback) so FileRow memoization holds. */
+  fileRowStyle?: (file: TreeFile) => React.CSSProperties | undefined;
+  /**
+   * Skip the single-child auto-expansion at the root level. Useful when more
+   * than one top-level subtree is expected (e.g. multiple packages loading)
+   * so an early arrival doesn't auto-open while peers stay collapsed.
+   */
+  suppressRootAutoExpand?: boolean;
 }
 
 // --- TreeFolder ---
@@ -147,13 +200,13 @@ interface TreeFolderProps {
   expandedPaths: Set<string>;
   onToggleExpand: (path: string) => void;
   selectedPath: string | null;
-  onSelectFile: (path: string) => void;
+  onSelectFile: (file: TreeFile) => void;
   visibleSet: Set<string> | null;
   visibleFolderPaths: Set<string> | null;
-  renderFileBadge?: (path: string) => React.ReactNode;
+  renderFileBadge?: (file: TreeFile) => React.ReactNode;
   renderFolderBadge?: (node: TreeNode, folderPath: string) => React.ReactNode;
   fileIconFn: (name: string) => string;
-  singleChild: boolean;
+  fileRowStyle?: (file: TreeFile) => React.CSSProperties | undefined;
 }
 
 const TreeFolder = memo(function TreeFolder({
@@ -172,9 +225,9 @@ const TreeFolder = memo(function TreeFolder({
   renderFileBadge,
   renderFolderBadge,
   fileIconFn,
-  singleChild,
+  fileRowStyle,
 }: TreeFolderProps) {
-  const isExpanded = autoExpand || singleChild || expandedPaths.has(folderPath);
+  const isExpanded = autoExpand || expandedPaths.has(folderPath);
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
@@ -216,6 +269,7 @@ const TreeFolder = memo(function TreeFolder({
             renderFileBadge={renderFileBadge}
             renderFolderBadge={renderFolderBadge}
             fileIconFn={fileIconFn}
+            fileRowStyle={fileRowStyle}
           />
         )}
       </div>
@@ -234,12 +288,13 @@ interface TreeNodeContentsProps {
   expandedPaths: Set<string>;
   onToggleExpand: (path: string) => void;
   selectedPath: string | null;
-  onSelectFile: (path: string) => void;
+  onSelectFile: (file: TreeFile) => void;
   visibleSet: Set<string> | null;
   visibleFolderPaths: Set<string> | null;
-  renderFileBadge?: (path: string) => React.ReactNode;
+  renderFileBadge?: (file: TreeFile) => React.ReactNode;
   renderFolderBadge?: (node: TreeNode, folderPath: string) => React.ReactNode;
   fileIconFn: (name: string) => string;
+  fileRowStyle?: (file: TreeFile) => React.CSSProperties | undefined;
 }
 
 function TreeNodeContents({
@@ -257,6 +312,7 @@ function TreeNodeContents({
   renderFileBadge,
   renderFolderBadge,
   fileIconFn,
+  fileRowStyle,
 }: TreeNodeContentsProps) {
   const visibleFolders = visibleFolderPaths
     ? node.sortedChildren.filter(([name]) => {
@@ -268,8 +324,6 @@ function TreeNodeContents({
   const visibleFiles = visibleSet
     ? node.sortedFiles.filter((f) => visibleSet.has(f.fullPath))
     : node.sortedFiles;
-
-  const singleChild = visibleFolders.length + visibleFiles.length === 1;
 
   return (
     <>
@@ -293,7 +347,7 @@ function TreeNodeContents({
             renderFileBadge={renderFileBadge}
             renderFolderBadge={renderFolderBadge}
             fileIconFn={fileIconFn}
-            singleChild={singleChild}
+            fileRowStyle={fileRowStyle}
           />
         );
       })}
@@ -307,6 +361,7 @@ function TreeNodeContents({
           onSelect={onSelectFile}
           fileIconFn={fileIconFn}
           renderFileBadge={renderFileBadge}
+          fileRowStyle={fileRowStyle}
         />
       ))}
     </>
@@ -320,31 +375,33 @@ interface FileRowProps {
   depth: number;
   isSelected: boolean;
   filterLower: string;
-  onSelect: (path: string) => void;
+  onSelect: (file: TreeFile) => void;
   fileIconFn: (name: string) => string;
-  renderFileBadge?: (path: string) => React.ReactNode;
+  renderFileBadge?: (file: TreeFile) => React.ReactNode;
+  fileRowStyle?: (file: TreeFile) => React.CSSProperties | undefined;
 }
 
 const FileRow = memo(function FileRow({
-  file, depth, isSelected, filterLower, onSelect, fileIconFn, renderFileBadge,
+  file, depth, isSelected, filterLower, onSelect, fileIconFn, renderFileBadge, fileRowStyle,
 }: FileRowProps) {
   const handleClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    onSelect(file.fullPath);
-  }, [file.fullPath, onSelect]);
+    onSelect(file);
+  }, [file, onSelect]);
 
   const rowClass = isSelected ? `${styles.treeItem} ${styles.selected}` : styles.treeItem;
+  const rowStyle = fileRowStyle?.(file);
 
   return (
     <div
       className={rowClass}
-      style={{ paddingLeft: `${8 + depth * 16}px` }}
+      style={{ paddingLeft: `${8 + depth * 16}px`, ...rowStyle }}
       onClick={handleClick}
     >
       <span className={`${styles.treeArrow} ${styles.leaf}`} />
       <span className={styles.treeIcon}>{fileIconFn(file.name)}</span>
       <HighlightedLabel text={file.name} filterLower={filterLower} />
-      {renderFileBadge?.(file.fullPath)}
+      {renderFileBadge?.(file)}
     </div>
   );
 });
@@ -359,8 +416,13 @@ export function FileTree({
   renderFileBadge,
   renderFolderBadge,
   fileIcon,
+  fileRowStyle,
+  suppressRootAutoExpand,
 }: FileTreeProps) {
-  const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
+  const [expandedPaths, setExpandedPaths] = useState<Set<string>>(() =>
+    root ? new Set(collectSingleChildPaths(root, { suppressRoot: suppressRootAutoExpand })) : new Set(),
+  );
+  const [lastRoot, setLastRoot] = useState<TreeNode | null>(root);
 
   const handleToggleExpand = useCallback((path: string) => {
     setExpandedPaths((prev) => {
@@ -370,6 +432,33 @@ export function FileTree({
       return next;
     });
   }, []);
+
+  // Auto-expand single-child chains synchronously when `root` changes, using
+  // the derived-state-during-render pattern. Merging (rather than replacing)
+  // preserves user toggles: a folder the user collapsed stays collapsed
+  // across root changes (we only add paths here, never remove). Folders
+  // that were single-child before a merge stay expanded even when the root
+  // gains new siblings. Running synchronously during render (vs. via effect)
+  // avoids a one-frame gap where the tree is fully collapsed.
+  if (root !== lastRoot) {
+    setLastRoot(root);
+    if (root) {
+      const auto = collectSingleChildPaths(root, { suppressRoot: suppressRootAutoExpand });
+      if (auto.length > 0) {
+        setExpandedPaths((prev) => {
+          let changed = false;
+          const next = new Set(prev);
+          for (const p of auto) {
+            if (!next.has(p)) {
+              next.add(p);
+              changed = true;
+            }
+          }
+          return changed ? next : prev;
+        });
+      }
+    }
+  }
 
   const fileIconFn = fileIcon ?? defaultFileIcon;
 
@@ -404,6 +493,7 @@ export function FileTree({
       renderFileBadge={renderFileBadge}
       renderFolderBadge={renderFolderBadge}
       fileIconFn={fileIconFn}
+      fileRowStyle={fileRowStyle}
     />
   );
 }

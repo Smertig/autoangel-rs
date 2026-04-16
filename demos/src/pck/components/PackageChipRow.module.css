@@ -1,0 +1,70 @@
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 8px;
+  /* Grow to fill available header width, but allow other header controls to
+   * wrap below when we do. min-width: 0 lets the flex item shrink past its
+   * content so ellipsis inside chips works. */
+  flex: 1 1 280px;
+  min-width: 0;
+  /* Cap height at ~2 rows of chips (each ~38px + 8px gap); add vertical
+   * scroll when many packages are loaded. */
+  max-height: 8em;
+  overflow-y: auto;
+}
+
+.row::-webkit-scrollbar {
+  width: 8px;
+}
+
+.row::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+
+.row::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* Add element — shares border-radius/height with PackageChip but dashed. */
+.add {
+  appearance: none;
+  flex: 0 0 auto;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  /* Matches PackageChip's two-line height when the row has no chips to stretch against. */
+  min-height: 38px;
+  min-width: 180px;
+  padding: 6px 16px;
+  transition: border-color 120ms, background 120ms, color 120ms;
+}
+
+.add:hover,
+.add[data-over='true'] {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.add[data-over='true'] {
+  background: var(--tree-selected);
+}
+
+.addLabel {
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fileInput {
+  display: none;
+}

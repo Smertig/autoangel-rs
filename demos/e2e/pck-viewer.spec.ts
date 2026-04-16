@@ -7,15 +7,11 @@ const PCK_FILE = path.resolve(__dirname, '../../test_data/packages/configs.pck')
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/pck/');
-  // Wait for WASM to load
-  await page.waitForFunction(() => {
-    const el = document.getElementById('app');
-    return el?.textContent?.includes('Ready');
-  }, { timeout: 15000 });
+  await expect(page.getByTestId('empty-drop-panel')).toBeVisible({ timeout: 15000 });
 });
 
 test('loads .pck and shows file tree', async ({ page }) => {
-  const fileInput = page.locator('input[type="file"]');
+  const fileInput = page.getByTestId('package-add').locator('input[type="file"]');
   await fileInput.setInputFiles(PCK_FILE);
 
   // Wait for file tree to populate
@@ -27,7 +23,7 @@ test('loads .pck and shows file tree', async ({ page }) => {
 });
 
 test('selects text file and shows preview with highlighting', async ({ page }) => {
-  const fileInput = page.locator('input[type="file"]');
+  const fileInput = page.getByTestId('package-add').locator('input[type="file"]');
   await fileInput.setInputFiles(PCK_FILE);
 
   // Wait for tree
@@ -53,7 +49,7 @@ test('selects text file and shows preview with highlighting', async ({ page }) =
 });
 
 test('filters files in tree', async ({ page }) => {
-  const fileInput = page.locator('input[type="file"]');
+  const fileInput = page.getByTestId('package-add').locator('input[type="file"]');
   await fileInput.setInputFiles(PCK_FILE);
 
   await expect(page.locator('[class*="treeItem"]')).not.toHaveCount(0, { timeout: 10000 });

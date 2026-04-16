@@ -1,0 +1,99 @@
+.panel {
+  appearance: none;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  border: 1px dashed transparent;
+  border-radius: var(--radius);
+  margin: 12px;
+  padding: 0;
+  cursor: pointer;
+  transition: border-color 150ms, background 150ms;
+}
+
+.panel:hover,
+.panel:focus-visible,
+.panel[data-over='true'] {
+  border-color: var(--border);
+}
+
+.panel[data-over='true'] {
+  border-color: var(--accent);
+  background: var(--tree-selected);
+}
+
+.panel:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.content {
+  max-width: 520px;
+  padding: 32px 24px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.marker {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.bar {
+  display: block;
+  width: 2px;
+  height: 20px;
+  border-radius: 1px;
+}
+
+.headline {
+  font-size: 16px;
+  color: var(--text);
+  margin: 0 0 20px 0;
+  line-height: 1.4;
+}
+
+.secondary {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+}
+
+.tertiary {
+  font-size: 13px;
+  color: var(--text-muted);
+  opacity: 0.7;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.fileInput {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .panel[data-over='true'] .bar {
+    animation: barPulse 900ms ease-in-out infinite;
+  }
+
+  .panel[data-over='true'] .bar:nth-child(2) {
+    animation-delay: 120ms;
+  }
+
+  .panel[data-over='true'] .bar:nth-child(3) {
+    animation-delay: 240ms;
+  }
+
+  @keyframes barPulse {
+    0%, 100% { opacity: 1; transform: translateY(0); }
+    50%      { opacity: 0.6; transform: translateY(-2px); }
+  }
+}

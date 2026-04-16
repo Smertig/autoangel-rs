@@ -104,6 +104,75 @@ export function classifyFiles(files: FileList | File[]): { pck: File | null; pkx
   return { pck, pkxFiles };
 }
 
+/** Return the filename stem (name without its final extension). */
+export function fileStem(name: string): string {
+  const dot = name.lastIndexOf('.');
+  return dot >= 0 ? name.slice(0, dot) : name;
+}
+
+export interface PackageDrop {
+  /** Lowercased stem (filename without extension), e.g. "models". */
+  stem: string;
+  pck: File;
+  /** Extension parts sorted by numeric suffix; `.pkx` is order 0, `.pkxN` is order N. */
+  pkxFiles: File[];
+}
+
+export type ClassifyDropResult =
+  | { ok: true; packages: PackageDrop[] }
+  | { ok: false; error: string };
+
+/**
+ * Classify a drop of potentially multiple packages: each stem must have
+ * exactly one `.pck` plus any number of `.pkx*` extension parts. Files that
+ * are neither `.pck` nor `.pkx*` are silently ignored.
+ */
+export function classifyMultiPackageDrop(files: FileList | File[]): ClassifyDropResult {
+  type Group = { pck: File | null; pkxParts: { file: File; order: number }[] };
+  const groups = new Map<string, Group>();
+
+  const getGroup = (stem: string): Group => {
+    let g = groups.get(stem);
+    if (!g) {
+      g = { pck: null, pkxParts: [] };
+      groups.set(stem, g);
+    }
+    return g;
+  };
+
+  for (const f of files) {
+    const lower = f.name.toLowerCase();
+    const stem = fileStem(lower);
+    if (lower.endsWith('.pck')) {
+      const g = getGroup(stem);
+      if (g.pck) {
+        return { ok: false, error: `Ambiguous drop: two .pck with stem ${stem}` };
+      }
+      g.pck = f;
+    } else if (lower.endsWith('.pkx')) {
+      getGroup(stem).pkxParts.push({ file: f, order: 0 });
+    } else {
+      const m = lower.match(/\.pkx(\d+)$/);
+      if (m) {
+        getGroup(stem).pkxParts.push({ file: f, order: parseInt(m[1], 10) });
+      }
+    }
+  }
+
+  const stems = [...groups.keys()].sort();
+  const packages: PackageDrop[] = [];
+  for (const stem of stems) {
+    const g = groups.get(stem)!;
+    if (!g.pck) {
+      const orphan = g.pkxParts[0].file;
+      return { ok: false, error: `Orphan .pkx: ${orphan.name} has no matching .pck` };
+    }
+    g.pkxParts.sort((a, b) => a.order - b.order);
+    packages.push({ stem, pck: g.pck, pkxFiles: g.pkxParts.map(p => p.file) });
+  }
+  return { ok: true, packages };
+}
+
 // --- Text detection heuristic ---
 
 export function isLikelyText(data: Uint8Array, ext: string): boolean {
