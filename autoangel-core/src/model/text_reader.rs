@@ -28,26 +28,30 @@ impl<'a> Lines<'a> {
         Ok(line)
     }
 
-    /// Read next line, parse as "Key: Value", return value.
+    /// Read next line, parse as "Key: Value", return value. Key match is
+    /// case-sensitive.
     pub fn read_value(&mut self, expected_key: &str) -> Result<&'a str> {
+        self.read_value_alt(&[expected_key])
+    }
+
+    /// Like `read_value` but accepts any of the given exact key spellings.
+    /// Used when the engine renamed a key across versions and old+new data
+    /// files coexist (e.g. v103 fixed the `DedaultScale` typo to
+    /// `DefaultScale`). Matching is case-sensitive — same as the Angelica
+    /// engine's own `sscanf`-based parser.
+    pub fn read_value_alt(&mut self, keys: &[&str]) -> Result<&'a str> {
         let line = self.next_line()?;
-        let (k, v) = split_kv(line).ok_or_else(|| {
-            eyre!(
-                "Expected '{}:', got '{}' at line {}",
-                expected_key,
-                line,
-                self.pos - 1
-            )
-        })?;
-        if k != expected_key {
-            eyre::bail!(
-                "Expected '{}:', got '{}:' at line {}",
-                expected_key,
-                k,
-                self.pos - 1
-            );
-        }
-        Ok(v)
+        let got = match split_kv(line) {
+            Some((k, v)) if keys.contains(&k) => return Ok(v),
+            Some((k, _)) => format!("'{}:'", k),
+            None => format!("'{}'", line),
+        };
+        eyre::bail!(
+            "Expected {}, got {} at line {}",
+            format_alt_keys(keys),
+            got,
+            self.pos - 1
+        );
     }
 
     pub fn read_int(&mut self, key: &str) -> Result<i32> {
@@ -62,9 +66,13 @@ impl<'a> Lines<'a> {
     }
 
     pub fn read_float(&mut self, key: &str) -> Result<f32> {
-        let v = self.read_value(key)?;
+        self.read_float_alt(&[key])
+    }
+
+    pub fn read_float_alt(&mut self, keys: &[&str]) -> Result<f32> {
+        let v = self.read_value_alt(keys)?;
         v.parse()
-            .map_err(|_| eyre!("Invalid float for '{}': '{}'", key, v))
+            .map_err(|_| eyre!("Invalid float for {}: '{}'", format_alt_keys(keys), v))
     }
 
     pub fn read_vec3(&mut self, key: &str) -> Result<[f32; 3]> {
@@ -77,6 +85,19 @@ impl<'a> Lines<'a> {
         self.lines
             .get(self.pos)
             .and_then(|l| split_kv(l.trim()).map(|(k, _)| k))
+    }
+}
+
+/// Format an alternatives list for error messages: `'A:' or 'B:'` / `'A:'`.
+fn format_alt_keys(keys: &[&str]) -> String {
+    match keys {
+        [] => "<no keys>".to_string(),
+        [k] => format!("'{}:'", k),
+        _ => keys
+            .iter()
+            .map(|k| format!("'{}:'", k))
+            .collect::<Vec<_>>()
+            .join(" or "),
     }
 }
 

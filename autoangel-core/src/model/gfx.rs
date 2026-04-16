@@ -164,7 +164,8 @@ impl GfxEffect {
 
         let mut default_scale = 1.0_f32;
         if version >= 16 {
-            default_scale = r.read_float("DedaultScale")?;
+            // v103 fixed the "Dedault" typo to "Default"; accept both.
+            default_scale = r.read_float_alt(&["DedaultScale", "DefaultScale"])?;
         }
 
         let mut play_speed = 1.0_f32;
@@ -245,6 +246,13 @@ impl GfxEffect {
         if version >= 50 {
             r.read_int("2DRender")?;
             r.read_int("2DBackLayer")?;
+        }
+
+        // Engine gates `SkipTime:` at v≥112 (PWClient-152 A3DGFXEx.cpp), but
+        // some engine variants emit it starting from a much earlier version.
+        // Treat it as an optional peek-and-read rather than a strict gate.
+        if r.peek_key() == Some("SkipTime") {
+            r.read_int("SkipTime")?;
         }
 
         if version >= 63 {
@@ -540,5 +548,40 @@ mod tests {
         assert_eq!(e1.element_type, GfxElementType::Trail);
         assert_eq!(e1.name, "trail_b");
         assert_eq!(e1.body_lines, vec!["Width: 0.5"]);
+    }
+
+    #[test]
+    fn parse_accepts_default_scale_spelling() {
+        // Late engine versions fixed the "Dedault" typo — both spellings coexist
+        // across archive files.
+        let input = make_gfx_v58_header(0).replace("DedaultScale:", "DefaultScale:");
+        let effect = GfxEffect::parse(input.as_bytes()).unwrap();
+        assert!((effect.default_scale - 1.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn parse_reads_skip_time_when_present() {
+        // Some engine variants emit `SkipTime:` between 2DBackLayer and
+        // PhysExist earlier than the stock v≥112 gate.
+        let header = make_gfx_v58_header(0)
+            .replace("2DBackLayer: 0\r\n", "2DBackLayer: 0\r\nSkipTime: 0\r\n");
+        let effect = GfxEffect::parse(header.as_bytes()).unwrap();
+        assert_eq!(effect.version, 58);
+        assert!(effect.elements.is_empty());
+    }
+
+    #[test]
+    fn parse_reads_skip_time_followed_by_phys_exist() {
+        // Verify SkipTime + PhysExist read in order when both are present
+        // (v≥63 activates the PhysExist gate).
+        let header = make_gfx_v58_header(0)
+            .replace("Version: 58", "Version: 63")
+            .replace(
+                "2DBackLayer: 0\r\n",
+                "2DBackLayer: 0\r\nSkipTime: 0\r\nPhysExist: 0\r\n",
+            );
+        let effect = GfxEffect::parse(header.as_bytes()).unwrap();
+        assert_eq!(effect.version, 63);
+        assert!(effect.elements.is_empty());
     }
 }
