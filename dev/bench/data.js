@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1776267784670,
+  "lastUpdate": 1776432214456,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -2879,6 +2879,102 @@ window.BENCHMARK_DATA = {
             "name": "PackageInfo::save_to",
             "value": 1568536,
             "range": "± 2392",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "11e93305674f86ff806c3fd426d7d00e755a7f47",
+          "message": "feat [gfx]: tolerate engine-variant key renames and optional SkipTime\n\n* DedaultScale / DefaultScale — later engines fixed the typo; accept\n  both spellings via new read_value_alt helper.\n\n* SkipTime — 1.5.2 gates it at v>=112, but some variants emit\n  it earlier. Peek-and-read instead of strict gate; matches engine's\n  sscanf-silent-fail behavior.\n\n* Raises parse rate from 79.7% to 99.11% on a 35k-file archive.\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+          "timestamp": "2026-04-16T23:15:00+03:00",
+          "tree_id": "065bf53ad4b747711ccb5e257e1a41fd6de958f7",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/11e93305674f86ff806c3fd426d7d00e755a7f47"
+        },
+        "date": 1776432213352,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 31102,
+            "range": "± 1000",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 113,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::access_fields",
+            "value": 62,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 166,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 20830,
+            "range": "± 585",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::iterate_lists",
+            "value": 13698,
+            "range": "± 383",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 47,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 305428,
+            "range": "± 170",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::find_prefix",
+            "value": 310,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 3538,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_all_files",
+            "value": 10352317,
+            "range": "± 19609",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::save_to",
+            "value": 908693,
+            "range": "± 8847",
             "unit": "ns/iter"
           }
         ]
