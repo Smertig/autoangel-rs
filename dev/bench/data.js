@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1776516732256,
+  "lastUpdate": 1776517485714,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -3167,6 +3167,102 @@ window.BENCHMARK_DATA = {
             "name": "PackageInfo::save_to",
             "value": 1541297,
             "range": "± 1361",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "af327cdbef3702864b6c07cc822153432ae256b6",
+          "message": "ci: run demos build + e2e on core / wasm changes\n\nDemos resolve `autoangel` imports against the locally-built WASM via\n`demos/tsconfig.json`'s `paths` alias + `vite.config.ts`, so the\nexisting type-check + E2E already test local WASM — but the job only\ntriggered on `demos/` or `ci` changes. A regression in core / wasm\nbindings was invisible until the next demos update landed.\n\nWiden the trigger to also fire on core / wasm changes. E2E adds a few\nminutes to those PRs but catches runtime drift (broken imports,\nAPI shape changes, etc.) at the commit that introduces them.",
+          "timestamp": "2026-04-18T15:59:02+03:00",
+          "tree_id": "23dd423edb14a596671cea8dcda2419b00c1c231",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/af327cdbef3702864b6c07cc822153432ae256b6"
+        },
+        "date": 1776517484356,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 32202,
+            "range": "± 186",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 149,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::access_fields",
+            "value": 105,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 223,
+            "range": "± 8",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 16622,
+            "range": "± 60",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::iterate_lists",
+            "value": 28416,
+            "range": "± 8",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 67,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 287593,
+            "range": "± 330",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::find_prefix",
+            "value": 6076,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 3697,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_all_files",
+            "value": 10632836,
+            "range": "± 17878",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::save_to",
+            "value": 859624,
+            "range": "± 3374",
             "unit": "ns/iter"
           }
         ]
