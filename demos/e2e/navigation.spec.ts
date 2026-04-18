@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { gotoPath } from './helpers';
 
 const PAGES = [
   { path: '/pck/', name: 'PCK', readyText: '+ Add packages' },
@@ -11,7 +12,7 @@ for (const from of PAGES) {
     if (from === to) continue;
 
     test(`navbar: ${from.name} → ${to.name}`, async ({ page }) => {
-      await page.goto(from.path);
+      await page.goto(gotoPath(from.path));
       await expect(page.locator('#app')).toContainText(from.readyText, { timeout: 15000 });
 
       await page.locator('nav').getByRole('link', { name: to.name }).click();

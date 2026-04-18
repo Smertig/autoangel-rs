@@ -1,12 +1,13 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { gotoPath } from './helpers';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PCK_FILE = path.resolve(__dirname, '../../test_data/packages/configs.pck');
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/pck/');
+  await page.goto(gotoPath('/pck/'));
   await expect(page.getByTestId('empty-drop-panel')).toBeVisible({ timeout: 15000 });
 });
 

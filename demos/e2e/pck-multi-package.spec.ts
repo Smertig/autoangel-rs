@@ -1,6 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { gotoPath } from './helpers';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PACKAGES_DIR = path.resolve(__dirname, '../../test_data/packages');
@@ -9,7 +10,7 @@ const MODELS_PLANT_PCK = path.join(PACKAGES_DIR, 'models_carnivore_plant.pck');
 const MODELS_NPC_PCK = path.join(PACKAGES_DIR, 'models_npc_animated.pck');
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/pck/');
+  await page.goto(gotoPath('/pck/'));
   await expect(page.getByTestId('empty-drop-panel')).toBeVisible({ timeout: 15000 });
 });
 

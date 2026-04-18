@@ -148,6 +148,12 @@ jobs:
         run: cd autoangel-wasm && npx tsx --test tests/test.ts
 
   build-demos:
+    # Runs in the default "pinned" mode: demos' `test:e2e` script uses
+    # `tsconfig.published.json` (types from `node_modules/autoangel`,
+    # the pinned published version) and playwright navigates without
+    # `?local`, so runtime loads the pinned release from CDN. To test
+    # local WASM changes, developers run `npm run test:e2e:local`
+    # locally after bumping the demos pin.
     name: Demos Build & E2E Tests
     needs: changes
     if: needs.changes.outputs.demos == 'true' || needs.changes.outputs.ci == 'true'
@@ -161,17 +167,7 @@ jobs:
         with:
           node-version: '20'
 
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32-unknown-unknown
-
       - uses: astral-sh/setup-uv@v6
-
-      - name: Install wasm-pack
-        run: curl -sSL https://rustwasm.github.io/wasm-pack/installer/init.sh | sh
-
-      - name: Build WASM for web
-        run: cd autoangel-wasm && wasm-pack build --target web --out-name autoangel
 
       - name: Generate E2E fixtures
         run: cd autoangel-py && uv run python ../demos/e2e/generate-fixtures.py
@@ -179,14 +175,14 @@ jobs:
       - name: Install dependencies
         run: cd demos && npm ci
 
-      - name: Build demos
-        run: cd demos && npm run build
-
       - name: Install Playwright browsers
         run: cd demos && npx playwright install --with-deps chromium
 
-      - name: Run E2E tests
-        run: cd demos && npx playwright test
+      - name: Build demos (production bundle)
+        run: cd demos && npx vite build
+
+      - name: Run E2E tests (pinned mode)
+        run: cd demos && npm run test:e2e
 
       - name: Upload test results
         if: failure()

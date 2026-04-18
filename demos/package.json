@@ -8,8 +8,10 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e": "tsc --noEmit -p tsconfig.published.json && playwright test",
+    "test:e2e:ui": "tsc --noEmit -p tsconfig.published.json && playwright test --ui",
+    "test:e2e:local": "tsc --noEmit && cross-env E2E_MODE=local playwright test",
+    "test:e2e:ui:local": "tsc --noEmit && cross-env E2E_MODE=local playwright test --ui"
   },
   "dependencies": {
     "fflate": "^0.8.2",
@@ -23,6 +25,7 @@
     "@types/three": "^0.183.1",
     "@vitejs/plugin-react": "^4.4.0",
     "autoangel": "^0.10.3",
+    "cross-env": "^7.0.3",
     "three": "^0.183.2",
     "typescript": "^5.7.0",
     "vite": "^6.0.0",

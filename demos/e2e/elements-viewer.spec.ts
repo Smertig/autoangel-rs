@@ -1,12 +1,13 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { gotoPath } from './helpers';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_FILE = path.resolve(__dirname, '../../test_data/elements/elements_v102.data');
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/elements/');
+  await page.goto(gotoPath('/elements/'));
   await page.waitForFunction(() => {
     const el = document.getElementById('app');
     return el?.textContent?.includes('Ready');

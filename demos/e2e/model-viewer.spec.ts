@@ -1,6 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { gotoPath } from './helpers';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PCK_FILE = path.resolve(__dirname, '../../test_data/packages/models_carnivore_plant.pck');
@@ -24,7 +25,7 @@ async function openEcm(page: Page) {
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/pck/?local');
+  await page.goto(gotoPath('/pck/'));
   await expect(page.getByTestId('empty-drop-panel')).toBeVisible({ timeout: 15000 });
 });
 
@@ -82,8 +83,7 @@ test('renders animated NPC model with animation controls', async ({ page }) => {
   const consoleLogs: string[] = [];
   page.on('console', (msg) => consoleLogs.push(`[${msg.type()}] ${msg.text()}`));
 
-  // Use ?local to load WASM from local build (TrackSet is not on CDN yet)
-  await page.goto('/pck/?local');
+  await page.goto(gotoPath('/pck/'));
   await expect(page.getByTestId('empty-drop-panel')).toBeVisible({ timeout: 15000 });
 
   await page.getByTestId('package-add').locator('input[type="file"]').setInputFiles(NPC_PCK_FILE);
@@ -118,7 +118,7 @@ test('renders animated NPC model with animation controls', async ({ page }) => {
 });
 
 test('transport bar play/pause and frame stepping', async ({ page }) => {
-  await page.goto('/pck/?local');
+  await page.goto(gotoPath('/pck/'));
   await expect(page.getByTestId('empty-drop-panel')).toBeVisible({ timeout: 15000 });
 
   await page.getByTestId('package-add').locator('input[type="file"]').setInputFiles(NPC_PCK_FILE);
@@ -137,8 +137,7 @@ test('transport bar play/pause and frame stepping', async ({ page }) => {
 });
 
 test('shows STCK metadata for standalone .stck file', async ({ page }) => {
-  // Use ?local to load WASM from local build (TrackSet is not on CDN yet)
-  await page.goto('/pck/?local');
+  await page.goto(gotoPath('/pck/'));
   await expect(page.getByTestId('empty-drop-panel')).toBeVisible({ timeout: 15000 });
 
   await page.getByTestId('package-add').locator('input[type="file"]').setInputFiles(NPC_PCK_FILE);
@@ -155,7 +154,7 @@ test('shows STCK metadata for standalone .stck file', async ({ page }) => {
 });
 
 test('animation list shows event indicators when ECM has combined action events', async ({ page }) => {
-  await page.goto('/pck/?local');
+  await page.goto(gotoPath('/pck/'));
   await expect(page.getByTestId('empty-drop-panel')).toBeVisible({ timeout: 15000 });
 
   await page.getByTestId('package-add').locator('input[type="file"]').setInputFiles(NPC_PCK_FILE);

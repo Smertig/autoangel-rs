@@ -87,6 +87,19 @@ The `?local` parameter still works for loading WASM from the local build.
 
 Demo source is in `demos/src/` (TypeScript + React). Run `cd demos && npx vitest` for unit tests.
 
+### Demo E2E modes
+
+Demos have two E2E test modes that differ in which wasm they exercise:
+
+| Command | Mode | Types | Runtime | Use when |
+|---|---|---|---|---|
+| `cd demos && npm run test:e2e` | **pinned** (default, what CI runs) | `node_modules/autoangel` (published) | CDN at pinned version | You haven't touched core/wasm APIs, or you want to verify demos still work against the currently-pinned release. |
+| `cd demos && npm run test:e2e:local` | **local** (dev-only, opt-in) | local `autoangel-wasm/pkg` via tsconfig paths alias | local WASM via `?local` query param | You changed core/wasm APIs and updated demos to use them — want full end-to-end verification against the unpublished build. Requires `wasm-pack build --target web --out-name autoangel` in `autoangel-wasm/` so `pkg/` exists. |
+
+`:ui` variants (`test:e2e:ui`, `test:e2e:ui:local`) open Playwright UI mode.
+
+Selection is explicit — no autodetection. If demos source is inconsistent with the chosen mode (e.g., source uses a newly-added API but you run in pinned mode), `tsc` surfaces it immediately as a type error — no separate assertion needed.
+
 ## Version bumps
 
 All crates share the same version. When bumping, update **all** of these:

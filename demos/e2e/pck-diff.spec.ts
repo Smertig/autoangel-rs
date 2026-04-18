@@ -1,13 +1,14 @@
 import { test, expect, Page } from '@playwright/test';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { gotoPath } from './helpers';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const LEFT_PCK = path.resolve(__dirname, 'fixtures/left.pck');
 const RIGHT_PCK = path.resolve(__dirname, 'fixtures/right.pck');
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/pck-diff/');
+  await page.goto(gotoPath('/pck-diff/'));
   // Wait for WASM — the diff page shows "Compare" button in the chooser panel
   await page.waitForFunction(() => {
     const el = document.getElementById('app');

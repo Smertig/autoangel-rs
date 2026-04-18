@@ -12,6 +12,9 @@
     "resolveJsonModule": true,
     "lib": ["ES2022", "DOM", "DOM.Iterable", "ESNext.Disposable"],
     "types": ["vite/client"],
+    // NOTE: the `@<scope>/*` aliases must be mirrored in
+    // `tsconfig.published.json` — TypeScript replaces `paths` entirely
+    // on override, so `extends` can't merge them per-key.
     "paths": {
       "autoangel": ["../autoangel-wasm/pkg"],
       "@shared/*": ["./src/shared/*"],
