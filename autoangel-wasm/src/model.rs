@@ -95,10 +95,21 @@ impl GfxEffect {
         self.inner.elements.get(i).map_or(0, |e| e.priority)
     }
 
-    /// Raw body text (element-specific fields + KeyPointSet).
+    /// Short variant name for the element's body (`"decal"`, `"trail"`, …,
+    /// `"unknown"` for unparsed types).
+    #[wasm_bindgen(js_name = "elementBodyKind")]
+    pub fn element_body_kind(&self, i: usize) -> Option<String> {
+        self.inner
+            .elements
+            .get(i)
+            .map(|e| e.body.kind().to_string())
+    }
+
+    /// Raw body text for debug display — raw lines for `Unknown`, or the
+    /// unparsed affector/KeyPointSet tail for typed variants.
     #[wasm_bindgen(js_name = "elementBodyText")]
     pub fn element_body_text(&self, i: usize) -> Option<String> {
-        self.inner.elements.get(i).map(|e| e.body_lines.join("\n"))
+        self.inner.elements.get(i).map(|e| e.body.raw_text())
     }
 }
 

@@ -65,14 +65,26 @@ impl PyGfxEffect {
         Ok(&elem.tex_file)
     }
 
-    /// Element-type-specific body lines for element at index `i`, joined by newlines.
+    /// Short variant name for the element's body (`"decal"`, `"trail"`, …,
+    /// `"unknown"` for unparsed types).
+    fn element_body_kind(&self, i: usize) -> PyResult<&'static str> {
+        let elem = self
+            .inner
+            .elements
+            .get(i)
+            .ok_or_else(|| PyIndexError::new_err(format!("element index {i} out of range")))?;
+        Ok(elem.body.kind())
+    }
+
+    /// Raw body text for debug display — raw lines for `Unknown`, or the
+    /// unparsed affector/KeyPointSet tail for typed variants.
     fn element_body_text(&self, i: usize) -> PyResult<String> {
         let elem = self
             .inner
             .elements
             .get(i)
             .ok_or_else(|| PyIndexError::new_err(format!("element index {i} out of range")))?;
-        Ok(elem.body_lines.join("\n"))
+        Ok(elem.body.raw_text())
     }
 
     fn __repr__(&self) -> String {

@@ -83,24 +83,24 @@ pub struct EcmModel {
 /// version and event type. For event types we don't fully understand (102–104+),
 /// we skip lines until the next known boundary key.
 fn parse_event(r: &mut Lines, version: u32) -> Result<EcmEvent> {
-    let event_type = r.read_int("EventType")?;
+    let event_type = r.read::<i32>("EventType")?;
 
     // Event base: StartTime/FxStartTime, TimeSpan, Once
     // v<18: only FxStartTime, no TimeSpan, no Once
     // v18-19: StartTime + Once, no TimeSpan
     // v>=20: StartTime + TimeSpan + Once
     let start_time = if version >= 18 {
-        r.read_int("StartTime")?
+        r.read::<i32>("StartTime")?
     } else {
-        r.read_int("FxStartTime")?
+        r.read::<i32>("FxStartTime")?
     };
     let time_span = if version >= 20 {
-        r.read_int("TimeSpan")?
+        r.read::<i32>("TimeSpan")?
     } else {
         -1
     };
     let once = if version >= 18 {
-        r.read_int("Once")? != 0
+        r.read::<i32>("Once")? != 0
     } else {
         false
     };
@@ -135,9 +135,9 @@ fn parse_event(r: &mut Lines, version: u32) -> Result<EcmEvent> {
     // FX_BASE fields (shared by EventType 100 and 101)
     // v54+: FxFileNum + list, else single FxFilePath
     let fx_file_path = if version >= 54 {
-        let num = r.read_int("FxFileNum")? as usize;
+        let num = r.read::<i32>("FxFileNum")? as usize;
         let first = if num > 0 {
-            r.read_value("FxFilePath")?.to_string()
+            r.read::<String>("FxFilePath")?
         } else {
             String::new()
         };
@@ -147,26 +147,26 @@ fn parse_event(r: &mut Lines, version: u32) -> Result<EcmEvent> {
         }
         first
     } else {
-        r.read_value("FxFilePath")?.to_string()
+        r.read::<String>("FxFilePath")?
     };
 
-    let hook_name = r.read_value("HookName")?.to_string();
-    let hook_offset = r.read_vec3("HookOffset")?;
-    let hook_yaw = r.read_float("HookYaw")?;
-    let hook_pitch = r.read_float("HookPitch")?;
+    let hook_name = r.read::<String>("HookName")?;
+    let hook_offset = r.read::<[f32; 3]>("HookOffset")?;
+    let hook_yaw = r.read::<f32>("HookYaw")?;
+    let hook_pitch = r.read::<f32>("HookPitch")?;
     let hook_rot = if version >= 19 {
-        r.read_float("HookRot")?
+        r.read::<f32>("HookRot")?
     } else {
         0.0
     };
-    let bind_parent = r.read_int("BindParent")? != 0;
+    let bind_parent = r.read::<i32>("BindParent")? != 0;
     let fade_out = if version >= 15 {
-        r.read_int("FadeOut")?
+        r.read::<i32>("FadeOut")?
     } else {
         0 // v<=14: FadeOut appears in GFX_INFO section instead
     };
     let use_model_alpha = if version >= 18 {
-        r.read_int("UseModelAlpha")? != 0
+        r.read::<i32>("UseModelAlpha")? != 0
     } else {
         false
     };
@@ -188,14 +188,14 @@ fn parse_event(r: &mut Lines, version: u32) -> Result<EcmEvent> {
 
     if event_type == 100 {
         // GFX_INFO fields
-        gfx_scale = Some(r.read_float("GfxScale")?);
+        gfx_scale = Some(r.read::<f32>("GfxScale")?);
         if version >= 22 {
-            r.read_float("GfxAlpha")?; // skip, not stored
+            r.read::<f32>("GfxAlpha")?; // skip, not stored
         }
-        gfx_speed = Some(r.read_float("GfxSpeed")?);
+        gfx_speed = Some(r.read::<f32>("GfxSpeed")?);
         // v<=14: FadeOut appears here (in GFX_INFO section) instead of in FX_BASE
         if version <= 14 {
-            r.read_int("FadeOut")?; // already stored as 0 above; just consume
+            r.read::<i32>("FadeOut")?; // already stored as 0 above; just consume
         }
         if version >= 23 {
             r.next_line()?; // GfxOuterPath
@@ -212,7 +212,7 @@ fn parse_event(r: &mut Lines, version: u32) -> Result<EcmEvent> {
         if version >= 71 {
             r.next_line()?; // GfxUseFixedPoint
         }
-        let gfx_param_count = r.read_int("GfxParamCount")? as usize;
+        let gfx_param_count = r.read::<i32>("GfxParamCount")? as usize;
         for _ in 0..gfx_param_count {
             // Each param: ParamEleName, ParamId, ParamDataType, ParamDataIsCmd, ParamDataHook
             r.next_line()?; // ParamEleName
@@ -223,9 +223,9 @@ fn parse_event(r: &mut Lines, version: u32) -> Result<EcmEvent> {
         }
     } else if event_type == 101 {
         // SFX_INFO fields
-        r.read_int("SoundVer")?;
-        force_2d = Some(r.read_int("Force2D")? != 0);
-        is_loop = Some(r.read_int("IsLoop")? != 0);
+        r.read::<i32>("SoundVer")?;
+        force_2d = Some(r.read::<i32>("Force2D")? != 0);
+        is_loop = Some(r.read::<i32>("IsLoop")? != 0);
         if version >= 54 {
             r.next_line()?; // VolMin
             r.next_line()?; // VolMax
@@ -235,10 +235,10 @@ fn parse_event(r: &mut Lines, version: u32) -> Result<EcmEvent> {
             r.next_line()?; // PitchMin
             r.next_line()?; // PitchMax
         } else {
-            volume = Some(r.read_int("Volume")?);
+            volume = Some(r.read::<i32>("Volume")?);
         }
-        min_dist = Some(r.read_float("MinDist")?);
-        max_dist = Some(r.read_float("MaxDist")?);
+        min_dist = Some(r.read::<f32>("MinDist")?);
+        max_dist = Some(r.read::<f32>("MaxDist")?);
         if version >= 65 {
             r.next_line()?; // FixSpeed
             r.next_line()?; // SilentHeader
@@ -292,7 +292,7 @@ impl EcmModel {
         };
 
         // Line 2: "SkinModelPath: %s"
-        let skin_model_path = r.read_value("SkinModelPath")?.to_string();
+        let skin_model_path = r.read::<String>("SkinModelPath")?;
 
         let mut org_color = 0xFFFFFFFF_u32;
         let mut src_blend = 5_i32;
@@ -308,7 +308,7 @@ impl EcmModel {
         let mut combine_actions = Vec::new();
 
         if version >= 33 && r.peek_key() == Some("AutoUpdata") {
-            r.read_int("AutoUpdata")?;
+            r.read::<i32>("AutoUpdata")?;
         }
 
         if version >= 16 {
@@ -318,32 +318,32 @@ impl EcmModel {
                 r.read_hex_u32("EmissiveCol")?;
             }
             if version >= 21 {
-                src_blend = r.read_int("SrcBlend")?;
-                dest_blend = r.read_int("DestBlend")?;
+                src_blend = r.read::<i32>("SrcBlend")?;
+                dest_blend = r.read::<i32>("DestBlend")?;
             }
 
-            let outer_num = r.read_int("OuterNum")? as usize;
+            let outer_num = r.read::<i32>("OuterNum")? as usize;
             for _ in 0..outer_num {
-                outer_floats.push(r.read_float("Float")?);
+                outer_floats.push(r.read::<f32>("Float")?);
             }
 
             if version >= 28 {
-                new_bone_scale = r.read_int("NewScale")? != 0;
+                new_bone_scale = r.read::<i32>("NewScale")? != 0;
             }
 
-            let bone_num = r.read_int("BoneNum")? as usize;
+            let bone_num = r.read::<i32>("BoneNum")? as usize;
             for _ in 0..bone_num {
-                let bone_index = r.read_int("BoneIndex")?;
+                let bone_index = r.read::<i32>("BoneIndex")?;
                 if new_bone_scale {
-                    let scale = r.read_vec3("BoneScale")?;
+                    let scale = r.read::<[f32; 3]>("BoneScale")?;
                     bone_scales.push(BoneScaleEntry {
                         bone_index,
                         scale,
                         scale_type: None,
                     });
                 } else {
-                    let scale_type = r.read_int("BoneSclType")?;
-                    let scale = r.read_vec3("BoneScale")?;
+                    let scale_type = r.read::<i32>("BoneSclType")?;
+                    let scale = r.read::<[f32; 3]>("BoneScale")?;
                     bone_scales.push(BoneScaleEntry {
                         bone_index,
                         scale,
@@ -362,16 +362,16 @@ impl EcmModel {
         }
 
         if version >= 27 {
-            def_play_speed = r.read_float("DefSpeed")?;
+            def_play_speed = r.read::<f32>("DefSpeed")?;
         }
         if version >= 43 {
-            r.read_int("CanCastShadow")?;
+            r.read::<i32>("CanCastShadow")?;
         }
         if version >= 45 {
-            r.read_int("RenderModel")?;
+            r.read::<i32>("RenderModel")?;
         }
         if version >= 48 {
-            r.read_int("RenderEdge")?;
+            r.read::<i32>("RenderEdge")?;
         }
 
         // Scan forward to CoGfxNum/ComActCount/AddiSkinCount, skipping any
@@ -389,12 +389,12 @@ impl EcmModel {
 
         // Read counts: CoGfxNum then ComActCount (both before the actual data)
         let co_gfx_count = if !r.done() && r.peek_key() == Some("CoGfxNum") {
-            r.read_int("CoGfxNum")? as usize
+            r.read::<i32>("CoGfxNum")? as usize
         } else {
             0
         };
         let com_act_count = if !r.done() && r.peek_key() == Some("ComActCount") {
-            r.read_int("ComActCount")? as usize
+            r.read::<i32>("ComActCount")? as usize
         } else {
             0
         };
@@ -407,7 +407,7 @@ impl EcmModel {
         }
         // v70+: ParticleBonesCount + bone indices
         if version >= 70 {
-            let particle_bones_count = r.read_int("ParticleBonesCount")? as usize;
+            let particle_bones_count = r.read::<i32>("ParticleBonesCount")? as usize;
             for _ in 0..particle_bones_count {
                 r.next_line()?;
             }
@@ -421,46 +421,46 @@ impl EcmModel {
         // Combined actions
         {
             for _ in 0..com_act_count {
-                let name = r.read_value("CombineActName")?.to_string();
+                let name = r.read::<String>("CombineActName")?;
                 let loop_count = if version >= 3 {
-                    r.read_int("LoopCount")?
+                    r.read::<i32>("LoopCount")?
                 } else {
                     0
                 };
 
                 // v30+: RankCount + per-rank "Channel: %d, Rank: %d" lines
                 if version >= 30 {
-                    let rank_count = r.read_int("RankCount")? as usize;
+                    let rank_count = r.read::<i32>("RankCount")? as usize;
                     for _ in 0..rank_count {
                         r.next_line()?; // "Channel: %d, Rank: %d"
                     }
                 }
                 // v32+: EventChannel
                 if version >= 32 {
-                    r.read_int("EventChannel")?;
+                    r.read::<i32>("EventChannel")?;
                 }
                 // v40+: PlaySpeed
                 if version >= 40 {
-                    r.read_float("PlaySpeed")?;
+                    r.read::<f32>("PlaySpeed")?;
                 }
                 // v49+: StopChildAct, ResetMtl
                 if version >= 49 {
-                    r.read_int("StopChildAct")?;
-                    r.read_int("ResetMtl")?;
+                    r.read::<i32>("StopChildAct")?;
+                    r.read::<i32>("ResetMtl")?;
                 }
 
-                let base_act_count = r.read_int("BaseActCount")? as usize;
+                let base_act_count = r.read::<i32>("BaseActCount")? as usize;
                 let mut base_actions = Vec::with_capacity(base_act_count);
                 for _ in 0..base_act_count {
-                    let base_name = r.read_value("BaseActName")?.to_string();
-                    let act_start_time = r.read_int("ActStartTime")?;
+                    let base_name = r.read::<String>("BaseActName")?;
+                    let act_start_time = r.read::<i32>("ActStartTime")?;
                     // v36+: LoopMinNum + LoopMaxNum instead of LoopCount
                     let base_loop_count = if version >= 36 {
-                        let min_loops = r.read_int("LoopMinNum")?;
-                        r.read_int("LoopMaxNum")?; // skip max, use min
+                        let min_loops = r.read::<i32>("LoopMinNum")?;
+                        r.read::<i32>("LoopMaxNum")?; // skip max, use min
                         min_loops
                     } else {
-                        r.read_int("LoopCount")?
+                        r.read::<i32>("LoopCount")?
                     };
                     base_actions.push(BaseAction {
                         name: base_name,
@@ -468,7 +468,7 @@ impl EcmModel {
                         loop_count: base_loop_count,
                     });
                 }
-                let event_count = r.read_int("EventCount")? as usize;
+                let event_count = r.read::<i32>("EventCount")? as usize;
                 let mut events = Vec::with_capacity(event_count);
                 for _ in 0..event_count {
                     events.push(parse_event(&mut r, version)?);
@@ -484,21 +484,21 @@ impl EcmModel {
 
         // Additional skins
         if !r.done() && r.peek_key() == Some("AddiSkinCount") {
-            let addi_count = r.read_int("AddiSkinCount")? as usize;
+            let addi_count = r.read::<i32>("AddiSkinCount")? as usize;
             for _ in 0..addi_count {
-                additional_skins.push(r.read_value("AddiSkinPath")?.to_string());
+                additional_skins.push(r.read::<String>("AddiSkinPath")?);
             }
         }
 
         // Child models
         if !r.done() && r.peek_key() == Some("ChildCount") {
-            let child_count = r.read_int("ChildCount")? as usize;
+            let child_count = r.read::<i32>("ChildCount")? as usize;
             for _ in 0..child_count {
                 child_models.push(ChildModel {
-                    name: r.read_value("ChildName")?.to_string(),
-                    path: r.read_value("ChildPath")?.to_string(),
-                    hh_name: r.read_value("HHName")?.to_string(),
-                    cc_name: r.read_value("CCName")?.to_string(),
+                    name: r.read::<String>("ChildName")?,
+                    path: r.read::<String>("ChildPath")?,
+                    hh_name: r.read::<String>("HHName")?,
+                    cc_name: r.read::<String>("CCName")?,
                 });
             }
         }

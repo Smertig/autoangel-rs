@@ -54,30 +54,42 @@ impl<'a> Lines<'a> {
         );
     }
 
-    pub fn read_int(&mut self, key: &str) -> Result<i32> {
+    /// Read a `Key: Value` line and parse the value as `T`.
+    pub fn read<T: LineValue>(&mut self, key: &str) -> Result<T> {
         let v = self.read_value(key)?;
-        v.parse()
-            .map_err(|_| eyre!("Invalid int for '{}': '{}'", key, v))
+        T::parse_line_value(v)
+            .ok_or_else(|| eyre!("Invalid {} for '{}': '{}'", T::TYPE_NAME, key, v))
     }
 
+    /// Like `read` but accepts any of the given exact key spellings.
+    pub fn read_alt<T: LineValue>(&mut self, keys: &[&str]) -> Result<T> {
+        let v = self.read_value_alt(keys)?;
+        T::parse_line_value(v).ok_or_else(|| {
+            eyre!(
+                "Invalid {} for {}: '{}'",
+                T::TYPE_NAME,
+                format_alt_keys(keys),
+                v
+            )
+        })
+    }
+
+    /// Conditionally read: returns `Some(v)` iff `cond` is true, consuming
+    /// a line; `None` otherwise. Collapses the
+    /// `(cond).then(|| r.read(k)).transpose()?` pattern used for
+    /// version-gated optional fields.
+    pub fn read_if<T: LineValue>(&mut self, cond: bool, key: &str) -> Result<Option<T>> {
+        if !cond {
+            return Ok(None);
+        }
+        self.read(key).map(Some)
+    }
+
+    /// Hex-encoded `u32` (e.g. `OrgColor: ffffffff`) — distinct parser so
+    /// kept as a specialized method instead of a `LineValue` impl.
     pub fn read_hex_u32(&mut self, key: &str) -> Result<u32> {
         let v = self.read_value(key)?;
         u32::from_str_radix(v, 16).map_err(|_| eyre!("Invalid hex for '{}': '{}'", key, v))
-    }
-
-    pub fn read_float(&mut self, key: &str) -> Result<f32> {
-        self.read_float_alt(&[key])
-    }
-
-    pub fn read_float_alt(&mut self, keys: &[&str]) -> Result<f32> {
-        let v = self.read_value_alt(keys)?;
-        v.parse()
-            .map_err(|_| eyre!("Invalid float for {}: '{}'", format_alt_keys(keys), v))
-    }
-
-    pub fn read_vec3(&mut self, key: &str) -> Result<[f32; 3]> {
-        let v = self.read_value(key)?;
-        parse_vec3(v)
     }
 
     /// Peek at the key of the current line without consuming it.
@@ -85,6 +97,79 @@ impl<'a> Lines<'a> {
         self.lines
             .get(self.pos)
             .and_then(|l| split_kv(l.trim()).map(|(k, _)| k))
+    }
+}
+
+/// Types that can be parsed from the value portion of a `Key: Value` line.
+pub(crate) trait LineValue: Sized {
+    /// Human-readable type name used in parse-error messages.
+    const TYPE_NAME: &'static str;
+    /// Parse the trimmed value portion. Returns `None` on format error;
+    /// the caller supplies key + value context for the outer `Result`.
+    fn parse_line_value(s: &str) -> Option<Self>;
+}
+
+impl LineValue for i32 {
+    const TYPE_NAME: &'static str = "int";
+    fn parse_line_value(s: &str) -> Option<Self> {
+        s.parse().ok()
+    }
+}
+
+impl LineValue for f32 {
+    const TYPE_NAME: &'static str = "float";
+    /// Tolerant to Windows MSVCRT special-value prints that leak into
+    /// engine-saved files via `sprintf("%f", ...)` on non-finite values:
+    /// `1.#INF` / `-1.#INF` map to signed infinity; `1.#QNAN0` / `-1.#IND`
+    /// map to NaN.
+    fn parse_line_value(s: &str) -> Option<Self> {
+        if let Ok(v) = s.parse() {
+            return Some(v);
+        }
+        let (negative, rest) = match s.strip_prefix('-') {
+            Some(r) => (true, r),
+            None => (false, s),
+        };
+        let tag = rest.strip_prefix("1.#")?;
+        if tag.starts_with("INF") {
+            Some(if negative {
+                f32::NEG_INFINITY
+            } else {
+                f32::INFINITY
+            })
+        } else if tag.starts_with("QNAN") || tag.starts_with("SNAN") || tag.starts_with("IND") {
+            Some(f32::NAN)
+        } else {
+            None
+        }
+    }
+}
+
+impl LineValue for bool {
+    const TYPE_NAME: &'static str = "bool";
+    /// Engine convention: 0 = false, nonzero = true (stored as `%d`).
+    fn parse_line_value(s: &str) -> Option<Self> {
+        s.parse::<i32>().ok().map(|n| n != 0)
+    }
+}
+
+impl LineValue for [f32; 3] {
+    const TYPE_NAME: &'static str = "vec3";
+    fn parse_line_value(s: &str) -> Option<Self> {
+        let (a, rest) = s.split_once(',')?;
+        let (b, c) = rest.split_once(',')?;
+        Some([
+            f32::parse_line_value(a.trim())?,
+            f32::parse_line_value(b.trim())?,
+            f32::parse_line_value(c.trim())?,
+        ])
+    }
+}
+
+impl LineValue for String {
+    const TYPE_NAME: &'static str = "string";
+    fn parse_line_value(s: &str) -> Option<Self> {
+        Some(s.to_string())
     }
 }
 
@@ -101,32 +186,11 @@ fn format_alt_keys(keys: &[&str]) -> String {
     }
 }
 
-/// Split "Key: Value" into (key, value). Handles empty values like "Key: " or "Key:".
+/// Split "Key: Value" into (key, value). Also tolerates `Key:Value`
+/// with no space after the colon — at least one real archive file
+/// emits that form (`gfx\场景\空1.gfx` has `Path:Effect\...`). Empty
+/// values (`Key:` / `Key: `) return `""`.
 pub(crate) fn split_kv(line: &str) -> Option<(&str, &str)> {
-    if let Some((k, v)) = line.split_once(": ") {
-        Some((k.trim(), v.trim()))
-    } else {
-        let k = line.strip_suffix(':')?;
-        Some((k.trim(), ""))
-    }
-}
-
-pub(crate) fn parse_vec3(s: &str) -> Result<[f32; 3]> {
-    let (a, rest) = s
-        .split_once(',')
-        .ok_or_else(|| eyre!("Expected 3 floats: '{s}'"))?;
-    let (b, c) = rest
-        .split_once(',')
-        .ok_or_else(|| eyre!("Expected 3 floats: '{s}'"))?;
-    Ok([
-        a.trim()
-            .parse()
-            .map_err(|_| eyre!("Invalid float: '{}'", a.trim()))?,
-        b.trim()
-            .parse()
-            .map_err(|_| eyre!("Invalid float: '{}'", b.trim()))?,
-        c.trim()
-            .parse()
-            .map_err(|_| eyre!("Invalid float: '{}'", c.trim()))?,
-    ])
+    let (k, v) = line.split_once(':')?;
+    Some((k.trim(), v.trim()))
 }
