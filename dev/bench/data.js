@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1776515785937,
+  "lastUpdate": 1776516731575,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -3071,6 +3071,102 @@ window.BENCHMARK_DATA = {
             "name": "PackageInfo::save_to",
             "value": 941822,
             "range": "± 2264",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "cf0985a0c60dd92b9235eb7358d2661a39fd24ae",
+          "message": "feat [gfx]: typed Python + TypeScript bindings for GFX\n\nAdd `python` / `wasm` optional features on `autoangel-core` that stamp\nevery GFX data type (`GfxEffect`, `GfxElement`, `ElementBody`, `Emitter`,\n...) with the appropriate derives via `#[apply(bindable)]`:\n\n* Python: `#[pyclass(get_all, frozen)]`. Consumers read\n  `gfx.elements[i].body.width` etc. directly; `read_gfx(data)` returns\n  the core pyclass. `ElementBody` is a PyO3 complex enum — narrow with\n  `isinstance(body, ElementBody.Decal)`. The `PyGfxEffect` wrapper is\n  gone.\n* WASM: `#[derive(Tsify)] + #[tsify(into_wasm_abi)]`. `parseGfx(bytes)`\n  returns a plain JS object typed via the auto-generated discriminated\n  union. The wrapper `GfxEffect` class is gone.\n\n`GfxElement.element_type: GfxElementType` is replaced by `type_id: u32`\nso `GfxElementType` stays a clean parse-time helper (its mix of unit +\ntuple variants isn't compatible with PyO3 complex enums). Callers use\n`GfxElementType::from_id(elem.type_id)`.\n\nGold tests (`test_data/gfx/*.gfx` + `.gfx.json`) verify both bindings\nexpose every field end-to-end. Goldens are produced by\n`scripts/update_gfx_goldens.py` via a recursive pyclass walker; the\nWASM test reads the same goldens and compares via `deepStrictEqual`.\n\n`scripts/rebuild_docs.py` pins pdoc to ravenexp's fix for pdoc#868\n(upstream 16.0.0 infinite-recurses on PyO3 complex-enum hierarchies).\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+          "timestamp": "2026-04-18T15:48:32+03:00",
+          "tree_id": "00eca532c76b73cdd0c24206ea6f3630bb154349",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/cf0985a0c60dd92b9235eb7358d2661a39fd24ae"
+        },
+        "date": 1776516730919,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 32094,
+            "range": "± 274",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 119,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::access_fields",
+            "value": 61,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 167,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 17168,
+            "range": "± 272",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::iterate_lists",
+            "value": 13289,
+            "range": "± 46",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 43,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 314941,
+            "range": "± 587",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::find_prefix",
+            "value": 282,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 3697,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_all_files",
+            "value": 10954266,
+            "range": "± 114885",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::save_to",
+            "value": 1541297,
+            "range": "± 1361",
             "unit": "ns/iter"
           }
         ]
