@@ -1,6 +1,6 @@
 [package]
 name = "autoangel-core"
-version = "0.10.3"
+version = "0.11.0"
 authors = ["Smertig <akaraevz@mail.ru>"]
 edition = "2024"
 
