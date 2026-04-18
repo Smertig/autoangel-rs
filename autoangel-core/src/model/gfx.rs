@@ -1,6 +1,22 @@
 use crate::model::common::decode_gbk;
 use crate::model::text_reader::{LineValue, Lines};
 use eyre::{Result, eyre};
+use macro_rules_attribute::apply;
+
+/// Conditional derive bundle applied via `#[apply(bindable)]` to every
+/// GFX data type that crosses the Rust ↔ Python / TypeScript boundary.
+macro_rules! bindable {
+    ($($item:tt)*) => {
+        #[cfg_attr(
+            feature = "python",
+            ::pyo3::pyclass(get_all, frozen, module = "autoangel", from_py_object)
+        )]
+        #[cfg_attr(feature = "wasm", derive(::tsify_next::Tsify))]
+        #[cfg_attr(feature = "wasm", tsify(into_wasm_abi))]
+        #[derive(Debug, Clone, ::serde::Serialize)]
+        $($item)*
+    };
+}
 
 /// Type identifier for a GFX element.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -101,9 +117,11 @@ impl GfxElementType {
 }
 
 /// A single visual effect element within a GFX file.
-#[derive(Debug, Clone)]
+#[apply(bindable)]
 pub struct GfxElement {
-    pub element_type: GfxElementType,
+    /// Numeric element type id, e.g. 100 for Decal3D. Use
+    /// `GfxElementType::from_id(type_id)` to recover the typed enum.
+    pub type_id: u32,
     pub name: String,
     pub src_blend: i32,
     pub dest_blend: i32,
@@ -125,7 +143,8 @@ pub struct GfxElement {
 /// Element-type-specific body data. Each variant holds the parsed
 /// fields inline plus any unparsed `tail_lines` (affector blocks +
 /// KeyPointSet) relevant to that element type.
-#[derive(Debug, Clone)]
+#[apply(bindable)]
+#[serde(tag = "kind", rename_all = "snake_case")]
 pub enum ElementBody {
     /// Element body not structurally parsed — raw lines preserved.
     Unknown { lines: Vec<String> },
@@ -235,6 +254,7 @@ pub enum ElementBody {
         tail_lines: Vec<String>,
     },
     /// Freeform w×h vertex grid with per-vertex colors (type 210).
+    #[serde(rename = "grid_decal_3d")]
     GridDecal3D {
         w_number: i32,
         h_number: i32,
@@ -298,25 +318,6 @@ pub enum ElementBody {
 }
 
 impl ElementBody {
-    /// Short variant name — `"unknown"`, `"decal"`, `"trail"`, etc.
-    pub fn kind(&self) -> &'static str {
-        match self {
-            ElementBody::Unknown { .. } => "unknown",
-            ElementBody::Decal { .. } => "decal",
-            ElementBody::Trail { .. } => "trail",
-            ElementBody::Light { .. } => "light",
-            ElementBody::Ring { .. } => "ring",
-            ElementBody::Model { .. } => "model",
-            ElementBody::Container { .. } => "container",
-            ElementBody::Particle { .. } => "particle",
-            ElementBody::GridDecal3D { .. } => "grid_decal_3d",
-            ElementBody::Lightning { .. } => "lightning",
-            ElementBody::LtnBolt { .. } => "ltn_bolt",
-            ElementBody::LightningEx { .. } => "lightning_ex",
-            ElementBody::Sound { .. } => "sound",
-        }
-    }
-
     /// Raw body text for debug display — raw lines for `Unknown`, or the
     /// unparsed affector/KeyPointSet tail for typed variants.
     pub fn raw_text(&self) -> String {
@@ -341,7 +342,7 @@ impl ElementBody {
 
 /// Particle emitter block — shared emitter fields plus shape-specific
 /// fields for the concrete emitter shape.
-#[derive(Debug, Clone)]
+#[apply(bindable)]
 pub struct Emitter {
     pub emission_rate: f32,
     pub angle: f32,
@@ -370,9 +371,12 @@ pub struct Emitter {
 /// subdivision parameters. MultiPlane and Curve are not yet
 /// structurally parsed — their shape-specific lines are held as raw
 /// text.
-#[derive(Debug, Clone)]
+#[apply(bindable)]
+#[serde(tag = "shape", rename_all = "snake_case")]
 pub enum EmitterShape {
-    Point,
+    /// Represented as empty struct variant rather than unit — PyO3
+    /// complex enums do not yet accept unit variants.
+    Point {},
     Box {
         area_size: [f32; 3],
     },
@@ -397,14 +401,14 @@ pub enum EmitterShape {
 }
 
 /// A single grid vertex — position + packed ARGB color.
-#[derive(Debug, Clone)]
+#[apply(bindable)]
 pub struct GridVertex {
     pub pos: [f32; 3],
     pub color: u32,
 }
 
 /// Grid-animation keyframe: a modified vertex array at time `time_ms`.
-#[derive(Debug, Clone)]
+#[apply(bindable)]
 pub struct GridAnimKey {
     pub time_ms: i32,
     /// Same length and row-major order as `ElementBody::GridDecal3D::vertices`.
@@ -413,7 +417,7 @@ pub struct GridAnimKey {
 
 /// Perlin noise parameters. Prefix of every Lightning / LightningEx
 /// body.
-#[derive(Debug, Clone)]
+#[apply(bindable)]
 pub struct NoiseCtrl {
     pub buf_len: i32,
     pub amplitude: f32,
@@ -423,7 +427,7 @@ pub struct NoiseCtrl {
 }
 
 /// Animatable float value track (v>=102 lightning amplitude).
-#[derive(Debug, Clone)]
+#[apply(bindable)]
 pub struct FloatValueTrans {
     pub dest_num: i32,
     pub start_time: i32,
@@ -434,7 +438,7 @@ pub struct FloatValueTrans {
 }
 
 /// Scalar payload shared by `Lightning` and `LightningEx` variants.
-#[derive(Debug, Clone)]
+#[apply(bindable)]
 pub struct LightningFields {
     pub noise_ctrl: NoiseCtrl,
     pub start_pos: [f32; 3],
@@ -469,7 +473,7 @@ pub struct LightningFields {
 /// `GfxSoundParamInfo` — sound parameter block shared by both sound
 /// implementations. Has its own internal version (`SoundVer`) distinct
 /// from the GFX file version.
-#[derive(Debug, Clone)]
+#[apply(bindable)]
 pub struct SoundParamInfo {
     pub sound_ver: i32,
     pub force_2d: bool,
@@ -489,7 +493,7 @@ pub struct SoundParamInfo {
 
 /// Audio-event sub-block (present at v>=96). Carries the event path
 /// plus its own distance-attenuation overrides.
-#[derive(Debug, Clone)]
+#[apply(bindable)]
 pub struct SoundAudioEvent {
     pub event_path: String,
     pub use_custom: bool,
@@ -498,7 +502,7 @@ pub struct SoundAudioEvent {
 }
 
 /// A parsed GFX visual effect container.
-#[derive(Debug, Clone)]
+#[apply(bindable)]
 pub struct GfxEffect {
     pub version: u32,
     pub default_scale: f32,
@@ -988,7 +992,7 @@ fn parse_emitter_shape(
 ) -> Result<EmitterShape> {
     use GfxElementType::*;
     match element_type {
-        ParticlePoint => Ok(EmitterShape::Point),
+        ParticlePoint => Ok(EmitterShape::Point {}),
         ParticleBox => {
             let area_size = r.read::<[f32; 3]>("AreaSize")?;
             Ok(EmitterShape::Box { area_size })
@@ -1464,7 +1468,7 @@ fn parse_element(r: &mut Lines<'_>, version: u32) -> Result<GfxElement> {
     let body = parse_body(r, version, &element_type)?;
 
     Ok(GfxElement {
-        element_type,
+        type_id,
         name,
         src_blend,
         dest_blend,
@@ -1586,7 +1590,7 @@ mod tests {
         assert_eq!(effect.elements.len(), 1);
 
         let elem = &effect.elements[0];
-        assert_eq!(elem.element_type, GfxElementType::EcModel);
+        assert_eq!(elem.type_id, 230);
         assert_eq!(elem.name, "fire_particle");
         assert_eq!(elem.src_blend, 5);
         assert_eq!(elem.dest_blend, 6);
@@ -1621,7 +1625,7 @@ mod tests {
         assert_eq!(effect.elements.len(), 2);
 
         let e0 = &effect.elements[0];
-        assert_eq!(e0.element_type, GfxElementType::EcModel);
+        assert_eq!(e0.type_id, 230);
         assert_eq!(e0.name, "ec_a");
         let ElementBody::Unknown { lines } = &e0.body else {
             panic!("expected unknown body for type 230");
@@ -1632,7 +1636,7 @@ mod tests {
         );
 
         let e1 = &effect.elements[1];
-        assert_eq!(e1.element_type, GfxElementType::LtnTrail);
+        assert_eq!(e1.type_id, 180);
         assert_eq!(e1.name, "ltn_trail_b");
         let ElementBody::Unknown { lines } = &e1.body else {
             panic!("expected unknown body for type 180");

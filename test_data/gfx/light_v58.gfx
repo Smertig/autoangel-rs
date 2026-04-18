@@ -1,0 +1,1826 @@
+MOXTVersion: 103
+IsAngelica3: 0
+DedaultScale: 0.700000
+PlaySpeed: 1.000000
+DefaultAlpha: 1.000000
+Raytrace: 0
+FaceToViewer: 0
+FadeByDist: 0
+FadeStart: 0.000000
+FadeEnd: 0.000000
+Vec: -13.378733, -13.378733, -10.000000
+Vec: 13.378733, 13.378733, 10.000000
+UseAABB: 1
+AccurateAABB: 0
+ShakeCam: 0
+ShakeDamp: 0
+NoChangeDir: 0
+2DRender: 0
+2DBackLayer: 0
+PhysExist: 0
+GFXELEMENTCOUNT: 21
+GFXELEMENTID: 123
+Name: 切线1
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 物体\光箭33.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 1
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 1
+IsDummy: 0
+DummyEle: Unnamed19
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+PSFileVersion: 1
+ShaderFile: 
+ShaderTex: 
+PSConstCount: 0
+CanDoFadeOut: 1
+Quota: -1
+ParticleWidth: 1.000000
+ParticleHeight: 1.000000
+3DParticle: 0
+Facing: 0
+ScaleNoOff: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+IsUseParUV: 0
+IsStartOnGrnd: 0
+StopEmitWhenFade: 0
+InitRandomTexture: 0
+EmissionRate: 2.200000
+Angle: 0.000000
+Speed: 0.000000
+ParAcc: 0.000000
+AccDir: 0.000000, 0.000000, -1.000000
+Acc: 0.000000
+TTL: 1.500000
+ColorMin: -1
+ColorMax: -1
+ScaleMin: 1.000000
+ScaleMax: 2.000000
+RotMin: 0.000000
+RotMax: 0.000000
+IsSurface: 0
+IsBind: 1
+IsDrag: 0
+DragPow: 1.000000
+ParIniDir: 0.000000, 0.000000, 0.000000
+IsUseHSVInterp: 0
+AreaSize: 1.000000, 0.500000, 0.800000
+IsAvgGen: 0
+AlphaSeg: 10
+BetaSeg: 10
+AffectorCount: 5
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, -2.200000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: -1.745329
+Acc: 0.000000
+CtrlType: 104
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, -2.200000
+Vel: 0.500000
+Acc: 1.500000
+CtrlType: 108
+StartTime: 0.000000
+EndTime: -1.000000
+Color: -1
+Count: 2
+Color: -1
+TimeSpan: 1000.000000
+Color: 16777215
+TimeSpan: 500.000000
+AlphaOnly: 0
+CtrlType: 106
+StartTime: 1.000000
+EndTime: -1.000000
+ScaleChage: -2.500000, 0.010000, 9999.000000
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: 8.726646
+Acc: 1.745329
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 2.200000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: 0.000000
+Acc: 0.000000
+GFXELEMENTID: 123
+Name: 切线2
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 物体\光箭33.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 1
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 1
+IsDummy: 0
+DummyEle: Unnamed19
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+PSFileVersion: 1
+ShaderFile: 
+ShaderTex: 
+PSConstCount: 0
+CanDoFadeOut: 1
+Quota: -1
+ParticleWidth: 1.000000
+ParticleHeight: 1.000000
+3DParticle: 0
+Facing: 0
+ScaleNoOff: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+IsUseParUV: 0
+IsStartOnGrnd: 0
+StopEmitWhenFade: 0
+InitRandomTexture: 0
+EmissionRate: 2.200000
+Angle: 0.000000
+Speed: 0.000000
+ParAcc: 0.000000
+AccDir: 0.000000, 0.000000, -1.000000
+Acc: 0.000000
+TTL: 1.500000
+ColorMin: -1
+ColorMax: -1
+ScaleMin: 1.000000
+ScaleMax: 2.000000
+RotMin: 0.000000
+RotMax: 0.000000
+IsSurface: 0
+IsBind: 1
+IsDrag: 0
+DragPow: 1.000000
+ParIniDir: 0.000000, 0.000000, 0.000000
+IsUseHSVInterp: 0
+AreaSize: 1.000000, 0.500000, 0.800000
+IsAvgGen: 0
+AlphaSeg: 10
+BetaSeg: 10
+AffectorCount: 5
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 2.200000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: -1.745329
+Acc: 0.000000
+CtrlType: 104
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 2.200000
+Vel: 0.500000
+Acc: 1.500000
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: 8.726646
+Acc: 1.745329
+CtrlType: 108
+StartTime: 0.000000
+EndTime: -1.000000
+Color: -1
+Count: 2
+Color: -1
+TimeSpan: 1000.000000
+Color: 16777215
+TimeSpan: 500.000000
+AlphaOnly: 0
+CtrlType: 106
+StartTime: 1.000000
+EndTime: -1.000000
+ScaleChage: -2.500000, 0.010000, 9999.000000
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, -2.200000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: 0.000000
+Acc: 0.000000
+GFXELEMENTID: 123
+Name: 切线3
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 物体\光箭33.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 1
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 1
+IsDummy: 0
+DummyEle: Unnamed19
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+PSFileVersion: 1
+ShaderFile: 
+ShaderTex: 
+PSConstCount: 0
+CanDoFadeOut: 1
+Quota: -1
+ParticleWidth: 1.000000
+ParticleHeight: 1.000000
+3DParticle: 0
+Facing: 0
+ScaleNoOff: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+IsUseParUV: 0
+IsStartOnGrnd: 0
+StopEmitWhenFade: 0
+InitRandomTexture: 0
+EmissionRate: 2.200000
+Angle: 0.000000
+Speed: 0.000000
+ParAcc: 0.000000
+AccDir: 0.000000, 0.000000, -1.000000
+Acc: 0.000000
+TTL: 1.500000
+ColorMin: -1
+ColorMax: -1
+ScaleMin: 1.000000
+ScaleMax: 2.000000
+RotMin: 0.000000
+RotMax: 0.000000
+IsSurface: 0
+IsBind: 1
+IsDrag: 0
+DragPow: 1.000000
+ParIniDir: 0.000000, 0.000000, 0.000000
+IsUseHSVInterp: 0
+AreaSize: 0.500000, 0.500000, 0.500000
+IsAvgGen: 0
+AlphaSeg: 10
+BetaSeg: 10
+AffectorCount: 5
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 2.200000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: -1.745329
+Acc: 0.000000
+CtrlType: 104
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 2.200000
+Vel: 0.500000
+Acc: 1.500000
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: 8.726646
+Acc: 1.745329
+CtrlType: 108
+StartTime: 0.000000
+EndTime: -1.000000
+Color: -1
+Count: 2
+Color: -1
+TimeSpan: 1000.000000
+Color: 16777215
+TimeSpan: 500.000000
+AlphaOnly: 0
+CtrlType: 106
+StartTime: 1.000000
+EndTime: -1.000000
+ScaleChage: -2.500000, 0.010000, 9999.000000
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: -2.200000, 0.000000, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.707107, 0.000000, 0.707107
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: 0.000000
+Acc: 0.000000
+GFXELEMENTID: 123
+Name: 切线4
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 物体\光箭33.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 1
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 1
+IsDummy: 0
+DummyEle: Unnamed19
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+PSFileVersion: 1
+ShaderFile: 
+ShaderTex: 
+PSConstCount: 0
+CanDoFadeOut: 1
+Quota: -1
+ParticleWidth: 1.000000
+ParticleHeight: 1.000000
+3DParticle: 0
+Facing: 0
+ScaleNoOff: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+IsUseParUV: 0
+IsStartOnGrnd: 0
+StopEmitWhenFade: 0
+InitRandomTexture: 0
+EmissionRate: 2.200000
+Angle: 0.000000
+Speed: 0.000000
+ParAcc: 0.000000
+AccDir: 0.000000, 0.000000, -1.000000
+Acc: 0.000000
+TTL: 1.500000
+ColorMin: -1
+ColorMax: -1
+ScaleMin: 1.000000
+ScaleMax: 2.000000
+RotMin: 0.000000
+RotMax: 0.000000
+IsSurface: 0
+IsBind: 1
+IsDrag: 0
+DragPow: 1.000000
+ParIniDir: 0.000000, 0.000000, 0.000000
+IsUseHSVInterp: 0
+AreaSize: 1.000000, 0.500000, 0.800000
+IsAvgGen: 0
+AlphaSeg: 10
+BetaSeg: 10
+AffectorCount: 5
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, -2.200000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: -1.745329
+Acc: 0.000000
+CtrlType: 104
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, -2.200000
+Vel: 0.500000
+Acc: 1.500000
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: 8.726646
+Acc: 1.745329
+CtrlType: 108
+StartTime: 0.000000
+EndTime: -1.000000
+Color: -1
+Count: 2
+Color: -1
+TimeSpan: 1000.000000
+Color: 16777215
+TimeSpan: 500.000000
+AlphaOnly: 0
+CtrlType: 106
+StartTime: 1.000000
+EndTime: -1.000000
+ScaleChage: -2.500000, 0.010000, 9999.000000
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 2.200000, 0.000000, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.707107, 0.000000, 0.707107
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: 0.000000
+Acc: 0.000000
+GFXELEMENTID: 123
+Name: Unnamed9
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 物体\光箭33.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 1
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 1
+IsDummy: 0
+DummyEle: Unnamed20
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 1
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+PSFileVersion: 1
+ShaderFile: 
+ShaderTex: 
+PSConstCount: 0
+CanDoFadeOut: 1
+Quota: -1
+ParticleWidth: 0.800000
+ParticleHeight: 0.100000
+3DParticle: 0
+Facing: 0
+ScaleNoOff: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+IsUseParUV: 0
+IsStartOnGrnd: 0
+StopEmitWhenFade: 0
+InitRandomTexture: 0
+EmissionRate: 22.000000
+Angle: 0.000000
+Speed: 0.000000
+ParAcc: 0.000000
+AccDir: 0.000000, 0.000000, 0.000000
+Acc: 0.000000
+TTL: 0.500000
+ColorMin: -1
+ColorMax: -1
+ScaleMin: 0.650000
+ScaleMax: 1.100000
+RotMin: 0.000000
+RotMax: 0.000000
+IsSurface: 0
+IsBind: 1
+IsDrag: 0
+DragPow: 1.000000
+ParIniDir: 0.000000, 0.000000, 0.000000
+IsUseHSVInterp: 0
+AreaSize: 2.000000, 0.000000, 2.000000
+IsAvgGen: 0
+AlphaSeg: 10
+BetaSeg: 10
+AffectorCount: 3
+CtrlType: 106
+StartTime: 0.000000
+EndTime: -1.000000
+ScaleChage: -0.200000, 0.010000, 9999.000000
+CtrlType: 100
+StartTime: 0.000000
+EndTime: -1.000000
+Dir: 0.000000, 1.000000, 0.000000
+Vel: 10.000000
+Acc: 5.000000
+CtrlType: 108
+StartTime: 0.000000
+EndTime: -1.000000
+Color: 16777215
+Count: 1
+Color: -1
+TimeSpan: 100.000000
+AlphaOnly: 0
+StartTime: 1000
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 2.000000
+Direction: -0.000000, -1.000000, -0.000000, -0.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 0
+GFXELEMENTID: 130
+Name: 蓝色光源
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 4
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+PSFileVersion: 1
+ShaderFile: 
+ShaderTex: 
+PSConstCount: 0
+CanDoFadeOut: 1
+LightType: 1
+Diffuse: -16759062
+Specular: -16777216
+Ambient: -16777216
+Position: 0.000000, 0.000000, 0.000000
+Direction: 0.000000, 0.000000, 1.000000
+Range: 10.000000
+FallOff: 0.000000
+Attenuation0: 0.000000
+Attenuation0: 0.100000
+Attenuation0: 0.000000
+Theta: 0.000000
+Phi: 0.000000
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 0.000000
+Color: -16759062
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 0
+GFXELEMENTID: 123
+Name: Unnamed2
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 闪电\条形闪电.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 1
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 1
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+PSFileVersion: 1
+ShaderFile: 
+ShaderTex: 
+PSConstCount: 0
+CanDoFadeOut: 1
+Quota: -1
+ParticleWidth: 0.400000
+ParticleHeight: 0.060000
+3DParticle: 1
+Facing: 1
+ScaleNoOff: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+IsUseParUV: 0
+IsStartOnGrnd: 0
+StopEmitWhenFade: 0
+InitRandomTexture: 0
+EmissionRate: 22.000000
+Angle: 0.000000
+Speed: 0.000000
+ParAcc: 0.000000
+AccDir: 0.000000, 0.000000, -1.000000
+Acc: 0.000000
+TTL: 1.000000
+ColorMin: -8060929
+ColorMax: -7806465
+ScaleMin: 1.000000
+ScaleMax: 1.000000
+RotMin: 0.000000
+RotMax: 0.000000
+IsSurface: 0
+IsBind: 1
+IsDrag: 0
+DragPow: 1.000000
+ParIniDir: 0.000000, 0.000000, 0.000000
+IsUseHSVInterp: 0
+AreaSize: 0.020000, 0.020000, 0.020000
+IsAvgGen: 0
+AlphaSeg: 10
+BetaSeg: 10
+AffectorCount: 1
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, -1.000000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: -2.967060
+Acc: 0.000000
+StartTime: 500
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 1.960969
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: 0.000000
+Acc: 0.000000
+GFXELEMENTID: 123
+Name: Unnamed8
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 闪电\条形闪电.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 1
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 1
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+PSFileVersion: 1
+ShaderFile: 
+ShaderTex: 
+PSConstCount: 0
+CanDoFadeOut: 1
+Quota: -1
+ParticleWidth: 0.330000
+ParticleHeight: 0.060000
+3DParticle: 1
+Facing: 1
+ScaleNoOff: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+IsUseParUV: 0
+IsStartOnGrnd: 0
+StopEmitWhenFade: 0
+InitRandomTexture: 0
+EmissionRate: 22.000000
+Angle: 0.000000
+Speed: 0.000000
+ParAcc: 0.000000
+AccDir: 0.000000, 0.000000, -1.000000
+Acc: 0.000000
+TTL: 1.000000
+ColorMin: -8060929
+ColorMax: -7806465
+ScaleMin: 1.000000
+ScaleMax: 1.000000
+RotMin: 0.000000
+RotMax: 0.000000
+IsSurface: 0
+IsBind: 1
+IsDrag: 0
+DragPow: 1.000000
+ParIniDir: 0.000000, 0.000000, 0.000000
+IsUseHSVInterp: 0
+AreaSize: 0.020000, 0.020000, 0.020000
+IsAvgGen: 0
+AlphaSeg: 10
+BetaSeg: 10
+AffectorCount: 1
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, -0.900000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: 2.967060
+Acc: 0.000000
+StartTime: 1500
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, -0.029478
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: 0.000000
+Acc: 0.000000
+GFXELEMENTID: 123
+Name: Unnamed10
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 粒子\guangdian.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 1
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 2
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+PSFileVersion: 1
+ShaderFile: 
+ShaderTex: 
+PSConstCount: 0
+CanDoFadeOut: 1
+Quota: -1
+ParticleWidth: 0.500000
+ParticleHeight: 0.100000
+3DParticle: 1
+Facing: 1
+ScaleNoOff: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+IsUseParUV: 0
+IsStartOnGrnd: 0
+StopEmitWhenFade: 0
+InitRandomTexture: 0
+EmissionRate: 33.000000
+Angle: 0.000000
+Speed: 0.000000
+ParAcc: 0.000000
+AccDir: 0.000000, 0.000000, -1.000000
+Acc: 0.000000
+TTL: 1.000000
+ColorMin: -8060929
+ColorMax: -7806465
+ScaleMin: 1.000000
+ScaleMax: 1.000000
+RotMin: 0.000000
+RotMax: 0.000000
+IsSurface: 0
+IsBind: 1
+IsDrag: 0
+DragPow: 1.000000
+ParIniDir: 0.000000, 0.000000, 0.000000
+IsUseHSVInterp: 0
+AreaSize: 0.100000, 0.100000, 0.100000
+IsAvgGen: 0
+AlphaSeg: 10
+BetaSeg: 10
+AffectorCount: 1
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 2.300000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: -2.967060
+Acc: 0.000000
+StartTime: 1500
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, -2.305772
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: 0.000000
+Acc: 0.000000
+GFXELEMENTID: 123
+Name: Unnamed11
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 粒子\guangdian.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 1
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 2
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+PSFileVersion: 1
+ShaderFile: 
+ShaderTex: 
+PSConstCount: 0
+CanDoFadeOut: 1
+Quota: -1
+ParticleWidth: 0.500000
+ParticleHeight: 0.100000
+3DParticle: 1
+Facing: 1
+ScaleNoOff: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+IsUseParUV: 0
+IsStartOnGrnd: 0
+StopEmitWhenFade: 0
+InitRandomTexture: 0
+EmissionRate: 33.000000
+Angle: 0.000000
+Speed: 0.000000
+ParAcc: 0.000000
+AccDir: 0.000000, 0.000000, -1.000000
+Acc: 0.000000
+TTL: 1.000000
+ColorMin: -8060929
+ColorMax: -7806465
+ScaleMin: 1.000000
+ScaleMax: 1.000000
+RotMin: 0.000000
+RotMax: 0.000000
+IsSurface: 0
+IsBind: 1
+IsDrag: 0
+DragPow: 1.000000
+ParIniDir: 0.000000, 0.000000, 0.000000
+IsUseHSVInterp: 0
+AreaSize: 0.100000, 0.100000, 0.100000
+IsAvgGen: 0
+AlphaSeg: 10
+BetaSeg: 10
+AffectorCount: 1
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, -2.300000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: -2.967060
+Acc: 0.000000
+StartTime: 1500
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 2.290870
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: 0.000000
+Acc: 0.000000
+GFXELEMENTID: 200
+Name: Unnamed14
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 1
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 1
+TexAnimMaxTime: 0
+PSFileVersion: 1
+ShaderFile: 
+ShaderTex: 
+PSConstCount: 0
+CanDoFadeOut: 1
+GfxPath: 人物\技能\羽芒\箭阵吟唱_子01.gfx
+OutColor: 0
+LoopFlag: 0
+PlaySpeed: 1.000000
+DummyUseGScale: 1
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 2.200000
+Direction: -0.706434, -0.030844, -0.030844, 0.706434
+Rad_2D: 0.000000
+CtrlMethodCount: 0
+GFXELEMENTID: 200
+Name: Unnamed15
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 1
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 1
+TexAnimMaxTime: 0
+PSFileVersion: 1
+ShaderFile: 
+ShaderTex: 
+PSConstCount: 0
+CanDoFadeOut: 1
+GfxPath: 人物\技能\羽芒\箭阵吟唱_子02.gfx
+OutColor: 0
+LoopFlag: 0
+PlaySpeed: 1.000000
+DummyUseGScale: 1
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: 3000
+Position: 0.000000, 0.000000, 2.201908
+Color: -1
+Scale: 2.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 5
+CtrlType: 104
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Vel: 1.000000
+Acc: 0.000000
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: -1.745329
+Acc: 0.000000
+CtrlType: 108
+StartTime: 0.000000
+EndTime: -1.000000
+Color: -1
+Count: 2
+Color: -1
+TimeSpan: 1800.000000
+Color: 16777215
+TimeSpan: 800.000000
+AlphaOnly: 0
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: 8.726646
+Acc: 1.745329
+CtrlType: 106
+StartTime: 1.000000
+EndTime: -1.000000
+ScaleChage: -1.000000, 0.010000, 9999.000000
+GFXELEMENTID: 200
+Name: Unnamed16
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 1
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 1
+TexAnimMaxTime: 0
+PSFileVersion: 1
+ShaderFile: 
+ShaderTex: 
+PSConstCount: 0
+CanDoFadeOut: 1
+GfxPath: 人物\技能\羽芒\箭阵吟唱_子02.gfx
+OutColor: 0
+LoopFlag: 0
+PlaySpeed: 1.000000
+DummyUseGScale: 1
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: 3000
+Position: 0.000000, 0.000000, -2.117656
+Color: -1
+Scale: 2.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 5
+CtrlType: 104
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Vel: 1.000000
+Acc: 0.000000
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: -1.745329
+Acc: 0.000000
+CtrlType: 108
+StartTime: 0.000000
+EndTime: -1.000000
+Color: -1
+Count: 2
+Color: -1
+TimeSpan: 1800.000000
+Color: 16777215
+TimeSpan: 800.000000
+AlphaOnly: 0
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: 8.726646
+Acc: 1.745329
+CtrlType: 106
+StartTime: 1.000000
+EndTime: -1.000000
+ScaleChage: -1.000000, 0.010000, 9999.000000
+GFXELEMENTID: 200
+Name: Unnamed17
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 1
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 1
+TexAnimMaxTime: 0
+PSFileVersion: 1
+ShaderFile: 
+ShaderTex: 
+PSConstCount: 0
+CanDoFadeOut: 1
+GfxPath: 人物\技能\羽芒\箭阵吟唱_子02.gfx
+OutColor: 0
+LoopFlag: 0
+PlaySpeed: 1.000000
+DummyUseGScale: 1
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: 4000
+Position: -2.151480, 0.000000, 0.000000
+Color: -1
+Scale: 2.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 5
+CtrlType: 104
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Vel: 1.000000
+Acc: 0.000000
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: -1.745329
+Acc: 0.000000
+CtrlType: 108
+StartTime: 0.000000
+EndTime: -1.000000
+Color: -1
+Count: 2
+Color: -1
+TimeSpan: 1800.000000
+Color: 16777215
+TimeSpan: 800.000000
+AlphaOnly: 0
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: 8.726646
+Acc: 1.745329
+CtrlType: 106
+StartTime: 1.000000
+EndTime: -1.000000
+ScaleChage: -1.000000, 0.010000, 9999.000000
+GFXELEMENTID: 200
+Name: Unnamed18
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 1
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 1
+TexAnimMaxTime: 0
+PSFileVersion: 1
+ShaderFile: 
+ShaderTex: 
+PSConstCount: 0
+CanDoFadeOut: 1
+GfxPath: 人物\技能\羽芒\箭阵吟唱_子02.gfx
+OutColor: 0
+LoopFlag: 0
+PlaySpeed: 1.000000
+DummyUseGScale: 1
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: 4000
+Position: 2.190784, 0.000000, 0.000000
+Color: -1
+Scale: 2.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 5
+CtrlType: 104
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Vel: 1.000000
+Acc: 0.000000
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: -1.745329
+Acc: 0.000000
+CtrlType: 108
+StartTime: 0.000000
+EndTime: -1.000000
+Color: -1
+Count: 2
+Color: -1
+TimeSpan: 1800.000000
+Color: 16777215
+TimeSpan: 800.000000
+AlphaOnly: 0
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: 8.726646
+Acc: 1.745329
+CtrlType: 106
+StartTime: 1.000000
+EndTime: -1.000000
+ScaleChage: -1.000000, 0.010000, 9999.000000
+GFXELEMENTID: 200
+Name: Unnamed19
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 1
+IsDummy: 1
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 1
+TexAnimMaxTime: 0
+PSFileVersion: 1
+ShaderFile: 
+ShaderTex: 
+PSConstCount: 0
+CanDoFadeOut: 1
+GfxPath: 人物\技能\羽芒\箭阵吟唱_子02.gfx
+OutColor: 0
+LoopFlag: 0
+PlaySpeed: 1.000000
+DummyUseGScale: 1
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: 2000
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 0
+GFXELEMENTID: 200
+Name: Unnamed20
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 1
+IsDummy: 1
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 1
+TexAnimMaxTime: 0
+PSFileVersion: 1
+ShaderFile: 
+ShaderTex: 
+PSConstCount: 0
+CanDoFadeOut: 1
+GfxPath: 人物\技能\羽芒\箭阵吟唱_箭子01.gfx
+OutColor: 0
+LoopFlag: 0
+PlaySpeed: 1.000000
+DummyUseGScale: 1
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: 2000
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 0
+GFXELEMENTID: 123
+Name: Unnamed21
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 物体\光箭33.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 1
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 1
+IsDummy: 0
+DummyEle: Unnamed19
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 1
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+PSFileVersion: 1
+ShaderFile: 
+ShaderTex: 
+PSConstCount: 0
+CanDoFadeOut: 1
+Quota: -1
+ParticleWidth: 1.000000
+ParticleHeight: 1.000000
+3DParticle: 0
+Facing: 0
+ScaleNoOff: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+IsUseParUV: 0
+IsStartOnGrnd: 0
+StopEmitWhenFade: 0
+InitRandomTexture: 0
+EmissionRate: 5.000000
+Angle: 0.000000
+Speed: 0.000000
+ParAcc: 0.000000
+AccDir: 0.000000, 0.000000, 0.000000
+Acc: 0.000000
+TTL: 1.000000
+ColorMin: -1
+ColorMax: -1
+ScaleMin: 1.000000
+ScaleMax: 2.500000
+RotMin: 0.000000
+RotMax: 0.000000
+IsSurface: 0
+IsBind: 1
+IsDrag: 0
+DragPow: 1.000000
+ParIniDir: 0.000000, 0.000000, 0.000000
+IsUseHSVInterp: 0
+AreaSize: 2.200000, 0.000000, 2.200000
+IsAvgGen: 0
+AlphaSeg: 10
+BetaSeg: 10
+AffectorCount: 4
+CtrlType: 106
+StartTime: 0.500000
+EndTime: -1.000000
+ScaleChage: -4.500000, 0.010000, 9999.000000
+CtrlType: 100
+StartTime: 0.000000
+EndTime: -1.000000
+Dir: 0.000000, 1.000000, 0.000000
+Vel: 5.000000
+Acc: 3.000000
+CtrlType: 108
+StartTime: 0.000000
+EndTime: -1.000000
+Color: 16777215
+Count: 1
+Color: -1
+TimeSpan: 100.000000
+AlphaOnly: 0
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: 8.726646
+Acc: 8.726646
+StartTime: 1000
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 2.000000
+Direction: -0.000000, -1.000000, -0.000000, -0.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 0
+GFXELEMENTID: 200
+Name: Unnamed22
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 1
+IsDummy: 1
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 1
+TexAnimMaxTime: 0
+PSFileVersion: 1
+ShaderFile: 
+ShaderTex: 
+PSConstCount: 0
+CanDoFadeOut: 1
+GfxPath: 人物\技能\羽芒\箭阵吟唱_子03.gfx
+OutColor: 0
+LoopFlag: 0
+PlaySpeed: 1.000000
+DummyUseGScale: 1
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: 2000
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 0
+GFXELEMENTID: 123
+Name: Unnamed23
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 物体\光箭33.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 1
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 1
+IsDummy: 0
+DummyEle: Unnamed22
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 1
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+PSFileVersion: 1
+ShaderFile: 
+ShaderTex: 
+PSConstCount: 0
+CanDoFadeOut: 1
+Quota: -1
+ParticleWidth: 1.000000
+ParticleHeight: 1.000000
+3DParticle: 0
+Facing: 0
+ScaleNoOff: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+IsUseParUV: 0
+IsStartOnGrnd: 0
+StopEmitWhenFade: 0
+InitRandomTexture: 0
+EmissionRate: 5.000000
+Angle: 0.000000
+Speed: 0.000000
+ParAcc: 0.000000
+AccDir: 0.000000, 0.000000, 0.000000
+Acc: 0.000000
+TTL: 1.000000
+ColorMin: -1
+ColorMax: -1
+ScaleMin: 1.500000
+ScaleMax: 2.500000
+RotMin: 0.000000
+RotMax: 0.000000
+IsSurface: 0
+IsBind: 1
+IsDrag: 0
+DragPow: 1.000000
+ParIniDir: 0.000000, 0.000000, 0.000000
+IsUseHSVInterp: 0
+AreaSize: 2.600000, 0.000000, 2.600000
+IsAvgGen: 0
+AlphaSeg: 10
+BetaSeg: 10
+AffectorCount: 5
+CtrlType: 106
+StartTime: 0.500000
+EndTime: -1.000000
+ScaleChage: -4.500000, 0.010000, 9999.000000
+CtrlType: 100
+StartTime: 0.000000
+EndTime: -1.000000
+Dir: 0.000000, 1.000000, 0.000000
+Vel: 2.000000
+Acc: 1.000000
+CtrlType: 108
+StartTime: 0.000000
+EndTime: -1.000000
+Color: 16777215
+Count: 1
+Color: -1
+TimeSpan: 100.000000
+AlphaOnly: 0
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: 1.745329
+Acc: 1.745329
+CtrlType: 104
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Vel: 1.000000
+Acc: 0.000000
+StartTime: 1000
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 2.000000
+Direction: -0.000000, -1.000000, -0.000000, -0.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 0
+GFXELEMENTID: 100
+Name: Unnamed1
+SrcBlend: 5
+DestBlend: 6
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 粒子\26通道.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 1
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 4
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 7
+NoDownSample: 0
+ResetLoopEnd: 1
+TexAnimMaxTime: 0
+PSFileVersion: 1
+ShaderFile: 
+ShaderTex: 
+PSConstCount: 0
+CanDoFadeOut: 1
+Width: 10.000000
+Height: 10.000000
+RotFromView: 0
+GrndNormOnly: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+ZOffset: 0.000000
+MatchSurface: 0
+SurfaceUseParentDir: 0
+MaxExtent: 15.000000
+YawEffect: 0
+StartTime: 500
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 0.000000
+Color: -16773342
+Scale: 1.000000
+Direction: -0.707107, 0.000000, 0.000000, 0.707107
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 108
+StartTime: 0.000000
+EndTime: -1.000000
+Color: 16777215
+Count: 1
+Color: 1694498815
+TimeSpan: 600.000000
+AlphaOnly: 1

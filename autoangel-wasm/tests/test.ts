@@ -16,6 +16,7 @@ import {
   Skin,
   decodeDds,
   decodeTga,
+  parseGfx,
   type FileEntry,
 } from "../pkg-node/autoangel.js";
 
@@ -1017,4 +1018,44 @@ describe("decodeTga", () => {
   it("rejects empty bytes", () => {
     assert.throws(() => decodeTga(new Uint8Array([])));
   });
+});
+
+// --- GFX gold tests ---
+//
+// Shared with the Python binding: each `test_data/gfx/*.gfx.json` golden
+// is produced by `scripts/update_gfx_goldens.py` via the Python walker,
+// and the WASM test compares against the same file. Any divergence means
+// one of the two bindings is exposing the data differently.
+
+// tsify emits `undefined` for `Option::None`; the Python walker that
+// produces the golden emits `null`. Normalize so both sides agree —
+// JSON's data model has `null` but no `undefined`.
+function normalizeUndefined(v: unknown): unknown {
+  if (v === undefined) return null;
+  if (Array.isArray(v)) return v.map(normalizeUndefined);
+  if (v !== null && typeof v === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, val] of Object.entries(v as Record<string, unknown>)) {
+      out[k] = normalizeUndefined(val);
+    }
+    return out;
+  }
+  return v;
+}
+
+describe("parseGfx (gold)", () => {
+  const gfxDir = resolve(root, "test_data/gfx");
+  const fixtures = readdirSync(gfxDir)
+    .filter((f: string) => f.endsWith(".gfx"))
+    .sort();
+
+  for (const fixture of fixtures) {
+    it(`matches ${fixture}.json`, () => {
+      const gfx = parseGfx(readFileSync(resolve(gfxDir, fixture)));
+      const golden = JSON.parse(
+        readFileSync(resolve(gfxDir, `${fixture}.json`), "utf-8")
+      );
+      assert.deepStrictEqual(normalizeUndefined(gfx), golden);
+    });
+  }
 });

@@ -1,0 +1,288 @@
+MOXTVersion: 33
+DedaultScale: 1.000000
+PlaySpeed: 1.000000
+DefaultAlpha: 1.000000
+Raytrace: 0
+FadeByDist: 0
+FadeStart: 0.000000
+FadeEnd: 0.000000
+Vec: -10.964328, -1.673443, -10.964330
+Vec: 10.964328, 1.735700, 10.964330
+ShakeCam: 0
+GFXELEMENTCOUNT: 6
+GFXELEMENTID: 151
+Name: Unnamed19
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 闪电\lightning001.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 4
+IsDummy: 0
+DummyEle: 
+Warp: 0
+Deviation: 0.523599
+StepMin: 0.100000
+StepMax: 1.000000
+WidthStart: 0.030000
+WidthEnd: 0.010000
+AlphaStart: 1.000000
+AlphaEnd: 0.000000
+StrokeAmp: 0.050000
+MaxSteps: 2
+MaxBranches: 1
+Interval: 50
+PerBolts: 2
+Circles: 2
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: 750
+Position: 0.000000, 0.000000, 0.000000
+Color: -3412994
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 0
+GFXELEMENTID: 100
+Name: Unnamed6
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 1
+TexFile: 放射光\ray0015.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 2
+IsDummy: 0
+DummyEle: 
+Warp: 0
+Width: 1.000000
+Height: 1.000000
+RotFromView: 0
+GrndNormOnly: 0
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: 750
+Position: 0.000000, 0.000000, 0.000000
+Color: -6367490
+Scale: 1.000000
+Direction: -0.707107, 0.000000, 0.000000, 0.707107
+Rad_2D: 0.000000
+CtrlMethodCount: 4
+CtrlType: 109
+StartTime: 0.000000
+EndTime: -1.000000
+BufLen: 256
+Amplitude: 0.200000
+WaveLen: 1
+Persistence: 0.250000
+OctaveNum: 5
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: -5.235988
+Acc: 0.000000
+CtrlType: 106
+StartTime: 0.000000
+EndTime: -1.000000
+ScaleChage: 10.000000, 0.010000, 9999.000000
+CtrlType: 105
+StartTime: 0.000000
+EndTime: -1.000000
+ColorDelta: -300, -300, -300, -300
+GFXELEMENTID: 100
+Name: Unnamed2
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 1
+TexFile: 放射光\ray0015.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 2
+IsDummy: 0
+DummyEle: 
+Warp: 0
+Width: 0.500000
+Height: 0.500000
+RotFromView: 0
+GrndNormOnly: 0
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: 750
+Position: 0.000000, 0.000000, 0.000000
+Color: -5579523
+Scale: 1.000000
+Direction: -0.707107, 0.000000, 0.000000, 0.707107
+Rad_2D: 0.000000
+CtrlMethodCount: 4
+CtrlType: 109
+StartTime: 0.000000
+EndTime: -1.000000
+BufLen: 256
+Amplitude: 0.200000
+WaveLen: 1
+Persistence: 0.250000
+OctaveNum: 5
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: -5.235988
+Acc: 0.000000
+CtrlType: 106
+StartTime: 0.000000
+EndTime: -1.000000
+ScaleChage: 10.000000, 0.010000, 9999.000000
+CtrlType: 105
+StartTime: 0.000000
+EndTime: -1.000000
+ColorDelta: -300, -300, -300, -300
+GFXELEMENTID: 100
+Name: Unnamed10
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 1
+TexFile: 放射光\ray0015.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 2
+IsDummy: 0
+DummyEle: 
+Warp: 0
+Width: 1.500000
+Height: 1.500000
+RotFromView: 0
+GrndNormOnly: 0
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: 750
+Position: 0.000000, 0.000000, 0.000000
+Color: -6758402
+Scale: 1.000000
+Direction: -0.707107, 0.000000, 0.000000, 0.707107
+Rad_2D: 0.000000
+CtrlMethodCount: 2
+CtrlType: 109
+StartTime: 0.000000
+EndTime: -1.000000
+BufLen: 256
+Amplitude: 0.200000
+WaveLen: 1
+Persistence: 0.250000
+OctaveNum: 5
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: -5.235988
+Acc: 0.000000
+GFXELEMENTID: 100
+Name: Unnamed11
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 1
+TexFile: 放射光\ray0015.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 2
+IsDummy: 0
+DummyEle: 
+Warp: 0
+Width: 0.750000
+Height: 0.750000
+RotFromView: 0
+GrndNormOnly: 0
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: 750
+Position: 0.000000, 0.000000, 0.000000
+Color: -670978
+Scale: 1.000000
+Direction: -0.707107, 0.000000, 0.000000, 0.707107
+Rad_2D: 0.000000
+CtrlMethodCount: 2
+CtrlType: 109
+StartTime: 0.000000
+EndTime: -1.000000
+BufLen: 256
+Amplitude: 0.200000
+WaveLen: 1
+Persistence: 0.250000
+OctaveNum: 5
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: -5.235988
+Acc: 0.000000
+GFXELEMENTID: 101
+Name: Unnamed12
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 1
+TexFile: 放射光\ray0015.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 2
+IsDummy: 0
+DummyEle: 
+Warp: 0
+Width: 1.000000
+Height: 1.000000
+RotFromView: 0
+GrndNormOnly: 0
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: 750
+Position: 0.000000, 0.000000, 0.000000
+Color: -5118210
+Scale: 1.000000
+Direction: -0.707107, 0.000000, 0.000000, 0.707107
+Rad_2D: 0.000000
+CtrlMethodCount: 2
+CtrlType: 109
+StartTime: 0.000000
+EndTime: -1.000000
+BufLen: 256
+Amplitude: 0.200000
+WaveLen: 1
+Persistence: 0.250000
+OctaveNum: 5
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: -5.235988
+Acc: 0.000000

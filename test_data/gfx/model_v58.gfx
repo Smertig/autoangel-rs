@@ -1,0 +1,471 @@
+MOXTVersion: 73
+DedaultScale: 0.900000
+PlaySpeed: 1.000000
+DefaultAlpha: 1.000000
+Raytrace: 0
+FaceToViewer: 0
+FadeByDist: 0
+FadeStart: 0.000000
+FadeEnd: 0.000000
+Vec: -1.444832, -0.745999, -1.112144
+Vec: 1.440639, 2.627611, 2.282833
+UseAABB: 1
+ShakeCam: 0
+NoChangeDir: 0
+2DRender: 0
+2DBackLayer: 0
+PhysExist: 0
+GFXELEMENTCOUNT: 6
+GFXELEMENTID: 160
+Name: Unnamed1
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: -1
+RepeatDelay: 0
+TexFile: 
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 1
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 2
+NoDownSample: 0
+ModelPath: 精灵王2\精灵王.SMD
+ModelActName: 休闲
+Loops: -1
+AlphaCmp: 0
+WriteZ: 1
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: 8125
+Position: 0.000000, 0.000000, 0.000000
+Color: -1321473
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 0
+GFXELEMENTID: 160
+Name: Unnamed2
+SrcBlend: 5
+DestBlend: 6
+RepeatCount: -1
+RepeatDelay: 0
+TexFile: 
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 1
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ModelPath: 精灵王2\精灵王.SMD
+ModelActName: 休闲
+Loops: -1
+AlphaCmp: 0
+WriteZ: 1
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: 8125
+Position: 0.000000, 0.000000, 0.000000
+Color: 2027139327
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 0
+GFXELEMENTID: 101
+Name: Unnamed5
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: -1
+RepeatDelay: 0
+TexFile: 
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 2
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+Width: 0.100000
+Height: 0.100000
+RotFromView: 0
+GrndNormOnly: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+ZOffset: 0.000000
+MatchSurface: 0
+MaxExtent: 0.150000
+YawEffect: 0
+StartTime: 0
+KEYPOINTCOUNT: 5
+InterpolateMode: 0
+TimeSpan: 1250
+Position: 0.878078, 0.760000, 0.181552
+Color: 16777215
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 110
+StartTime: 0.000000
+EndTime: -1.000000
+CalcDir: 0
+Count: 3
+Pos: 0.874256, 0.775483, 0.186195
+Pos: 0.856577, 0.809629, 0.123991
+Pos: 0.869121, 0.829797, -0.021174
+InterpolateMode: 0
+TimeSpan: 1700
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 110
+StartTime: 0.000000
+EndTime: -1.000000
+CalcDir: 0
+Count: 3
+Pos: 0.786448, 0.880000, -0.133371
+Pos: 0.121439, 1.420000, -0.638316
+Pos: -0.887405, 2.079999, -0.607873
+InterpolateMode: 0
+TimeSpan: 1375
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 0
+InterpolateMode: 0
+TimeSpan: 2500
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 110
+StartTime: 0.000000
+EndTime: -1.000000
+CalcDir: 0
+Count: 4
+Pos: -0.822355, 2.127976, -0.607195
+Pos: -0.828628, 1.786019, 0.140000
+Pos: 0.300000, 0.840073, 0.608510
+Pos: 0.943803, 0.799948, 0.241729
+InterpolateMode: 0
+TimeSpan: 1300
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 0
+GFXELEMENTID: 123
+Name: Unnamed6
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: -1
+RepeatDelay: 0
+TexFile: 烟火\smoke001.dds
+BindEle: Unnamed5
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 2
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+Quota: -1
+ParticleWidth: 0.500000
+ParticleHeight: 0.500000
+3DParticle: 0
+Facing: 0
+ScaleNoOff: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+IsUseParUV: 0
+EmissionRate: 20.000000
+Angle: 0.000000
+Speed: 0.000000
+ParAcc: 0.000000
+AccDir: 0.000000, 0.000000, -1.000000
+Acc: 0.000000
+TTL: 1.000000
+ColorMin: -1174470656
+ColorMax: -1174470528
+ScaleMin: 0.400000
+ScaleMax: 0.700000
+RotMin: 0.000000
+RotMax: 6.283185
+IsSurface: 0
+IsBind: 0
+IsDrag: 0
+DragPow: 1.000000
+ParIniDir: 0.000000, 0.000000, 0.000000
+IsUseHSVInterp: 1
+AreaSize: 0.400000, 0.400000, 0.400000
+IsAvgGen: 0
+AlphaSeg: 10
+BetaSeg: 10
+AffectorCount: 2
+CtrlType: 106
+StartTime: 0.000000
+EndTime: -1.000000
+ScaleChage: -0.500000, 0.010000, 9999.000000
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: 0.872665
+Acc: 0.000000
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 0
+GFXELEMENTID: 123
+Name: Unnamed7
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 粒子\star8.dds
+BindEle: Unnamed5
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 3
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+Quota: -1
+ParticleWidth: 0.050000
+ParticleHeight: 0.050000
+3DParticle: 0
+Facing: 0
+ScaleNoOff: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+IsUseParUV: 0
+EmissionRate: 10.000000
+Angle: 0.000000
+Speed: 0.000000
+ParAcc: 0.000000
+AccDir: 0.000000, 0.000000, -1.000000
+Acc: 0.000000
+TTL: 1.000000
+ColorMin: -1
+ColorMax: -1
+ScaleMin: 0.200000
+ScaleMax: 0.700000
+RotMin: 0.000000
+RotMax: 6.283185
+IsSurface: 0
+IsBind: 0
+IsDrag: 0
+DragPow: 1.000000
+ParIniDir: 0.000000, 0.000000, 0.000000
+IsUseHSVInterp: 0
+AreaSize: 1.000000, 1.000000, 1.000000
+IsAvgGen: 0
+AlphaSeg: 10
+BetaSeg: 10
+AffectorCount: 3
+CtrlType: 111
+StartTime: 0.000000
+EndTime: -1.000000
+Scale: 0.100000
+Count: 3
+Scale: 0.700000
+TimeSpan: 300.000000
+Scale: 1.500000
+TimeSpan: 200.000000
+Scale: 0.000000
+TimeSpan: 500.000000
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: 0.872665
+Acc: 0.000000
+CtrlType: 104
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Vel: -0.100000
+Acc: 0.000000
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 0
+GFXELEMENTID: 123
+Name: Unnamed8
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 粒子\star7.dds
+BindEle: Unnamed5
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 4
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+Quota: -1
+ParticleWidth: 0.050000
+ParticleHeight: 0.050000
+3DParticle: 0
+Facing: 0
+ScaleNoOff: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+IsUseParUV: 0
+EmissionRate: 10.000000
+Angle: 0.000000
+Speed: 0.000000
+ParAcc: 0.000000
+AccDir: 0.000000, 0.000000, -1.000000
+Acc: 0.000000
+TTL: 1.000000
+ColorMin: -1
+ColorMax: -1
+ScaleMin: 0.200000
+ScaleMax: 0.700000
+RotMin: 0.000000
+RotMax: 6.283185
+IsSurface: 0
+IsBind: 0
+IsDrag: 0
+DragPow: 1.000000
+ParIniDir: 0.000000, 0.000000, 0.000000
+IsUseHSVInterp: 0
+AreaSize: 1.000000, 1.000000, 1.000000
+IsAvgGen: 0
+AlphaSeg: 10
+BetaSeg: 10
+AffectorCount: 3
+CtrlType: 111
+StartTime: 0.000000
+EndTime: -1.000000
+Scale: 0.100000
+Count: 3
+Scale: 0.700000
+TimeSpan: 300.000000
+Scale: 1.500000
+TimeSpan: 200.000000
+Scale: 0.000000
+TimeSpan: 500.000000
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: 0.872665
+Acc: 0.000000
+CtrlType: 104
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Vel: -0.100000
+Acc: -0.100000
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 0

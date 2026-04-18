@@ -6,3 +6,17 @@ autoangel.ReadValue
 
 # __iter__ declared in stub for IDE support; at runtime iteration works via __getitem__+__len__ fallback
 autoangel.ElementsDataList.__iter__
+
+# PyO3 complex enums mandate a `__new__` on every variant carrying all
+# the struct fields as kwargs — it's infrastructure, not public API.
+# These types are frozen data records produced by the parser;
+# construction from Python isn't a supported workflow. The stub
+# documents the read-only fields, which is what consumers use.
+autoangel\.ElementBody\.\w+\.__new__
+autoangel\.EmitterShape\.\w+\.__new__
+
+# PyO3 complex-enum parent classes register as "disjoint bases" at
+# runtime (can't be multiply-inherited). Not worth marking the stub
+# classes with `@disjoint_base` — users never subclass these.
+autoangel.ElementBody
+autoangel.EmitterShape

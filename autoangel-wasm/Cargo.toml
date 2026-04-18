@@ -11,7 +11,7 @@ license = "MIT"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-autoangel-core = { path = "../autoangel-core", default-features = false }
+autoangel-core = { path = "../autoangel-core", default-features = false, features = ["wasm"] }
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 pollster = "0.4"

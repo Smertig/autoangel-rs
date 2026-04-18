@@ -7,6 +7,14 @@ edition = "2024"
 [features]
 default = ["fs"]
 fs = ["dep:memmap2"]
+# Enable PyO3 bindings on the GFX `ElementBody` enum (complex
+# `#[pyclass]` — each variant becomes a nested Python subclass).
+# Consumed by `autoangel-py`.
+python = ["dep:pyo3"]
+# Enable wasm-bindgen / TypeScript interop on GFX body types via
+# `tsify-next` (auto-generates `.d.ts` from the Rust types).
+# Consumed by `autoangel-wasm`.
+wasm = ["dep:tsify-next", "dep:wasm-bindgen", "dep:serde-wasm-bindgen"]
 
 [dependencies]
 static_assertions = "1.1"
@@ -31,6 +39,12 @@ color-eyre = "0.6.5"
 log = "0.4.29"
 pollster = "0.4"
 base64 = "0.22"
+serde = { version = "1", features = ["derive"] }
+macro_rules_attribute = "0.2"
+pyo3 = { version = "0.28.2", optional = true, default-features = false, features = ["abi3-py37", "macros"] }
+tsify-next = { version = "0.5", optional = true, default-features = false, features = ["js"] }
+wasm-bindgen = { version = "0.2", optional = true }
+serde-wasm-bindgen = { version = "0.6", optional = true }
 
 [dev-dependencies]
 criterion = "0.8.2"

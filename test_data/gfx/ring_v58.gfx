@@ -1,0 +1,507 @@
+MOXTVersion: 37
+DedaultScale: 2.300000
+PlaySpeed: 0.500000
+DefaultAlpha: 1.000000
+Raytrace: 0
+FadeByDist: 0
+FadeStart: 0.000000
+FadeEnd: 0.000000
+Vec: -2.595486, -0.097782, -2.595486
+Vec: 2.595486, 4.254282, 2.595486
+ShakeCam: 0
+GFXELEMENTCOUNT: 11
+GFXELEMENTID: 100
+Name: Unnamed2
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 图案\真灵护体环1.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 1
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 4
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+Width: 0.600000
+Height: 0.600000
+RotFromView: 0
+GrndNormOnly: 1
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 0.000000
+Color: -10004738
+Scale: 1.000000
+Direction: -0.707107, 0.000000, 0.000000, 0.707107
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: 5.235988
+Acc: 0.000000
+GFXELEMENTID: 100
+Name: Unnamed8
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 图案\真灵护体环1.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 1
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 4
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+Width: 0.600000
+Height: 0.600000
+RotFromView: 0
+GrndNormOnly: 1
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 0.000000
+Color: -10004738
+Scale: 1.000000
+Direction: -0.707107, 0.000000, 0.000000, 0.707107
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: 5.235988
+Acc: 0.000000
+GFXELEMENTID: 100
+Name: Unnamed9
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 图案\真灵护体环1.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 1
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 4
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+Width: 0.600000
+Height: 0.600000
+RotFromView: 0
+GrndNormOnly: 1
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 0.000000
+Color: -10004738
+Scale: 1.000000
+Direction: -0.707107, 0.000000, 0.000000, 0.707107
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: 5.235988
+Acc: 0.000000
+GFXELEMENTID: 100
+Name: Unnamed10
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 图案\真灵护体环1.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 1
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 4
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+Width: 0.600000
+Height: 0.600000
+RotFromView: 0
+GrndNormOnly: 1
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 0.000000
+Color: -10004738
+Scale: 1.000000
+Direction: -0.707107, 0.000000, 0.000000, 0.707107
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: 5.235988
+Acc: 0.000000
+GFXELEMENTID: 100
+Name: Unnamed11
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 图案\真灵护体环1.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 1
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 4
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+Width: 0.950000
+Height: 0.950000
+RotFromView: 0
+GrndNormOnly: 1
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 0.000000
+Color: -10004738
+Scale: 1.000000
+Direction: -0.707107, 0.000000, 0.000000, 0.707107
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: 5.235988
+Acc: 0.000000
+GFXELEMENTID: 100
+Name: Unnamed12
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 图案\真灵护体环1.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 1
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 2
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+Width: 0.950000
+Height: 0.950000
+RotFromView: 0
+GrndNormOnly: 1
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 0.000000
+Color: -10004738
+Scale: 1.000000
+Direction: -0.707107, 0.000000, 0.000000, 0.707107
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: 5.235988
+Acc: 0.000000
+GFXELEMENTID: 100
+Name: Unnamed13
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 图案\真灵护体环1.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 1
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 2
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+Width: 0.950000
+Height: 0.950000
+RotFromView: 0
+GrndNormOnly: 1
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 0.000000
+Color: -10004738
+Scale: 1.000000
+Direction: -0.707107, 0.000000, 0.000000, 0.707107
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: 5.235988
+Acc: 0.000000
+GFXELEMENTID: 140
+Name: Unnamed14
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 圆环光\circle001.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 1
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 2
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+Radius: 0.520000
+Height: 2.000000
+Pitch: 0.000000
+Sects: 0
+NoRadScale: 0
+NoHeiScale: 0
+OrgAtCenter: 1
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 1.000000, 0.000000
+Color: -8355585
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: 5.235988
+Acc: 0.000000
+GFXELEMENTID: 140
+Name: Unnamed15
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 圆环光\circle001.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 1
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 2
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+Radius: 0.820000
+Height: 1.000000
+Pitch: 0.000000
+Sects: 0
+NoRadScale: 0
+NoHeiScale: 0
+OrgAtCenter: 1
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.500000, 0.000000
+Color: -8355585
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: 5.235988
+Acc: 0.000000
+GFXELEMENTID: 123
+Name: Unnamed3
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 闪光\火花.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 4
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+Quota: -1
+ParticleWidth: 0.200000
+ParticleHeight: 0.200000
+3DParticle: 0
+Facing: 0
+ScaleNoOff: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+EmissionRate: 10.000000
+Angle: 0.000000
+Speed: 0.000000
+ParAcc: 0.000000
+AccDir: 0.000000, 0.000000, -1.000000
+Acc: 0.000000
+TTL: 1.000000
+ColorMin: -1
+ColorMax: -1
+ScaleMin: 0.300000
+ScaleMax: 0.700000
+RotMin: 0.000000
+RotMax: 0.000000
+IsSurface: 0
+IsBind: 1
+AreaSize: 1.300000, 1.000000, 1.300000
+AffectorCount: 1
+CtrlType: 100
+StartTime: 0.000000
+EndTime: -1.000000
+Dir: 0.000000, -1.000000, 0.000000
+Vel: 1.200000
+Acc: 0.000000
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 1.719999, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 0
+GFXELEMENTID: 130
+Name: 蓝色光源
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 4
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+LightType: 1
+Diffuse: -16759062
+Specular: -16777216
+Ambient: -16777216
+Position: 0.000000, 4.000079, -0.656032
+Direction: 0.000000, 0.000000, 1.000000
+Range: 10.000000
+FallOff: 0.000000
+Attenuation0: 0.000000
+Attenuation0: 0.100000
+Attenuation0: 0.000000
+Theta: 0.000000
+Phi: 0.000000
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 1.000020, -0.164008
+Color: -16759062
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 0

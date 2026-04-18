@@ -1,0 +1,1017 @@
+MOXTVersion: 81
+DedaultScale: 3.000000
+PlaySpeed: 0.800000
+DefaultAlpha: 1.000000
+Raytrace: 0
+FaceToViewer: 0
+FadeByDist: 0
+FadeStart: 10.000000
+FadeEnd: 50.000000
+Vec: -0.624588, -0.587943, -0.554329
+Vec: 0.595606, 0.581057, 0.586466
+UseAABB: 1
+ShakeCam: 0
+NoChangeDir: 0
+2DRender: 0
+2DBackLayer: 0
+PhysExist: 0
+GFXELEMENTCOUNT: 16
+GFXELEMENTID: 123
+Name: Unnamed11
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: ÑÌ»ð\10.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 3
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+Quota: -1
+ParticleWidth: 0.300000
+ParticleHeight: 0.300000
+3DParticle: 0
+Facing: 0
+ScaleNoOff: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+IsUseParUV: 0
+IsStartOnGrnd: 0
+EmissionRate: 40.000000
+Angle: 0.052360
+Speed: 0.000000
+ParAcc: 0.000000
+AccDir: 1.000000, 0.000000, 0.000000
+Acc: 0.000000
+TTL: 1.000000
+ColorMin: -222130
+ColorMax: -691190
+ScaleMin: 0.200000
+ScaleMax: 0.500000
+RotMin: 0.000000
+RotMax: 6.283185
+IsSurface: 0
+IsBind: 1
+IsDrag: 0
+DragPow: 1.000000
+ParIniDir: 0.000000, 0.000000, 0.000000
+IsUseHSVInterp: 0
+AreaSize: 0.250000, 0.250000, 0.250000
+IsAvgGen: 0
+AlphaSeg: 10
+BetaSeg: 10
+AffectorCount: 2
+CtrlType: 106
+StartTime: 0.000000
+EndTime: -1.000000
+ScaleChage: 10.000000, 0.000000, 9999.000000
+CtrlType: 105
+StartTime: 0.000000
+EndTime: -1.000000
+ColorDelta: 0, 0, 0, -500
+StartTime: 0
+KEYPOINTCOUNT: 2
+InterpolateMode: 0
+TimeSpan: 775
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: -0.707107, 0.000000, 0.000000, 0.707107
+Rad_2D: 0.000000
+CtrlMethodCount: 0
+InterpolateMode: 0
+TimeSpan: 525
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 105
+StartTime: 0.000000
+EndTime: -1.000000
+ColorDelta: 0, 0, 0, -500
+GFXELEMENTID: 101
+Name: Unnamed2
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: Í¼°¸\¹âÇò1.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 3
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+Width: 0.500000
+Height: 0.500000
+RotFromView: 0
+GrndNormOnly: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+ZOffset: 0.000000
+MatchSurface: 0
+MaxExtent: 0.375000
+YawEffect: 0
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 0.000000
+Color: -7303024
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 2
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: -1.745329
+Acc: 0.000000
+CtrlType: 109
+StartTime: 0.000000
+EndTime: -1.000000
+BufLen: 256
+Amplitude: 0.030000
+WaveLen: 1
+Persistence: 0.250000
+OctaveNum: 5
+GFXELEMENTID: 101
+Name: Unnamed3
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: ÑÌ»ð\huoqiu.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 3
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+Width: 0.500000
+Height: 0.500000
+RotFromView: 0
+GrndNormOnly: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+ZOffset: 0.000000
+MatchSurface: 0
+MaxExtent: 0.375000
+YawEffect: 0
+StartTime: 0
+KEYPOINTCOUNT: 2
+InterpolateMode: 0
+TimeSpan: 775
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 109
+StartTime: 0.000000
+EndTime: -1.000000
+BufLen: 256
+Amplitude: 0.030000
+WaveLen: 1
+Persistence: 0.250000
+OctaveNum: 5
+InterpolateMode: 0
+TimeSpan: 525
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 105
+StartTime: 0.000000
+EndTime: -1.000000
+ColorDelta: 0, 0, 0, -500
+GFXELEMENTID: 110
+Name: Unnamed5
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: -1
+RepeatDelay: 0
+TexFile: ÑÌ»ð\fire2.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 3
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+OrgPos1: -0.100000, 0.100000, 0.000000
+OrgPos2: 0.000000, -0.100000, 0.000000
+EnableMat: 0
+EnableOrgPos1: 0
+EnableOrgPos2: 0
+SegLife: 600
+Bind: 1
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.417067, 0.000000, 0.234229
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: 5.235988
+Acc: 0.000000
+GFXELEMENTID: 110
+Name: Unnamed6
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: -1
+RepeatDelay: 0
+TexFile: ÑÌ»ð\fire2.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 3
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+OrgPos1: -0.100000, 0.000000, 0.100000
+OrgPos2: 0.000000, 0.000000, -0.100000
+EnableMat: 0
+EnableOrgPos1: 0
+EnableOrgPos2: 0
+SegLife: 600
+Bind: 1
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: -0.487936, -0.001244, -0.005340
+Color: -1
+Scale: 1.000000
+Direction: 0.087156, 0.000000, 0.000000, 0.996195
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 1.000000
+Axis: 0.000000, 0.000000, 1.000000
+Vel: 5.235988
+Acc: 0.000000
+GFXELEMENTID: 110
+Name: Unnamed7
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: -1
+RepeatDelay: 0
+TexFile: ÑÌ»ð\fire2.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 3
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+OrgPos1: -0.100000, 0.000000, 0.100000
+OrgPos2: 0.000000, 0.000000, -0.100000
+EnableMat: 0
+EnableOrgPos1: 0
+EnableOrgPos2: 0
+SegLife: 600
+Bind: 1
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.581058, -0.001244, -0.005340
+Color: -1
+Scale: 1.000000
+Direction: 0.087156, 0.000000, 0.000000, 0.996195
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 1.000000
+Axis: 0.000000, 0.000000, 1.000000
+Vel: 5.235988
+Acc: 0.000000
+GFXELEMENTID: 123
+Name: Unnamed8
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: ÑÌ»ð\1.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 3
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+Quota: -1
+ParticleWidth: 1.800000
+ParticleHeight: 1.800000
+3DParticle: 0
+Facing: 0
+ScaleNoOff: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+IsUseParUV: 0
+IsStartOnGrnd: 0
+EmissionRate: 150.000000
+Angle: 0.052360
+Speed: 0.000000
+ParAcc: 0.000000
+AccDir: 1.000000, 0.000000, 0.000000
+Acc: 0.000000
+TTL: 1.500000
+ColorMin: -222130
+ColorMax: -691190
+ScaleMin: 0.200000
+ScaleMax: 0.500000
+RotMin: 0.000000
+RotMax: 6.283185
+IsSurface: 0
+IsBind: 0
+IsDrag: 0
+DragPow: 1.000000
+ParIniDir: 0.000000, 0.000000, 0.000000
+IsUseHSVInterp: 0
+AreaSize: 0.200000, 0.200000, 0.200000
+IsAvgGen: 0
+AlphaSeg: 10
+BetaSeg: 10
+AffectorCount: 1
+CtrlType: 105
+StartTime: 0.000000
+EndTime: -1.000000
+ColorDelta: 0, 0, 0, -1000
+StartTime: 0
+KEYPOINTCOUNT: 2
+InterpolateMode: 0
+TimeSpan: 775
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: -0.707107, 0.000000, 0.000000, 0.707107
+Rad_2D: 0.000000
+CtrlMethodCount: 0
+InterpolateMode: 0
+TimeSpan: 525
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 105
+StartTime: 0.000000
+EndTime: -1.000000
+ColorDelta: 0, 0, 0, -500
+GFXELEMENTID: 101
+Name: Unnamed9
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: Í¼°¸\¹âÇò1.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 3
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+Width: 0.500000
+Height: 0.500000
+RotFromView: 0
+GrndNormOnly: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+ZOffset: 0.000000
+MatchSurface: 0
+MaxExtent: 0.375000
+YawEffect: 0
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 0.000000
+Color: -7303024
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 2
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: 1.745329
+Acc: 0.000000
+CtrlType: 109
+StartTime: 0.000000
+EndTime: -1.000000
+BufLen: 256
+Amplitude: 0.030000
+WaveLen: 1
+Persistence: 0.250000
+OctaveNum: 5
+GFXELEMENTID: 110
+Name: Unnamed12
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: -1
+RepeatDelay: 0
+TexFile: ÑÌ»ð\fire2.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 3
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+OrgPos1: -0.100000, 0.100000, 0.000000
+OrgPos2: 0.000000, -0.100000, 0.000000
+EnableMat: 0
+EnableOrgPos1: 0
+EnableOrgPos2: 0
+SegLife: 600
+Bind: 0
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 0.364671
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: 5.235988
+Acc: 0.000000
+GFXELEMENTID: 110
+Name: Unnamed13
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: -1
+RepeatDelay: 0
+TexFile: ÑÌ»ð\fire2.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 3
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+OrgPos1: -0.100000, 0.000000, 0.100000
+OrgPos2: 0.000000, 0.000000, -0.100000
+EnableMat: 0
+EnableOrgPos1: 0
+EnableOrgPos2: 0
+SegLife: 600
+Bind: 0
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: -0.299579, -0.001244, -0.005340
+Color: -1
+Scale: 1.000000
+Direction: 0.087156, 0.000000, 0.000000, 0.996195
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 1.000000
+Axis: 0.000000, 0.000000, 1.000000
+Vel: 5.235988
+Acc: 0.000000
+GFXELEMENTID: 110
+Name: Unnamed14
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: -1
+RepeatDelay: 0
+TexFile: ÑÌ»ð\fire2.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 3
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+OrgPos1: -0.100000, 0.000000, 0.100000
+OrgPos2: 0.000000, 0.000000, -0.100000
+EnableMat: 0
+EnableOrgPos1: 0
+EnableOrgPos2: 0
+SegLife: 600
+Bind: 0
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.395293, -0.001244, -0.005340
+Color: -1
+Scale: 1.000000
+Direction: 0.087156, 0.000000, 0.000000, 0.996195
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 1.000000
+Axis: 0.000000, 0.000000, 1.000000
+Vel: 5.235988
+Acc: 0.000000
+GFXELEMENTID: 110
+Name: Unnamed15
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: -1
+RepeatDelay: 0
+TexFile: ÑÌ»ð\fire2.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 3
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+OrgPos1: -0.100000, 0.100000, 0.000000
+OrgPos2: 0.000000, -0.100000, 0.000000
+EnableMat: 0
+EnableOrgPos1: 0
+EnableOrgPos2: 0
+SegLife: 600
+Bind: 1
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 0.429124
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: 5.235988
+Acc: 0.000000
+GFXELEMENTID: 110
+Name: Unnamed17
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: -1
+RepeatDelay: 0
+TexFile: ÑÌ»ð\fire2.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 3
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+OrgPos1: -0.100000, 0.000000, 0.100000
+OrgPos2: 0.000000, 0.000000, -0.100000
+EnableMat: 0
+EnableOrgPos1: 0
+EnableOrgPos2: 0
+SegLife: 600
+Bind: 1
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: -0.000473, -0.001244, -0.383143
+Color: -1
+Scale: 1.000000
+Direction: 0.087156, 0.000000, 0.000000, 0.996195
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 1.000000
+Axis: 0.000000, 0.000000, 1.000000
+Vel: 5.235988
+Acc: 0.000000
+GFXELEMENTID: 170
+Name: Unnamed1
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 4
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+Path: Monster\¼¼ÄÜ\·É»ðÇò.wav
+SoundVer: 1
+Force2D: 0
+IsLoop: 0
+Volume: 100
+MinDist: 5.000000
+MaxDist: 25.000000
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: 2000
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 0
+GFXELEMENTID: 123
+Name: Unnamed10
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 4
+IsDummy: 0
+DummyEle: Unnamed16
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+Quota: 5
+ParticleWidth: 4.000000
+ParticleHeight: 4.000000
+3DParticle: 0
+Facing: 0
+ScaleNoOff: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+IsUseParUV: 0
+IsStartOnGrnd: 0
+EmissionRate: 10.000000
+Angle: 0.000000
+Speed: 0.000000
+ParAcc: 0.000000
+AccDir: 0.000000, 0.000000, -1.000000
+Acc: 0.000000
+TTL: 1.000000
+ColorMin: -1
+ColorMax: -1
+ScaleMin: 1.000000
+ScaleMax: 1.000000
+RotMin: 0.000000
+RotMax: 0.000000
+IsSurface: 1
+IsBind: 1
+IsDrag: 0
+DragPow: 1.000000
+ParIniDir: 0.000000, 0.000000, 0.000000
+IsUseHSVInterp: 0
+AreaSize: 0.200000, 0.200000, 0.200000
+IsAvgGen: 0
+AlphaSeg: 10
+BetaSeg: 10
+AffectorCount: 1
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Axis: 1.000000, 0.000000, 0.000000
+Vel: 17.453293
+Acc: 0.000000
+StartTime: 0
+KEYPOINTCOUNT: 2
+InterpolateMode: 0
+TimeSpan: 775
+Position: -0.023073, 0.000000, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.866025, 0.000000, 0.500000
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 105
+StartTime: 0.000000
+EndTime: -1.000000
+ColorDelta: 0, 0, 0, 0
+InterpolateMode: 0
+TimeSpan: 525
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 105
+StartTime: 0.000000
+EndTime: -1.000000
+ColorDelta: 0, 0, 0, -500
+GFXELEMENTID: 110
+Name: Unnamed16
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: ÉÁµç\Lightning3RedUpright.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 4
+IsDummy: 1
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+OrgPos1: -0.400000, -0.400000, -0.200000
+OrgPos2: 0.300000, 0.300000, 0.300000
+EnableMat: 0
+EnableOrgPos1: 0
+EnableOrgPos2: 0
+SegLife: 2000
+Bind: 0
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: -0.001154, 0.000000, -0.270299
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 2
+CtrlType: 107
+StartTime: 0.000000
+EndTime: -1.000000
+BufLen: 256
+Amplitude: 2.000000
+WaveLen: 1
+Persistence: 0.250000
+OctaveNum: 5
+BaseColor: -16711681
+CtrlType: 102
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Axis: 0.000000, 1.000000, 0.000000
+Vel: 6.283185
+Acc: 0.000000

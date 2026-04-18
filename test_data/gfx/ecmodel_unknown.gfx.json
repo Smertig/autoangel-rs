@@ -1,0 +1,73 @@
+{
+  "fade_start": 0.0,
+  "use_aabb": 0,
+  "elements": [
+    {
+      "is_dummy": 0,
+      "src_blend": 5,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "repeat_delay": 0,
+      "dest_blend": 6,
+      "repeat_count": -1,
+      "z_enable": 1,
+      "tex_interval": 50,
+      "type_id": 230,
+      "tex_col": 1,
+      "name": "Unnamed28",
+      "body": {
+        "kind": "unknown",
+        "lines": [
+          "PSFileVersion: 1",
+          "ShaderFile:",
+          "ShaderTex:",
+          "PSConstCount: 2",
+          "PSConstIndex: 0",
+          "PSConstValue: 1.000000, 1.000000, 1.000000, 0.000000",
+          "PSLoopCount: -1",
+          "PSTargetCount: 1",
+          "PSInterval: 4000",
+          "PSConstValue: 0.000000, 0.000000, 0.000000, 0.000000",
+          "PSConstIndex: 1",
+          "PSConstValue: 1.000000, 0.000000, 0.000000, 0.000000",
+          "PSLoopCount: -1",
+          "PSTargetCount: 0",
+          "CanDoFadeOut: 1",
+          "ECMPath: grasses\\flyers\\翅膀\\汐族光翼\\汐族光翼8.ecm",
+          "ECMActName: 飞行悬停",
+          "LDType: 0",
+          "UsrCmd:",
+          "StartTime: 0",
+          "KEYPOINTCOUNT: 1",
+          "InterpolateMode: 0",
+          "TimeSpan: -1",
+          "Position: 0, 0.15, -0.100000",
+          "Color: -1",
+          "Scale: 0.15",
+          "Direction: 0.000000, 0.000000, 0.000000, 1.000000",
+          "Rad_2D: 0.000000",
+          "CtrlMethodCount: 0"
+        ]
+      },
+      "tex_file": "",
+      "priority": 0
+    }
+  ],
+  "version": 103,
+  "face_to_viewer": 0,
+  "default_scale": 1.0,
+  "fade_by_dist": 0,
+  "fade_end": 0.0,
+  "play_speed": 0.8500000238418579,
+  "aabb_max": [
+    1.133281946182251,
+    4.432633876800537,
+    1.6643320322036743
+  ],
+  "default_alpha": 1.0,
+  "aabb_min": [
+    -1.2353839874267578,
+    -1.5282230377197266,
+    -3.3430309295654297
+  ]
+}

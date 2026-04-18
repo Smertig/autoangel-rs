@@ -86,14 +86,13 @@ def main(pck_path: str) -> None:
 
         parse_ok += 1
         versions[gfx.version] += 1
-        ec = gfx.element_count
-        element_count_hist.append(ec)
+        element_count_hist.append(len(gfx.elements))
         seen_in_file = set()
-        for k in range(ec):
-            t = gfx.element_type(k)
+        for elem in gfx.elements:
+            t = elem.type_id
             type_counts[t] += 1
             seen_in_file.add(t)
-            kind = gfx.element_body_kind(k)
+            kind = type(elem.body).__name__
             type_body_kind[(t, kind)] += 1
             fallback_examples.setdefault((t, kind), path)
         for t in seen_in_file:
@@ -134,15 +133,18 @@ def main(pck_path: str) -> None:
         print(f"  {t:>3} {name_for(t):<22} {c:>8}  ({pct:5.2f}% of files)")
 
     # Element-type ↔ body-variant cross-tab. For types that have a typed
-    # parser, any "unknown" rows mean the parser fell back to raw lines —
+    # parser, any `Unknown` rows mean the parser fell back to raw lines —
     # either empty-body files (legitimate) or a schema drift we missed.
+    # Names are looked up on ElementBody — a typo or a removed variant
+    # raises AttributeError at load time instead of silently mismatching.
+    EB = autoangel.ElementBody
     expected_kind = {
-        100: "decal", 101: "decal", 102: "decal",
-        110: "trail",
-        130: "light",
-        140: "ring",
-        160: "model",
-        200: "container",
+        100: EB.Decal.__name__, 101: EB.Decal.__name__, 102: EB.Decal.__name__,
+        110: EB.Trail.__name__,
+        130: EB.Light.__name__,
+        140: EB.Ring.__name__,
+        160: EB.Model.__name__,
+        200: EB.Container.__name__,
     }
     print()
     print("=== Body variant dispatch cross-tab ===")

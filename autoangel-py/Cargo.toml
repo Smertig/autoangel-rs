@@ -14,7 +14,7 @@ crate-type = ["cdylib", "rlib"]
 built = { version = "0.8.0", features = ["chrono", "cargo-lock"] }
 
 [dependencies]
-autoangel-core = { path = "../autoangel-core" }
+autoangel-core = { path = "../autoangel-core", features = ["python"] }
 pyo3 = { version = "0.28.2", features = ["abi3-py37", "eyre"] }
 memmap2 = "0.9"
 pollster = "0.4"

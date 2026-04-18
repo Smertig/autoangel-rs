@@ -99,7 +99,7 @@ else:
 ```
 """
 
-from typing import Any, Callable, Iterator, Optional, Literal, List, Union, final
+from typing import Any, Callable, Iterator, Optional, Literal, List, Tuple, Union, final
 
 ReadValue = Union[int, float, str, bytes]
 
@@ -816,33 +816,369 @@ class TrackSet:
 
 
 @final
+class Emitter:
+    """Particle emitter block — shared emitter fields plus a shape-specific payload."""
+    emission_rate: float
+    angle: float
+    speed: float
+    par_acc: Optional[float]
+    acc_dir: Tuple[float, float, float]
+    acc: float
+    ttl: float
+    color_min: int
+    color_max: int
+    scale_min: float
+    scale_max: float
+    rot_min: Optional[float]
+    rot_max: Optional[float]
+    is_surface: bool
+    is_bind: bool
+    is_drag: Optional[bool]
+    drag_pow: Optional[float]
+    par_ini_dir: Optional[Tuple[float, float, float]]
+    is_use_hsv_interp: Optional[bool]
+    shape: EmitterShape
+
+
+class EmitterShape:
+    """Emitter-shape-specific payload. Instances are one of the nested
+    classes ``EmitterShape.Point`` / ``EmitterShape.Box`` /
+    ``EmitterShape.Ellipsoid`` / ``EmitterShape.Cylinder`` /
+    ``EmitterShape.MultiPlane`` / ``EmitterShape.Curve``."""
+
+    @final
+    class Point:
+        pass
+
+    @final
+    class Box:
+        area_size: Tuple[float, float, float]
+
+    @final
+    class Ellipsoid:
+        area_size: Tuple[float, float, float]
+        is_avg_gen: Optional[bool]
+        alpha_seg: Optional[int]
+        beta_seg: Optional[int]
+
+    @final
+    class Cylinder:
+        area_size: Tuple[float, float, float]
+        is_avg_gen: Optional[bool]
+        alpha_seg: Optional[int]
+        beta_seg: Optional[int]
+
+    @final
+    class MultiPlane:
+        raw_lines: List[str]
+
+    @final
+    class Curve:
+        raw_lines: List[str]
+
+
+@final
+class GridVertex:
+    """Single vertex of a ``GridDecal3D`` grid — position plus packed ARGB color."""
+    pos: Tuple[float, float, float]
+    color: int
+
+
+@final
+class GridAnimKey:
+    """Grid-animation keyframe — modified vertex array at time ``time_ms``."""
+    time_ms: int
+    vertices: List[GridVertex]
+
+
+@final
+class NoiseCtrl:
+    """Perlin noise parameters — prefix of every ``Lightning`` / ``LightningEx`` body."""
+    buf_len: int
+    amplitude: float
+    wave_len: int
+    persistence: float
+    octave_num: int
+
+
+@final
+class FloatValueTrans:
+    """Animatable float value track (v>=102 lightning amplitude)."""
+    dest_num: int
+    start_time: int
+    dest_values: List[float]
+    trans_times: List[int]
+
+
+@final
+class LightningFields:
+    """Scalar payload shared by ``Lightning`` and ``LightningEx`` bodies."""
+    noise_ctrl: NoiseCtrl
+    start_pos: Tuple[float, float, float]
+    end_pos: Tuple[float, float, float]
+    segs: int
+    light_num: int
+    wave_len: float
+    interval: int
+    width_start: float
+    width_end: float
+    alpha_start: Optional[float]
+    alpha_end: Optional[float]
+    width_mid: Optional[float]
+    alpha_mid: Optional[float]
+    amplitude: Optional[float]
+    amplitude_trans: Optional[FloatValueTrans]
+    pos1_enable: bool
+    pos2_enable: bool
+    use_normal: Optional[bool]
+    normal: Optional[Tuple[float, float, float]]
+    filter_type: Optional[int]
+    wave_moving: Optional[bool]
+    wave_moving_speed: Optional[float]
+    fix_wave_length: Optional[bool]
+    num_waves: Optional[float]
+
+
+@final
+class SoundParamInfo:
+    """``GfxSoundParamInfo`` — sound parameter block with its own internal ``sound_ver`` gating."""
+    sound_ver: int
+    force_2d: bool
+    is_loop: bool
+    volume_min: int
+    volume_max: int
+    absolute_volume: Optional[bool]
+    pitch_min: Optional[float]
+    pitch_max: Optional[float]
+    min_dist: float
+    max_dist: float
+    fix_speed: Optional[bool]
+    silent_header: Optional[int]
+    percent_start: Optional[float]
+    group: Optional[int]
+
+
+@final
+class SoundAudioEvent:
+    """Audio-event sub-block present on ``Sound`` bodies at v>=96."""
+    event_path: str
+    use_custom: bool
+    min_dist: float
+    max_dist: float
+
+
+class ElementBody:
+    """Typed body for a GFX element. Accessed via :attr:`GfxElement.body`.
+
+    Instances are always one of the nested variant classes
+    (``ElementBody.Decal``, ``ElementBody.Trail``, ...,
+    ``ElementBody.Unknown``) — ``ElementBody`` itself is the common
+    base. Narrow with :func:`isinstance`.
+    """
+
+    @final
+    class Unknown:
+        """Body of an element whose type has no typed parser — raw text lines preserved."""
+        lines: List[str]
+
+    @final
+    class Decal:
+        """Body of a Decal element (types 100 / 101 / 102)."""
+        width: float
+        height: float
+        rot_from_view: bool
+        grnd_norm_only: Optional[bool]
+        no_scale: Optional[Tuple[bool, bool]]
+        org_pt: Optional[Tuple[float, float]]
+        z_offset: Optional[float]
+        match_surface: Optional[bool]
+        surface_use_parent_dir: Optional[bool]
+        max_extent: Optional[float]
+        yaw_effect: Optional[bool]
+        tail_lines: List[str]
+
+    @final
+    class Trail:
+        """Body of a Trail element (type 110) — ribbon trail between two moving endpoints."""
+        org_pos1: Tuple[float, float, float]
+        org_pos2: Tuple[float, float, float]
+        enable_mat: bool
+        enable_org_pos1: bool
+        enable_org_pos2: bool
+        seg_life: int
+        bind: Optional[bool]
+        spline: Optional[int]
+        sample_freq: Optional[int]
+        perturb_mode: Optional[int]
+        face_camera: Optional[bool]
+        tail_lines: List[str]
+
+    @final
+    class Light:
+        """Body of a Light element (type 130) — dynamic light source (D3DLIGHT9-style parameters)."""
+        light_type: int
+        diffuse: int
+        specular: int
+        ambient: int
+        position: Tuple[float, float, float]
+        direction: Tuple[float, float, float]
+        range: float
+        falloff: float
+        attenuation0: float
+        attenuation1: float
+        attenuation2: float
+        theta: float
+        phi: float
+        inner_use: Optional[bool]
+        tail_lines: List[str]
+
+    @final
+    class Ring:
+        """Body of a Ring element (type 140) — expanding ring effect."""
+        radius: float
+        height: float
+        pitch: float
+        sects: Optional[int]
+        no_rad_scale: Optional[bool]
+        no_hei_scale: Optional[bool]
+        org_at_center: Optional[bool]
+        tail_lines: List[str]
+
+    @final
+    class Model:
+        """Body of a Model element (type 160) — embedded 3D model reference."""
+        model_path: str
+        model_act_name: Optional[str]
+        loops: Optional[int]
+        alpha_cmp: Optional[bool]
+        write_z: Optional[bool]
+        use_3d_cam: Optional[bool]
+        facing_dir: Optional[bool]
+        tail_lines: List[str]
+
+    @final
+    class Container:
+        """Body of a GfxContainer element (type 200) — nested ``.gfx`` reference."""
+        gfx_path: str
+        out_color: Optional[bool]
+        loop_flag: Optional[bool]
+        play_speed: Optional[float]
+        dummy_use_g_scale: Optional[bool]
+        tail_lines: List[str]
+
+    @final
+    class Particle:
+        """Body of a Particle element (types 120 / 121 / 122 / 123 / 124 / 125)."""
+        quota: int
+        particle_width: float
+        particle_height: float
+        three_d_particle: bool
+        facing: int
+        scale_no_off: Optional[bool]
+        no_scale: Optional[Tuple[bool, bool]]
+        org_pt: Optional[Tuple[float, float]]
+        is_use_par_uv: Optional[bool]
+        is_start_on_grnd: Optional[bool]
+        stop_emit_when_fade: Optional[bool]
+        init_random_texture: Optional[bool]
+        z_offset: Optional[float]
+        emitter: Emitter
+        tail_lines: List[str]
+
+    @final
+    class GridDecal3D:
+        """Body of a GridDecal3D element (type 210) — freeform ``w × h`` vertex-grid decal."""
+        w_number: int
+        h_number: int
+        vertices: List[GridVertex]
+        grid_size: float
+        z_offset: Optional[float]
+        animation_keys: List[GridAnimKey]
+        aff_by_scl: Optional[bool]
+        rot_from_view: Optional[bool]
+        offset_height: Optional[float]
+        always_on_ground: Optional[bool]
+        tail_lines: List[str]
+
+    @final
+    class Lightning:
+        """Body of a Lightning element (type 150) — segmented lightning bolt between two points."""
+        fields: LightningFields
+        tail_lines: List[str]
+
+    @final
+    class LtnBolt:
+        """Body of a LtnBolt element (type 151) — branching lightning bolt (no noise prefix)."""
+        deviation: float
+        step_min: float
+        step_max: float
+        width_start: float
+        width_end: float
+        alpha_start: float
+        alpha_end: float
+        stroke_amp: float
+        max_steps: int
+        max_branches: int
+        interval: int
+        per_bolts: int
+        circles: int
+        tail_lines: List[str]
+
+    @final
+    class LightningEx:
+        """Body of a LightningEx element (type 152) — extends ``Lightning`` with tail / render-side flags."""
+        fields: LightningFields
+        is_append: Optional[bool]
+        render_side: Optional[int]
+        is_tail_disappear: Optional[bool]
+        verts_life: Optional[int]
+        is_tail_fadeout: Optional[bool]
+        tail_lines: List[str]
+
+    @final
+    class Sound:
+        """Body of a Sound element (type 170) — 3D positional sound emitter."""
+        paths: List[str]
+        param_info: SoundParamInfo
+        audio_event: Optional[SoundAudioEvent]
+        tail_lines: List[str]
+
+
+@final
+class GfxElement:
+    """A single visual effect element within a GFX file."""
+    type_id: int
+    name: str
+    src_blend: int
+    dest_blend: int
+    repeat_count: int
+    repeat_delay: int
+    tex_file: str
+    tex_row: int
+    tex_col: int
+    tex_interval: int
+    tile_mode: int
+    z_enable: int
+    is_dummy: int
+    priority: int
+    body: ElementBody
+
+
+@final
 class GfxEffect:
     """Parsed GFX (visual effect) file."""
     version: int
     default_scale: float
     play_speed: float
     default_alpha: float
-    element_count: int
-
-    def element_type(self, i: int) -> int:
-        """
-        Numeric element type ID for element at index ``i``.
-
-        Common values: 120 = ParticlePoint, 110 = Trail, 100 = Decal3D, etc.
-        """
-        ...
-
-    def element_name(self, i: int) -> str:
-        """Name of element at index ``i``."""
-        ...
-
-    def element_tex_file(self, i: int) -> str:
-        """Texture file path for element at index ``i``."""
-        ...
-
-    def element_body_text(self, i: int) -> str:
-        """Element-type-specific body lines for element at index ``i``, joined by newlines."""
-        ...
+    face_to_viewer: int
+    fade_by_dist: int
+    fade_start: float
+    fade_end: float
+    aabb_min: Optional[Tuple[float, float, float]]
+    aabb_max: Optional[Tuple[float, float, float]]
+    use_aabb: int
+    elements: List[GfxElement]
 
 
 def read_ecm(data: bytes) -> EcmModel:

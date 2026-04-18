@@ -1,0 +1,752 @@
+MOXTVersion: 41
+DedaultScale: 1.500000
+PlaySpeed: 0.800000
+DefaultAlpha: 0.700000
+Raytrace: 0
+FaceToViewer: 1
+FadeByDist: 0
+FadeStart: 0.000000
+FadeEnd: 0.000000
+Vec: -4.215033, -4.258037, -1.851290
+Vec: 4.235333, 4.293471, 1.842866
+ShakeCam: 0
+GFXELEMENTCOUNT: 11
+GFXELEMENTID: 101
+Name: Unnamed16
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: -1
+RepeatDelay: 0
+TexFile: 粒子\deng4.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 2
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+Width: 1.500000
+Height: 1.500000
+RotFromView: 0
+GrndNormOnly: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+StartTime: 500
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: 2000
+Position: 0.000000, 0.080000, 0.000000
+Color: -2522881
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 108
+StartTime: 0.000000
+EndTime: -1.000000
+Color: -16777216
+Count: 5
+Color: -1763540737
+TimeSpan: 300.000000
+Color: -1776373535
+TimeSpan: 300.000000
+Color: -1765802240
+TimeSpan: 300.000000
+Color: -1764982529
+TimeSpan: 300.000000
+Color: -1775332143
+TimeSpan: 300.000000
+GFXELEMENTID: 124
+Name: Unnamed8
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 圆环光\circle041.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 2
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+Quota: -1
+ParticleWidth: 0.400000
+ParticleHeight: 0.100000
+3DParticle: 1
+Facing: 1
+ScaleNoOff: 0
+NoScale: 0
+NoScale: 1
+OrgPt: 0.500000
+OrgPt: 0.500000
+EmissionRate: 80.000000
+Angle: 0.000000
+Speed: 0.000000
+ParAcc: 0.000000
+AccDir: 0.000000, 0.000000, -1.000000
+Acc: 0.000000
+TTL: 1.500000
+ColorMin: -1
+ColorMax: -1
+ScaleMin: 0.500000
+ScaleMax: 1.000000
+RotMin: 0.000000
+RotMax: 6.283185
+IsSurface: 1
+IsBind: 1
+AreaSize: 2.000000, 2.000000, 0.000000
+AffectorCount: 3
+CtrlType: 104
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Vel: 0.500000
+Acc: 0.000000
+CtrlType: 105
+StartTime: 0.500000
+EndTime: -1.000000
+ColorDelta: 0, 0, 0, -500
+CtrlType: 106
+StartTime: 0.000000
+EndTime: -1.000000
+ScaleChage: 1.000000, 0.010000, 9999.000000
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 0
+GFXELEMENTID: 124
+Name: Unnamed2
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 粒子\star5.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 2
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+Quota: -1
+ParticleWidth: 0.100000
+ParticleHeight: 0.100000
+3DParticle: 0
+Facing: 0
+ScaleNoOff: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+EmissionRate: 125.000000
+Angle: 0.000000
+Speed: 0.000000
+ParAcc: 0.000000
+AccDir: 0.000000, -1.000000, 0.000000
+Acc: 0.200000
+TTL: 1.000000
+ColorMin: -3476225
+ColorMax: -5838337
+ScaleMin: 0.500000
+ScaleMax: 1.000000
+RotMin: 0.000000
+RotMax: 0.000000
+IsSurface: 1
+IsBind: 1
+AreaSize: 1.000000, 1.000000, 0.000000
+AffectorCount: 3
+CtrlType: 104
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Vel: 1.000000
+Acc: 0.000000
+CtrlType: 108
+StartTime: 0.000000
+EndTime: -1.000000
+Color: 16755712
+Count: 3
+Color: -16037
+TimeSpan: 200.000000
+Color: -3111
+TimeSpan: 600.000000
+Color: 16774623
+TimeSpan: 200.000000
+CtrlType: 111
+StartTime: 0.000000
+EndTime: -1.000000
+Scale: 0.300000
+Count: 2
+Scale: 1.000000
+TimeSpan: 500.000000
+Scale: 0.300000
+TimeSpan: 500.000000
+StartTime: 250
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 0
+GFXELEMENTID: 100
+Name: Unnamed14
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: -1
+RepeatDelay: 0
+TexFile: 放射光\ray017.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 2
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+Width: 1.000000
+Height: 1.000000
+RotFromView: 0
+GrndNormOnly: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: 1500
+Position: 0.000000, 0.000000, 0.000000
+Color: -32768
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 3
+CtrlType: 106
+StartTime: 0.000000
+EndTime: -1.000000
+ScaleChage: 0.900000, 0.010000, 9999.000000
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: 0.349066
+Acc: 0.000000
+CtrlType: 105
+StartTime: 0.500000
+EndTime: -1.000000
+ColorDelta: 0, 0, 0, -500
+GFXELEMENTID: 100
+Name: Unnamed15
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: -1
+RepeatDelay: 0
+TexFile: 放射光\ray017.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 2
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+Width: 1.000000
+Height: 1.000000
+RotFromView: 0
+GrndNormOnly: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: 1500
+Position: 0.000000, 0.000000, 0.000000
+Color: -32768
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 3
+CtrlType: 106
+StartTime: 0.000000
+EndTime: -1.000000
+ScaleChage: 0.900000, 0.010000, 9999.000000
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: -0.349066
+Acc: 0.000000
+CtrlType: 105
+StartTime: 0.500000
+EndTime: -1.000000
+ColorDelta: 0, 0, 0, -500
+GFXELEMENTID: 130
+Name: 黄色光源
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 粒子\SparkOrange.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 2
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+LightType: 1
+Diffuse: -13724463
+Specular: -16777216
+Ambient: -16777216
+Position: -0.000000, 0.207120, 0.019116
+Direction: 0.000000, 0.000000, 1.000000
+Range: 10.000000
+FallOff: 0.000000
+Attenuation0: 0.000000
+Attenuation0: 0.100000
+Attenuation0: 0.000000
+Theta: 0.000000
+Phi: 0.000000
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: 2000
+Position: 0.000000, 0.080000, 0.000000
+Color: -2522881
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 1
+CtrlType: 108
+StartTime: 0.000000
+EndTime: -1.000000
+Color: -16777216
+Count: 5
+Color: -1933057
+TimeSpan: 300.000000
+Color: -14765855
+TimeSpan: 300.000000
+Color: -4194560
+TimeSpan: 300.000000
+Color: -3374849
+TimeSpan: 300.000000
+Color: -13724463
+TimeSpan: 300.000000
+GFXELEMENTID: 124
+Name: Unnamed1
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 圆环光\circle041.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 2
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+Quota: 80
+ParticleWidth: 0.800000
+ParticleHeight: 0.100000
+3DParticle: 1
+Facing: 1
+ScaleNoOff: 0
+NoScale: 0
+NoScale: 1
+OrgPt: 0.500000
+OrgPt: 0.500000
+EmissionRate: 80.000000
+Angle: 0.000000
+Speed: 0.000000
+ParAcc: 0.000000
+AccDir: 0.000000, 0.000000, -1.000000
+Acc: 0.000000
+TTL: 1.500000
+ColorMin: -1
+ColorMax: -1
+ScaleMin: 0.500000
+ScaleMax: 1.000000
+RotMin: 0.000000
+RotMax: 6.283185
+IsSurface: 1
+IsBind: 1
+AreaSize: 2.000000, 2.000000, 0.000000
+AffectorCount: 3
+CtrlType: 104
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Vel: 1.500000
+Acc: 0.000000
+CtrlType: 105
+StartTime: 0.500000
+EndTime: -1.000000
+ColorDelta: 0, 0, 0, -500
+CtrlType: 106
+StartTime: 0.000000
+EndTime: -1.000000
+ScaleChage: 1.000000, 0.010000, 9999.000000
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 0
+GFXELEMENTID: 124
+Name: Unnamed4
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 粒子\star5.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 2
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+Quota: 20
+ParticleWidth: 0.100000
+ParticleHeight: 0.100000
+3DParticle: 0
+Facing: 0
+ScaleNoOff: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+EmissionRate: 50.000000
+Angle: 0.000000
+Speed: 0.000000
+ParAcc: 0.000000
+AccDir: 0.000000, -1.000000, 0.000000
+Acc: 0.200000
+TTL: 1.000000
+ColorMin: -3476225
+ColorMax: -5838337
+ScaleMin: 0.500000
+ScaleMax: 1.000000
+RotMin: 0.000000
+RotMax: 0.000000
+IsSurface: 1
+IsBind: 1
+AreaSize: 1.000000, 1.000000, 0.000000
+AffectorCount: 3
+CtrlType: 104
+StartTime: 0.000000
+EndTime: -1.000000
+Pos: 0.000000, 0.000000, 0.000000
+Vel: 2.000000
+Acc: 0.000000
+CtrlType: 108
+StartTime: 0.000000
+EndTime: -1.000000
+Color: 16755712
+Count: 3
+Color: -16037
+TimeSpan: 200.000000
+Color: -3111
+TimeSpan: 600.000000
+Color: 16774623
+TimeSpan: 200.000000
+CtrlType: 111
+StartTime: 0.000000
+EndTime: -1.000000
+Scale: 0.300000
+Count: 2
+Scale: 1.000000
+TimeSpan: 500.000000
+Scale: 0.300000
+TimeSpan: 500.000000
+StartTime: 250
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 0.000000
+Color: -1
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 0
+GFXELEMENTID: 100
+Name: Unnamed5
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 闪光\flarewhite_alpha.tga
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 2
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+Width: 1.500000
+Height: 1.500000
+RotFromView: 0
+GrndNormOnly: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: 1500
+Position: 0.000000, 0.000000, 0.000000
+Color: -3132
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 3
+CtrlType: 106
+StartTime: 0.000000
+EndTime: -1.000000
+ScaleChage: 0.900000, 0.010000, 9999.000000
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: -0.349066
+Acc: 0.000000
+CtrlType: 105
+StartTime: 0.500000
+EndTime: -1.000000
+ColorDelta: 0, 0, 0, -500
+GFXELEMENTID: 100
+Name: Unnamed6
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: 1
+RepeatDelay: 0
+TexFile: 闪光\flarewhite_alpha.tga
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 2
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+Width: 1.000000
+Height: 1.000000
+RotFromView: 0
+GrndNormOnly: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: 1500
+Position: 0.000000, 0.000000, 0.000000
+Color: -3132
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 3
+CtrlType: 106
+StartTime: 0.000000
+EndTime: -1.000000
+ScaleChage: 0.900000, 0.010000, 9999.000000
+CtrlType: 101
+StartTime: 0.000000
+EndTime: -1.000000
+Vel: -0.349066
+Acc: 0.000000
+CtrlType: 105
+StartTime: 0.500000
+EndTime: -1.000000
+ColorDelta: 0, 0, 0, -500
+GFXELEMENTID: 121
+Name: Unnamed3
+SrcBlend: 5
+DestBlend: 2
+RepeatCount: -1
+RepeatDelay: 0
+TexFile: 图案\pattern003.dds
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 2
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+Quota: -1
+ParticleWidth: 1.100000
+ParticleHeight: 1.100000
+3DParticle: 1
+Facing: 1
+ScaleNoOff: 0
+NoScale: 0
+NoScale: 0
+OrgPt: 0.500000
+OrgPt: 0.500000
+EmissionRate: 50.000000
+Angle: 6.283185
+Speed: 0.000000
+ParAcc: 0.000000
+AccDir: 0.000000, 1.000000, 0.000000
+Acc: 0.000000
+TTL: 0.250000
+ColorMin: -1776494750
+ColorMax: -1770458666
+ScaleMin: 1.000000
+ScaleMax: 1.000000
+RotMin: 0.000000
+RotMax: 0.000000
+IsSurface: 0
+IsBind: 1
+AreaSize: 0.000000, 0.100000, 0.000000
+AffectorCount: 2
+CtrlType: 106
+StartTime: 0.000000
+EndTime: -1.000000
+ScaleChage: 1.000000, 0.000000, 9999.000000
+CtrlType: 108
+StartTime: 0.000000
+EndTime: -1.000000
+Color: -16777216
+Count: 2
+Color: -65552
+TimeSpan: 100.000000
+Color: -16777216
+TimeSpan: 200.000000
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0.000000, 0.000000, 0.000000
+Color: -922746881
+Scale: 1.000000
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 2
+CtrlType: 107
+StartTime: 0.000000
+EndTime: -1.000000
+BufLen: 256
+Amplitude: 2.000000
+WaveLen: 1
+Persistence: 0.250000
+OctaveNum: 5
+BaseColor: -1599986
+CtrlType: 106
+StartTime: 0.000000
+EndTime: -1.000000
+ScaleChage: 0.000000, 0.010000, 9999.000000

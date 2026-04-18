@@ -1,0 +1,78 @@
+MOXTVersion: 103
+IsAngelica3: 0
+DefaultScale: 1.000000
+PlaySpeed: 0.850000
+DefaultAlpha: 1.000000
+Raytrace: 0
+FaceToViewer: 0
+FadeByDist: 0
+FadeStart: 0.000000
+FadeEnd: 0.000000
+Vec: -1.235384, -1.528223, -3.343031
+Vec: 1.133282, 4.432634, 1.664332
+UseAABB: 0
+AccurateAABB: 0
+ShakeCam: 0
+ShakeDamp: 0
+NoChangeDir: 0
+2DRender: 0
+2DBackLayer: 0
+PhysExist: 0
+GFXELEMENTCOUNT: 1
+GFXELEMENTID: 230
+Name: Unnamed28
+SrcBlend: 5
+DestBlend: 6
+RepeatCount: -1
+RepeatDelay: 0
+TexFile: 
+BindEle: 
+ZEnable: 1
+MatchGrnd: 0
+GroundHeight: 0
+TexRow: 1
+TexCol: 1
+TexInterval: 50
+Priority: 0
+IsDummy: 0
+DummyEle: 
+Warp: 0
+TileMode: 0
+TexSpeed: 0.000000
+TexSpeed: 0.000000
+UReverse: 0
+VReverse: 0
+UVExchg: 0
+RenderLayer: 0
+NoDownSample: 0
+ResetLoopEnd: 0
+TexAnimMaxTime: 0
+PSFileVersion: 1
+ShaderFile: 
+ShaderTex: 
+PSConstCount: 2
+PSConstIndex: 0
+PSConstValue: 1.000000, 1.000000, 1.000000, 0.000000
+PSLoopCount: -1
+PSTargetCount: 1
+PSInterval: 4000
+PSConstValue: 0.000000, 0.000000, 0.000000, 0.000000
+PSConstIndex: 1
+PSConstValue: 1.000000, 0.000000, 0.000000, 0.000000
+PSLoopCount: -1
+PSTargetCount: 0
+CanDoFadeOut: 1
+ECMPath: grasses\flyers\³á°ò\Ï«×å¹âÒí\Ï«×å¹âÒí8.ecm
+ECMActName: ·ÉÐÐÐüÍ£
+LDType: 0
+UsrCmd: 
+StartTime: 0
+KEYPOINTCOUNT: 1
+InterpolateMode: 0
+TimeSpan: -1
+Position: 0, 0.15, -0.100000
+Color: -1
+Scale: 0.15
+Direction: 0.000000, 0.000000, 0.000000, 1.000000
+Rad_2D: 0.000000
+CtrlMethodCount: 0

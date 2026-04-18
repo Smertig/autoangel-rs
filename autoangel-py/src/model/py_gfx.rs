@@ -1,109 +1,27 @@
 use autoangel_core::model::gfx;
-use pyo3::exceptions::PyIndexError;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
-#[pyclass(name = "GfxEffect", frozen)]
-struct PyGfxEffect {
-    inner: gfx::GfxEffect,
-}
-
-#[pymethods]
-impl PyGfxEffect {
-    #[getter]
-    fn version(&self) -> u32 {
-        self.inner.version
-    }
-
-    #[getter]
-    fn default_scale(&self) -> f32 {
-        self.inner.default_scale
-    }
-
-    #[getter]
-    fn play_speed(&self) -> f32 {
-        self.inner.play_speed
-    }
-
-    #[getter]
-    fn default_alpha(&self) -> f32 {
-        self.inner.default_alpha
-    }
-
-    #[getter]
-    fn element_count(&self) -> usize {
-        self.inner.elements.len()
-    }
-
-    /// Numeric element type ID for element at index `i`.
-    fn element_type(&self, i: usize) -> PyResult<i32> {
-        let elem = self
-            .inner
-            .elements
-            .get(i)
-            .ok_or_else(|| PyIndexError::new_err(format!("element index {i} out of range")))?;
-        Ok(elem.element_type.to_id() as i32)
-    }
-
-    /// Name of element at index `i`.
-    fn element_name(&self, i: usize) -> PyResult<&str> {
-        let elem = self
-            .inner
-            .elements
-            .get(i)
-            .ok_or_else(|| PyIndexError::new_err(format!("element index {i} out of range")))?;
-        Ok(&elem.name)
-    }
-
-    /// Texture file path for element at index `i`.
-    fn element_tex_file(&self, i: usize) -> PyResult<&str> {
-        let elem = self
-            .inner
-            .elements
-            .get(i)
-            .ok_or_else(|| PyIndexError::new_err(format!("element index {i} out of range")))?;
-        Ok(&elem.tex_file)
-    }
-
-    /// Short variant name for the element's body (`"decal"`, `"trail"`, …,
-    /// `"unknown"` for unparsed types).
-    fn element_body_kind(&self, i: usize) -> PyResult<&'static str> {
-        let elem = self
-            .inner
-            .elements
-            .get(i)
-            .ok_or_else(|| PyIndexError::new_err(format!("element index {i} out of range")))?;
-        Ok(elem.body.kind())
-    }
-
-    /// Raw body text for debug display — raw lines for `Unknown`, or the
-    /// unparsed affector/KeyPointSet tail for typed variants.
-    fn element_body_text(&self, i: usize) -> PyResult<String> {
-        let elem = self
-            .inner
-            .elements
-            .get(i)
-            .ok_or_else(|| PyIndexError::new_err(format!("element index {i} out of range")))?;
-        Ok(elem.body.raw_text())
-    }
-
-    fn __repr__(&self) -> String {
-        format!(
-            "GfxEffect(version={}, element_count={})",
-            self.inner.version,
-            self.inner.elements.len(),
-        )
-    }
-}
-
 #[pyfunction]
-fn read_gfx(data: &[u8]) -> PyResult<PyGfxEffect> {
-    let inner = gfx::GfxEffect::parse(data).map_err(|e| PyValueError::new_err(format!("{e:#}")))?;
-    Ok(PyGfxEffect { inner })
+fn read_gfx(data: &[u8]) -> PyResult<gfx::GfxEffect> {
+    gfx::GfxEffect::parse(data).map_err(|e| PyValueError::new_err(format!("{e:#}")))
 }
 
 pub fn init_py(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add_class::<PyGfxEffect>()?;
     m.add_function(pyo3::wrap_pyfunction!(read_gfx, m)?)?;
+    // Top-level gfx types — pyclass exposure comes from the core crate.
+    m.add_class::<gfx::GfxEffect>()?;
+    m.add_class::<gfx::GfxElement>()?;
+    m.add_class::<gfx::ElementBody>()?;
+    // Nested helper types exposed through body-variant getters.
+    m.add_class::<gfx::Emitter>()?;
+    m.add_class::<gfx::EmitterShape>()?;
+    m.add_class::<gfx::GridVertex>()?;
+    m.add_class::<gfx::GridAnimKey>()?;
+    m.add_class::<gfx::NoiseCtrl>()?;
+    m.add_class::<gfx::FloatValueTrans>()?;
+    m.add_class::<gfx::LightningFields>()?;
+    m.add_class::<gfx::SoundParamInfo>()?;
+    m.add_class::<gfx::SoundAudioEvent>()?;
     Ok(())
 }
