@@ -2,8 +2,8 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 
 // ModelViewer pulls in three.js which doesn't work in jsdom. Stub it.
-vi.mock('@shared/components/ModelViewer', () => ({
-  ModelViewer: ({ path, initialClipName }: { path: string; initialClipName?: string }) => (
+vi.mock('@shared/components/model-viewer', () => ({
+  SmdViewer: ({ path, initialClipName }: { path: string; initialClipName?: string }) => (
     <div data-testid="model-viewer-stub" data-initial-clip={initialClipName ?? ''}>{path}</div>
   ),
 }));

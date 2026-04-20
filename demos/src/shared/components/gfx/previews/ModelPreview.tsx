@@ -1,6 +1,6 @@
 import { FieldPanel, FieldRow } from '../fieldPanel';
 import { BoolDot, MonoNum, PathOrText } from '../formatters';
-import { ModelViewer } from '@shared/components/ModelViewer';
+import { SmdViewer } from '@shared/components/model-viewer';
 import type { PreviewProps } from './types';
 import styles from './ModelPreview.module.css';
 
@@ -68,7 +68,7 @@ function ModelPreviewViewer({
 
   return (
     <div className={styles.viewer}>
-      <ModelViewer
+      <SmdViewer
         path={resolved}
         wasm={context.wasm}
         getData={context.getData}

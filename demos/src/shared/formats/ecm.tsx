@@ -1,21 +1,13 @@
-import { useCallback } from 'react';
 import { zip } from 'fflate';
-import { MODEL_EXTENSIONS } from '@shared/util/files';
 import { downloadBlob, downloadFile } from '@shared/util/download';
-import { ModelViewer } from '@shared/components/ModelViewer';
+import { EcmViewer } from '@shared/components/model-viewer';
 import { collectEcmDependencies } from '@shared/util/model-dependencies';
-import { sideBySideDiffer } from './helpers';
+import { sideBySideDiffer, useNullableGetData } from './helpers';
 import type { DownloadAction, FormatDescriptor, ViewerContext } from './types';
 
-function ModelFormatViewer({ path, getData, wasm, listFiles }: ViewerContext) {
-  const getDataNullable = useCallback(
-    async (p: string): Promise<Uint8Array | null> => {
-      try { return await getData(p); }
-      catch { return null; }
-    },
-    [getData],
-  );
-  return <ModelViewer path={path} wasm={wasm} getData={getDataNullable} listFiles={listFiles} />;
+function EcmFormatViewer({ path, getData, wasm, listFiles }: ViewerContext) {
+  const getDataNullable = useNullableGetData(getData);
+  return <EcmViewer path={path} wasm={wasm} getData={getDataNullable} listFiles={listFiles} />;
 }
 
 async function downloadModelZip(ctx: ViewerContext): Promise<void> {
@@ -49,26 +41,17 @@ async function downloadModelPck(ctx: ViewerContext): Promise<void> {
   downloadBlob(new Blob([pckBytes.buffer as ArrayBuffer], { type: 'application/octet-stream' }), basename + '.pck');
 }
 
-export const modelFormat: FormatDescriptor = {
-  name: 'model',
-  matches: (ext) => MODEL_EXTENSIONS.has(ext),
-  Viewer: ModelFormatViewer,
-  Differ: sideBySideDiffer(ModelFormatViewer),
+export const ecmFormat: FormatDescriptor = {
+  name: 'ecm',
+  matches: (ext) => ext === '.ecm',
+  Viewer: EcmFormatViewer,
+  Differ: sideBySideDiffer(EcmFormatViewer),
   downloadActions(ctx: ViewerContext): DownloadAction[] | undefined {
     if (ctx.ext !== '.ecm') return undefined;
     return [
-      {
-        label: '⬇ Download file',
-        onClick: () => downloadFile(ctx.path, ctx.getData),
-      },
-      {
-        label: '⬇ Download model (ZIP)',
-        onClick: () => downloadModelZip(ctx),
-      },
-      {
-        label: '⬇ Download model (PCK)',
-        onClick: () => downloadModelPck(ctx),
-      },
+      { label: '\u2B07 Download file',        onClick: () => downloadFile(ctx.path, ctx.getData) },
+      { label: '\u2B07 Download model (ZIP)', onClick: () => downloadModelZip(ctx) },
+      { label: '\u2B07 Download model (PCK)', onClick: () => downloadModelPck(ctx) },
     ];
   },
 };

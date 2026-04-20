@@ -17,7 +17,7 @@ import { getViewer } from './viewer';
 import { mountScene } from './scene';
 
 // "站立" (standing) — preferred default animation clip
-export const PREFERRED_ANIM_HINT = '\u7AD9\u7ACB';
+const PREFERRED_ANIM_HINT = '\u7AD9\u7ACB';
 
 /**
  * Shared renderer driven by an already-fetched SMD. Both the ECM path

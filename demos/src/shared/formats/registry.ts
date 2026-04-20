@@ -1,12 +1,18 @@
 import type { FormatDescriptor } from './types';
-import { modelFormat } from './model';
+import { ecmFormat } from './ecm';
+import { smdFormat } from './smd';
+import { skiFormat } from './ski';
+import { stckFormat } from './stck';
 import { imageFormat } from './image';
 import { gfxFormat } from './gfx';
 import { textFormat } from './text';
 import { fallbackFormat } from './fallback';
 
 const formats: FormatDescriptor[] = [
-  modelFormat,
+  ecmFormat,
+  smdFormat,
+  skiFormat,
+  stckFormat,
   imageFormat,
   gfxFormat,
   textFormat,

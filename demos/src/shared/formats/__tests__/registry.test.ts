@@ -18,11 +18,17 @@ describe('findFormat', () => {
   it('returns image for .dds', () => {
     expect(findFormat('.dds').name).toBe('image');
   });
-  it('returns model for .ecm', () => {
-    expect(findFormat('.ecm').name).toBe('model');
+  it('returns ecm for .ecm', () => {
+    expect(findFormat('.ecm').name).toBe('ecm');
   });
-  it('returns model for .ski', () => {
-    expect(findFormat('.ski').name).toBe('model');
+  it('returns smd for .smd', () => {
+    expect(findFormat('.smd').name).toBe('smd');
+  });
+  it('returns ski for .ski', () => {
+    expect(findFormat('.ski').name).toBe('ski');
+  });
+  it('returns stck for .stck', () => {
+    expect(findFormat('.stck').name).toBe('stck');
   });
   it('returns gfx for .gfx', () => {
     expect(findFormat('.gfx').name).toBe('gfx');
@@ -37,7 +43,7 @@ describe('downloadActions', () => {
     wasm: {} as any,
   });
 
-  it('model format returns download actions for .ecm', () => {
+  it('ecm format returns download actions for .ecm', () => {
     const format = findFormat('.ecm');
     const actions = format.downloadActions?.(mockCtx('.ecm'));
     expect(actions).toBeDefined();
@@ -47,16 +53,14 @@ describe('downloadActions', () => {
     expect(actions![2].label).toContain('PCK');
   });
 
-  it('model format returns undefined for .ski', () => {
+  it('ski format has no downloadActions', () => {
     const format = findFormat('.ski');
-    const actions = format.downloadActions?.(mockCtx('.ski'));
-    expect(actions).toBeUndefined();
+    expect(format.downloadActions).toBeUndefined();
   });
 
-  it('model format returns undefined for .stck', () => {
+  it('stck format has no downloadActions', () => {
     const format = findFormat('.stck');
-    const actions = format.downloadActions?.(mockCtx('.stck'));
-    expect(actions).toBeUndefined();
+    expect(format.downloadActions).toBeUndefined();
   });
 
   it('text format has no downloadActions', () => {
