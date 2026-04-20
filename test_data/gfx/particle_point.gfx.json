@@ -1,34 +1,77 @@
 {
-  "fade_start": 10.0,
-  "use_aabb": 1,
+  "aabb_max": [
+    14.192137718200684,
+    14.192137718200684,
+    10.160308837890625
+  ],
+  "aabb_min": [
+    -14.192137718200684,
+    -14.192137718200684,
+    -10.360861778259277
+  ],
+  "default_alpha": 1.0,
+  "default_scale": 0.5,
   "elements": [
     {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "Unnamed3",
       "body": {
+        "emitter": {
+          "acc": 0.0,
+          "acc_dir": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "angle": 0.0,
+          "color_max": 4278779921,
+          "color_min": 4279304226,
+          "drag_pow": 1.0,
+          "emission_rate": 20.0,
+          "is_bind": true,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
+          "par_ini_dir": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rot_max": 6.283185005187988,
+          "rot_min": 0.0,
+          "scale_max": 1.0,
+          "scale_min": 0.5,
+          "shape": {
+            "alpha_seg": 10,
+            "area_size": [
+              12.0,
+              2.0,
+              12.0
+            ],
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
+          },
+          "speed": 0.0,
+          "ttl": 2.0
+        },
+        "facing": 0,
+        "init_random_texture": false,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": false,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 1.5,
+        "particle_width": 1.5,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": false,
         "tail_lines": [
           "AffectorCount: 4",
           "CtrlType: 106",
@@ -71,83 +114,83 @@
           "CtrlMethodCount: 0"
         ],
         "three_d_particle": false,
+        "z_offset": null
+      },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed3",
+      "priority": 2,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "烟火\\1050001通道改.tga",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
+      "body": {
         "emitter": {
           "acc": 0.0,
-          "scale_max": 1.0,
-          "color_min": 4279304226,
           "acc_dir": [
             0.0,
             0.0,
             -1.0
           ],
-          "ttl": 2.0,
-          "angle": 0.0,
-          "scale_min": 0.5,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
-          "color_max": 4278779921,
-          "rot_min": 0.0,
-          "rot_max": 6.283185005187988,
-          "is_bind": true,
-          "shape": {
-            "shape": "ellipsoid",
-            "alpha_seg": 10,
-            "beta_seg": 10,
-            "area_size": [
-              12.0,
-              2.0,
-              12.0
-            ],
-            "is_avg_gen": false
-          },
-          "is_drag": false,
-          "emission_rate": 20.0,
+          "angle": 0.5235990285873413,
+          "color_max": 4279109137,
+          "color_min": 4278190080,
           "drag_pow": 1.0,
+          "emission_rate": 15.0,
+          "is_bind": false,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
           "par_ini_dir": [
             0.0,
             0.0,
             0.0
-          ]
+          ],
+          "rot_max": 6.283185005187988,
+          "rot_min": 0.0,
+          "scale_max": 1.0,
+          "scale_min": 0.5,
+          "shape": {
+            "alpha_seg": 10,
+            "area_size": [
+              12.0,
+              12.0,
+              1.0
+            ],
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
+          },
+          "speed": 0.0,
+          "ttl": 2.0
         },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": false,
         "facing": 0,
-        "particle_height": 1.5,
-        "particle_width": 1.5
-      },
-      "tex_file": "烟火\\1050001通道改.tga",
-      "priority": 2
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "Unnamed23",
-      "body": {
+        "init_random_texture": true,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": true,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": true,
-        "is_use_par_uv": true,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 1.0,
+        "particle_width": 1.0,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": false,
         "tail_lines": [
           "AffectorCount: 3",
           "CtrlType: 108",
@@ -184,83 +227,83 @@
           "CtrlMethodCount: 0"
         ],
         "three_d_particle": false,
+        "z_offset": null
+      },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed23",
+      "priority": 2,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "纹理\\纹理_00205.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
+      "body": {
         "emitter": {
           "acc": 0.0,
-          "scale_max": 1.0,
-          "color_min": 4278190080,
           "acc_dir": [
             0.0,
             0.0,
             -1.0
           ],
-          "ttl": 2.0,
-          "angle": 0.5235990285873413,
-          "scale_min": 0.5,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
-          "color_max": 4279109137,
-          "rot_min": 0.0,
-          "rot_max": 6.283185005187988,
-          "is_bind": false,
-          "shape": {
-            "shape": "ellipsoid",
-            "alpha_seg": 10,
-            "beta_seg": 10,
-            "area_size": [
-              12.0,
-              12.0,
-              1.0
-            ],
-            "is_avg_gen": false
-          },
-          "is_drag": false,
-          "emission_rate": 15.0,
+          "angle": 0.0,
+          "color_max": 4279042074,
+          "color_min": 4279107612,
           "drag_pow": 1.0,
+          "emission_rate": 10.0,
+          "is_bind": true,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
           "par_ini_dir": [
             0.0,
             0.0,
             0.0
-          ]
+          ],
+          "rot_max": 6.283185005187988,
+          "rot_min": 0.0,
+          "scale_max": 1.0,
+          "scale_min": 0.5,
+          "shape": {
+            "alpha_seg": 10,
+            "area_size": [
+              10.0,
+              1.5,
+              10.0
+            ],
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
+          },
+          "speed": 0.0,
+          "ttl": 2.0
         },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": false,
         "facing": 0,
-        "particle_height": 1.0,
-        "particle_width": 1.0
-      },
-      "tex_file": "纹理\\纹理_00205.dds",
-      "priority": 2
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 4,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 8,
-      "name": "Unnamed5",
-      "body": {
+        "init_random_texture": false,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": true,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": false,
-        "is_use_par_uv": true,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 1.0,
+        "particle_width": 1.0,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": false,
         "tail_lines": [
           "AffectorCount: 4",
           "CtrlType: 106",
@@ -303,83 +346,83 @@
           "CtrlMethodCount: 0"
         ],
         "three_d_particle": false,
+        "z_offset": null
+      },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed5",
+      "priority": 2,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 8,
+      "tex_file": "序列\\烟消散03_4x8.dds",
+      "tex_interval": 50,
+      "tex_row": 4,
+      "tile_mode": 0,
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
+      "body": {
         "emitter": {
           "acc": 0.0,
-          "scale_max": 1.0,
-          "color_min": 4279107612,
           "acc_dir": [
             0.0,
             0.0,
             -1.0
           ],
-          "ttl": 2.0,
           "angle": 0.0,
-          "scale_min": 0.5,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
-          "color_max": 4279042074,
-          "rot_min": 0.0,
-          "rot_max": 6.283185005187988,
-          "is_bind": true,
-          "shape": {
-            "shape": "ellipsoid",
-            "alpha_seg": 10,
-            "beta_seg": 10,
-            "area_size": [
-              10.0,
-              1.5,
-              10.0
-            ],
-            "is_avg_gen": false
-          },
-          "is_drag": false,
-          "emission_rate": 10.0,
+          "color_max": 4286578943,
+          "color_min": 4284874956,
           "drag_pow": 1.0,
+          "emission_rate": 20.0,
+          "is_bind": true,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
           "par_ini_dir": [
             0.0,
             0.0,
             0.0
-          ]
+          ],
+          "rot_max": 6.283185005187988,
+          "rot_min": 0.0,
+          "scale_max": 1.0,
+          "scale_min": 0.5,
+          "shape": {
+            "alpha_seg": 10,
+            "area_size": [
+              10.0,
+              2.0,
+              10.0
+            ],
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
+          },
+          "speed": 0.0,
+          "ttl": 2.0
         },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": false,
         "facing": 0,
-        "particle_height": 1.0,
-        "particle_width": 1.0
-      },
-      "tex_file": "序列\\烟消散03_4x8.dds",
-      "priority": 2
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 6,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 6,
-      "name": "Unnamed6",
-      "body": {
+        "init_random_texture": true,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": true,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": true,
-        "is_use_par_uv": true,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 1.0,
+        "particle_width": 1.0,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": false,
         "tail_lines": [
           "AffectorCount: 4",
           "CtrlType: 106",
@@ -422,83 +465,83 @@
           "CtrlMethodCount: 0"
         ],
         "three_d_particle": false,
+        "z_offset": null
+      },
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "Unnamed6",
+      "priority": 2,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 6,
+      "tex_file": "序列\\气序列023_6x6.dds",
+      "tex_interval": 50,
+      "tex_row": 6,
+      "tile_mode": 0,
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
+      "body": {
         "emitter": {
           "acc": 0.0,
-          "scale_max": 1.0,
-          "color_min": 4284874956,
           "acc_dir": [
             0.0,
             0.0,
             -1.0
           ],
-          "ttl": 2.0,
           "angle": 0.0,
-          "scale_min": 0.5,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
-          "color_max": 4286578943,
-          "rot_min": 0.0,
-          "rot_max": 6.283185005187988,
+          "color_max": 4294967295,
+          "color_min": 4294967295,
+          "drag_pow": 1.0,
+          "emission_rate": 10.0,
           "is_bind": true,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
+          "par_ini_dir": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rot_max": 6.283185005187988,
+          "rot_min": 0.0,
+          "scale_max": 1.0,
+          "scale_min": 0.5,
           "shape": {
-            "shape": "ellipsoid",
             "alpha_seg": 10,
-            "beta_seg": 10,
             "area_size": [
               10.0,
               2.0,
               10.0
             ],
-            "is_avg_gen": false
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
           },
-          "is_drag": false,
-          "emission_rate": 20.0,
-          "drag_pow": 1.0,
-          "par_ini_dir": [
-            0.0,
-            0.0,
-            0.0
-          ]
+          "speed": 0.0,
+          "ttl": 0.6000000238418579
         },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": false,
         "facing": 0,
-        "particle_height": 1.0,
-        "particle_width": 1.0
-      },
-      "tex_file": "序列\\气序列023_6x6.dds",
-      "priority": 2
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "Unnamed7",
-      "body": {
+        "init_random_texture": false,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": false,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 1.5,
+        "particle_width": 1.5,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": false,
         "tail_lines": [
           "AffectorCount: 4",
           "CtrlType: 106",
@@ -541,83 +584,83 @@
           "CtrlMethodCount: 0"
         ],
         "three_d_particle": false,
+        "z_offset": null
+      },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed7",
+      "priority": 4,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "normalmap\\002空间扭曲.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
+      "body": {
         "emitter": {
           "acc": 0.0,
-          "scale_max": 1.0,
-          "color_min": 4294967295,
           "acc_dir": [
             0.0,
             0.0,
             -1.0
           ],
-          "ttl": 0.6000000238418579,
           "angle": 0.0,
-          "scale_min": 0.5,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
-          "color_max": 4294967295,
-          "rot_min": 0.0,
-          "rot_max": 6.283185005187988,
-          "is_bind": true,
-          "shape": {
-            "shape": "ellipsoid",
-            "alpha_seg": 10,
-            "beta_seg": 10,
-            "area_size": [
-              10.0,
-              2.0,
-              10.0
-            ],
-            "is_avg_gen": false
-          },
-          "is_drag": false,
-          "emission_rate": 10.0,
+          "color_max": 4282384512,
+          "color_min": 4285137109,
           "drag_pow": 1.0,
+          "emission_rate": 8.0,
+          "is_bind": true,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
           "par_ini_dir": [
             0.0,
             0.0,
             0.0
-          ]
+          ],
+          "rot_max": 6.283185005187988,
+          "rot_min": 0.0,
+          "scale_max": 1.0,
+          "scale_min": 0.10000000149011612,
+          "shape": {
+            "alpha_seg": 10,
+            "area_size": [
+              9.0,
+              2.0,
+              9.0
+            ],
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
+          },
+          "speed": 0.0,
+          "ttl": 2.0
         },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": false,
         "facing": 0,
-        "particle_height": 1.5,
-        "particle_width": 1.5
-      },
-      "tex_file": "normalmap\\002空间扭曲.dds",
-      "priority": 4
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "Unnamed10",
-      "body": {
+        "init_random_texture": false,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": false,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 1.2999999523162842,
+        "particle_width": 1.2999999523162842,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": false,
         "tail_lines": [
           "AffectorCount: 4",
           "CtrlType: 106",
@@ -660,83 +703,83 @@
           "CtrlMethodCount: 0"
         ],
         "three_d_particle": false,
+        "z_offset": null
+      },
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "Unnamed10",
+      "priority": 2,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "烟火\\smork007.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
+      "body": {
         "emitter": {
           "acc": 0.0,
-          "scale_max": 1.0,
-          "color_min": 4285137109,
           "acc_dir": [
             0.0,
             0.0,
             -1.0
           ],
-          "ttl": 2.0,
           "angle": 0.0,
-          "scale_min": 0.10000000149011612,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
-          "color_max": 4282384512,
-          "rot_min": 0.0,
-          "rot_max": 6.283185005187988,
+          "color_max": 4289155071,
+          "color_min": 4288626943,
+          "drag_pow": 1.0,
+          "emission_rate": 10.0,
           "is_bind": true,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
+          "par_ini_dir": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rot_max": 6.283185005187988,
+          "rot_min": 0.0,
+          "scale_max": 1.0,
+          "scale_min": 0.10000000149011612,
           "shape": {
-            "shape": "ellipsoid",
             "alpha_seg": 10,
-            "beta_seg": 10,
             "area_size": [
               9.0,
               2.0,
               9.0
             ],
-            "is_avg_gen": false
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
           },
-          "is_drag": false,
-          "emission_rate": 8.0,
-          "drag_pow": 1.0,
-          "par_ini_dir": [
-            0.0,
-            0.0,
-            0.0
-          ]
+          "speed": 0.0,
+          "ttl": 2.0
         },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": false,
         "facing": 0,
-        "particle_height": 1.2999999523162842,
-        "particle_width": 1.2999999523162842
-      },
-      "tex_file": "烟火\\smork007.dds",
-      "priority": 2
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "Unnamed4",
-      "body": {
+        "init_random_texture": false,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": false,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 2.0,
+        "particle_width": 2.0,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": false,
         "tail_lines": [
           "AffectorCount: 4",
           "CtrlType: 106",
@@ -779,83 +822,83 @@
           "CtrlMethodCount: 0"
         ],
         "three_d_particle": false,
+        "z_offset": null
+      },
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "Unnamed4",
+      "priority": 2,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "烟火\\烟46_td.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
+      "body": {
         "emitter": {
           "acc": 0.0,
-          "scale_max": 1.0,
-          "color_min": 4288626943,
           "acc_dir": [
             0.0,
             0.0,
             -1.0
           ],
-          "ttl": 2.0,
           "angle": 0.0,
-          "scale_min": 0.10000000149011612,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
-          "color_max": 4289155071,
-          "rot_min": 0.0,
-          "rot_max": 6.283185005187988,
-          "is_bind": true,
-          "shape": {
-            "shape": "ellipsoid",
-            "alpha_seg": 10,
-            "beta_seg": 10,
-            "area_size": [
-              9.0,
-              2.0,
-              9.0
-            ],
-            "is_avg_gen": false
-          },
-          "is_drag": false,
-          "emission_rate": 10.0,
+          "color_max": 4278847763,
+          "color_min": 4278584849,
           "drag_pow": 1.0,
+          "emission_rate": 10.0,
+          "is_bind": true,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
           "par_ini_dir": [
             0.0,
             0.0,
             0.0
-          ]
+          ],
+          "rot_max": 6.283185005187988,
+          "rot_min": 0.0,
+          "scale_max": 0.5,
+          "scale_min": 0.20000000298023224,
+          "shape": {
+            "alpha_seg": 10,
+            "area_size": [
+              10.0,
+              2.0,
+              10.0
+            ],
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
+          },
+          "speed": 0.30000001192092896,
+          "ttl": 1.0
         },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": false,
         "facing": 0,
-        "particle_height": 2.0,
-        "particle_width": 2.0
-      },
-      "tex_file": "烟火\\烟46_td.dds",
-      "priority": 2
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 4,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 4,
-      "name": "Unnamed8",
-      "body": {
+        "init_random_texture": false,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": true,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": false,
-        "is_use_par_uv": true,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 0.30000001192092896,
+        "particle_width": 0.30000001192092896,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": false,
         "tail_lines": [
           "AffectorCount: 5",
           "CtrlType: 106",
@@ -905,83 +948,83 @@
           "CtrlMethodCount: 0"
         ],
         "three_d_particle": false,
+        "z_offset": null
+      },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed8",
+      "priority": 2,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 4,
+      "tex_file": "序列\\闪电31_4x4_01.dds",
+      "tex_interval": 50,
+      "tex_row": 4,
+      "tile_mode": 0,
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
+      "body": {
         "emitter": {
           "acc": 0.0,
-          "scale_max": 0.5,
-          "color_min": 4278584849,
           "acc_dir": [
             0.0,
             0.0,
             -1.0
           ],
-          "ttl": 1.0,
           "angle": 0.0,
-          "scale_min": 0.20000000298023224,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.30000001192092896,
-          "par_acc": 0.0,
-          "color_max": 4278847763,
-          "rot_min": 0.0,
-          "rot_max": 6.283185005187988,
-          "is_bind": true,
-          "shape": {
-            "shape": "ellipsoid",
-            "alpha_seg": 10,
-            "beta_seg": 10,
-            "area_size": [
-              10.0,
-              2.0,
-              10.0
-            ],
-            "is_avg_gen": false
-          },
-          "is_drag": false,
-          "emission_rate": 10.0,
+          "color_max": 4294967295,
+          "color_min": 4294769916,
           "drag_pow": 1.0,
+          "emission_rate": 8.0,
+          "is_bind": true,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
           "par_ini_dir": [
             0.0,
             0.0,
             0.0
-          ]
+          ],
+          "rot_max": 6.283185005187988,
+          "rot_min": 0.0,
+          "scale_max": 1.0,
+          "scale_min": 0.10000000149011612,
+          "shape": {
+            "alpha_seg": 10,
+            "area_size": [
+              5.0,
+              2.0,
+              5.0
+            ],
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
+          },
+          "speed": 0.0,
+          "ttl": 2.0
         },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": false,
         "facing": 0,
-        "particle_height": 0.30000001192092896,
-        "particle_width": 0.30000001192092896
-      },
-      "tex_file": "序列\\闪电31_4x4_01.dds",
-      "priority": 2
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 4,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 4,
-      "name": "Unnamed9",
-      "body": {
+        "init_random_texture": true,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": true,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": true,
-        "is_use_par_uv": true,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 1.0,
+        "particle_width": 1.0,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": false,
         "tail_lines": [
           "AffectorCount: 4",
           "CtrlType: 106",
@@ -1024,83 +1067,83 @@
           "CtrlMethodCount: 0"
         ],
         "three_d_particle": false,
+        "z_offset": null
+      },
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "Unnamed9",
+      "priority": 2,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 4,
+      "tex_file": "序列\\紫色粒子收缩爆炸4x4_td.dds",
+      "tex_interval": 50,
+      "tex_row": 4,
+      "tile_mode": 0,
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
+      "body": {
         "emitter": {
           "acc": 0.0,
-          "scale_max": 1.0,
-          "color_min": 4294769916,
           "acc_dir": [
             0.0,
             0.0,
             -1.0
           ],
-          "ttl": 2.0,
           "angle": 0.0,
-          "scale_min": 0.10000000149011612,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
-          "color_max": 4294967295,
-          "rot_min": 0.0,
-          "rot_max": 6.283185005187988,
-          "is_bind": true,
-          "shape": {
-            "shape": "ellipsoid",
-            "alpha_seg": 10,
-            "beta_seg": 10,
-            "area_size": [
-              5.0,
-              2.0,
-              5.0
-            ],
-            "is_avg_gen": false
-          },
-          "is_drag": false,
-          "emission_rate": 8.0,
+          "color_max": 4286578943,
+          "color_min": 4286578943,
           "drag_pow": 1.0,
+          "emission_rate": 10.0,
+          "is_bind": true,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
           "par_ini_dir": [
             0.0,
             0.0,
             0.0
-          ]
+          ],
+          "rot_max": 6.283185005187988,
+          "rot_min": 0.0,
+          "scale_max": 1.0,
+          "scale_min": 0.10000000149011612,
+          "shape": {
+            "alpha_seg": 10,
+            "area_size": [
+              9.0,
+              2.0,
+              9.0
+            ],
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
+          },
+          "speed": 0.0,
+          "ttl": 2.0
         },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": false,
         "facing": 0,
-        "particle_height": 1.0,
-        "particle_width": 1.0
-      },
-      "tex_file": "序列\\紫色粒子收缩爆炸4x4_td.dds",
-      "priority": 2
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "Unnamed11",
-      "body": {
+        "init_random_texture": false,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": false,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 1.0,
+        "particle_width": 1.0,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": false,
         "tail_lines": [
           "AffectorCount: 4",
           "CtrlType: 106",
@@ -1143,83 +1186,83 @@
           "CtrlMethodCount: 0"
         ],
         "three_d_particle": false,
+        "z_offset": null
+      },
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "Unnamed11",
+      "priority": 2,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "纹理\\纹理_00197.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
+      "body": {
         "emitter": {
           "acc": 0.0,
-          "scale_max": 1.0,
-          "color_min": 4286578943,
           "acc_dir": [
             0.0,
             0.0,
             -1.0
           ],
-          "ttl": 2.0,
-          "angle": 0.0,
-          "scale_min": 0.10000000149011612,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
+          "angle": 0.5235990285873413,
           "color_max": 4286578943,
-          "rot_min": 0.0,
-          "rot_max": 6.283185005187988,
-          "is_bind": true,
-          "shape": {
-            "shape": "ellipsoid",
-            "alpha_seg": 10,
-            "beta_seg": 10,
-            "area_size": [
-              9.0,
-              2.0,
-              9.0
-            ],
-            "is_avg_gen": false
-          },
-          "is_drag": false,
-          "emission_rate": 10.0,
+          "color_min": 4286611711,
           "drag_pow": 1.0,
+          "emission_rate": 20.0,
+          "is_bind": false,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
           "par_ini_dir": [
             0.0,
             0.0,
             0.0
-          ]
+          ],
+          "rot_max": 6.283185005187988,
+          "rot_min": 0.0,
+          "scale_max": 1.0,
+          "scale_min": 0.5,
+          "shape": {
+            "alpha_seg": 10,
+            "area_size": [
+              10.0,
+              10.0,
+              0.5
+            ],
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
+          },
+          "speed": 0.0,
+          "ttl": 2.0
         },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": false,
         "facing": 0,
-        "particle_height": 1.0,
-        "particle_width": 1.0
-      },
-      "tex_file": "纹理\\纹理_00197.dds",
-      "priority": 2
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "Unnamed13",
-      "body": {
+        "init_random_texture": true,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": true,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": true,
-        "is_use_par_uv": true,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 1.0,
+        "particle_width": 1.399999976158142,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": false,
         "tail_lines": [
           "AffectorCount: 2",
           "CtrlType: 108",
@@ -1250,83 +1293,75 @@
           "CtrlMethodCount: 0"
         ],
         "three_d_particle": false,
+        "z_offset": null
+      },
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "Unnamed13",
+      "priority": 2,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "纹理\\纹理_00205.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
+      "body": {
         "emitter": {
           "acc": 0.0,
-          "scale_max": 1.0,
-          "color_min": 4286611711,
           "acc_dir": [
             0.0,
             0.0,
             -1.0
           ],
-          "ttl": 2.0,
-          "angle": 0.5235990285873413,
-          "scale_min": 0.5,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
-          "color_max": 4286578943,
-          "rot_min": 0.0,
-          "rot_max": 6.283185005187988,
-          "is_bind": false,
-          "shape": {
-            "shape": "ellipsoid",
-            "alpha_seg": 10,
-            "beta_seg": 10,
-            "area_size": [
-              10.0,
-              10.0,
-              0.5
-            ],
-            "is_avg_gen": false
-          },
-          "is_drag": false,
-          "emission_rate": 20.0,
+          "angle": 0.0,
+          "color_max": 4278190080,
+          "color_min": 4278190080,
           "drag_pow": 1.0,
+          "emission_rate": 7.0,
+          "is_bind": true,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
           "par_ini_dir": [
             0.0,
             0.0,
             0.0
-          ]
+          ],
+          "rot_max": 6.283185005187988,
+          "rot_min": 0.0,
+          "scale_max": 3.0,
+          "scale_min": 1.0,
+          "shape": {
+            "shape": "point"
+          },
+          "speed": 0.0,
+          "ttl": 1.5
         },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": false,
         "facing": 0,
-        "particle_height": 1.0,
-        "particle_width": 1.399999976158142
-      },
-      "tex_file": "纹理\\纹理_00205.dds",
-      "priority": 2
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 120,
-      "tex_col": 1,
-      "name": "Unnamed17",
-      "body": {
+        "init_random_texture": false,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": false,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 2.5,
+        "particle_width": 2.5,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": false,
         "tail_lines": [
           "AffectorCount: 2",
           "CtrlType: 106",
@@ -1357,75 +1392,83 @@
           "CtrlMethodCount: 0"
         ],
         "three_d_particle": true,
+        "z_offset": null
+      },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed17",
+      "priority": 4,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "光晕\\093光晕.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 120,
+      "z_enable": 1
+    },
+    {
+      "body": {
         "emitter": {
           "acc": 0.0,
-          "scale_max": 3.0,
-          "color_min": 4278190080,
           "acc_dir": [
             0.0,
             0.0,
             -1.0
           ],
-          "ttl": 1.5,
           "angle": 0.0,
-          "scale_min": 1.0,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
-          "color_max": 4278190080,
-          "rot_min": 0.0,
-          "rot_max": 6.283185005187988,
-          "is_bind": true,
-          "shape": {
-            "shape": "point"
-          },
-          "is_drag": false,
-          "emission_rate": 7.0,
+          "color_max": 4282384512,
+          "color_min": 4286185716,
           "drag_pow": 1.0,
+          "emission_rate": 10.0,
+          "is_bind": true,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
           "par_ini_dir": [
             0.0,
             0.0,
             0.0
-          ]
+          ],
+          "rot_max": 6.283185005187988,
+          "rot_min": 0.0,
+          "scale_max": 1.0,
+          "scale_min": 0.5,
+          "shape": {
+            "alpha_seg": 10,
+            "area_size": [
+              8.0,
+              2.0,
+              8.0
+            ],
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
+          },
+          "speed": 0.0,
+          "ttl": 2.0
         },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": false,
         "facing": 0,
-        "particle_height": 2.5,
-        "particle_width": 2.5
-      },
-      "tex_file": "光晕\\093光晕.dds",
-      "priority": 4
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "Unnamed18",
-      "body": {
+        "init_random_texture": false,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": false,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 1.5,
+        "particle_width": 1.5,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": false,
         "tail_lines": [
           "AffectorCount: 4",
           "CtrlType: 106",
@@ -1468,83 +1511,83 @@
           "CtrlMethodCount: 0"
         ],
         "three_d_particle": false,
+        "z_offset": null
+      },
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "Unnamed18",
+      "priority": 2,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "烟火\\Effects_Textures_576-1.bmp",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
+      "body": {
         "emitter": {
           "acc": 0.0,
-          "scale_max": 1.0,
-          "color_min": 4286185716,
           "acc_dir": [
             0.0,
             0.0,
             -1.0
           ],
-          "ttl": 2.0,
           "angle": 0.0,
-          "scale_min": 0.5,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
-          "color_max": 4282384512,
-          "rot_min": 0.0,
-          "rot_max": 6.283185005187988,
-          "is_bind": true,
-          "shape": {
-            "shape": "ellipsoid",
-            "alpha_seg": 10,
-            "beta_seg": 10,
-            "area_size": [
-              8.0,
-              2.0,
-              8.0
-            ],
-            "is_avg_gen": false
-          },
-          "is_drag": false,
-          "emission_rate": 10.0,
+          "color_max": 4284678342,
+          "color_min": 4282384512,
           "drag_pow": 1.0,
+          "emission_rate": 13.0,
+          "is_bind": true,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
           "par_ini_dir": [
             0.0,
             0.0,
             0.0
-          ]
+          ],
+          "rot_max": 6.283185005187988,
+          "rot_min": 0.0,
+          "scale_max": 1.0,
+          "scale_min": 0.5,
+          "shape": {
+            "alpha_seg": 10,
+            "area_size": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
+          },
+          "speed": 0.0,
+          "ttl": 2.0
         },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": false,
         "facing": 0,
-        "particle_height": 1.5,
-        "particle_width": 1.5
-      },
-      "tex_file": "烟火\\Effects_Textures_576-1.bmp",
-      "priority": 2
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "Unnamed20",
-      "body": {
+        "init_random_texture": false,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": false,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 3.0,
+        "particle_width": 3.0,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": false,
         "tail_lines": [
           "AffectorCount: 4",
           "CtrlType: 106",
@@ -1587,76 +1630,31 @@
           "CtrlMethodCount: 0"
         ],
         "three_d_particle": true,
-        "emitter": {
-          "acc": 0.0,
-          "scale_max": 1.0,
-          "color_min": 4282384512,
-          "acc_dir": [
-            0.0,
-            0.0,
-            -1.0
-          ],
-          "ttl": 2.0,
-          "angle": 0.0,
-          "scale_min": 0.5,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
-          "color_max": 4284678342,
-          "rot_min": 0.0,
-          "rot_max": 6.283185005187988,
-          "is_bind": true,
-          "shape": {
-            "shape": "ellipsoid",
-            "alpha_seg": 10,
-            "beta_seg": 10,
-            "area_size": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "is_avg_gen": false
-          },
-          "is_drag": false,
-          "emission_rate": 13.0,
-          "drag_pow": 1.0,
-          "par_ini_dir": [
-            0.0,
-            0.0,
-            0.0
-          ]
-        },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": false,
-        "facing": 0,
-        "particle_height": 3.0,
-        "particle_width": 3.0
+        "z_offset": null
       },
-      "tex_file": "烟火\\002.tga",
-      "priority": 2
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed20",
+      "priority": 2,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "烟火\\002.tga",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 200,
-      "tex_col": 1,
-      "name": "Unnamed1",
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
       "body": {
+        "dummy_use_g_scale": true,
+        "gfx_path": "怪物\\技能\\鬼鲛近卫3_吟唱子效果.gfx",
         "kind": "container",
         "loop_flag": false,
-        "gfx_path": "怪物\\技能\\鬼鲛近卫3_吟唱子效果.gfx",
-        "play_speed": 1.0,
-        "dummy_use_g_scale": true,
         "out_color": false,
+        "play_speed": 1.0,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -1670,25 +1668,27 @@
           "CtrlMethodCount: 0"
         ]
       },
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "Unnamed1",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
       "tex_file": "",
-      "priority": 1
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 200,
+      "z_enable": 1
     }
   ],
-  "version": 103,
   "face_to_viewer": 0,
-  "default_scale": 0.5,
   "fade_by_dist": 0,
   "fade_end": 50.0,
+  "fade_start": 10.0,
   "play_speed": 0.8999999761581421,
-  "aabb_max": [
-    14.192137718200684,
-    14.192137718200684,
-    10.160308837890625
-  ],
-  "default_alpha": 1.0,
-  "aabb_min": [
-    -14.192137718200684,
-    -14.192137718200684,
-    -10.360861778259277
-  ]
+  "use_aabb": 1,
+  "version": 103
 }

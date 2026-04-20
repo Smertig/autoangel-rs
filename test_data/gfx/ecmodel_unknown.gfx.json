@@ -1,20 +1,18 @@
 {
-  "fade_start": 0.0,
-  "use_aabb": 0,
+  "aabb_max": [
+    1.133281946182251,
+    4.432633876800537,
+    1.6643320322036743
+  ],
+  "aabb_min": [
+    -1.2353839874267578,
+    -1.5282230377197266,
+    -3.3430309295654297
+  ],
+  "default_alpha": 1.0,
+  "default_scale": 1.0,
   "elements": [
     {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": -1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 230,
-      "tex_col": 1,
-      "name": "Unnamed28",
       "body": {
         "kind": "unknown",
         "lines": [
@@ -49,25 +47,27 @@
           "CtrlMethodCount: 0"
         ]
       },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed28",
+      "priority": 0,
+      "repeat_count": -1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
       "tex_file": "",
-      "priority": 0
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 230,
+      "z_enable": 1
     }
   ],
-  "version": 103,
   "face_to_viewer": 0,
-  "default_scale": 1.0,
   "fade_by_dist": 0,
   "fade_end": 0.0,
+  "fade_start": 0.0,
   "play_speed": 0.8500000238418579,
-  "aabb_max": [
-    1.133281946182251,
-    4.432633876800537,
-    1.6643320322036743
-  ],
-  "default_alpha": 1.0,
-  "aabb_min": [
-    -1.2353839874267578,
-    -1.5282230377197266,
-    -3.3430309295654297
-  ]
+  "use_aabb": 0,
+  "version": 103
 }

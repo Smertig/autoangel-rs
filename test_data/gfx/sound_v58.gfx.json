@@ -1,34 +1,77 @@
 {
-  "fade_start": 10.0,
-  "use_aabb": 1,
+  "aabb_max": [
+    0.5956060290336609,
+    0.5810570120811462,
+    0.5864660143852234
+  ],
+  "aabb_min": [
+    -0.6245880126953125,
+    -0.5879430174827576,
+    -0.554328978061676
+  ],
+  "default_alpha": 1.0,
+  "default_scale": 3.0,
   "elements": [
     {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "Unnamed11",
       "body": {
+        "emitter": {
+          "acc": 0.0,
+          "acc_dir": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "angle": 0.05235999822616577,
+          "color_max": 4294276106,
+          "color_min": 4294745166,
+          "drag_pow": 1.0,
+          "emission_rate": 40.0,
+          "is_bind": true,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
+          "par_ini_dir": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rot_max": 6.283185005187988,
+          "rot_min": 0.0,
+          "scale_max": 0.5,
+          "scale_min": 0.20000000298023224,
+          "shape": {
+            "alpha_seg": 10,
+            "area_size": [
+              0.25,
+              0.25,
+              0.25
+            ],
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
+          },
+          "speed": 0.0,
+          "ttl": 1.0
+        },
+        "facing": 0,
+        "init_random_texture": null,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": null,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 0.30000001192092896,
+        "particle_width": 0.30000001192092896,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": null,
         "tail_lines": [
           "AffectorCount: 2",
           "CtrlType: 106",
@@ -63,71 +106,40 @@
           "ColorDelta: 0, 0, 0, -500"
         ],
         "three_d_particle": false,
-        "emitter": {
-          "acc": 0.0,
-          "scale_max": 0.5,
-          "color_min": 4294745166,
-          "acc_dir": [
-            1.0,
-            0.0,
-            0.0
-          ],
-          "ttl": 1.0,
-          "angle": 0.05235999822616577,
-          "scale_min": 0.20000000298023224,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
-          "color_max": 4294276106,
-          "rot_min": 0.0,
-          "rot_max": 6.283185005187988,
-          "is_bind": true,
-          "shape": {
-            "shape": "ellipsoid",
-            "alpha_seg": 10,
-            "beta_seg": 10,
-            "area_size": [
-              0.25,
-              0.25,
-              0.25
-            ],
-            "is_avg_gen": false
-          },
-          "is_drag": false,
-          "emission_rate": 40.0,
-          "drag_pow": 1.0,
-          "par_ini_dir": [
-            0.0,
-            0.0,
-            0.0
-          ]
-        },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": null,
-        "facing": 0,
-        "particle_height": 0.30000001192092896,
-        "particle_width": 0.30000001192092896
+        "z_offset": null
       },
-      "tex_file": "烟火\\10.dds",
-      "priority": 3
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed11",
+      "priority": 3,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "烟火\\10.dds",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 101,
-      "tex_col": 1,
-      "name": "Unnamed2",
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
       "body": {
+        "grnd_norm_only": false,
+        "height": 0.5,
         "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.375,
+        "no_scale": [
+          false,
+          false
+        ],
+        "org_pt": [
+          0.5,
+          0.5
+        ],
+        "rot_from_view": false,
+        "surface_use_parent_dir": null,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -153,42 +165,42 @@
           "Persistence: 0.250000",
           "OctaveNum: 5"
         ],
+        "width": 0.5,
+        "yaw_effect": false,
+        "z_offset": 0.0
+      },
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "Unnamed2",
+      "priority": 3,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "图案\\光球1.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 101,
+      "z_enable": 1
+    },
+    {
+      "body": {
+        "grnd_norm_only": false,
+        "height": 0.5,
+        "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.375,
         "no_scale": [
           false,
           false
         ],
-        "match_surface": false,
-        "z_offset": 0.0,
-        "width": 0.5,
         "org_pt": [
           0.5,
           0.5
         ],
-        "surface_use_parent_dir": null,
-        "height": 0.5,
         "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.375,
-        "yaw_effect": false
-      },
-      "tex_file": "图案\\光球1.dds",
-      "priority": 3
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 101,
-      "tex_col": 1,
-      "name": "Unnamed3",
-      "body": {
-        "kind": "decal",
+        "surface_use_parent_dir": null,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 2",
@@ -221,48 +233,47 @@
           "EndTime: -1.000000",
           "ColorDelta: 0, 0, 0, -500"
         ],
-        "no_scale": [
-          false,
-          false
-        ],
-        "match_surface": false,
-        "z_offset": 0.0,
         "width": 0.5,
-        "org_pt": [
-          0.5,
-          0.5
-        ],
-        "surface_use_parent_dir": null,
-        "height": 0.5,
-        "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.375,
-        "yaw_effect": false
+        "yaw_effect": false,
+        "z_offset": 0.0
       },
-      "tex_file": "烟火\\huoqiu.dds",
-      "priority": 3
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed3",
+      "priority": 3,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "烟火\\huoqiu.dds",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": -1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 110,
-      "tex_col": 1,
-      "name": "Unnamed5",
+      "type_id": 101,
+      "z_enable": 1
+    },
+    {
       "body": {
+        "bind": true,
+        "enable_mat": false,
+        "enable_org_pos1": false,
+        "enable_org_pos2": false,
+        "face_camera": null,
         "kind": "trail",
         "org_pos1": [
           -0.10000000149011612,
           0.10000000149011612,
           0.0
         ],
-        "bind": true,
+        "org_pos2": [
+          0.0,
+          -0.10000000149011612,
+          0.0
+        ],
+        "perturb_mode": null,
+        "sample_freq": null,
+        "seg_life": 600,
+        "spline": null,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -281,45 +292,45 @@
           "Axis: 0.000000, 1.000000, 0.000000",
           "Vel: 5.235988",
           "Acc: 0.000000"
-        ],
-        "enable_mat": false,
-        "enable_org_pos2": false,
-        "perturb_mode": null,
-        "sample_freq": null,
-        "org_pos2": [
-          0.0,
-          -0.10000000149011612,
-          0.0
-        ],
-        "spline": null,
-        "seg_life": 600,
-        "enable_org_pos1": false,
-        "face_camera": null
+        ]
       },
-      "tex_file": "烟火\\fire2.dds",
-      "priority": 3
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed5",
+      "priority": 3,
+      "repeat_count": -1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "烟火\\fire2.dds",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": -1,
-      "z_enable": 1,
-      "tex_interval": 50,
       "type_id": 110,
-      "tex_col": 1,
-      "name": "Unnamed6",
+      "z_enable": 1
+    },
+    {
       "body": {
+        "bind": true,
+        "enable_mat": false,
+        "enable_org_pos1": false,
+        "enable_org_pos2": false,
+        "face_camera": null,
         "kind": "trail",
         "org_pos1": [
           -0.10000000149011612,
           0.0,
           0.10000000149011612
         ],
-        "bind": true,
+        "org_pos2": [
+          0.0,
+          0.0,
+          -0.10000000149011612
+        ],
+        "perturb_mode": null,
+        "sample_freq": null,
+        "seg_life": 600,
+        "spline": null,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -338,45 +349,45 @@
           "Axis: 0.000000, 0.000000, 1.000000",
           "Vel: 5.235988",
           "Acc: 0.000000"
-        ],
-        "enable_mat": false,
-        "enable_org_pos2": false,
-        "perturb_mode": null,
-        "sample_freq": null,
-        "org_pos2": [
-          0.0,
-          0.0,
-          -0.10000000149011612
-        ],
-        "spline": null,
-        "seg_life": 600,
-        "enable_org_pos1": false,
-        "face_camera": null
+        ]
       },
-      "tex_file": "烟火\\fire2.dds",
-      "priority": 3
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed6",
+      "priority": 3,
+      "repeat_count": -1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "烟火\\fire2.dds",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": -1,
-      "z_enable": 1,
-      "tex_interval": 50,
       "type_id": 110,
-      "tex_col": 1,
-      "name": "Unnamed7",
+      "z_enable": 1
+    },
+    {
       "body": {
+        "bind": true,
+        "enable_mat": false,
+        "enable_org_pos1": false,
+        "enable_org_pos2": false,
+        "face_camera": null,
         "kind": "trail",
         "org_pos1": [
           -0.10000000149011612,
           0.0,
           0.10000000149011612
         ],
-        "bind": true,
+        "org_pos2": [
+          0.0,
+          0.0,
+          -0.10000000149011612
+        ],
+        "perturb_mode": null,
+        "sample_freq": null,
+        "seg_life": 600,
+        "spline": null,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -395,51 +406,83 @@
           "Axis: 0.000000, 0.000000, 1.000000",
           "Vel: 5.235988",
           "Acc: 0.000000"
-        ],
-        "enable_mat": false,
-        "enable_org_pos2": false,
-        "perturb_mode": null,
-        "sample_freq": null,
-        "org_pos2": [
-          0.0,
-          0.0,
-          -0.10000000149011612
-        ],
-        "spline": null,
-        "seg_life": 600,
-        "enable_org_pos1": false,
-        "face_camera": null
+        ]
       },
-      "tex_file": "烟火\\fire2.dds",
-      "priority": 3
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed7",
+      "priority": 3,
+      "repeat_count": -1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "烟火\\fire2.dds",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "Unnamed8",
+      "type_id": 110,
+      "z_enable": 1
+    },
+    {
       "body": {
+        "emitter": {
+          "acc": 0.0,
+          "acc_dir": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "angle": 0.05235999822616577,
+          "color_max": 4294276106,
+          "color_min": 4294745166,
+          "drag_pow": 1.0,
+          "emission_rate": 150.0,
+          "is_bind": false,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
+          "par_ini_dir": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rot_max": 6.283185005187988,
+          "rot_min": 0.0,
+          "scale_max": 0.5,
+          "scale_min": 0.20000000298023224,
+          "shape": {
+            "alpha_seg": 10,
+            "area_size": [
+              0.20000000298023224,
+              0.20000000298023224,
+              0.20000000298023224
+            ],
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
+          },
+          "speed": 0.0,
+          "ttl": 1.5
+        },
+        "facing": 0,
+        "init_random_texture": null,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": null,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 1.7999999523162842,
+        "particle_width": 1.7999999523162842,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": null,
         "tail_lines": [
           "AffectorCount: 1",
           "CtrlType: 105",
@@ -470,71 +513,40 @@
           "ColorDelta: 0, 0, 0, -500"
         ],
         "three_d_particle": false,
-        "emitter": {
-          "acc": 0.0,
-          "scale_max": 0.5,
-          "color_min": 4294745166,
-          "acc_dir": [
-            1.0,
-            0.0,
-            0.0
-          ],
-          "ttl": 1.5,
-          "angle": 0.05235999822616577,
-          "scale_min": 0.20000000298023224,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
-          "color_max": 4294276106,
-          "rot_min": 0.0,
-          "rot_max": 6.283185005187988,
-          "is_bind": false,
-          "shape": {
-            "shape": "ellipsoid",
-            "alpha_seg": 10,
-            "beta_seg": 10,
-            "area_size": [
-              0.20000000298023224,
-              0.20000000298023224,
-              0.20000000298023224
-            ],
-            "is_avg_gen": false
-          },
-          "is_drag": false,
-          "emission_rate": 150.0,
-          "drag_pow": 1.0,
-          "par_ini_dir": [
-            0.0,
-            0.0,
-            0.0
-          ]
-        },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": null,
-        "facing": 0,
-        "particle_height": 1.7999999523162842,
-        "particle_width": 1.7999999523162842
+        "z_offset": null
       },
-      "tex_file": "烟火\\1.dds",
-      "priority": 3
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed8",
+      "priority": 3,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "烟火\\1.dds",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 101,
-      "tex_col": 1,
-      "name": "Unnamed9",
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
       "body": {
+        "grnd_norm_only": false,
+        "height": 0.5,
         "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.375,
+        "no_scale": [
+          false,
+          false
+        ],
+        "org_pt": [
+          0.5,
+          0.5
+        ],
+        "rot_from_view": false,
+        "surface_use_parent_dir": null,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -560,48 +572,47 @@
           "Persistence: 0.250000",
           "OctaveNum: 5"
         ],
-        "no_scale": [
-          false,
-          false
-        ],
-        "match_surface": false,
-        "z_offset": 0.0,
         "width": 0.5,
-        "org_pt": [
-          0.5,
-          0.5
-        ],
-        "surface_use_parent_dir": null,
-        "height": 0.5,
-        "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.375,
-        "yaw_effect": false
+        "yaw_effect": false,
+        "z_offset": 0.0
       },
-      "tex_file": "图案\\光球1.dds",
-      "priority": 3
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed9",
+      "priority": 3,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "图案\\光球1.dds",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": -1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 110,
-      "tex_col": 1,
-      "name": "Unnamed12",
+      "type_id": 101,
+      "z_enable": 1
+    },
+    {
       "body": {
+        "bind": false,
+        "enable_mat": false,
+        "enable_org_pos1": false,
+        "enable_org_pos2": false,
+        "face_camera": null,
         "kind": "trail",
         "org_pos1": [
           -0.10000000149011612,
           0.10000000149011612,
           0.0
         ],
-        "bind": false,
+        "org_pos2": [
+          0.0,
+          -0.10000000149011612,
+          0.0
+        ],
+        "perturb_mode": null,
+        "sample_freq": null,
+        "seg_life": 600,
+        "spline": null,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -620,45 +631,45 @@
           "Axis: 0.000000, 1.000000, 0.000000",
           "Vel: 5.235988",
           "Acc: 0.000000"
-        ],
-        "enable_mat": false,
-        "enable_org_pos2": false,
-        "perturb_mode": null,
-        "sample_freq": null,
-        "org_pos2": [
-          0.0,
-          -0.10000000149011612,
-          0.0
-        ],
-        "spline": null,
-        "seg_life": 600,
-        "enable_org_pos1": false,
-        "face_camera": null
+        ]
       },
-      "tex_file": "烟火\\fire2.dds",
-      "priority": 3
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed12",
+      "priority": 3,
+      "repeat_count": -1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "烟火\\fire2.dds",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": -1,
-      "z_enable": 1,
-      "tex_interval": 50,
       "type_id": 110,
-      "tex_col": 1,
-      "name": "Unnamed13",
+      "z_enable": 1
+    },
+    {
       "body": {
+        "bind": false,
+        "enable_mat": false,
+        "enable_org_pos1": false,
+        "enable_org_pos2": false,
+        "face_camera": null,
         "kind": "trail",
         "org_pos1": [
           -0.10000000149011612,
           0.0,
           0.10000000149011612
         ],
-        "bind": false,
+        "org_pos2": [
+          0.0,
+          0.0,
+          -0.10000000149011612
+        ],
+        "perturb_mode": null,
+        "sample_freq": null,
+        "seg_life": 600,
+        "spline": null,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -677,45 +688,45 @@
           "Axis: 0.000000, 0.000000, 1.000000",
           "Vel: 5.235988",
           "Acc: 0.000000"
-        ],
-        "enable_mat": false,
-        "enable_org_pos2": false,
-        "perturb_mode": null,
-        "sample_freq": null,
-        "org_pos2": [
-          0.0,
-          0.0,
-          -0.10000000149011612
-        ],
-        "spline": null,
-        "seg_life": 600,
-        "enable_org_pos1": false,
-        "face_camera": null
+        ]
       },
-      "tex_file": "烟火\\fire2.dds",
-      "priority": 3
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed13",
+      "priority": 3,
+      "repeat_count": -1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "烟火\\fire2.dds",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": -1,
-      "z_enable": 1,
-      "tex_interval": 50,
       "type_id": 110,
-      "tex_col": 1,
-      "name": "Unnamed14",
+      "z_enable": 1
+    },
+    {
       "body": {
+        "bind": false,
+        "enable_mat": false,
+        "enable_org_pos1": false,
+        "enable_org_pos2": false,
+        "face_camera": null,
         "kind": "trail",
         "org_pos1": [
           -0.10000000149011612,
           0.0,
           0.10000000149011612
         ],
-        "bind": false,
+        "org_pos2": [
+          0.0,
+          0.0,
+          -0.10000000149011612
+        ],
+        "perturb_mode": null,
+        "sample_freq": null,
+        "seg_life": 600,
+        "spline": null,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -734,45 +745,45 @@
           "Axis: 0.000000, 0.000000, 1.000000",
           "Vel: 5.235988",
           "Acc: 0.000000"
-        ],
-        "enable_mat": false,
-        "enable_org_pos2": false,
-        "perturb_mode": null,
-        "sample_freq": null,
-        "org_pos2": [
-          0.0,
-          0.0,
-          -0.10000000149011612
-        ],
-        "spline": null,
-        "seg_life": 600,
-        "enable_org_pos1": false,
-        "face_camera": null
+        ]
       },
-      "tex_file": "烟火\\fire2.dds",
-      "priority": 3
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed14",
+      "priority": 3,
+      "repeat_count": -1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "烟火\\fire2.dds",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": -1,
-      "z_enable": 1,
-      "tex_interval": 50,
       "type_id": 110,
-      "tex_col": 1,
-      "name": "Unnamed15",
+      "z_enable": 1
+    },
+    {
       "body": {
+        "bind": true,
+        "enable_mat": false,
+        "enable_org_pos1": false,
+        "enable_org_pos2": false,
+        "face_camera": null,
         "kind": "trail",
         "org_pos1": [
           -0.10000000149011612,
           0.10000000149011612,
           0.0
         ],
-        "bind": true,
+        "org_pos2": [
+          0.0,
+          -0.10000000149011612,
+          0.0
+        ],
+        "perturb_mode": null,
+        "sample_freq": null,
+        "seg_life": 600,
+        "spline": null,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -791,45 +802,45 @@
           "Axis: 0.000000, 1.000000, 0.000000",
           "Vel: 5.235988",
           "Acc: 0.000000"
-        ],
-        "enable_mat": false,
-        "enable_org_pos2": false,
-        "perturb_mode": null,
-        "sample_freq": null,
-        "org_pos2": [
-          0.0,
-          -0.10000000149011612,
-          0.0
-        ],
-        "spline": null,
-        "seg_life": 600,
-        "enable_org_pos1": false,
-        "face_camera": null
+        ]
       },
-      "tex_file": "烟火\\fire2.dds",
-      "priority": 3
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed15",
+      "priority": 3,
+      "repeat_count": -1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "烟火\\fire2.dds",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": -1,
-      "z_enable": 1,
-      "tex_interval": 50,
       "type_id": 110,
-      "tex_col": 1,
-      "name": "Unnamed17",
+      "z_enable": 1
+    },
+    {
       "body": {
+        "bind": true,
+        "enable_mat": false,
+        "enable_org_pos1": false,
+        "enable_org_pos2": false,
+        "face_camera": null,
         "kind": "trail",
         "org_pos1": [
           -0.10000000149011612,
           0.0,
           0.10000000149011612
         ],
-        "bind": true,
+        "org_pos2": [
+          0.0,
+          0.0,
+          -0.10000000149011612
+        ],
+        "perturb_mode": null,
+        "sample_freq": null,
+        "seg_life": 600,
+        "spline": null,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -848,39 +859,46 @@
           "Axis: 0.000000, 0.000000, 1.000000",
           "Vel: 5.235988",
           "Acc: 0.000000"
-        ],
-        "enable_mat": false,
-        "enable_org_pos2": false,
-        "perturb_mode": null,
-        "sample_freq": null,
-        "org_pos2": [
-          0.0,
-          0.0,
-          -0.10000000149011612
-        ],
-        "spline": null,
-        "seg_life": 600,
-        "enable_org_pos1": false,
-        "face_camera": null
+        ]
       },
-      "tex_file": "烟火\\fire2.dds",
-      "priority": 3
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed17",
+      "priority": 3,
+      "repeat_count": -1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "烟火\\fire2.dds",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 170,
-      "tex_col": 1,
-      "name": "Unnamed1",
+      "type_id": 110,
+      "z_enable": 1
+    },
+    {
       "body": {
+        "audio_event": null,
         "kind": "sound",
+        "param_info": {
+          "absolute_volume": null,
+          "fix_speed": null,
+          "force_2d": false,
+          "group": null,
+          "is_loop": false,
+          "max_dist": 25.0,
+          "min_dist": 5.0,
+          "percent_start": null,
+          "pitch_max": null,
+          "pitch_min": null,
+          "silent_header": null,
+          "sound_ver": 1,
+          "volume_max": 100,
+          "volume_min": 100
+        },
+        "paths": [
+          "Monster\\技能\\飞火球.wav"
+        ],
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -892,58 +910,83 @@
           "Direction: 0.000000, 0.000000, 0.000000, 1.000000",
           "Rad_2D: 0.000000",
           "CtrlMethodCount: 0"
-        ],
-        "audio_event": null,
-        "paths": [
-          "Monster\\技能\\飞火球.wav"
-        ],
-        "param_info": {
-          "force_2d": false,
-          "absolute_volume": null,
-          "sound_ver": 1,
-          "volume_min": 100,
-          "pitch_max": null,
-          "max_dist": 25.0,
-          "min_dist": 5.0,
-          "percent_start": null,
-          "volume_max": 100,
-          "pitch_min": null,
-          "fix_speed": null,
-          "silent_header": null,
-          "is_loop": false,
-          "group": null
-        }
+        ]
       },
-      "tex_file": "",
-      "priority": 4
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed1",
+      "priority": 4,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "Unnamed10",
+      "type_id": 170,
+      "z_enable": 1
+    },
+    {
       "body": {
+        "emitter": {
+          "acc": 0.0,
+          "acc_dir": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "angle": 0.0,
+          "color_max": 4294967295,
+          "color_min": 4294967295,
+          "drag_pow": 1.0,
+          "emission_rate": 10.0,
+          "is_bind": true,
+          "is_drag": false,
+          "is_surface": true,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
+          "par_ini_dir": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rot_max": 0.0,
+          "rot_min": 0.0,
+          "scale_max": 1.0,
+          "scale_min": 1.0,
+          "shape": {
+            "alpha_seg": 10,
+            "area_size": [
+              0.20000000298023224,
+              0.20000000298023224,
+              0.20000000298023224
+            ],
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
+          },
+          "speed": 0.0,
+          "ttl": 1.0
+        },
+        "facing": 0,
+        "init_random_texture": null,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": 5,
-        "is_start_on_grnd": false,
-        "init_random_texture": null,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 4.0,
+        "particle_width": 4.0,
+        "quota": 5,
+        "scale_no_off": false,
+        "stop_emit_when_fade": null,
         "tail_lines": [
           "AffectorCount: 1",
           "CtrlType: 102",
@@ -981,77 +1024,45 @@
           "ColorDelta: 0, 0, 0, -500"
         ],
         "three_d_particle": false,
-        "emitter": {
-          "acc": 0.0,
-          "scale_max": 1.0,
-          "color_min": 4294967295,
-          "acc_dir": [
-            0.0,
-            0.0,
-            -1.0
-          ],
-          "ttl": 1.0,
-          "angle": 0.0,
-          "scale_min": 1.0,
-          "is_use_hsv_interp": false,
-          "is_surface": true,
-          "speed": 0.0,
-          "par_acc": 0.0,
-          "color_max": 4294967295,
-          "rot_min": 0.0,
-          "rot_max": 0.0,
-          "is_bind": true,
-          "shape": {
-            "shape": "ellipsoid",
-            "alpha_seg": 10,
-            "beta_seg": 10,
-            "area_size": [
-              0.20000000298023224,
-              0.20000000298023224,
-              0.20000000298023224
-            ],
-            "is_avg_gen": false
-          },
-          "is_drag": false,
-          "emission_rate": 10.0,
-          "drag_pow": 1.0,
-          "par_ini_dir": [
-            0.0,
-            0.0,
-            0.0
-          ]
-        },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": null,
-        "facing": 0,
-        "particle_height": 4.0,
-        "particle_width": 4.0
+        "z_offset": null
       },
-      "tex_file": "",
-      "priority": 4
-    },
-    {
-      "is_dummy": 1,
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "Unnamed10",
+      "priority": 4,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 110,
-      "tex_col": 1,
-      "name": "Unnamed16",
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
       "body": {
+        "bind": false,
+        "enable_mat": false,
+        "enable_org_pos1": false,
+        "enable_org_pos2": false,
+        "face_camera": null,
         "kind": "trail",
         "org_pos1": [
           -0.4000000059604645,
           -0.4000000059604645,
           -0.20000000298023224
         ],
-        "bind": false,
+        "org_pos2": [
+          0.30000001192092896,
+          0.30000001192092896,
+          0.30000001192092896
+        ],
+        "perturb_mode": null,
+        "sample_freq": null,
+        "seg_life": 2000,
+        "spline": null,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -1079,40 +1090,29 @@
           "Axis: 0.000000, 1.000000, 0.000000",
           "Vel: 6.283185",
           "Acc: 0.000000"
-        ],
-        "enable_mat": false,
-        "enable_org_pos2": false,
-        "perturb_mode": null,
-        "sample_freq": null,
-        "org_pos2": [
-          0.30000001192092896,
-          0.30000001192092896,
-          0.30000001192092896
-        ],
-        "spline": null,
-        "seg_life": 2000,
-        "enable_org_pos1": false,
-        "face_camera": null
+        ]
       },
+      "dest_blend": 2,
+      "is_dummy": 1,
+      "name": "Unnamed16",
+      "priority": 4,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
       "tex_file": "闪电\\Lightning3RedUpright.dds",
-      "priority": 4
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 110,
+      "z_enable": 1
     }
   ],
-  "version": 81,
   "face_to_viewer": 0,
-  "default_scale": 3.0,
   "fade_by_dist": 0,
   "fade_end": 50.0,
+  "fade_start": 10.0,
   "play_speed": 0.800000011920929,
-  "aabb_max": [
-    0.5956060290336609,
-    0.5810570120811462,
-    0.5864660143852234
-  ],
-  "default_alpha": 1.0,
-  "aabb_min": [
-    -0.6245880126953125,
-    -0.5879430174827576,
-    -0.554328978061676
-  ]
+  "use_aabb": 1,
+  "version": 81
 }

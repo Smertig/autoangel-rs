@@ -1,34 +1,77 @@
 {
-  "fade_start": 0.0,
-  "use_aabb": 1,
+  "aabb_max": [
+    13.378732681274414,
+    13.378732681274414,
+    10.0
+  ],
+  "aabb_min": [
+    -13.378732681274414,
+    -13.378732681274414,
+    -10.0
+  ],
+  "default_alpha": 1.0,
+  "default_scale": 0.699999988079071,
   "elements": [
     {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "切线1",
       "body": {
+        "emitter": {
+          "acc": 0.0,
+          "acc_dir": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "angle": 0.0,
+          "color_max": 4294967295,
+          "color_min": 4294967295,
+          "drag_pow": 1.0,
+          "emission_rate": 2.200000047683716,
+          "is_bind": true,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
+          "par_ini_dir": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rot_max": 0.0,
+          "rot_min": 0.0,
+          "scale_max": 2.0,
+          "scale_min": 1.0,
+          "shape": {
+            "alpha_seg": 10,
+            "area_size": [
+              1.0,
+              0.5,
+              0.800000011920929
+            ],
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
+          },
+          "speed": 0.0,
+          "ttl": 1.5
+        },
+        "facing": 0,
+        "init_random_texture": false,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": false,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 1.0,
+        "particle_width": 1.0,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": false,
         "tail_lines": [
           "AffectorCount: 5",
           "CtrlType: 102",
@@ -82,83 +125,83 @@
           "Acc: 0.000000"
         ],
         "three_d_particle": false,
+        "z_offset": null
+      },
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "切线1",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "物体\\光箭33.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
+      "body": {
         "emitter": {
           "acc": 0.0,
-          "scale_max": 2.0,
-          "color_min": 4294967295,
           "acc_dir": [
             0.0,
             0.0,
             -1.0
           ],
-          "ttl": 1.5,
           "angle": 0.0,
-          "scale_min": 1.0,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
           "color_max": 4294967295,
-          "rot_min": 0.0,
-          "rot_max": 0.0,
+          "color_min": 4294967295,
+          "drag_pow": 1.0,
+          "emission_rate": 2.200000047683716,
           "is_bind": true,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
+          "par_ini_dir": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rot_max": 0.0,
+          "rot_min": 0.0,
+          "scale_max": 2.0,
+          "scale_min": 1.0,
           "shape": {
-            "shape": "ellipsoid",
             "alpha_seg": 10,
-            "beta_seg": 10,
             "area_size": [
               1.0,
               0.5,
               0.800000011920929
             ],
-            "is_avg_gen": false
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
           },
-          "is_drag": false,
-          "emission_rate": 2.200000047683716,
-          "drag_pow": 1.0,
-          "par_ini_dir": [
-            0.0,
-            0.0,
-            0.0
-          ]
+          "speed": 0.0,
+          "ttl": 1.5
         },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": false,
         "facing": 0,
-        "particle_height": 1.0,
-        "particle_width": 1.0
-      },
-      "tex_file": "物体\\光箭33.dds",
-      "priority": 1
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "切线2",
-      "body": {
+        "init_random_texture": false,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": false,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 1.0,
+        "particle_width": 1.0,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": false,
         "tail_lines": [
           "AffectorCount: 5",
           "CtrlType: 102",
@@ -212,83 +255,83 @@
           "Acc: 0.000000"
         ],
         "three_d_particle": false,
+        "z_offset": null
+      },
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "切线2",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "物体\\光箭33.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
+      "body": {
         "emitter": {
           "acc": 0.0,
-          "scale_max": 2.0,
-          "color_min": 4294967295,
           "acc_dir": [
             0.0,
             0.0,
             -1.0
           ],
-          "ttl": 1.5,
           "angle": 0.0,
-          "scale_min": 1.0,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
           "color_max": 4294967295,
-          "rot_min": 0.0,
-          "rot_max": 0.0,
-          "is_bind": true,
-          "shape": {
-            "shape": "ellipsoid",
-            "alpha_seg": 10,
-            "beta_seg": 10,
-            "area_size": [
-              1.0,
-              0.5,
-              0.800000011920929
-            ],
-            "is_avg_gen": false
-          },
-          "is_drag": false,
-          "emission_rate": 2.200000047683716,
+          "color_min": 4294967295,
           "drag_pow": 1.0,
+          "emission_rate": 2.200000047683716,
+          "is_bind": true,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
           "par_ini_dir": [
             0.0,
             0.0,
             0.0
-          ]
+          ],
+          "rot_max": 0.0,
+          "rot_min": 0.0,
+          "scale_max": 2.0,
+          "scale_min": 1.0,
+          "shape": {
+            "alpha_seg": 10,
+            "area_size": [
+              0.5,
+              0.5,
+              0.5
+            ],
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
+          },
+          "speed": 0.0,
+          "ttl": 1.5
         },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": false,
         "facing": 0,
-        "particle_height": 1.0,
-        "particle_width": 1.0
-      },
-      "tex_file": "物体\\光箭33.dds",
-      "priority": 1
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "切线3",
-      "body": {
+        "init_random_texture": false,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": false,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 1.0,
+        "particle_width": 1.0,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": false,
         "tail_lines": [
           "AffectorCount: 5",
           "CtrlType: 102",
@@ -342,83 +385,83 @@
           "Acc: 0.000000"
         ],
         "three_d_particle": false,
+        "z_offset": null
+      },
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "切线3",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "物体\\光箭33.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
+      "body": {
         "emitter": {
           "acc": 0.0,
-          "scale_max": 2.0,
-          "color_min": 4294967295,
           "acc_dir": [
             0.0,
             0.0,
             -1.0
           ],
-          "ttl": 1.5,
           "angle": 0.0,
-          "scale_min": 1.0,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
           "color_max": 4294967295,
-          "rot_min": 0.0,
-          "rot_max": 0.0,
-          "is_bind": true,
-          "shape": {
-            "shape": "ellipsoid",
-            "alpha_seg": 10,
-            "beta_seg": 10,
-            "area_size": [
-              0.5,
-              0.5,
-              0.5
-            ],
-            "is_avg_gen": false
-          },
-          "is_drag": false,
-          "emission_rate": 2.200000047683716,
+          "color_min": 4294967295,
           "drag_pow": 1.0,
+          "emission_rate": 2.200000047683716,
+          "is_bind": true,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
           "par_ini_dir": [
             0.0,
             0.0,
             0.0
-          ]
+          ],
+          "rot_max": 0.0,
+          "rot_min": 0.0,
+          "scale_max": 2.0,
+          "scale_min": 1.0,
+          "shape": {
+            "alpha_seg": 10,
+            "area_size": [
+              1.0,
+              0.5,
+              0.800000011920929
+            ],
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
+          },
+          "speed": 0.0,
+          "ttl": 1.5
         },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": false,
         "facing": 0,
-        "particle_height": 1.0,
-        "particle_width": 1.0
-      },
-      "tex_file": "物体\\光箭33.dds",
-      "priority": 1
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "切线4",
-      "body": {
+        "init_random_texture": false,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": false,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 1.0,
+        "particle_width": 1.0,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": false,
         "tail_lines": [
           "AffectorCount: 5",
           "CtrlType: 102",
@@ -472,83 +515,83 @@
           "Acc: 0.000000"
         ],
         "three_d_particle": false,
+        "z_offset": null
+      },
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "切线4",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "物体\\光箭33.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
+      "body": {
         "emitter": {
           "acc": 0.0,
-          "scale_max": 2.0,
-          "color_min": 4294967295,
           "acc_dir": [
             0.0,
             0.0,
-            -1.0
+            0.0
           ],
-          "ttl": 1.5,
           "angle": 0.0,
-          "scale_min": 1.0,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
           "color_max": 4294967295,
-          "rot_min": 0.0,
-          "rot_max": 0.0,
-          "is_bind": true,
-          "shape": {
-            "shape": "ellipsoid",
-            "alpha_seg": 10,
-            "beta_seg": 10,
-            "area_size": [
-              1.0,
-              0.5,
-              0.800000011920929
-            ],
-            "is_avg_gen": false
-          },
-          "is_drag": false,
-          "emission_rate": 2.200000047683716,
+          "color_min": 4294967295,
           "drag_pow": 1.0,
+          "emission_rate": 22.0,
+          "is_bind": true,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
           "par_ini_dir": [
             0.0,
             0.0,
             0.0
-          ]
+          ],
+          "rot_max": 0.0,
+          "rot_min": 0.0,
+          "scale_max": 1.100000023841858,
+          "scale_min": 0.6499999761581421,
+          "shape": {
+            "alpha_seg": 10,
+            "area_size": [
+              2.0,
+              0.0,
+              2.0
+            ],
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
+          },
+          "speed": 0.0,
+          "ttl": 0.5
         },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": false,
         "facing": 0,
-        "particle_height": 1.0,
-        "particle_width": 1.0
-      },
-      "tex_file": "物体\\光箭33.dds",
-      "priority": 1
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "Unnamed9",
-      "body": {
+        "init_random_texture": false,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": false,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 0.10000000149011612,
+        "particle_width": 0.800000011920929,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": false,
         "tail_lines": [
           "AffectorCount: 3",
           "CtrlType: 106",
@@ -581,86 +624,47 @@
           "CtrlMethodCount: 0"
         ],
         "three_d_particle": false,
-        "emitter": {
-          "acc": 0.0,
-          "scale_max": 1.100000023841858,
-          "color_min": 4294967295,
-          "acc_dir": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "ttl": 0.5,
-          "angle": 0.0,
-          "scale_min": 0.6499999761581421,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
-          "color_max": 4294967295,
-          "rot_min": 0.0,
-          "rot_max": 0.0,
-          "is_bind": true,
-          "shape": {
-            "shape": "ellipsoid",
-            "alpha_seg": 10,
-            "beta_seg": 10,
-            "area_size": [
-              2.0,
-              0.0,
-              2.0
-            ],
-            "is_avg_gen": false
-          },
-          "is_drag": false,
-          "emission_rate": 22.0,
-          "drag_pow": 1.0,
-          "par_ini_dir": [
-            0.0,
-            0.0,
-            0.0
-          ]
-        },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": false,
-        "facing": 0,
-        "particle_height": 0.10000000149011612,
-        "particle_width": 0.800000011920929
+        "z_offset": null
       },
-      "tex_file": "物体\\光箭33.dds",
-      "priority": 1
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed9",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "物体\\光箭33.dds",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 130,
-      "tex_col": 1,
-      "name": "蓝色光源",
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
       "body": {
-        "kind": "light",
-        "specular": 4278190080,
-        "range": 10.0,
-        "attenuation1": 0.10000000149011612,
         "ambient": 4278190080,
-        "theta": 0.0,
-        "light_type": 1,
+        "attenuation0": 0.0,
+        "attenuation1": 0.10000000149011612,
         "attenuation2": 0.0,
+        "diffuse": 4278208234,
         "direction": [
           0.0,
           0.0,
           1.0
         ],
-        "diffuse": 4278208234,
-        "phi": 0.0,
+        "falloff": 0.0,
         "inner_use": null,
+        "kind": "light",
+        "light_type": 1,
+        "phi": 0.0,
+        "position": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "range": 10.0,
+        "specular": 4278190080,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -673,44 +677,83 @@
           "Rad_2D: 0.000000",
           "CtrlMethodCount: 0"
         ],
-        "attenuation0": 0.0,
-        "falloff": 0.0,
-        "position": [
-          0.0,
-          0.0,
-          0.0
-        ]
+        "theta": 0.0
       },
-      "tex_file": "",
-      "priority": 4
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "蓝色光源",
+      "priority": 4,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "Unnamed2",
+      "type_id": 130,
+      "z_enable": 1
+    },
+    {
       "body": {
+        "emitter": {
+          "acc": 0.0,
+          "acc_dir": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "angle": 0.0,
+          "color_max": 4287160831,
+          "color_min": 4286906367,
+          "drag_pow": 1.0,
+          "emission_rate": 22.0,
+          "is_bind": true,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
+          "par_ini_dir": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rot_max": 0.0,
+          "rot_min": 0.0,
+          "scale_max": 1.0,
+          "scale_min": 1.0,
+          "shape": {
+            "alpha_seg": 10,
+            "area_size": [
+              0.019999999552965164,
+              0.019999999552965164,
+              0.019999999552965164
+            ],
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
+          },
+          "speed": 0.0,
+          "ttl": 1.0
+        },
+        "facing": 1,
+        "init_random_texture": false,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": false,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 0.05999999865889549,
+        "particle_width": 0.4000000059604645,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": false,
         "tail_lines": [
           "AffectorCount: 1",
           "CtrlType: 102",
@@ -739,83 +782,83 @@
           "Acc: 0.000000"
         ],
         "three_d_particle": true,
+        "z_offset": null
+      },
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "Unnamed2",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "闪电\\条形闪电.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
+      "body": {
         "emitter": {
           "acc": 0.0,
-          "scale_max": 1.0,
-          "color_min": 4286906367,
           "acc_dir": [
             0.0,
             0.0,
             -1.0
           ],
-          "ttl": 1.0,
           "angle": 0.0,
-          "scale_min": 1.0,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
           "color_max": 4287160831,
-          "rot_min": 0.0,
-          "rot_max": 0.0,
+          "color_min": 4286906367,
+          "drag_pow": 1.0,
+          "emission_rate": 22.0,
           "is_bind": true,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
+          "par_ini_dir": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rot_max": 0.0,
+          "rot_min": 0.0,
+          "scale_max": 1.0,
+          "scale_min": 1.0,
           "shape": {
-            "shape": "ellipsoid",
             "alpha_seg": 10,
-            "beta_seg": 10,
             "area_size": [
               0.019999999552965164,
               0.019999999552965164,
               0.019999999552965164
             ],
-            "is_avg_gen": false
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
           },
-          "is_drag": false,
-          "emission_rate": 22.0,
-          "drag_pow": 1.0,
-          "par_ini_dir": [
-            0.0,
-            0.0,
-            0.0
-          ]
+          "speed": 0.0,
+          "ttl": 1.0
         },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": false,
         "facing": 1,
-        "particle_height": 0.05999999865889549,
-        "particle_width": 0.4000000059604645
-      },
-      "tex_file": "闪电\\条形闪电.dds",
-      "priority": 1
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "Unnamed8",
-      "body": {
+        "init_random_texture": false,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": false,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 0.05999999865889549,
+        "particle_width": 0.33000001311302185,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": false,
         "tail_lines": [
           "AffectorCount: 1",
           "CtrlType: 102",
@@ -844,83 +887,83 @@
           "Acc: 0.000000"
         ],
         "three_d_particle": true,
+        "z_offset": null
+      },
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "Unnamed8",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "闪电\\条形闪电.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
+      "body": {
         "emitter": {
           "acc": 0.0,
-          "scale_max": 1.0,
-          "color_min": 4286906367,
           "acc_dir": [
             0.0,
             0.0,
             -1.0
           ],
-          "ttl": 1.0,
           "angle": 0.0,
-          "scale_min": 1.0,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
           "color_max": 4287160831,
-          "rot_min": 0.0,
-          "rot_max": 0.0,
-          "is_bind": true,
-          "shape": {
-            "shape": "ellipsoid",
-            "alpha_seg": 10,
-            "beta_seg": 10,
-            "area_size": [
-              0.019999999552965164,
-              0.019999999552965164,
-              0.019999999552965164
-            ],
-            "is_avg_gen": false
-          },
-          "is_drag": false,
-          "emission_rate": 22.0,
+          "color_min": 4286906367,
           "drag_pow": 1.0,
+          "emission_rate": 33.0,
+          "is_bind": true,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
           "par_ini_dir": [
             0.0,
             0.0,
             0.0
-          ]
+          ],
+          "rot_max": 0.0,
+          "rot_min": 0.0,
+          "scale_max": 1.0,
+          "scale_min": 1.0,
+          "shape": {
+            "alpha_seg": 10,
+            "area_size": [
+              0.10000000149011612,
+              0.10000000149011612,
+              0.10000000149011612
+            ],
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
+          },
+          "speed": 0.0,
+          "ttl": 1.0
         },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": false,
         "facing": 1,
-        "particle_height": 0.05999999865889549,
-        "particle_width": 0.33000001311302185
-      },
-      "tex_file": "闪电\\条形闪电.dds",
-      "priority": 1
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "Unnamed10",
-      "body": {
+        "init_random_texture": false,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": false,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 0.10000000149011612,
+        "particle_width": 0.5,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": false,
         "tail_lines": [
           "AffectorCount: 1",
           "CtrlType: 102",
@@ -949,83 +992,83 @@
           "Acc: 0.000000"
         ],
         "three_d_particle": true,
+        "z_offset": null
+      },
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "Unnamed10",
+      "priority": 2,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "粒子\\guangdian.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
+      "body": {
         "emitter": {
           "acc": 0.0,
-          "scale_max": 1.0,
-          "color_min": 4286906367,
           "acc_dir": [
             0.0,
             0.0,
             -1.0
           ],
-          "ttl": 1.0,
           "angle": 0.0,
-          "scale_min": 1.0,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
           "color_max": 4287160831,
-          "rot_min": 0.0,
-          "rot_max": 0.0,
+          "color_min": 4286906367,
+          "drag_pow": 1.0,
+          "emission_rate": 33.0,
           "is_bind": true,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
+          "par_ini_dir": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rot_max": 0.0,
+          "rot_min": 0.0,
+          "scale_max": 1.0,
+          "scale_min": 1.0,
           "shape": {
-            "shape": "ellipsoid",
             "alpha_seg": 10,
-            "beta_seg": 10,
             "area_size": [
               0.10000000149011612,
               0.10000000149011612,
               0.10000000149011612
             ],
-            "is_avg_gen": false
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
           },
-          "is_drag": false,
-          "emission_rate": 33.0,
-          "drag_pow": 1.0,
-          "par_ini_dir": [
-            0.0,
-            0.0,
-            0.0
-          ]
+          "speed": 0.0,
+          "ttl": 1.0
         },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": false,
         "facing": 1,
-        "particle_height": 0.10000000149011612,
-        "particle_width": 0.5
-      },
-      "tex_file": "粒子\\guangdian.dds",
-      "priority": 2
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "Unnamed11",
-      "body": {
+        "init_random_texture": false,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": false,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 0.10000000149011612,
+        "particle_width": 0.5,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": false,
         "tail_lines": [
           "AffectorCount: 1",
           "CtrlType: 102",
@@ -1054,76 +1097,31 @@
           "Acc: 0.000000"
         ],
         "three_d_particle": true,
-        "emitter": {
-          "acc": 0.0,
-          "scale_max": 1.0,
-          "color_min": 4286906367,
-          "acc_dir": [
-            0.0,
-            0.0,
-            -1.0
-          ],
-          "ttl": 1.0,
-          "angle": 0.0,
-          "scale_min": 1.0,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
-          "color_max": 4287160831,
-          "rot_min": 0.0,
-          "rot_max": 0.0,
-          "is_bind": true,
-          "shape": {
-            "shape": "ellipsoid",
-            "alpha_seg": 10,
-            "beta_seg": 10,
-            "area_size": [
-              0.10000000149011612,
-              0.10000000149011612,
-              0.10000000149011612
-            ],
-            "is_avg_gen": false
-          },
-          "is_drag": false,
-          "emission_rate": 33.0,
-          "drag_pow": 1.0,
-          "par_ini_dir": [
-            0.0,
-            0.0,
-            0.0
-          ]
-        },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": false,
-        "facing": 1,
-        "particle_height": 0.10000000149011612,
-        "particle_width": 0.5
+        "z_offset": null
       },
-      "tex_file": "粒子\\guangdian.dds",
-      "priority": 2
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed11",
+      "priority": 2,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "粒子\\guangdian.dds",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 200,
-      "tex_col": 1,
-      "name": "Unnamed14",
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
       "body": {
+        "dummy_use_g_scale": true,
+        "gfx_path": "人物\\技能\\羽芒\\箭阵吟唱_子01.gfx",
         "kind": "container",
         "loop_flag": false,
-        "gfx_path": "人物\\技能\\羽芒\\箭阵吟唱_子01.gfx",
-        "play_speed": 1.0,
-        "dummy_use_g_scale": true,
         "out_color": false,
+        "play_speed": 1.0,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -1137,29 +1135,29 @@
           "CtrlMethodCount: 0"
         ]
       },
-      "tex_file": "",
-      "priority": 1
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed14",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
       "type_id": 200,
-      "tex_col": 1,
-      "name": "Unnamed15",
+      "z_enable": 1
+    },
+    {
       "body": {
+        "dummy_use_g_scale": true,
+        "gfx_path": "人物\\技能\\羽芒\\箭阵吟唱_子02.gfx",
         "kind": "container",
         "loop_flag": false,
-        "gfx_path": "人物\\技能\\羽芒\\箭阵吟唱_子02.gfx",
-        "play_speed": 1.0,
-        "dummy_use_g_scale": true,
         "out_color": false,
+        "play_speed": 1.0,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -1205,29 +1203,29 @@
           "ScaleChage: -1.000000, 0.010000, 9999.000000"
         ]
       },
-      "tex_file": "",
-      "priority": 1
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed15",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
       "type_id": 200,
-      "tex_col": 1,
-      "name": "Unnamed16",
+      "z_enable": 1
+    },
+    {
       "body": {
+        "dummy_use_g_scale": true,
+        "gfx_path": "人物\\技能\\羽芒\\箭阵吟唱_子02.gfx",
         "kind": "container",
         "loop_flag": false,
-        "gfx_path": "人物\\技能\\羽芒\\箭阵吟唱_子02.gfx",
-        "play_speed": 1.0,
-        "dummy_use_g_scale": true,
         "out_color": false,
+        "play_speed": 1.0,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -1273,29 +1271,29 @@
           "ScaleChage: -1.000000, 0.010000, 9999.000000"
         ]
       },
-      "tex_file": "",
-      "priority": 1
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed16",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
       "type_id": 200,
-      "tex_col": 1,
-      "name": "Unnamed17",
+      "z_enable": 1
+    },
+    {
       "body": {
+        "dummy_use_g_scale": true,
+        "gfx_path": "人物\\技能\\羽芒\\箭阵吟唱_子02.gfx",
         "kind": "container",
         "loop_flag": false,
-        "gfx_path": "人物\\技能\\羽芒\\箭阵吟唱_子02.gfx",
-        "play_speed": 1.0,
-        "dummy_use_g_scale": true,
         "out_color": false,
+        "play_speed": 1.0,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -1341,29 +1339,29 @@
           "ScaleChage: -1.000000, 0.010000, 9999.000000"
         ]
       },
-      "tex_file": "",
-      "priority": 1
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed17",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
       "type_id": 200,
-      "tex_col": 1,
-      "name": "Unnamed18",
+      "z_enable": 1
+    },
+    {
       "body": {
+        "dummy_use_g_scale": true,
+        "gfx_path": "人物\\技能\\羽芒\\箭阵吟唱_子02.gfx",
         "kind": "container",
         "loop_flag": false,
-        "gfx_path": "人物\\技能\\羽芒\\箭阵吟唱_子02.gfx",
-        "play_speed": 1.0,
-        "dummy_use_g_scale": true,
         "out_color": false,
+        "play_speed": 1.0,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -1409,108 +1407,153 @@
           "ScaleChage: -1.000000, 0.010000, 9999.000000"
         ]
       },
-      "tex_file": "",
-      "priority": 1
-    },
-    {
-      "is_dummy": 1,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
       "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 200,
-      "tex_col": 1,
-      "name": "Unnamed19",
-      "body": {
-        "kind": "container",
-        "loop_flag": false,
-        "gfx_path": "人物\\技能\\羽芒\\箭阵吟唱_子02.gfx",
-        "play_speed": 1.0,
-        "dummy_use_g_scale": true,
-        "out_color": false,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: 2000",
-          "Position: 0.000000, 0.000000, 0.000000",
-          "Color: -1",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.000000, 1.000000",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ]
-      },
-      "tex_file": "",
-      "priority": 1
-    },
-    {
-      "is_dummy": 1,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 200,
-      "tex_col": 1,
-      "name": "Unnamed20",
-      "body": {
-        "kind": "container",
-        "loop_flag": false,
-        "gfx_path": "人物\\技能\\羽芒\\箭阵吟唱_箭子01.gfx",
-        "play_speed": 1.0,
-        "dummy_use_g_scale": true,
-        "out_color": false,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: 2000",
-          "Position: 0.000000, 0.000000, 0.000000",
-          "Color: -1",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.000000, 1.000000",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ]
-      },
-      "tex_file": "",
-      "priority": 1
-    },
-    {
       "is_dummy": 0,
+      "name": "Unnamed18",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "Unnamed21",
+      "type_id": 200,
+      "z_enable": 1
+    },
+    {
       "body": {
+        "dummy_use_g_scale": true,
+        "gfx_path": "人物\\技能\\羽芒\\箭阵吟唱_子02.gfx",
+        "kind": "container",
+        "loop_flag": false,
+        "out_color": false,
+        "play_speed": 1.0,
+        "tail_lines": [
+          "StartTime: 0",
+          "KEYPOINTCOUNT: 1",
+          "InterpolateMode: 0",
+          "TimeSpan: 2000",
+          "Position: 0.000000, 0.000000, 0.000000",
+          "Color: -1",
+          "Scale: 1.000000",
+          "Direction: 0.000000, 0.000000, 0.000000, 1.000000",
+          "Rad_2D: 0.000000",
+          "CtrlMethodCount: 0"
+        ]
+      },
+      "dest_blend": 2,
+      "is_dummy": 1,
+      "name": "Unnamed19",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 200,
+      "z_enable": 1
+    },
+    {
+      "body": {
+        "dummy_use_g_scale": true,
+        "gfx_path": "人物\\技能\\羽芒\\箭阵吟唱_箭子01.gfx",
+        "kind": "container",
+        "loop_flag": false,
+        "out_color": false,
+        "play_speed": 1.0,
+        "tail_lines": [
+          "StartTime: 0",
+          "KEYPOINTCOUNT: 1",
+          "InterpolateMode: 0",
+          "TimeSpan: 2000",
+          "Position: 0.000000, 0.000000, 0.000000",
+          "Color: -1",
+          "Scale: 1.000000",
+          "Direction: 0.000000, 0.000000, 0.000000, 1.000000",
+          "Rad_2D: 0.000000",
+          "CtrlMethodCount: 0"
+        ]
+      },
+      "dest_blend": 2,
+      "is_dummy": 1,
+      "name": "Unnamed20",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 200,
+      "z_enable": 1
+    },
+    {
+      "body": {
+        "emitter": {
+          "acc": 0.0,
+          "acc_dir": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "angle": 0.0,
+          "color_max": 4294967295,
+          "color_min": 4294967295,
+          "drag_pow": 1.0,
+          "emission_rate": 5.0,
+          "is_bind": true,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
+          "par_ini_dir": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rot_max": 0.0,
+          "rot_min": 0.0,
+          "scale_max": 2.5,
+          "scale_min": 1.0,
+          "shape": {
+            "alpha_seg": 10,
+            "area_size": [
+              2.200000047683716,
+              0.0,
+              2.200000047683716
+            ],
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
+          },
+          "speed": 0.0,
+          "ttl": 1.0
+        },
+        "facing": 0,
+        "init_random_texture": false,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": false,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 1.0,
+        "particle_width": 1.0,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": false,
         "tail_lines": [
           "AffectorCount: 4",
           "CtrlType: 106",
@@ -1548,76 +1591,31 @@
           "CtrlMethodCount: 0"
         ],
         "three_d_particle": false,
-        "emitter": {
-          "acc": 0.0,
-          "scale_max": 2.5,
-          "color_min": 4294967295,
-          "acc_dir": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "ttl": 1.0,
-          "angle": 0.0,
-          "scale_min": 1.0,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
-          "color_max": 4294967295,
-          "rot_min": 0.0,
-          "rot_max": 0.0,
-          "is_bind": true,
-          "shape": {
-            "shape": "ellipsoid",
-            "alpha_seg": 10,
-            "beta_seg": 10,
-            "area_size": [
-              2.200000047683716,
-              0.0,
-              2.200000047683716
-            ],
-            "is_avg_gen": false
-          },
-          "is_drag": false,
-          "emission_rate": 5.0,
-          "drag_pow": 1.0,
-          "par_ini_dir": [
-            0.0,
-            0.0,
-            0.0
-          ]
-        },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": false,
-        "facing": 0,
-        "particle_height": 1.0,
-        "particle_width": 1.0
+        "z_offset": null
       },
-      "tex_file": "物体\\光箭33.dds",
-      "priority": 1
-    },
-    {
-      "is_dummy": 1,
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "Unnamed21",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "物体\\光箭33.dds",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 200,
-      "tex_col": 1,
-      "name": "Unnamed22",
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
       "body": {
+        "dummy_use_g_scale": true,
+        "gfx_path": "人物\\技能\\羽芒\\箭阵吟唱_子03.gfx",
         "kind": "container",
         "loop_flag": false,
-        "gfx_path": "人物\\技能\\羽芒\\箭阵吟唱_子03.gfx",
-        "play_speed": 1.0,
-        "dummy_use_g_scale": true,
         "out_color": false,
+        "play_speed": 1.0,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -1631,36 +1629,81 @@
           "CtrlMethodCount: 0"
         ]
       },
-      "tex_file": "",
-      "priority": 1
-    },
-    {
-      "is_dummy": 0,
+      "dest_blend": 2,
+      "is_dummy": 1,
+      "name": "Unnamed22",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "Unnamed23",
+      "type_id": 200,
+      "z_enable": 1
+    },
+    {
       "body": {
+        "emitter": {
+          "acc": 0.0,
+          "acc_dir": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "angle": 0.0,
+          "color_max": 4294967295,
+          "color_min": 4294967295,
+          "drag_pow": 1.0,
+          "emission_rate": 5.0,
+          "is_bind": true,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
+          "par_ini_dir": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rot_max": 0.0,
+          "rot_min": 0.0,
+          "scale_max": 2.5,
+          "scale_min": 1.5,
+          "shape": {
+            "alpha_seg": 10,
+            "area_size": [
+              2.5999999046325684,
+              0.0,
+              2.5999999046325684
+            ],
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
+          },
+          "speed": 0.0,
+          "ttl": 1.0
+        },
+        "facing": 0,
+        "init_random_texture": false,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": false,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 1.0,
+        "particle_width": 1.0,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": false,
         "tail_lines": [
           "AffectorCount: 5",
           "CtrlType: 106",
@@ -1704,71 +1747,40 @@
           "CtrlMethodCount: 0"
         ],
         "three_d_particle": false,
-        "emitter": {
-          "acc": 0.0,
-          "scale_max": 2.5,
-          "color_min": 4294967295,
-          "acc_dir": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "ttl": 1.0,
-          "angle": 0.0,
-          "scale_min": 1.5,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
-          "color_max": 4294967295,
-          "rot_min": 0.0,
-          "rot_max": 0.0,
-          "is_bind": true,
-          "shape": {
-            "shape": "ellipsoid",
-            "alpha_seg": 10,
-            "beta_seg": 10,
-            "area_size": [
-              2.5999999046325684,
-              0.0,
-              2.5999999046325684
-            ],
-            "is_avg_gen": false
-          },
-          "is_drag": false,
-          "emission_rate": 5.0,
-          "drag_pow": 1.0,
-          "par_ini_dir": [
-            0.0,
-            0.0,
-            0.0
-          ]
-        },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": false,
-        "facing": 0,
-        "particle_height": 1.0,
-        "particle_width": 1.0
+        "z_offset": null
       },
-      "tex_file": "物体\\光箭33.dds",
-      "priority": 1
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed23",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "物体\\光箭33.dds",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
-      "name": "Unnamed1",
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
       "body": {
+        "grnd_norm_only": false,
+        "height": 10.0,
         "kind": "decal",
+        "match_surface": false,
+        "max_extent": 15.0,
+        "no_scale": [
+          false,
+          false
+        ],
+        "org_pt": [
+          0.5,
+          0.5
+        ],
+        "rot_from_view": false,
+        "surface_use_parent_dir": false,
         "tail_lines": [
           "StartTime: 500",
           "KEYPOINTCOUNT: 1",
@@ -1789,43 +1801,31 @@
           "TimeSpan: 600.000000",
           "AlphaOnly: 1"
         ],
-        "no_scale": [
-          false,
-          false
-        ],
-        "match_surface": false,
-        "z_offset": 0.0,
         "width": 10.0,
-        "org_pt": [
-          0.5,
-          0.5
-        ],
-        "surface_use_parent_dir": false,
-        "height": 10.0,
-        "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 15.0,
-        "yaw_effect": false
+        "yaw_effect": false,
+        "z_offset": 0.0
       },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed1",
+      "priority": 4,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
       "tex_file": "粒子\\26通道.dds",
-      "priority": 4
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 100,
+      "z_enable": 1
     }
   ],
-  "version": 103,
   "face_to_viewer": 0,
-  "default_scale": 0.699999988079071,
   "fade_by_dist": 0,
   "fade_end": 0.0,
+  "fade_start": 0.0,
   "play_speed": 1.0,
-  "aabb_max": [
-    13.378732681274414,
-    13.378732681274414,
-    10.0
-  ],
-  "default_alpha": 1.0,
-  "aabb_min": [
-    -13.378732681274414,
-    -13.378732681274414,
-    -10.0
-  ]
+  "use_aabb": 1,
+  "version": 103
 }

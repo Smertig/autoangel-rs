@@ -36,7 +36,10 @@ def main() -> None:
         gfx = autoangel.read_gfx(gfx_path.read_bytes())
         dumped = to_dict(gfx)
         out = gfx_path.with_suffix(".gfx.json")
-        out.write_text(json.dumps(dumped, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        out.write_text(
+            json.dumps(dumped, indent=2, ensure_ascii=False, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
         print(f"[update-goldens] {out.name}  ({len(gfx.elements)} element(s))")
 
 
