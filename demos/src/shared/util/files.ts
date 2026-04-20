@@ -9,7 +9,7 @@ export const TEXT_EXTENSIONS = new Set([
   '.hlsl', '.fx', '.fxh',
 ]);
 
-export const MODEL_EXTENSIONS = new Set(['.ecm', '.ski', '.stck']);
+export const MODEL_EXTENSIONS = new Set(['.ecm', '.smd', '.ski', '.stck']);
 
 export const BINARY_EXTENSIONS = new Set([
   '.ani', '.dat', '.data', '.db', '.bin',

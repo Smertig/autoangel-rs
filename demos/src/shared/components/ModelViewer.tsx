@@ -2,8 +2,21 @@ import { useEffect, useRef, useState } from 'react';
 import type { AutoangelModule, TrackSet } from '../../types/autoangel';
 import { detectEncoding, decodeText } from '@shared/util/encoding';
 import { hexDumpRows } from '@shared/util/hex';
+import { getExtension } from '@shared/util/files';
 import { resolvePath, textureCandidates, collectSkinPaths, tryLoadSki, discoverStckPaths } from '@shared/util/model-dependencies';
 import styles from './ModelViewer.module.css';
+
+type GetFile = (path: string) => Promise<Uint8Array | null>;
+
+function withWarnOnThrow(getFileRaw: GetFile): GetFile {
+  return async (path) => {
+    try { return await getFileRaw(path); }
+    catch (e: unknown) {
+      console.warn('[model] getFile failed:', path, e instanceof Error ? e.message : e);
+      return null;
+    }
+  };
+}
 
 // "站立" (standing) — preferred default animation clip
 const PREFERRED_ANIM_HINT = '\u7AD9\u7ACB';
@@ -1128,29 +1141,31 @@ function buildHexDump(data: Uint8Array): HTMLPreElement {
 
 // ── Public render functions ──
 
-async function renderModel(
+/**
+ * Shared renderer driven by an already-fetched SMD. Both the ECM path
+ * (wraps this after parsing ECM) and the raw-SMD path (calls this directly)
+ * end up here. `opts` carries ECM-specific enhancements — when absent, we
+ * render a plain SMD: skeleton + meshes + any STCK animations found, with
+ * no bone scaling, no additional skin variants, and no animation events.
+ */
+async function renderFromSmd(
   container: HTMLElement,
   wasm: AutoangelModule,
-  getFileRaw: (path: string) => Promise<Uint8Array | null>,
-  ecmPath: string,
-  listFiles?: (prefix: string) => string[],
+  getFile: GetFile,
+  smdPath: string,
+  smdData: Uint8Array,
+  listFiles: ((prefix: string) => string[]) | undefined,
+  opts?: {
+    additionalSkins?: { paths: string[]; basePath: string };
+    boneScaleInfo?: { entries: BoneScaleData[]; isNew: boolean; baseBone: string | undefined };
+    eventMapFromAnimNames?: (animNames: string[]) => Map<string, AnimEvent[]> | undefined;
+    source?: { data: Uint8Array; ext: string };
+  },
 ): Promise<void> {
-  await ensureThree();
-  const getFile = async (path: string) => {
-    try { return await getFileRaw(path); }
-    catch (e: unknown) { console.warn('[model] getFile failed:', path, e instanceof Error ? e.message : e); return null; }
-  };
-
-  const ecmData = await getFile(ecmPath);
-  if (!ecmData) throw new Error(`File not found: ${ecmPath}`);
-  using ecm = wasm.EcmModel.parse(ecmData);
-
-  const smdPath = resolvePath(ecm.skinModelPath, ecmPath);
-  const smdData = await getFile(smdPath);
   let smdSkinPaths: string[] = [];
   let smdTcksDir: string | undefined;
   let skelData: { skeleton: any; bones: any[]; boneNames: string[]; tmpRoot: any; footOffset: number } | null = null;
-  if (smdData) {
+  {
     using smd = wasm.SmdModel.parse(smdData);
     smdSkinPaths = smd.skinPaths || [];
     smdTcksDir = smd.tcksDir;
@@ -1172,19 +1187,23 @@ async function renderModel(
     }
   }
 
-  // Apply bone scaling from ECM (must happen before ecm.free)
-  if (skelData && ecm.boneScaleCount > 0) {
-    const boneScaleInfo = readEcmBoneScales(ecm);
-    applyBoneScales(skelData.bones, boneScaleInfo.entries, boneScaleInfo.isNew);
+  if (skelData && opts?.boneScaleInfo) {
+    const { entries, isNew, baseBone } = opts.boneScaleInfo;
+    applyBoneScales(skelData.bones, entries, isNew);
     skelData.footOffset = computeFootOffset(
-      skelData.bones, skelData.boneNames, boneScaleInfo.baseBone, skelData.tmpRoot,
+      skelData.bones, skelData.boneNames, baseBone, skelData.tmpRoot,
     );
-    console.log(`[model] Bone scaling: ${boneScaleInfo.entries.length} entries, footOffset=${skelData.footOffset.toFixed(3)}`);
+    console.log(`[model] Bone scaling: ${entries.length} entries, footOffset=${skelData.footOffset.toFixed(3)}`);
   }
 
-  const allSkinPaths = collectSkinPaths(smdPath, smdSkinPaths, ecmPath, ecm.additionalSkins || []);
+  const allSkinPaths = collectSkinPaths(
+    smdPath,
+    smdSkinPaths,
+    opts?.additionalSkins?.basePath ?? smdPath,
+    opts?.additionalSkins?.paths ?? [],
+  );
   if (allSkinPaths.length === 0) {
-    throw new Error('No skin files referenced by ECM or SMD');
+    throw new Error('No skin files referenced by SMD');
   }
 
   // Discover animation file paths (no parsing yet — clips are loaded lazily on click)
@@ -1216,8 +1235,11 @@ async function renderModel(
     };
   }
 
-  // Build event map while ecm is still alive (before using-scope cleanup)
-  const animEventMap = animNames.length > 0 ? buildAnimEventMap(ecm, animNames) : undefined;
+  // Callers that own an ECM handle can build an event map here while the
+  // `using ecm` scope is still alive.
+  const animEventMap = animNames.length > 0
+    ? opts?.eventMapFromAnimNames?.(animNames)
+    : undefined;
 
   // Only use skinning if we have animations to play
   const useSkinning = animNames.length > 0 && skelData != null;
@@ -1278,22 +1300,67 @@ async function renderModel(
     }
   }
 
-  mountScene(container, group, totalStats, ecmData, '.ecm',
+  mountScene(
+    container, group, totalStats,
+    opts?.source?.data ?? smdData,
+    opts?.source?.ext ?? '.smd',
     animNames, loadClip, initialClip, skelData?.skeleton, animEventMap,
   );
+}
+
+async function renderModel(
+  container: HTMLElement,
+  wasm: AutoangelModule,
+  getFileRaw: GetFile,
+  ecmPath: string,
+  listFiles?: (prefix: string) => string[],
+): Promise<void> {
+  await ensureThree();
+  const getFile = withWarnOnThrow(getFileRaw);
+
+  const ecmData = await getFile(ecmPath);
+  if (!ecmData) throw new Error(`File not found: ${ecmPath}`);
+  using ecm = wasm.EcmModel.parse(ecmData);
+
+  const smdPath = resolvePath(ecm.skinModelPath, ecmPath);
+  const smdData = await getFile(smdPath);
+  if (!smdData) throw new Error(`File not found: ${smdPath}`);
+
+  // Snapshot additionalSkins before ecm's `using` scope frees it.
+  const additionalSkinPaths = [...(ecm.additionalSkins || [])];
+
+  await renderFromSmd(container, wasm, getFile, smdPath, smdData, listFiles, {
+    additionalSkins: { paths: additionalSkinPaths, basePath: ecmPath },
+    boneScaleInfo: ecm.boneScaleCount > 0 ? readEcmBoneScales(ecm) : undefined,
+    eventMapFromAnimNames: (animNames) => buildAnimEventMap(ecm, animNames),
+    source: { data: ecmData, ext: '.ecm' },
+  });
+}
+
+async function renderSmd(
+  container: HTMLElement,
+  wasm: AutoangelModule,
+  getFileRaw: GetFile,
+  smdPath: string,
+  listFiles?: (prefix: string) => string[],
+): Promise<void> {
+  await ensureThree();
+  const getFile = withWarnOnThrow(getFileRaw);
+
+  const smdData = await getFile(smdPath);
+  if (!smdData) throw new Error(`File not found: ${smdPath}`);
+
+  await renderFromSmd(container, wasm, getFile, smdPath, smdData, listFiles);
 }
 
 async function renderSkin(
   container: HTMLElement,
   wasm: AutoangelModule,
-  getFileRaw: (path: string) => Promise<Uint8Array | null>,
+  getFileRaw: GetFile,
   skiPath: string,
 ): Promise<void> {
   await ensureThree();
-  const getFile = async (path: string) => {
-    try { return await getFileRaw(path); }
-    catch (e: unknown) { console.warn('[model] getFile failed:', path, e instanceof Error ? e.message : e); return null; }
-  };
+  const getFile = withWarnOnThrow(getFileRaw);
 
   const skiData = await getFile(skiPath);
   if (!skiData) throw new Error(`File not found: ${skiPath}`);
@@ -1351,9 +1418,11 @@ export function ModelViewer({ path, wasm, getData, listFiles }: ModelViewerProps
     setError(null);
     currentPathRef.current = path;
 
-    const ext = path.slice(path.lastIndexOf('.')).toLowerCase();
+    const ext = getExtension(path);
     const renderFn = ext === '.ecm'
       ? () => renderModel(container, wasm, getData, path, listFiles)
+      : ext === '.smd'
+      ? () => renderSmd(container, wasm, getData, path, listFiles)
       : ext === '.stck'
       ? () => renderTrackSet(container, wasm, getData, path)
       : () => renderSkin(container, wasm, getData, path);
