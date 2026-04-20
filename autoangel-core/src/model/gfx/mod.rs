@@ -1,22 +1,11 @@
+use crate::model::bindable;
 use crate::model::common::decode_gbk;
 use crate::model::text_reader::{LineValue, Lines};
 use eyre::{Result, eyre};
 use macro_rules_attribute::apply;
 
-/// Conditional derive bundle applied via `#[apply(bindable)]` to every
-/// GFX data type that crosses the Rust ↔ Python / TypeScript boundary.
-macro_rules! bindable {
-    ($($item:tt)*) => {
-        #[cfg_attr(
-            feature = "python",
-            ::pyo3::pyclass(get_all, frozen, module = "autoangel", from_py_object)
-        )]
-        #[cfg_attr(feature = "wasm", derive(::tsify_next::Tsify))]
-        #[cfg_attr(feature = "wasm", tsify(into_wasm_abi))]
-        #[derive(Debug, Clone, ::serde::Serialize)]
-        $($item)*
-    };
-}
+mod keypoint;
+pub use keypoint::{KeyPoint, KeyPointSet, KpController, KpCtrlBody};
 
 /// Type identifier for a GFX element.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -758,7 +747,7 @@ fn collect_tail(r: &mut Lines<'_>) -> Result<Vec<String>> {
 /// Parse a decimal u32 value. The engine emits D3D color DWORDs via
 /// `sscanf("%d", ...)` — when the high bit is set the text is signed, so we
 /// parse as `i32` first and reinterpret the bits.
-fn read_u32_dec(r: &mut Lines<'_>, key: &str) -> Result<u32> {
+pub(super) fn read_u32_dec(r: &mut Lines<'_>, key: &str) -> Result<u32> {
     let v = r.read_value(key)?;
     v.parse::<i32>()
         .map(|n| n as u32)
@@ -1117,7 +1106,7 @@ fn checked_grid_size(w: i32, h: i32) -> Result<usize> {
 /// same guard as `checked_grid_size` but for the common "read N, allocate
 /// Vec of that size, loop N times" pattern. `MAX` is deliberately
 /// generous so any realistic engine output still parses.
-fn checked_count(n: i32, what: &str) -> Result<usize> {
+pub(super) fn checked_count(n: i32, what: &str) -> Result<usize> {
     const MAX: i32 = 1_000_000;
     if !(0..=MAX).contains(&n) {
         eyre::bail!("{what} out of range: {n}");
@@ -1165,7 +1154,7 @@ fn read_grid_animation_keys(r: &mut Lines<'_>, vert_count: usize) -> Result<Vec<
     Ok(keys)
 }
 
-fn parse_noise_ctrl(r: &mut Lines<'_>) -> Result<NoiseCtrl> {
+pub(super) fn parse_noise_ctrl(r: &mut Lines<'_>) -> Result<NoiseCtrl> {
     Ok(NoiseCtrl {
         buf_len: r.read("BufLen")?,
         amplitude: r.read("Amplitude")?,
