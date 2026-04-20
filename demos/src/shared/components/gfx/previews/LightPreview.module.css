@@ -1,0 +1,16 @@
+.thumb { display: block; width: 40px; height: 28px; }
+
+.expanded { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@container (max-width: 640px) { .expanded { grid-template-columns: 1fr; } }
+
+.summary { display: flex; flex-direction: column; gap: 12px; padding: 12px; background: var(--gfx-bg-elev); }
+
+.swatchColumn { display: flex; flex-direction: column; gap: 8px; }
+.bigSwatch { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 10px; }
+.bigSwatchFill { width: 40px; height: 40px; outline: 1px solid var(--gfx-border); }
+.bigSwatchLabel { font: 500 10px/1 var(--gfx-font-data); letter-spacing: 0.3px; text-transform: uppercase; color: var(--gfx-text-muted); }
+.bigSwatchHex { font: 400 11px/1 var(--gfx-font-data); color: var(--gfx-text); }
+
+.scalarGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; padding-top: 8px; border-top: 1px solid var(--gfx-rule); }
+.scalarCell { display: flex; flex-direction: column; gap: 3px; }
+.scalarLabel { font: 500 9px/1 var(--gfx-font-data); letter-spacing: 0.3px; text-transform: uppercase; color: var(--gfx-text-muted); }
