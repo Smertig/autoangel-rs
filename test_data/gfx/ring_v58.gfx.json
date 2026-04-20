@@ -1,22 +1,87 @@
 {
-  "fade_start": 0.0,
-  "use_aabb": 0,
+  "aabb_max": [
+    2.5954859256744385,
+    4.254281997680664,
+    2.5954859256744385
+  ],
+  "aabb_min": [
+    -2.5954859256744385,
+    -0.09778200089931488,
+    -2.5954859256744385
+  ],
+  "default_alpha": 1.0,
+  "default_scale": 2.299999952316284,
   "elements": [
     {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
+      "body": {
+        "grnd_norm_only": true,
+        "height": 0.6000000238418579,
+        "kind": "decal",
+        "match_surface": null,
+        "max_extent": null,
+        "no_scale": [
+          false,
+          false
+        ],
+        "org_pt": [
+          0.5,
+          0.5
+        ],
+        "rot_from_view": false,
+        "surface_use_parent_dir": null,
+        "tail_lines": [
+          "StartTime: 0",
+          "KEYPOINTCOUNT: 1",
+          "InterpolateMode: 0",
+          "TimeSpan: -1",
+          "Position: 0.000000, 0.000000, 0.000000",
+          "Color: -10004738",
+          "Scale: 1.000000",
+          "Direction: -0.707107, 0.000000, 0.000000, 0.707107",
+          "Rad_2D: 0.000000",
+          "CtrlMethodCount: 1",
+          "CtrlType: 101",
+          "StartTime: 0.000000",
+          "EndTime: -1.000000",
+          "Vel: 5.235988",
+          "Acc: 0.000000"
+        ],
+        "width": 0.6000000238418579,
+        "yaw_effect": null,
+        "z_offset": null
+      },
       "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
+      "is_dummy": 0,
       "name": "Unnamed2",
+      "priority": 4,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "图案\\真灵护体环1.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 100,
+      "z_enable": 1
+    },
+    {
       "body": {
+        "grnd_norm_only": true,
+        "height": 0.6000000238418579,
         "kind": "decal",
+        "match_surface": null,
+        "max_extent": null,
+        "no_scale": [
+          false,
+          false
+        ],
+        "org_pt": [
+          0.5,
+          0.5
+        ],
+        "rot_from_view": false,
+        "surface_use_parent_dir": null,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -34,42 +99,42 @@
           "Vel: 5.235988",
           "Acc: 0.000000"
         ],
-        "no_scale": [
-          false,
-          false
-        ],
-        "match_surface": null,
-        "z_offset": null,
         "width": 0.6000000238418579,
-        "org_pt": [
-          0.5,
-          0.5
-        ],
-        "surface_use_parent_dir": null,
-        "height": 0.6000000238418579,
-        "rot_from_view": false,
-        "grnd_norm_only": true,
-        "max_extent": null,
-        "yaw_effect": null
+        "yaw_effect": null,
+        "z_offset": null
       },
-      "tex_file": "图案\\真灵护体环1.dds",
-      "priority": 4
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
       "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
+      "is_dummy": 0,
       "name": "Unnamed8",
+      "priority": 4,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "图案\\真灵护体环1.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 100,
+      "z_enable": 1
+    },
+    {
       "body": {
+        "grnd_norm_only": true,
+        "height": 0.6000000238418579,
         "kind": "decal",
+        "match_surface": null,
+        "max_extent": null,
+        "no_scale": [
+          false,
+          false
+        ],
+        "org_pt": [
+          0.5,
+          0.5
+        ],
+        "rot_from_view": false,
+        "surface_use_parent_dir": null,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -87,42 +152,42 @@
           "Vel: 5.235988",
           "Acc: 0.000000"
         ],
-        "no_scale": [
-          false,
-          false
-        ],
-        "match_surface": null,
-        "z_offset": null,
         "width": 0.6000000238418579,
-        "org_pt": [
-          0.5,
-          0.5
-        ],
-        "surface_use_parent_dir": null,
-        "height": 0.6000000238418579,
-        "rot_from_view": false,
-        "grnd_norm_only": true,
-        "max_extent": null,
-        "yaw_effect": null
+        "yaw_effect": null,
+        "z_offset": null
       },
-      "tex_file": "图案\\真灵护体环1.dds",
-      "priority": 4
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
       "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
+      "is_dummy": 0,
       "name": "Unnamed9",
+      "priority": 4,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "图案\\真灵护体环1.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 100,
+      "z_enable": 1
+    },
+    {
       "body": {
+        "grnd_norm_only": true,
+        "height": 0.6000000238418579,
         "kind": "decal",
+        "match_surface": null,
+        "max_extent": null,
+        "no_scale": [
+          false,
+          false
+        ],
+        "org_pt": [
+          0.5,
+          0.5
+        ],
+        "rot_from_view": false,
+        "surface_use_parent_dir": null,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -140,42 +205,42 @@
           "Vel: 5.235988",
           "Acc: 0.000000"
         ],
-        "no_scale": [
-          false,
-          false
-        ],
-        "match_surface": null,
-        "z_offset": null,
         "width": 0.6000000238418579,
-        "org_pt": [
-          0.5,
-          0.5
-        ],
-        "surface_use_parent_dir": null,
-        "height": 0.6000000238418579,
-        "rot_from_view": false,
-        "grnd_norm_only": true,
-        "max_extent": null,
-        "yaw_effect": null
+        "yaw_effect": null,
+        "z_offset": null
       },
-      "tex_file": "图案\\真灵护体环1.dds",
-      "priority": 4
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
       "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
+      "is_dummy": 0,
       "name": "Unnamed10",
+      "priority": 4,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "图案\\真灵护体环1.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 100,
+      "z_enable": 1
+    },
+    {
       "body": {
+        "grnd_norm_only": true,
+        "height": 0.949999988079071,
         "kind": "decal",
+        "match_surface": null,
+        "max_extent": null,
+        "no_scale": [
+          false,
+          false
+        ],
+        "org_pt": [
+          0.5,
+          0.5
+        ],
+        "rot_from_view": false,
+        "surface_use_parent_dir": null,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -193,42 +258,42 @@
           "Vel: 5.235988",
           "Acc: 0.000000"
         ],
-        "no_scale": [
-          false,
-          false
-        ],
-        "match_surface": null,
-        "z_offset": null,
-        "width": 0.6000000238418579,
-        "org_pt": [
-          0.5,
-          0.5
-        ],
-        "surface_use_parent_dir": null,
-        "height": 0.6000000238418579,
-        "rot_from_view": false,
-        "grnd_norm_only": true,
-        "max_extent": null,
-        "yaw_effect": null
+        "width": 0.949999988079071,
+        "yaw_effect": null,
+        "z_offset": null
       },
-      "tex_file": "图案\\真灵护体环1.dds",
-      "priority": 4
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
       "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
+      "is_dummy": 0,
       "name": "Unnamed11",
+      "priority": 4,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "图案\\真灵护体环1.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 100,
+      "z_enable": 1
+    },
+    {
       "body": {
+        "grnd_norm_only": true,
+        "height": 0.949999988079071,
         "kind": "decal",
+        "match_surface": null,
+        "max_extent": null,
+        "no_scale": [
+          false,
+          false
+        ],
+        "org_pt": [
+          0.5,
+          0.5
+        ],
+        "rot_from_view": false,
+        "surface_use_parent_dir": null,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -246,95 +311,42 @@
           "Vel: 5.235988",
           "Acc: 0.000000"
         ],
-        "no_scale": [
-          false,
-          false
-        ],
-        "match_surface": null,
-        "z_offset": null,
         "width": 0.949999988079071,
-        "org_pt": [
-          0.5,
-          0.5
-        ],
-        "surface_use_parent_dir": null,
-        "height": 0.949999988079071,
-        "rot_from_view": false,
-        "grnd_norm_only": true,
-        "max_extent": null,
-        "yaw_effect": null
+        "yaw_effect": null,
+        "z_offset": null
       },
-      "tex_file": "图案\\真灵护体环1.dds",
-      "priority": 4
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
       "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
+      "is_dummy": 0,
       "name": "Unnamed12",
-      "body": {
-        "kind": "decal",
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: 0.000000, 0.000000, 0.000000",
-          "Color: -10004738",
-          "Scale: 1.000000",
-          "Direction: -0.707107, 0.000000, 0.000000, 0.707107",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 1",
-          "CtrlType: 101",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "Vel: 5.235988",
-          "Acc: 0.000000"
-        ],
-        "no_scale": [
-          false,
-          false
-        ],
-        "match_surface": null,
-        "z_offset": null,
-        "width": 0.949999988079071,
-        "org_pt": [
-          0.5,
-          0.5
-        ],
-        "surface_use_parent_dir": null,
-        "height": 0.949999988079071,
-        "rot_from_view": false,
-        "grnd_norm_only": true,
-        "max_extent": null,
-        "yaw_effect": null
-      },
-      "tex_file": "图案\\真灵护体环1.dds",
-      "priority": 2
-    },
-    {
-      "is_dummy": 0,
+      "priority": 2,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "图案\\真灵护体环1.dds",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
       "type_id": 100,
-      "tex_col": 1,
-      "name": "Unnamed13",
+      "z_enable": 1
+    },
+    {
       "body": {
+        "grnd_norm_only": true,
+        "height": 0.949999988079071,
         "kind": "decal",
+        "match_surface": null,
+        "max_extent": null,
+        "no_scale": [
+          false,
+          false
+        ],
+        "org_pt": [
+          0.5,
+          0.5
+        ],
+        "rot_from_view": false,
+        "surface_use_parent_dir": null,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -352,43 +364,35 @@
           "Vel: 5.235988",
           "Acc: 0.000000"
         ],
-        "no_scale": [
-          false,
-          false
-        ],
-        "match_surface": null,
-        "z_offset": null,
         "width": 0.949999988079071,
-        "org_pt": [
-          0.5,
-          0.5
-        ],
-        "surface_use_parent_dir": null,
-        "height": 0.949999988079071,
-        "rot_from_view": false,
-        "grnd_norm_only": true,
-        "max_extent": null,
-        "yaw_effect": null
+        "yaw_effect": null,
+        "z_offset": null
       },
-      "tex_file": "图案\\真灵护体环1.dds",
-      "priority": 2
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed13",
+      "priority": 2,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "图案\\真灵护体环1.dds",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 140,
-      "tex_col": 1,
-      "name": "Unnamed14",
+      "type_id": 100,
+      "z_enable": 1
+    },
+    {
       "body": {
-        "kind": "ring",
         "height": 2.0,
+        "kind": "ring",
+        "no_hei_scale": false,
+        "no_rad_scale": false,
+        "org_at_center": true,
+        "pitch": 0.0,
+        "radius": 0.5199999809265137,
+        "sects": 0,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -407,33 +411,33 @@
           "Axis: 0.000000, 1.000000, 0.000000",
           "Vel: 5.235988",
           "Acc: 0.000000"
-        ],
-        "no_hei_scale": false,
-        "radius": 0.5199999809265137,
-        "no_rad_scale": false,
-        "org_at_center": true,
-        "sects": 0,
-        "pitch": 0.0
+        ]
       },
-      "tex_file": "圆环光\\circle001.dds",
-      "priority": 2
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed14",
+      "priority": 2,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "圆环光\\circle001.dds",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
       "type_id": 140,
-      "tex_col": 1,
-      "name": "Unnamed15",
+      "z_enable": 1
+    },
+    {
       "body": {
-        "kind": "ring",
         "height": 1.0,
+        "kind": "ring",
+        "no_hei_scale": false,
+        "no_rad_scale": false,
+        "org_at_center": true,
+        "pitch": 0.0,
+        "radius": 0.8199999928474426,
+        "sects": 0,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -452,44 +456,79 @@
           "Axis: 0.000000, 1.000000, 0.000000",
           "Vel: 5.235988",
           "Acc: 0.000000"
-        ],
-        "no_hei_scale": false,
-        "radius": 0.8199999928474426,
-        "no_rad_scale": false,
-        "org_at_center": true,
-        "sects": 0,
-        "pitch": 0.0
+        ]
       },
-      "tex_file": "圆环光\\circle001.dds",
-      "priority": 2
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed15",
+      "priority": 2,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "圆环光\\circle001.dds",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "Unnamed3",
+      "type_id": 140,
+      "z_enable": 1
+    },
+    {
       "body": {
+        "emitter": {
+          "acc": 0.0,
+          "acc_dir": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "angle": 0.0,
+          "color_max": 4294967295,
+          "color_min": 4294967295,
+          "drag_pow": null,
+          "emission_rate": 10.0,
+          "is_bind": true,
+          "is_drag": null,
+          "is_surface": false,
+          "is_use_hsv_interp": null,
+          "par_acc": 0.0,
+          "par_ini_dir": null,
+          "rot_max": 0.0,
+          "rot_min": 0.0,
+          "scale_max": 0.699999988079071,
+          "scale_min": 0.30000001192092896,
+          "shape": {
+            "alpha_seg": null,
+            "area_size": [
+              1.2999999523162842,
+              1.0,
+              1.2999999523162842
+            ],
+            "beta_seg": null,
+            "is_avg_gen": null,
+            "shape": "ellipsoid"
+          },
+          "speed": 0.0,
+          "ttl": 1.0
+        },
+        "facing": 0,
+        "init_random_texture": null,
+        "is_start_on_grnd": null,
+        "is_use_par_uv": null,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": null,
-        "init_random_texture": null,
-        "is_use_par_uv": null,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 0.20000000298023224,
+        "particle_width": 0.20000000298023224,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": null,
         "tail_lines": [
           "AffectorCount: 1",
           "CtrlType: 100",
@@ -510,82 +549,47 @@
           "CtrlMethodCount: 0"
         ],
         "three_d_particle": false,
-        "emitter": {
-          "acc": 0.0,
-          "scale_max": 0.699999988079071,
-          "color_min": 4294967295,
-          "acc_dir": [
-            0.0,
-            0.0,
-            -1.0
-          ],
-          "ttl": 1.0,
-          "angle": 0.0,
-          "scale_min": 0.30000001192092896,
-          "is_use_hsv_interp": null,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
-          "color_max": 4294967295,
-          "rot_min": 0.0,
-          "rot_max": 0.0,
-          "is_bind": true,
-          "shape": {
-            "shape": "ellipsoid",
-            "alpha_seg": null,
-            "beta_seg": null,
-            "area_size": [
-              1.2999999523162842,
-              1.0,
-              1.2999999523162842
-            ],
-            "is_avg_gen": null
-          },
-          "is_drag": null,
-          "emission_rate": 10.0,
-          "drag_pow": null,
-          "par_ini_dir": null
-        },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": null,
-        "facing": 0,
-        "particle_height": 0.20000000298023224,
-        "particle_width": 0.20000000298023224
+        "z_offset": null
       },
-      "tex_file": "闪光\\火花.dds",
-      "priority": 4
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed3",
+      "priority": 4,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "闪光\\火花.dds",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 130,
-      "tex_col": 1,
-      "name": "蓝色光源",
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
       "body": {
-        "kind": "light",
-        "specular": 4278190080,
-        "range": 10.0,
-        "attenuation1": 0.10000000149011612,
         "ambient": 4278190080,
-        "theta": 0.0,
-        "light_type": 1,
+        "attenuation0": 0.0,
+        "attenuation1": 0.10000000149011612,
         "attenuation2": 0.0,
+        "diffuse": 4278208234,
         "direction": [
           0.0,
           0.0,
           1.0
         ],
-        "diffuse": 4278208234,
-        "phi": 0.0,
+        "falloff": 0.0,
         "inner_use": null,
+        "kind": "light",
+        "light_type": 1,
+        "phi": 0.0,
+        "position": [
+          0.0,
+          4.000079154968262,
+          -0.6560320258140564
+        ],
+        "range": 10.0,
+        "specular": 4278190080,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -598,33 +602,29 @@
           "Rad_2D: 0.000000",
           "CtrlMethodCount: 0"
         ],
-        "attenuation0": 0.0,
-        "falloff": 0.0,
-        "position": [
-          0.0,
-          4.000079154968262,
-          -0.6560320258140564
-        ]
+        "theta": 0.0
       },
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "蓝色光源",
+      "priority": 4,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
       "tex_file": "",
-      "priority": 4
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 130,
+      "z_enable": 1
     }
   ],
-  "version": 37,
   "face_to_viewer": 0,
-  "default_scale": 2.299999952316284,
   "fade_by_dist": 0,
   "fade_end": 0.0,
+  "fade_start": 0.0,
   "play_speed": 0.5,
-  "aabb_max": [
-    2.5954859256744385,
-    4.254281997680664,
-    2.5954859256744385
-  ],
-  "default_alpha": 1.0,
-  "aabb_min": [
-    -2.5954859256744385,
-    -0.09778200089931488,
-    -2.5954859256744385
-  ]
+  "use_aabb": 0,
+  "version": 37
 }

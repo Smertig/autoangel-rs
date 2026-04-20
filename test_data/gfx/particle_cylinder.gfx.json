@@ -1,22 +1,34 @@
 {
-  "fade_start": 0.0,
-  "use_aabb": 1,
+  "aabb_max": [
+    1.0238009691238403,
+    0.8873119950294495,
+    0.6865559816360474
+  ],
+  "aabb_min": [
+    -1.0735490322113037,
+    -0.9749050140380859,
+    -0.3193269968032837
+  ],
+  "default_alpha": 1.0,
+  "default_scale": 3.0,
   "elements": [
     {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": -1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 101,
-      "tex_col": 1,
-      "name": "Unnamed1",
       "body": {
+        "grnd_norm_only": false,
+        "height": 0.4000000059604645,
         "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.6000000238418579,
+        "no_scale": [
+          false,
+          false
+        ],
+        "org_pt": [
+          0.5,
+          0.5
+        ],
+        "rot_from_view": false,
+        "surface_use_parent_dir": false,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -45,42 +57,42 @@
           "TimeSpan: 500.000000",
           "AlphaOnly: 0"
         ],
+        "width": 0.4000000059604645,
+        "yaw_effect": false,
+        "z_offset": -0.20000000298023224
+      },
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "Unnamed1",
+      "priority": 2,
+      "repeat_count": -1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "光晕\\rage.tga",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 101,
+      "z_enable": 1
+    },
+    {
+      "body": {
+        "grnd_norm_only": false,
+        "height": 0.32499998807907104,
+        "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.48750001192092896,
         "no_scale": [
           false,
           false
         ],
-        "match_surface": false,
-        "z_offset": -0.20000000298023224,
-        "width": 0.4000000059604645,
         "org_pt": [
           0.5,
           0.5
         ],
-        "surface_use_parent_dir": false,
-        "height": 0.4000000059604645,
         "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.6000000238418579,
-        "yaw_effect": false
-      },
-      "tex_file": "光晕\\rage.tga",
-      "priority": 2
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": -1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 101,
-      "tex_col": 1,
-      "name": "Unnamed2",
-      "body": {
-        "kind": "decal",
+        "surface_use_parent_dir": false,
         "tail_lines": [
           "StartTime: 625",
           "KEYPOINTCOUNT: 1",
@@ -109,42 +121,42 @@
           "TimeSpan: 500.000000",
           "AlphaOnly: 0"
         ],
+        "width": 0.32499998807907104,
+        "yaw_effect": false,
+        "z_offset": -0.20000000298023224
+      },
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "Unnamed2",
+      "priority": 2,
+      "repeat_count": -1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "光晕\\rage.tga",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 101,
+      "z_enable": 1
+    },
+    {
+      "body": {
+        "grnd_norm_only": false,
+        "height": 0.5,
+        "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.75,
         "no_scale": [
           false,
           false
         ],
-        "match_surface": false,
-        "z_offset": -0.20000000298023224,
-        "width": 0.32499998807907104,
         "org_pt": [
           0.5,
           0.5
         ],
-        "surface_use_parent_dir": false,
-        "height": 0.32499998807907104,
         "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.48750001192092896,
-        "yaw_effect": false
-      },
-      "tex_file": "光晕\\rage.tga",
-      "priority": 2
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 101,
-      "tex_col": 1,
-      "name": "Unnamed4",
-      "body": {
-        "kind": "decal",
+        "surface_use_parent_dir": false,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -157,54 +169,85 @@
           "Rad_2D: 0.000000",
           "CtrlMethodCount: 0"
         ],
-        "no_scale": [
-          false,
-          false
-        ],
-        "match_surface": false,
-        "z_offset": -0.20000000298023224,
         "width": 0.5,
-        "org_pt": [
-          0.5,
-          0.5
-        ],
-        "surface_use_parent_dir": false,
-        "height": 0.5,
-        "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.75,
-        "yaw_effect": false
+        "yaw_effect": false,
+        "z_offset": -0.20000000298023224
       },
-      "tex_file": "图案\\Effects_Textures_176-1.bmp",
-      "priority": 2
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed4",
+      "priority": 2,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "图案\\Effects_Textures_176-1.bmp",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 124,
-      "tex_col": 1,
-      "name": "Unnamed5",
+      "type_id": 101,
+      "z_enable": 1
+    },
+    {
       "body": {
+        "emitter": {
+          "acc": 0.0,
+          "acc_dir": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "angle": 6.283185005187988,
+          "color_max": 4294967295,
+          "color_min": 4294967295,
+          "drag_pow": 1.0,
+          "emission_rate": 5.0,
+          "is_bind": true,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
+          "par_ini_dir": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rot_max": 6.283185005187988,
+          "rot_min": 0.0,
+          "scale_max": 0.12999999523162842,
+          "scale_min": 0.029999999329447746,
+          "shape": {
+            "alpha_seg": null,
+            "area_size": [
+              0.5,
+              0.6000000238418579,
+              0.5
+            ],
+            "beta_seg": null,
+            "is_avg_gen": null,
+            "shape": "cylinder"
+          },
+          "speed": 0.0,
+          "ttl": 1.0
+        },
+        "facing": 0,
+        "init_random_texture": null,
+        "is_start_on_grnd": false,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": false,
-        "init_random_texture": null,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 0.30000001192092896,
+        "particle_width": 0.30000001192092896,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": null,
         "tail_lines": [
           "AffectorCount: 3",
           "CtrlType: 108",
@@ -241,72 +284,29 @@
           "CtrlMethodCount: 0"
         ],
         "three_d_particle": false,
-        "emitter": {
-          "acc": 0.0,
-          "scale_max": 0.12999999523162842,
-          "color_min": 4294967295,
-          "acc_dir": [
-            0.0,
-            0.0,
-            -1.0
-          ],
-          "ttl": 1.0,
-          "angle": 6.283185005187988,
-          "scale_min": 0.029999999329447746,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
-          "color_max": 4294967295,
-          "rot_min": 0.0,
-          "rot_max": 6.283185005187988,
-          "is_bind": true,
-          "shape": {
-            "shape": "cylinder",
-            "beta_seg": null,
-            "is_avg_gen": null,
-            "area_size": [
-              0.5,
-              0.6000000238418579,
-              0.5
-            ],
-            "alpha_seg": null
-          },
-          "is_drag": false,
-          "emission_rate": 5.0,
-          "drag_pow": 1.0,
-          "par_ini_dir": [
-            0.0,
-            0.0,
-            0.0
-          ]
-        },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": null,
-        "facing": 0,
-        "particle_height": 0.30000001192092896,
-        "particle_width": 0.30000001192092896
+        "z_offset": null
       },
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "Unnamed5",
+      "priority": 3,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
       "tex_file": "粒子\\star0.dds",
-      "priority": 3
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 124,
+      "z_enable": 1
     }
   ],
-  "version": 90,
   "face_to_viewer": 0,
-  "default_scale": 3.0,
   "fade_by_dist": 0,
   "fade_end": 0.0,
+  "fade_start": 0.0,
   "play_speed": 1.0,
-  "aabb_max": [
-    1.0238009691238403,
-    0.8873119950294495,
-    0.6865559816360474
-  ],
-  "default_alpha": 1.0,
-  "aabb_min": [
-    -1.0735490322113037,
-    -0.9749050140380859,
-    -0.3193269968032837
-  ]
+  "use_aabb": 1,
+  "version": 90
 }

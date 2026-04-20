@@ -1,26 +1,25 @@
 {
-  "fade_start": 0.0,
-  "use_aabb": 1,
+  "aabb_max": [
+    1.4406390190124512,
+    2.627610921859741,
+    2.2828330993652344
+  ],
+  "aabb_min": [
+    -1.4448319673538208,
+    -0.7459989786148071,
+    -1.1121439933776855
+  ],
+  "default_alpha": 1.0,
+  "default_scale": 0.8999999761581421,
   "elements": [
     {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": -1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 160,
-      "tex_col": 1,
-      "name": "Unnamed1",
       "body": {
+        "alpha_cmp": false,
+        "facing_dir": null,
         "kind": "model",
         "loops": -1,
-        "alpha_cmp": false,
         "model_act_name": "休闲",
-        "facing_dir": null,
+        "model_path": "精灵王2\\精灵王.SMD",
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -34,31 +33,31 @@
           "CtrlMethodCount: 0"
         ],
         "use_3d_cam": null,
-        "model_path": "精灵王2\\精灵王.SMD",
         "write_z": true
       },
-      "tex_file": "",
-      "priority": 1
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed1",
+      "priority": 1,
+      "repeat_count": -1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": -1,
-      "z_enable": 1,
-      "tex_interval": 50,
       "type_id": 160,
-      "tex_col": 1,
-      "name": "Unnamed2",
+      "z_enable": 1
+    },
+    {
       "body": {
+        "alpha_cmp": false,
+        "facing_dir": null,
         "kind": "model",
         "loops": -1,
-        "alpha_cmp": false,
         "model_act_name": "休闲",
-        "facing_dir": null,
+        "model_path": "精灵王2\\精灵王.SMD",
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -72,27 +71,40 @@
           "CtrlMethodCount: 0"
         ],
         "use_3d_cam": null,
-        "model_path": "精灵王2\\精灵王.SMD",
         "write_z": true
       },
-      "tex_file": "",
-      "priority": 1
-    },
-    {
+      "dest_blend": 6,
       "is_dummy": 0,
+      "name": "Unnamed2",
+      "priority": 1,
+      "repeat_count": -1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": -1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 101,
-      "tex_col": 1,
-      "name": "Unnamed5",
+      "type_id": 160,
+      "z_enable": 1
+    },
+    {
       "body": {
+        "grnd_norm_only": false,
+        "height": 0.10000000149011612,
         "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.15000000596046448,
+        "no_scale": [
+          false,
+          false
+        ],
+        "org_pt": [
+          0.5,
+          0.5
+        ],
+        "rot_from_view": false,
+        "surface_use_parent_dir": null,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 5",
@@ -162,54 +174,85 @@
           "Rad_2D: 0.000000",
           "CtrlMethodCount: 0"
         ],
-        "no_scale": [
-          false,
-          false
-        ],
-        "match_surface": false,
-        "z_offset": 0.0,
         "width": 0.10000000149011612,
-        "org_pt": [
-          0.5,
-          0.5
-        ],
-        "surface_use_parent_dir": null,
-        "height": 0.10000000149011612,
-        "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.15000000596046448,
-        "yaw_effect": false
+        "yaw_effect": false,
+        "z_offset": 0.0
       },
-      "tex_file": "",
-      "priority": 2
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed5",
+      "priority": 2,
+      "repeat_count": -1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": -1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "Unnamed6",
+      "type_id": 101,
+      "z_enable": 1
+    },
+    {
       "body": {
+        "emitter": {
+          "acc": 0.0,
+          "acc_dir": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "angle": 0.0,
+          "color_max": 3120496768,
+          "color_min": 3120496640,
+          "drag_pow": 1.0,
+          "emission_rate": 20.0,
+          "is_bind": false,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": true,
+          "par_acc": 0.0,
+          "par_ini_dir": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rot_max": 6.283185005187988,
+          "rot_min": 0.0,
+          "scale_max": 0.699999988079071,
+          "scale_min": 0.4000000059604645,
+          "shape": {
+            "alpha_seg": 10,
+            "area_size": [
+              0.4000000059604645,
+              0.4000000059604645,
+              0.4000000059604645
+            ],
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
+          },
+          "speed": 0.0,
+          "ttl": 1.0
+        },
+        "facing": 0,
+        "init_random_texture": null,
+        "is_start_on_grnd": null,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": null,
-        "init_random_texture": null,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 0.5,
+        "particle_width": 0.5,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": null,
         "tail_lines": [
           "AffectorCount: 2",
           "CtrlType: 106",
@@ -233,83 +276,83 @@
           "CtrlMethodCount: 0"
         ],
         "three_d_particle": false,
+        "z_offset": null
+      },
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "Unnamed6",
+      "priority": 2,
+      "repeat_count": -1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "烟火\\smoke001.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
+      "body": {
         "emitter": {
           "acc": 0.0,
-          "scale_max": 0.699999988079071,
-          "color_min": 3120496640,
           "acc_dir": [
             0.0,
             0.0,
             -1.0
           ],
-          "ttl": 1.0,
           "angle": 0.0,
-          "scale_min": 0.4000000059604645,
-          "is_use_hsv_interp": true,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
-          "color_max": 3120496768,
-          "rot_min": 0.0,
-          "rot_max": 6.283185005187988,
-          "is_bind": false,
-          "shape": {
-            "shape": "ellipsoid",
-            "alpha_seg": 10,
-            "beta_seg": 10,
-            "area_size": [
-              0.4000000059604645,
-              0.4000000059604645,
-              0.4000000059604645
-            ],
-            "is_avg_gen": false
-          },
-          "is_drag": false,
-          "emission_rate": 20.0,
+          "color_max": 4294967295,
+          "color_min": 4294967295,
           "drag_pow": 1.0,
+          "emission_rate": 10.0,
+          "is_bind": false,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
           "par_ini_dir": [
             0.0,
             0.0,
             0.0
-          ]
+          ],
+          "rot_max": 6.283185005187988,
+          "rot_min": 0.0,
+          "scale_max": 0.699999988079071,
+          "scale_min": 0.20000000298023224,
+          "shape": {
+            "alpha_seg": 10,
+            "area_size": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
+          },
+          "speed": 0.0,
+          "ttl": 1.0
         },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": null,
         "facing": 0,
-        "particle_height": 0.5,
-        "particle_width": 0.5
-      },
-      "tex_file": "烟火\\smoke001.dds",
-      "priority": 2
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "Unnamed7",
-      "body": {
+        "init_random_texture": null,
+        "is_start_on_grnd": null,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": null,
-        "init_random_texture": null,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 0.05000000074505806,
+        "particle_width": 0.05000000074505806,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": null,
         "tail_lines": [
           "AffectorCount: 3",
           "CtrlType: 111",
@@ -346,83 +389,83 @@
           "CtrlMethodCount: 0"
         ],
         "three_d_particle": false,
+        "z_offset": null
+      },
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "Unnamed7",
+      "priority": 3,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "粒子\\star8.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 123,
+      "z_enable": 1
+    },
+    {
+      "body": {
         "emitter": {
           "acc": 0.0,
-          "scale_max": 0.699999988079071,
-          "color_min": 4294967295,
           "acc_dir": [
             0.0,
             0.0,
             -1.0
           ],
-          "ttl": 1.0,
           "angle": 0.0,
-          "scale_min": 0.20000000298023224,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
           "color_max": 4294967295,
-          "rot_min": 0.0,
-          "rot_max": 6.283185005187988,
+          "color_min": 4294967295,
+          "drag_pow": 1.0,
+          "emission_rate": 10.0,
           "is_bind": false,
+          "is_drag": false,
+          "is_surface": false,
+          "is_use_hsv_interp": false,
+          "par_acc": 0.0,
+          "par_ini_dir": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rot_max": 6.283185005187988,
+          "rot_min": 0.0,
+          "scale_max": 0.699999988079071,
+          "scale_min": 0.20000000298023224,
           "shape": {
-            "shape": "ellipsoid",
             "alpha_seg": 10,
-            "beta_seg": 10,
             "area_size": [
               1.0,
               1.0,
               1.0
             ],
-            "is_avg_gen": false
+            "beta_seg": 10,
+            "is_avg_gen": false,
+            "shape": "ellipsoid"
           },
-          "is_drag": false,
-          "emission_rate": 10.0,
-          "drag_pow": 1.0,
-          "par_ini_dir": [
-            0.0,
-            0.0,
-            0.0
-          ]
+          "speed": 0.0,
+          "ttl": 1.0
         },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": null,
         "facing": 0,
-        "particle_height": 0.05000000074505806,
-        "particle_width": 0.05000000074505806
-      },
-      "tex_file": "粒子\\star8.dds",
-      "priority": 3
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 123,
-      "tex_col": 1,
-      "name": "Unnamed8",
-      "body": {
+        "init_random_texture": null,
+        "is_start_on_grnd": null,
+        "is_use_par_uv": false,
         "kind": "particle",
         "no_scale": [
           false,
           false
         ],
-        "quota": -1,
-        "is_start_on_grnd": null,
-        "init_random_texture": null,
-        "is_use_par_uv": false,
         "org_pt": [
           0.5,
           0.5
         ],
+        "particle_height": 0.05000000074505806,
+        "particle_width": 0.05000000074505806,
+        "quota": -1,
+        "scale_no_off": false,
+        "stop_emit_when_fade": null,
         "tail_lines": [
           "AffectorCount: 3",
           "CtrlType: 111",
@@ -459,72 +502,29 @@
           "CtrlMethodCount: 0"
         ],
         "three_d_particle": false,
-        "emitter": {
-          "acc": 0.0,
-          "scale_max": 0.699999988079071,
-          "color_min": 4294967295,
-          "acc_dir": [
-            0.0,
-            0.0,
-            -1.0
-          ],
-          "ttl": 1.0,
-          "angle": 0.0,
-          "scale_min": 0.20000000298023224,
-          "is_use_hsv_interp": false,
-          "is_surface": false,
-          "speed": 0.0,
-          "par_acc": 0.0,
-          "color_max": 4294967295,
-          "rot_min": 0.0,
-          "rot_max": 6.283185005187988,
-          "is_bind": false,
-          "shape": {
-            "shape": "ellipsoid",
-            "alpha_seg": 10,
-            "beta_seg": 10,
-            "area_size": [
-              1.0,
-              1.0,
-              1.0
-            ],
-            "is_avg_gen": false
-          },
-          "is_drag": false,
-          "emission_rate": 10.0,
-          "drag_pow": 1.0,
-          "par_ini_dir": [
-            0.0,
-            0.0,
-            0.0
-          ]
-        },
-        "scale_no_off": false,
-        "z_offset": null,
-        "stop_emit_when_fade": null,
-        "facing": 0,
-        "particle_height": 0.05000000074505806,
-        "particle_width": 0.05000000074505806
+        "z_offset": null
       },
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "Unnamed8",
+      "priority": 4,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
       "tex_file": "粒子\\star7.dds",
-      "priority": 4
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 123,
+      "z_enable": 1
     }
   ],
-  "version": 73,
   "face_to_viewer": 0,
-  "default_scale": 0.8999999761581421,
   "fade_by_dist": 0,
   "fade_end": 0.0,
+  "fade_start": 0.0,
   "play_speed": 1.0,
-  "aabb_max": [
-    1.4406390190124512,
-    2.627610921859741,
-    2.2828330993652344
-  ],
-  "default_alpha": 1.0,
-  "aabb_min": [
-    -1.4448319673538208,
-    -0.7459989786148071,
-    -1.1121439933776855
-  ]
+  "use_aabb": 1,
+  "version": 73
 }

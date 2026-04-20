@@ -1,22 +1,34 @@
 {
-  "fade_start": 0.0,
-  "use_aabb": 1,
+  "aabb_max": [
+    0.20331600308418274,
+    0.13291999697685242,
+    0.0
+  ],
+  "aabb_min": [
+    -0.21498000621795654,
+    -0.3330030143260956,
+    0.0
+  ],
+  "default_alpha": 1.0,
+  "default_scale": 1.0,
   "elements": [
     {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
-      "name": "Unnamed2",
       "body": {
+        "grnd_norm_only": false,
+        "height": 0.054999999701976776,
         "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.08250000327825546,
+        "no_scale": [
+          false,
+          false
+        ],
+        "org_pt": [
+          0.5,
+          0.5
+        ],
+        "rot_from_view": false,
+        "surface_use_parent_dir": false,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -29,42 +41,42 @@
           "Rad_2D: 0.000000",
           "CtrlMethodCount: 0"
         ],
+        "width": 0.02500000037252903,
+        "yaw_effect": false,
+        "z_offset": 0.0
+      },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed2",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "轨迹\\137轨迹.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 100,
+      "z_enable": 1
+    },
+    {
+      "body": {
+        "grnd_norm_only": false,
+        "height": 0.08500000089406967,
+        "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.1274999976158142,
         "no_scale": [
           false,
           false
         ],
-        "match_surface": false,
-        "z_offset": 0.0,
-        "width": 0.02500000037252903,
         "org_pt": [
           0.5,
           0.5
         ],
-        "surface_use_parent_dir": false,
-        "height": 0.054999999701976776,
         "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.08250000327825546,
-        "yaw_effect": false
-      },
-      "tex_file": "轨迹\\137轨迹.dds",
-      "priority": 1
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
-      "name": "Unnamed3",
-      "body": {
-        "kind": "decal",
+        "surface_use_parent_dir": false,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -77,42 +89,42 @@
           "Rad_2D: 0.000000",
           "CtrlMethodCount: 0"
         ],
+        "width": 0.014999999664723873,
+        "yaw_effect": false,
+        "z_offset": 0.0
+      },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed3",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "轨迹\\墨痕.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 100,
+      "z_enable": 1
+    },
+    {
+      "body": {
+        "grnd_norm_only": false,
+        "height": 0.07500000298023224,
+        "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.11249999701976776,
         "no_scale": [
           false,
           false
         ],
-        "match_surface": false,
-        "z_offset": 0.0,
-        "width": 0.014999999664723873,
         "org_pt": [
           0.5,
           0.5
         ],
-        "surface_use_parent_dir": false,
-        "height": 0.08500000089406967,
         "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.1274999976158142,
-        "yaw_effect": false
-      },
-      "tex_file": "轨迹\\墨痕.dds",
-      "priority": 1
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
-      "name": "Unnamed4",
-      "body": {
-        "kind": "decal",
+        "surface_use_parent_dir": false,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -125,42 +137,42 @@
           "Rad_2D: 0.000000",
           "CtrlMethodCount: 0"
         ],
+        "width": 0.02500000037252903,
+        "yaw_effect": false,
+        "z_offset": 0.0
+      },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed4",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "轨迹\\墨痕.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 100,
+      "z_enable": 1
+    },
+    {
+      "body": {
+        "grnd_norm_only": false,
+        "height": 0.05000000074505806,
+        "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.07500000298023224,
         "no_scale": [
           false,
           false
         ],
-        "match_surface": false,
-        "z_offset": 0.0,
-        "width": 0.02500000037252903,
         "org_pt": [
           0.5,
           0.5
         ],
-        "surface_use_parent_dir": false,
-        "height": 0.07500000298023224,
         "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.11249999701976776,
-        "yaw_effect": false
-      },
-      "tex_file": "轨迹\\墨痕.dds",
-      "priority": 1
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
-      "name": "Unnamed5",
-      "body": {
-        "kind": "decal",
+        "surface_use_parent_dir": false,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -173,42 +185,42 @@
           "Rad_2D: 0.000000",
           "CtrlMethodCount: 0"
         ],
+        "width": 0.03500000014901161,
+        "yaw_effect": false,
+        "z_offset": 0.0
+      },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed5",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "轨迹\\墨痕.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 100,
+      "z_enable": 1
+    },
+    {
+      "body": {
+        "grnd_norm_only": false,
+        "height": 0.07999999821186066,
+        "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.11999999731779099,
         "no_scale": [
           false,
           false
         ],
-        "match_surface": false,
-        "z_offset": 0.0,
-        "width": 0.03500000014901161,
         "org_pt": [
           0.5,
           0.5
         ],
-        "surface_use_parent_dir": false,
-        "height": 0.05000000074505806,
         "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.07500000298023224,
-        "yaw_effect": false
-      },
-      "tex_file": "轨迹\\墨痕.dds",
-      "priority": 1
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
-      "name": "Unnamed6",
-      "body": {
-        "kind": "decal",
+        "surface_use_parent_dir": false,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -221,42 +233,42 @@
           "Rad_2D: 0.000000",
           "CtrlMethodCount: 0"
         ],
+        "width": 0.014999999664723873,
+        "yaw_effect": false,
+        "z_offset": 0.0
+      },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed6",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "轨迹\\墨痕.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 100,
+      "z_enable": 1
+    },
+    {
+      "body": {
+        "grnd_norm_only": false,
+        "height": 0.20000000298023224,
+        "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.30000001192092896,
         "no_scale": [
           false,
           false
         ],
-        "match_surface": false,
-        "z_offset": 0.0,
-        "width": 0.014999999664723873,
         "org_pt": [
           0.5,
           0.5
         ],
-        "surface_use_parent_dir": false,
-        "height": 0.07999999821186066,
         "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.11999999731779099,
-        "yaw_effect": false
-      },
-      "tex_file": "轨迹\\墨痕.dds",
-      "priority": 1
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
-      "name": "Unnamed7",
-      "body": {
-        "kind": "decal",
+        "surface_use_parent_dir": false,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -269,42 +281,42 @@
           "Rad_2D: 0.000000",
           "CtrlMethodCount: 0"
         ],
+        "width": 0.019999999552965164,
+        "yaw_effect": false,
+        "z_offset": 0.0
+      },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed7",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "轨迹\\墨痕.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 100,
+      "z_enable": 1
+    },
+    {
+      "body": {
+        "grnd_norm_only": false,
+        "height": 0.05000000074505806,
+        "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.07500000298023224,
         "no_scale": [
           false,
           false
         ],
-        "match_surface": false,
-        "z_offset": 0.0,
-        "width": 0.019999999552965164,
         "org_pt": [
           0.5,
           0.5
         ],
-        "surface_use_parent_dir": false,
-        "height": 0.20000000298023224,
         "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.30000001192092896,
-        "yaw_effect": false
-      },
-      "tex_file": "轨迹\\墨痕.dds",
-      "priority": 1
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
-      "name": "Unnamed8",
-      "body": {
-        "kind": "decal",
+        "surface_use_parent_dir": false,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -317,42 +329,42 @@
           "Rad_2D: 0.000000",
           "CtrlMethodCount: 0"
         ],
+        "width": 0.02500000037252903,
+        "yaw_effect": false,
+        "z_offset": 0.0
+      },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed8",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "轨迹\\墨痕.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 100,
+      "z_enable": 1
+    },
+    {
+      "body": {
+        "grnd_norm_only": false,
+        "height": 0.03500000014901161,
+        "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.05249999836087227,
         "no_scale": [
           false,
           false
         ],
-        "match_surface": false,
-        "z_offset": 0.0,
-        "width": 0.02500000037252903,
         "org_pt": [
           0.5,
           0.5
         ],
-        "surface_use_parent_dir": false,
-        "height": 0.05000000074505806,
         "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.07500000298023224,
-        "yaw_effect": false
-      },
-      "tex_file": "轨迹\\墨痕.dds",
-      "priority": 1
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
-      "name": "Unnamed9",
-      "body": {
-        "kind": "decal",
+        "surface_use_parent_dir": false,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -365,42 +377,42 @@
           "Rad_2D: 0.000000",
           "CtrlMethodCount: 0"
         ],
+        "width": 0.019999999552965164,
+        "yaw_effect": false,
+        "z_offset": 0.0
+      },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed9",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "轨迹\\墨痕.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 100,
+      "z_enable": 1
+    },
+    {
+      "body": {
+        "grnd_norm_only": false,
+        "height": 0.029999999329447746,
+        "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.04500000178813934,
         "no_scale": [
           false,
           false
         ],
-        "match_surface": false,
-        "z_offset": 0.0,
-        "width": 0.019999999552965164,
         "org_pt": [
           0.5,
           0.5
         ],
-        "surface_use_parent_dir": false,
-        "height": 0.03500000014901161,
         "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.05249999836087227,
-        "yaw_effect": false
-      },
-      "tex_file": "轨迹\\墨痕.dds",
-      "priority": 1
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
-      "name": "Unnamed10",
-      "body": {
-        "kind": "decal",
+        "surface_use_parent_dir": false,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -413,42 +425,42 @@
           "Rad_2D: 0.000000",
           "CtrlMethodCount: 0"
         ],
+        "width": 0.014999999664723873,
+        "yaw_effect": false,
+        "z_offset": 0.0
+      },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed10",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "轨迹\\墨痕.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 100,
+      "z_enable": 1
+    },
+    {
+      "body": {
+        "grnd_norm_only": false,
+        "height": 0.03500000014901161,
+        "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.05249999836087227,
         "no_scale": [
           false,
           false
         ],
-        "match_surface": false,
-        "z_offset": 0.0,
-        "width": 0.014999999664723873,
         "org_pt": [
           0.5,
           0.5
         ],
-        "surface_use_parent_dir": false,
-        "height": 0.029999999329447746,
         "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.04500000178813934,
-        "yaw_effect": false
-      },
-      "tex_file": "轨迹\\墨痕.dds",
-      "priority": 1
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
-      "name": "Unnamed11",
-      "body": {
-        "kind": "decal",
+        "surface_use_parent_dir": false,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -461,42 +473,42 @@
           "Rad_2D: 0.000000",
           "CtrlMethodCount: 0"
         ],
+        "width": 0.02500000037252903,
+        "yaw_effect": false,
+        "z_offset": 0.0
+      },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed11",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "轨迹\\墨痕.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 100,
+      "z_enable": 1
+    },
+    {
+      "body": {
+        "grnd_norm_only": false,
+        "height": 0.05000000074505806,
+        "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.07500000298023224,
         "no_scale": [
           false,
           false
         ],
-        "match_surface": false,
-        "z_offset": 0.0,
-        "width": 0.02500000037252903,
         "org_pt": [
           0.5,
           0.5
         ],
-        "surface_use_parent_dir": false,
-        "height": 0.03500000014901161,
         "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.05249999836087227,
-        "yaw_effect": false
-      },
-      "tex_file": "轨迹\\墨痕.dds",
-      "priority": 1
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
-      "name": "Unnamed12",
-      "body": {
-        "kind": "decal",
+        "surface_use_parent_dir": false,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -509,42 +521,42 @@
           "Rad_2D: 0.000000",
           "CtrlMethodCount: 0"
         ],
+        "width": 0.019999999552965164,
+        "yaw_effect": false,
+        "z_offset": 0.0
+      },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed12",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "轨迹\\墨痕.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 100,
+      "z_enable": 1
+    },
+    {
+      "body": {
+        "grnd_norm_only": false,
+        "height": 0.05000000074505806,
+        "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.07500000298023224,
         "no_scale": [
           false,
           false
         ],
-        "match_surface": false,
-        "z_offset": 0.0,
-        "width": 0.019999999552965164,
         "org_pt": [
           0.5,
           0.5
         ],
-        "surface_use_parent_dir": false,
-        "height": 0.05000000074505806,
         "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.07500000298023224,
-        "yaw_effect": false
-      },
-      "tex_file": "轨迹\\墨痕.dds",
-      "priority": 1
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
-      "name": "Unnamed13",
-      "body": {
-        "kind": "decal",
+        "surface_use_parent_dir": false,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -557,42 +569,42 @@
           "Rad_2D: 0.000000",
           "CtrlMethodCount: 0"
         ],
+        "width": 0.019999999552965164,
+        "yaw_effect": false,
+        "z_offset": 0.0
+      },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed13",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "轨迹\\墨痕.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 100,
+      "z_enable": 1
+    },
+    {
+      "body": {
+        "grnd_norm_only": false,
+        "height": 0.06499999761581421,
+        "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.09749999642372131,
         "no_scale": [
           false,
           false
         ],
-        "match_surface": false,
-        "z_offset": 0.0,
-        "width": 0.019999999552965164,
         "org_pt": [
           0.5,
           0.5
         ],
-        "surface_use_parent_dir": false,
-        "height": 0.05000000074505806,
         "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.07500000298023224,
-        "yaw_effect": false
-      },
-      "tex_file": "轨迹\\墨痕.dds",
-      "priority": 1
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
-      "name": "Unnamed14",
-      "body": {
-        "kind": "decal",
+        "surface_use_parent_dir": false,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -605,42 +617,42 @@
           "Rad_2D: 0.000000",
           "CtrlMethodCount: 0"
         ],
+        "width": 0.014999999664723873,
+        "yaw_effect": false,
+        "z_offset": 0.0
+      },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed14",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "轨迹\\墨痕.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 100,
+      "z_enable": 1
+    },
+    {
+      "body": {
+        "grnd_norm_only": false,
+        "height": 0.05000000074505806,
+        "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.07500000298023224,
         "no_scale": [
           false,
           false
         ],
-        "match_surface": false,
-        "z_offset": 0.0,
-        "width": 0.014999999664723873,
         "org_pt": [
           0.5,
           0.5
         ],
-        "surface_use_parent_dir": false,
-        "height": 0.06499999761581421,
         "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.09749999642372131,
-        "yaw_effect": false
-      },
-      "tex_file": "轨迹\\墨痕.dds",
-      "priority": 1
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
-      "name": "Unnamed15",
-      "body": {
-        "kind": "decal",
+        "surface_use_parent_dir": false,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -653,42 +665,42 @@
           "Rad_2D: 0.000000",
           "CtrlMethodCount: 0"
         ],
+        "width": 0.014999999664723873,
+        "yaw_effect": false,
+        "z_offset": 0.0
+      },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed15",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "轨迹\\墨痕.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 100,
+      "z_enable": 1
+    },
+    {
+      "body": {
+        "grnd_norm_only": false,
+        "height": 0.054999999701976776,
+        "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.08250000327825546,
         "no_scale": [
           false,
           false
         ],
-        "match_surface": false,
-        "z_offset": 0.0,
-        "width": 0.014999999664723873,
         "org_pt": [
           0.5,
           0.5
         ],
-        "surface_use_parent_dir": false,
-        "height": 0.05000000074505806,
         "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.07500000298023224,
-        "yaw_effect": false
-      },
-      "tex_file": "轨迹\\墨痕.dds",
-      "priority": 1
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
-      "name": "Unnamed16",
-      "body": {
-        "kind": "decal",
+        "surface_use_parent_dir": false,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -701,42 +713,42 @@
           "Rad_2D: 0.000000",
           "CtrlMethodCount: 0"
         ],
+        "width": 0.019999999552965164,
+        "yaw_effect": false,
+        "z_offset": 0.0
+      },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed16",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "轨迹\\墨痕.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 100,
+      "z_enable": 1
+    },
+    {
+      "body": {
+        "grnd_norm_only": false,
+        "height": 0.03500000014901161,
+        "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.05249999836087227,
         "no_scale": [
           false,
           false
         ],
-        "match_surface": false,
-        "z_offset": 0.0,
-        "width": 0.019999999552965164,
         "org_pt": [
           0.5,
           0.5
         ],
-        "surface_use_parent_dir": false,
-        "height": 0.054999999701976776,
         "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.08250000327825546,
-        "yaw_effect": false
-      },
-      "tex_file": "轨迹\\墨痕.dds",
-      "priority": 1
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
-      "name": "Unnamed17",
-      "body": {
-        "kind": "decal",
+        "surface_use_parent_dir": false,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -749,42 +761,42 @@
           "Rad_2D: 0.000000",
           "CtrlMethodCount: 0"
         ],
+        "width": 0.014999999664723873,
+        "yaw_effect": false,
+        "z_offset": 0.0
+      },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed17",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "轨迹\\墨痕.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 100,
+      "z_enable": 1
+    },
+    {
+      "body": {
+        "grnd_norm_only": false,
+        "height": 0.07500000298023224,
+        "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.11249999701976776,
         "no_scale": [
           false,
           false
         ],
-        "match_surface": false,
-        "z_offset": 0.0,
-        "width": 0.014999999664723873,
         "org_pt": [
           0.5,
           0.5
         ],
-        "surface_use_parent_dir": false,
-        "height": 0.03500000014901161,
         "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.05249999836087227,
-        "yaw_effect": false
-      },
-      "tex_file": "轨迹\\墨痕.dds",
-      "priority": 1
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
-      "name": "Unnamed18",
-      "body": {
-        "kind": "decal",
+        "surface_use_parent_dir": false,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -797,42 +809,42 @@
           "Rad_2D: 0.000000",
           "CtrlMethodCount: 0"
         ],
+        "width": 0.014999999664723873,
+        "yaw_effect": false,
+        "z_offset": 0.0
+      },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed18",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "轨迹\\墨痕.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 100,
+      "z_enable": 1
+    },
+    {
+      "body": {
+        "grnd_norm_only": false,
+        "height": 0.06499999761581421,
+        "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.09749999642372131,
         "no_scale": [
           false,
           false
         ],
-        "match_surface": false,
-        "z_offset": 0.0,
-        "width": 0.014999999664723873,
         "org_pt": [
           0.5,
           0.5
         ],
-        "surface_use_parent_dir": false,
-        "height": 0.07500000298023224,
         "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.11249999701976776,
-        "yaw_effect": false
-      },
-      "tex_file": "轨迹\\墨痕.dds",
-      "priority": 1
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
-      "name": "Unnamed19",
-      "body": {
-        "kind": "decal",
+        "surface_use_parent_dir": false,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -845,65 +857,32 @@
           "Rad_2D: 0.000000",
           "CtrlMethodCount: 0"
         ],
-        "no_scale": [
-          false,
-          false
-        ],
-        "match_surface": false,
-        "z_offset": 0.0,
         "width": 0.019999999552965164,
-        "org_pt": [
-          0.5,
-          0.5
-        ],
-        "surface_use_parent_dir": false,
-        "height": 0.06499999761581421,
-        "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.09749999642372131,
-        "yaw_effect": false
+        "yaw_effect": false,
+        "z_offset": 0.0
       },
-      "tex_file": "轨迹\\墨痕.dds",
-      "priority": 1
-    },
-    {
+      "dest_blend": 6,
       "is_dummy": 0,
+      "name": "Unnamed19",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "轨迹\\墨痕.dds",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 152,
-      "tex_col": 1,
-      "name": "Unnamed20",
+      "type_id": 100,
+      "z_enable": 1
+    },
+    {
       "body": {
-        "kind": "lightning_ex",
-        "is_append": false,
         "fields": {
-          "num_waves": 5.0,
           "alpha_end": 1.0,
-          "width_mid": 0.014999999664723873,
           "alpha_mid": 1.0,
           "alpha_start": 1.0,
-          "start_pos": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "noise_ctrl": {
-            "amplitude": 2.0,
-            "persistence": 0.25,
-            "buf_len": 256,
-            "octave_num": 5,
-            "wave_len": 1
-          },
-          "light_num": 1,
           "amplitude": null,
-          "wave_len": 100.0,
-          "segs": 10,
           "amplitude_trans": {
             "dest_num": 1,
             "dest_values": [
@@ -915,31 +894,49 @@
               0
             ]
           },
-          "use_normal": true,
-          "interval": 100,
-          "normal": [
-            0.0,
-            0.0,
-            1.0
-          ],
           "end_pos": [
             0.0,
             0.0,
             0.0
           ],
-          "pos1_enable": false,
           "filter_type": 1,
-          "width_start": 0.019999999552965164,
+          "fix_wave_length": false,
+          "interval": 100,
+          "light_num": 1,
+          "noise_ctrl": {
+            "amplitude": 2.0,
+            "buf_len": 256,
+            "octave_num": 5,
+            "persistence": 0.25,
+            "wave_len": 1
+          },
+          "normal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "num_waves": 5.0,
+          "pos1_enable": false,
           "pos2_enable": false,
+          "segs": 10,
+          "start_pos": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "use_normal": true,
+          "wave_len": 100.0,
           "wave_moving": false,
           "wave_moving_speed": 1.0,
           "width_end": 0.009999999776482582,
-          "fix_wave_length": false
+          "width_mid": 0.014999999664723873,
+          "width_start": 0.019999999552965164
         },
-        "verts_life": 1000,
-        "is_tail_fadeout": false,
-        "render_side": 0,
+        "is_append": false,
         "is_tail_disappear": true,
+        "is_tail_fadeout": false,
+        "kind": "lightning_ex",
+        "render_side": 0,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -960,26 +957,41 @@
           "Pos: 0.111891, -0.171707, 0.000000",
           "Pos: 0.103106, -0.218720, 0.000000",
           "Pos: 0.070615, -0.239814, 0.000000"
-        ]
+        ],
+        "verts_life": 1000
       },
-      "tex_file": "轨迹\\墨痕.dds",
-      "priority": 1
-    },
-    {
+      "dest_blend": 6,
       "is_dummy": 0,
+      "name": "Unnamed20",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "轨迹\\墨痕.dds",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 6,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 100,
-      "tex_col": 1,
-      "name": "Unnamed21",
+      "type_id": 152,
+      "z_enable": 1
+    },
+    {
       "body": {
+        "grnd_norm_only": false,
+        "height": 0.029999999329447746,
         "kind": "decal",
+        "match_surface": false,
+        "max_extent": 0.04500000178813934,
+        "no_scale": [
+          false,
+          false
+        ],
+        "org_pt": [
+          0.5,
+          0.5
+        ],
+        "rot_from_view": false,
+        "surface_use_parent_dir": false,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -992,43 +1004,31 @@
           "Rad_2D: 0.000000",
           "CtrlMethodCount: 0"
         ],
-        "no_scale": [
-          false,
-          false
-        ],
-        "match_surface": false,
-        "z_offset": 0.0,
         "width": 0.019999999552965164,
-        "org_pt": [
-          0.5,
-          0.5
-        ],
-        "surface_use_parent_dir": false,
-        "height": 0.029999999329447746,
-        "rot_from_view": false,
-        "grnd_norm_only": false,
-        "max_extent": 0.04500000178813934,
-        "yaw_effect": false
+        "yaw_effect": false,
+        "z_offset": 0.0
       },
+      "dest_blend": 6,
+      "is_dummy": 0,
+      "name": "Unnamed21",
+      "priority": 1,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
       "tex_file": "轨迹\\137轨迹.dds",
-      "priority": 1
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 100,
+      "z_enable": 1
     }
   ],
-  "version": 103,
   "face_to_viewer": 0,
-  "default_scale": 1.0,
   "fade_by_dist": 0,
   "fade_end": 0.0,
+  "fade_start": 0.0,
   "play_speed": 1.0,
-  "aabb_max": [
-    0.20331600308418274,
-    0.13291999697685242,
-    0.0
-  ],
-  "default_alpha": 1.0,
-  "aabb_min": [
-    -0.21498000621795654,
-    -0.3330030143260956,
-    0.0
-  ]
+  "use_aabb": 1,
+  "version": 103
 }

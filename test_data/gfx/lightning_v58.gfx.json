@@ -1,66 +1,64 @@
 {
-  "fade_start": 0.0,
-  "use_aabb": 1,
+  "aabb_max": [
+    45.13478088378906,
+    14.543338775634766,
+    45.13478088378906
+  ],
+  "aabb_min": [
+    -45.13478088378906,
+    -1.5036940574645996,
+    -45.13478088378906
+  ],
+  "default_alpha": 1.0,
+  "default_scale": 2.299999952316284,
   "elements": [
     {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 4,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 120,
-      "type_id": 150,
-      "tex_col": 1,
-      "name": "Unnamed7",
       "body": {
-        "kind": "lightning",
         "fields": {
-          "num_waves": null,
           "alpha_end": 0.0,
-          "width_mid": 0.4000000059604645,
           "alpha_mid": 0.6499999761581421,
           "alpha_start": 1.0,
-          "start_pos": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "noise_ctrl": {
-            "amplitude": 2.0,
-            "persistence": 0.25,
-            "buf_len": 256,
-            "octave_num": 5,
-            "wave_len": 1
-          },
-          "light_num": 1,
           "amplitude": 0.5,
-          "wave_len": 1.5,
-          "segs": 20,
           "amplitude_trans": null,
-          "use_normal": false,
-          "interval": 100,
-          "normal": [
-            0.0,
-            0.0,
-            0.0
-          ],
           "end_pos": [
             0.0,
             0.0,
             0.0
           ],
-          "pos1_enable": false,
           "filter_type": 1,
-          "width_start": 0.5,
+          "fix_wave_length": null,
+          "interval": 100,
+          "light_num": 1,
+          "noise_ctrl": {
+            "amplitude": 2.0,
+            "buf_len": 256,
+            "octave_num": 5,
+            "persistence": 0.25,
+            "wave_len": 1
+          },
+          "normal": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "num_waves": null,
+          "pos1_enable": false,
           "pos2_enable": false,
+          "segs": 20,
+          "start_pos": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "use_normal": false,
+          "wave_len": 1.5,
           "wave_moving": null,
           "wave_moving_speed": null,
           "width_end": 0.0,
-          "fix_wave_length": null
+          "width_mid": 0.4000000059604645,
+          "width_start": 0.5
         },
+        "kind": "lightning",
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 1",
@@ -82,68 +80,68 @@
           "Pos: 0.000132, 5.102219, -1.841916"
         ]
       },
-      "tex_file": "序列\\fgfg2.dds",
-      "priority": 4
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed7",
+      "priority": 4,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "序列\\fgfg2.dds",
+      "tex_interval": 120,
       "tex_row": 4,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 120,
       "type_id": 150,
-      "tex_col": 1,
-      "name": "Unnamed1",
+      "z_enable": 1
+    },
+    {
       "body": {
-        "kind": "lightning",
         "fields": {
-          "num_waves": null,
           "alpha_end": 0.0,
-          "width_mid": 0.4000000059604645,
           "alpha_mid": 0.6499999761581421,
           "alpha_start": 1.0,
-          "start_pos": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "noise_ctrl": {
-            "amplitude": 2.0,
-            "persistence": 0.25,
-            "buf_len": 256,
-            "octave_num": 5,
-            "wave_len": 1
-          },
-          "light_num": 1,
           "amplitude": 0.5,
-          "wave_len": 1.5,
-          "segs": 20,
           "amplitude_trans": null,
-          "use_normal": false,
-          "interval": 100,
-          "normal": [
-            0.0,
-            0.0,
-            0.0
-          ],
           "end_pos": [
             0.0,
             0.0,
             0.0
           ],
-          "pos1_enable": false,
           "filter_type": 1,
-          "width_start": 0.5,
+          "fix_wave_length": null,
+          "interval": 100,
+          "light_num": 1,
+          "noise_ctrl": {
+            "amplitude": 2.0,
+            "buf_len": 256,
+            "octave_num": 5,
+            "persistence": 0.25,
+            "wave_len": 1
+          },
+          "normal": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "num_waves": null,
+          "pos1_enable": false,
           "pos2_enable": false,
+          "segs": 20,
+          "start_pos": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "use_normal": false,
+          "wave_len": 1.5,
           "wave_moving": null,
           "wave_moving_speed": null,
           "width_end": 0.0,
-          "fix_wave_length": null
+          "width_mid": 0.4000000059604645,
+          "width_start": 0.5
         },
+        "kind": "lightning",
         "tail_lines": [
           "StartTime: 275",
           "KEYPOINTCOUNT: 1",
@@ -165,68 +163,68 @@
           "Pos: 0.000132, 3.363297, 2.602290"
         ]
       },
-      "tex_file": "序列\\fgfg2.dds",
-      "priority": 4
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed1",
+      "priority": 4,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "序列\\fgfg2.dds",
+      "tex_interval": 120,
       "tex_row": 4,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 120,
       "type_id": 150,
-      "tex_col": 1,
-      "name": "Unnamed5",
+      "z_enable": 1
+    },
+    {
       "body": {
-        "kind": "lightning",
         "fields": {
-          "num_waves": null,
           "alpha_end": 0.0,
-          "width_mid": 0.30000001192092896,
           "alpha_mid": 0.6499999761581421,
           "alpha_start": 1.0,
-          "start_pos": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "noise_ctrl": {
-            "amplitude": 2.0,
-            "persistence": 0.25,
-            "buf_len": 256,
-            "octave_num": 5,
-            "wave_len": 1
-          },
-          "light_num": 1,
           "amplitude": 0.5,
-          "wave_len": 1.5,
-          "segs": 20,
           "amplitude_trans": null,
-          "use_normal": false,
-          "interval": 100,
-          "normal": [
-            0.0,
-            0.0,
-            0.0
-          ],
           "end_pos": [
             0.0,
             0.0,
             0.0
           ],
-          "pos1_enable": false,
           "filter_type": 1,
-          "width_start": 0.5,
+          "fix_wave_length": null,
+          "interval": 100,
+          "light_num": 1,
+          "noise_ctrl": {
+            "amplitude": 2.0,
+            "buf_len": 256,
+            "octave_num": 5,
+            "persistence": 0.25,
+            "wave_len": 1
+          },
+          "normal": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "num_waves": null,
+          "pos1_enable": false,
           "pos2_enable": false,
+          "segs": 20,
+          "start_pos": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "use_normal": false,
+          "wave_len": 1.5,
           "wave_moving": null,
           "wave_moving_speed": null,
           "width_end": 0.0,
-          "fix_wave_length": null
+          "width_mid": 0.30000001192092896,
+          "width_start": 0.5
         },
+        "kind": "lightning",
         "tail_lines": [
           "StartTime: 75",
           "KEYPOINTCOUNT: 1",
@@ -248,68 +246,68 @@
           "Pos: -3.457389, 6.323191, 0.843894"
         ]
       },
-      "tex_file": "序列\\fgfg2.dds",
-      "priority": 4
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed5",
+      "priority": 4,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "序列\\fgfg2.dds",
+      "tex_interval": 120,
       "tex_row": 4,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 120,
       "type_id": 150,
-      "tex_col": 1,
-      "name": "Unnamed3",
+      "z_enable": 1
+    },
+    {
       "body": {
-        "kind": "lightning",
         "fields": {
-          "num_waves": null,
           "alpha_end": 0.0,
-          "width_mid": 0.30000001192092896,
           "alpha_mid": 0.6499999761581421,
           "alpha_start": 1.0,
-          "start_pos": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "noise_ctrl": {
-            "amplitude": 2.0,
-            "persistence": 0.25,
-            "buf_len": 256,
-            "octave_num": 5,
-            "wave_len": 1
-          },
-          "light_num": 1,
           "amplitude": 0.5,
-          "wave_len": 1.5,
-          "segs": 20,
           "amplitude_trans": null,
-          "use_normal": false,
-          "interval": 100,
-          "normal": [
-            0.0,
-            0.0,
-            0.0
-          ],
           "end_pos": [
             0.0,
             0.0,
             0.0
           ],
-          "pos1_enable": false,
           "filter_type": 1,
-          "width_start": 0.5,
+          "fix_wave_length": null,
+          "interval": 100,
+          "light_num": 1,
+          "noise_ctrl": {
+            "amplitude": 2.0,
+            "buf_len": 256,
+            "octave_num": 5,
+            "persistence": 0.25,
+            "wave_len": 1
+          },
+          "normal": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "num_waves": null,
+          "pos1_enable": false,
           "pos2_enable": false,
+          "segs": 20,
+          "start_pos": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "use_normal": false,
+          "wave_len": 1.5,
           "wave_moving": null,
           "wave_moving_speed": null,
           "width_end": 0.0,
-          "fix_wave_length": null
+          "width_mid": 0.30000001192092896,
+          "width_start": 0.5
         },
+        "kind": "lightning",
         "tail_lines": [
           "StartTime: 200",
           "KEYPOINTCOUNT: 1",
@@ -331,68 +329,68 @@
           "Pos: 2.200825, 6.323191, 0.843894"
         ]
       },
-      "tex_file": "序列\\fgfg2.dds",
-      "priority": 4
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed3",
+      "priority": 4,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "序列\\fgfg2.dds",
+      "tex_interval": 120,
       "tex_row": 4,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 120,
       "type_id": 150,
-      "tex_col": 1,
-      "name": "Unnamed4",
+      "z_enable": 1
+    },
+    {
       "body": {
-        "kind": "lightning",
         "fields": {
-          "num_waves": null,
           "alpha_end": 0.0,
-          "width_mid": 0.30000001192092896,
           "alpha_mid": 0.6499999761581421,
           "alpha_start": 1.0,
-          "start_pos": [
-            0.0,
-            0.0,
-            0.0
-          ],
-          "noise_ctrl": {
-            "amplitude": 2.0,
-            "persistence": 0.25,
-            "buf_len": 256,
-            "octave_num": 5,
-            "wave_len": 1
-          },
-          "light_num": 1,
           "amplitude": 0.5,
-          "wave_len": 1.5,
-          "segs": 20,
           "amplitude_trans": null,
-          "use_normal": false,
-          "interval": 100,
-          "normal": [
-            0.0,
-            0.0,
-            0.0
-          ],
           "end_pos": [
             0.0,
             0.0,
             0.0
           ],
-          "pos1_enable": false,
           "filter_type": 1,
-          "width_start": 0.5,
+          "fix_wave_length": null,
+          "interval": 100,
+          "light_num": 1,
+          "noise_ctrl": {
+            "amplitude": 2.0,
+            "buf_len": 256,
+            "octave_num": 5,
+            "persistence": 0.25,
+            "wave_len": 1
+          },
+          "normal": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "num_waves": null,
+          "pos1_enable": false,
           "pos2_enable": false,
+          "segs": 20,
+          "start_pos": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "use_normal": false,
+          "wave_len": 1.5,
           "wave_moving": null,
           "wave_moving_speed": null,
           "width_end": 0.0,
-          "fix_wave_length": null
+          "width_mid": 0.30000001192092896,
+          "width_start": 0.5
         },
+        "kind": "lightning",
         "tail_lines": [
           "StartTime: 350",
           "KEYPOINTCOUNT: 1",
@@ -414,25 +412,31 @@
           "Pos: 0.962676, 6.323191, 0.843894"
         ]
       },
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "Unnamed4",
+      "priority": 4,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
       "tex_file": "序列\\fgfg2.dds",
-      "priority": 4
+      "tex_interval": 120,
+      "tex_row": 4,
+      "tile_mode": 0,
+      "type_id": 150,
+      "z_enable": 1
     },
     {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 140,
-      "tex_col": 1,
-      "name": "Unnamed8",
       "body": {
-        "kind": "ring",
         "height": 1.2999999523162842,
+        "kind": "ring",
+        "no_hei_scale": true,
+        "no_rad_scale": false,
+        "org_at_center": true,
+        "pitch": -0.5235990285873413,
+        "radius": 0.699999988079071,
+        "sects": 0,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 2",
@@ -464,33 +468,91 @@
           "StartTime: 0.000000",
           "EndTime: -1.000000",
           "ColorDelta: -600, -600, -600, -600"
-        ],
-        "no_hei_scale": true,
-        "radius": 0.699999988079071,
-        "no_rad_scale": false,
-        "org_at_center": true,
-        "sects": 0,
-        "pitch": -0.5235990285873413
+        ]
       },
-      "tex_file": "圆环光\\circle017.dds",
-      "priority": 4
-    },
-    {
+      "dest_blend": 2,
       "is_dummy": 0,
+      "name": "Unnamed8",
+      "priority": 4,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "圆环光\\circle017.dds",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
       "type_id": 140,
-      "tex_col": 1,
+      "z_enable": 1
+    },
+    {
+      "body": {
+        "height": 1.2999999523162842,
+        "kind": "ring",
+        "no_hei_scale": true,
+        "no_rad_scale": false,
+        "org_at_center": true,
+        "pitch": -0.5235990285873413,
+        "radius": 0.699999988079071,
+        "sects": 0,
+        "tail_lines": [
+          "StartTime: 0",
+          "KEYPOINTCOUNT: 2",
+          "InterpolateMode: 0",
+          "TimeSpan: 125",
+          "Position: 0.000000, 0.520000, 0.000000",
+          "Color: -2493441",
+          "Scale: 1.000000",
+          "Direction: 0.000000, 0.000000, 0.000000, 1.000000",
+          "Rad_2D: 0.000000",
+          "CtrlMethodCount: 1",
+          "CtrlType: 106",
+          "StartTime: 0.000000",
+          "EndTime: -1.000000",
+          "ScaleChage: 20.000000, 0.010000, 9999.000000",
+          "InterpolateMode: 0",
+          "TimeSpan: 1500",
+          "Position: 0.000000, 0.000000, 0.000000",
+          "Color: -1",
+          "Scale: 1.000000",
+          "Direction: 0.000000, 0.000000, 0.000000, 1.000000",
+          "Rad_2D: 0.000000",
+          "CtrlMethodCount: 2",
+          "CtrlType: 106",
+          "StartTime: 0.000000",
+          "EndTime: -1.000000",
+          "ScaleChage: 10.000000, 0.010000, 9999.000000",
+          "CtrlType: 105",
+          "StartTime: 0.000000",
+          "EndTime: -1.000000",
+          "ColorDelta: -600, -600, -600, -600"
+        ]
+      },
+      "dest_blend": 2,
+      "is_dummy": 0,
       "name": "Unnamed17",
+      "priority": 4,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "圆环光\\circle017.dds",
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 140,
+      "z_enable": 1
+    },
+    {
       "body": {
-        "kind": "ring",
         "height": 1.2999999523162842,
+        "kind": "ring",
+        "no_hei_scale": true,
+        "no_rad_scale": false,
+        "org_at_center": true,
+        "pitch": -0.5235990285873413,
+        "radius": 0.699999988079071,
+        "sects": 0,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 2",
@@ -522,91 +584,33 @@
           "StartTime: 0.000000",
           "EndTime: -1.000000",
           "ColorDelta: -600, -600, -600, -600"
-        ],
-        "no_hei_scale": true,
-        "radius": 0.699999988079071,
-        "no_rad_scale": false,
-        "org_at_center": true,
-        "sects": 0,
-        "pitch": -0.5235990285873413
+        ]
       },
-      "tex_file": "圆环光\\circle017.dds",
-      "priority": 4
-    },
-    {
-      "is_dummy": 0,
-      "src_blend": 5,
-      "tex_row": 1,
-      "tile_mode": 0,
-      "repeat_delay": 0,
       "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
-      "type_id": 140,
-      "tex_col": 1,
+      "is_dummy": 0,
       "name": "Unnamed18",
-      "body": {
-        "kind": "ring",
-        "height": 1.2999999523162842,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 2",
-          "InterpolateMode: 0",
-          "TimeSpan: 125",
-          "Position: 0.000000, 0.520000, 0.000000",
-          "Color: -2493441",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.000000, 1.000000",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 1",
-          "CtrlType: 106",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "ScaleChage: 20.000000, 0.010000, 9999.000000",
-          "InterpolateMode: 0",
-          "TimeSpan: 1500",
-          "Position: 0.000000, 0.000000, 0.000000",
-          "Color: -1",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.000000, 1.000000",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 2",
-          "CtrlType: 106",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "ScaleChage: 10.000000, 0.010000, 9999.000000",
-          "CtrlType: 105",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "ColorDelta: -600, -600, -600, -600"
-        ],
-        "no_hei_scale": true,
-        "radius": 0.699999988079071,
-        "no_rad_scale": false,
-        "org_at_center": true,
-        "sects": 0,
-        "pitch": -0.5235990285873413
-      },
-      "tex_file": "圆环光\\circle017.dds",
-      "priority": 4
-    },
-    {
-      "is_dummy": 0,
+      "priority": 4,
+      "repeat_count": 1,
+      "repeat_delay": 0,
       "src_blend": 5,
+      "tex_col": 1,
+      "tex_file": "圆环光\\circle017.dds",
+      "tex_interval": 50,
       "tex_row": 1,
       "tile_mode": 0,
-      "repeat_delay": 0,
-      "dest_blend": 2,
-      "repeat_count": 1,
-      "z_enable": 1,
-      "tex_interval": 50,
       "type_id": 140,
-      "tex_col": 1,
-      "name": "Unnamed20",
+      "z_enable": 1
+    },
+    {
       "body": {
-        "kind": "ring",
         "height": 1.2999999523162842,
+        "kind": "ring",
+        "no_hei_scale": true,
+        "no_rad_scale": false,
+        "org_at_center": true,
+        "pitch": -0.5235990285873413,
+        "radius": 0.699999988079071,
+        "sects": 0,
         "tail_lines": [
           "StartTime: 0",
           "KEYPOINTCOUNT: 2",
@@ -638,33 +642,29 @@
           "StartTime: 0.000000",
           "EndTime: -1.000000",
           "ColorDelta: -600, -600, -600, -600"
-        ],
-        "no_hei_scale": true,
-        "radius": 0.699999988079071,
-        "no_rad_scale": false,
-        "org_at_center": true,
-        "sects": 0,
-        "pitch": -0.5235990285873413
+        ]
       },
+      "dest_blend": 2,
+      "is_dummy": 0,
+      "name": "Unnamed20",
+      "priority": 4,
+      "repeat_count": 1,
+      "repeat_delay": 0,
+      "src_blend": 5,
+      "tex_col": 1,
       "tex_file": "圆环光\\circle017.dds",
-      "priority": 4
+      "tex_interval": 50,
+      "tex_row": 1,
+      "tile_mode": 0,
+      "type_id": 140,
+      "z_enable": 1
     }
   ],
-  "version": 96,
   "face_to_viewer": 0,
-  "default_scale": 2.299999952316284,
   "fade_by_dist": 0,
   "fade_end": 0.0,
+  "fade_start": 0.0,
   "play_speed": 0.5,
-  "aabb_max": [
-    45.13478088378906,
-    14.543338775634766,
-    45.13478088378906
-  ],
-  "default_alpha": 1.0,
-  "aabb_min": [
-    -45.13478088378906,
-    -1.5036940574645996,
-    -45.13478088378906
-  ]
+  "use_aabb": 1,
+  "version": 96
 }
