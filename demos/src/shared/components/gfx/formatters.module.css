@@ -1,0 +1,25 @@
+.monoNum { font: 400 12px/1.4 var(--gfx-font-data); color: var(--gfx-text); font-variant-numeric: tabular-nums; }
+
+.vec3 {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0;
+  font: 400 12px/1.4 var(--gfx-font-data);
+  font-variant-numeric: tabular-nums;
+}
+.vec3Cell { padding: 0; }
+.vec3Cell + .vec3Cell::before { content: ', '; color: var(--gfx-text-dim); }
+
+.swatch { display: inline-flex; align-items: center; gap: 6px; }
+.swatchFill { width: 14px; height: 14px; outline: 1px solid var(--gfx-border); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12); flex-shrink: 0; }
+.swatchHex { font: 400 11px/1 var(--gfx-font-data); color: var(--gfx-text-muted); }
+
+.boolDot { display: inline-flex; align-items: baseline; gap: 5px; font: 400 11px/1.4 var(--gfx-font-data); letter-spacing: 0.3px; }
+.dotOn { color: var(--gfx-acc-data); font-size: 9px; }
+.dotOff { color: var(--gfx-text-dim); font-size: 9px; }
+.boolLabel { color: var(--gfx-text-muted); text-transform: uppercase; }
+
+.path { font: 400 11px/1.4 var(--gfx-font-data); color: var(--gfx-text); }
+.pathArrow { margin-left: 6px; color: var(--gfx-acc-data); }
+
+.monoJson { font: 400 10px/1.3 var(--gfx-font-data); color: var(--gfx-text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
