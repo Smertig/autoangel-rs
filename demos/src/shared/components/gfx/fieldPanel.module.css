@@ -1,0 +1,24 @@
+.panel { display: flex; flex-direction: column; gap: 1px; }
+
+.row {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 1px 0;
+}
+.label {
+  flex: 0 0 140px;
+  font: 500 10px/1.5 var(--gfx-font-data);
+  text-transform: lowercase;
+  color: var(--gfx-text-muted);
+  word-break: break-word;
+}
+.value {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--gfx-text);
+  font: 400 12px/1.4 var(--gfx-font-data);
+  text-align: left;
+}
+
+.divider { height: 1px; background: var(--gfx-rule); margin: 6px 0; }
