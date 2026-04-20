@@ -967,6 +967,20 @@ class SoundAudioEvent:
     max_dist: float
 
 
+@final
+class TrailPerturbSpreading:
+    """Trail ``Spreading`` perturb sub-block (v>=122, ``perturb_mode == 1``)."""
+    disappear_speed: float
+    spread_speed: float
+    spread_seg_count: int
+    spread_acceleration: float
+    spread_dir_min: Tuple[float, float, float]
+    spread_dir_max: Tuple[float, float, float]
+    disappear_acceleration: float
+    spread_delay: float
+    disappear_delay: float
+
+
 class ElementBody:
     """Typed body for a GFX element. Accessed via :attr:`GfxElement.body`.
 
@@ -995,7 +1009,7 @@ class ElementBody:
         surface_use_parent_dir: Optional[bool]
         max_extent: Optional[float]
         yaw_effect: Optional[bool]
-        tail_lines: List[str]
+        screen_space: Optional[bool]
 
     @final
     class Trail:
@@ -1010,8 +1024,8 @@ class ElementBody:
         spline: Optional[int]
         sample_freq: Optional[int]
         perturb_mode: Optional[int]
+        trail_perturb: Optional[TrailPerturbSpreading]
         face_camera: Optional[bool]
-        tail_lines: List[str]
 
     @final
     class Light:
@@ -1030,7 +1044,6 @@ class ElementBody:
         theta: float
         phi: float
         inner_use: Optional[bool]
-        tail_lines: List[str]
 
     @final
     class Ring:
@@ -1042,7 +1055,6 @@ class ElementBody:
         no_rad_scale: Optional[bool]
         no_hei_scale: Optional[bool]
         org_at_center: Optional[bool]
-        tail_lines: List[str]
 
     @final
     class Model:
@@ -1054,7 +1066,6 @@ class ElementBody:
         write_z: Optional[bool]
         use_3d_cam: Optional[bool]
         facing_dir: Optional[bool]
-        tail_lines: List[str]
 
     @final
     class Container:
@@ -1064,7 +1075,6 @@ class ElementBody:
         loop_flag: Optional[bool]
         play_speed: Optional[float]
         dummy_use_g_scale: Optional[bool]
-        tail_lines: List[str]
 
     @final
     class Particle:
@@ -1083,7 +1093,6 @@ class ElementBody:
         init_random_texture: Optional[bool]
         z_offset: Optional[float]
         emitter: Emitter
-        tail_lines: List[str]
 
     @final
     class GridDecal3D:
@@ -1098,13 +1107,11 @@ class ElementBody:
         rot_from_view: Optional[bool]
         offset_height: Optional[float]
         always_on_ground: Optional[bool]
-        tail_lines: List[str]
 
     @final
     class Lightning:
         """Body of a Lightning element (type 150) — segmented lightning bolt between two points."""
         fields: LightningFields
-        tail_lines: List[str]
 
     @final
     class LtnBolt:
@@ -1122,7 +1129,6 @@ class ElementBody:
         interval: int
         per_bolts: int
         circles: int
-        tail_lines: List[str]
 
     @final
     class LightningEx:
@@ -1133,7 +1139,6 @@ class ElementBody:
         is_tail_disappear: Optional[bool]
         verts_life: Optional[int]
         is_tail_fadeout: Optional[bool]
-        tail_lines: List[str]
 
     @final
     class Sound:
@@ -1141,7 +1146,134 @@ class ElementBody:
         paths: List[str]
         param_info: SoundParamInfo
         audio_event: Optional[SoundAudioEvent]
-        tail_lines: List[str]
+
+
+class KpCtrlBody:
+    """Typed controller body. Narrow with :func:`isinstance`.
+
+    The full set of variants mirrors the ``CreateKPCtrl`` dispatch in
+    ``A3DGFXKeyPoint.cpp``. Unknown CtrlTypes fall back to
+    ``KpCtrlBody.Unknown``.
+    """
+
+    @final
+    class Move:
+        """CtrlType 100 — linear translation."""
+        dir: Tuple[float, float, float]
+        vel: float
+        acc: float
+
+    @final
+    class Rot:
+        """CtrlType 101 — 2D rotation around origin."""
+        vel: float
+        acc: float
+
+    @final
+    class RotAxis:
+        """CtrlType 102 — rotation around arbitrary axis."""
+        pos: Tuple[float, float, float]
+        axis: Tuple[float, float, float]
+        vel: float
+        acc: float
+
+    @final
+    class Revol:
+        """CtrlType 103 — revolution (orbit around an axis)."""
+        pos: Tuple[float, float, float]
+        axis: Tuple[float, float, float]
+        vel: float
+        acc: float
+
+    @final
+    class CentriMove:
+        """CtrlType 104 — centripetal force toward a point."""
+        center: Tuple[float, float, float]
+        vel: float
+        acc: float
+
+    @final
+    class Color:
+        """CtrlType 105 — signed ARGB deltas per second."""
+        color_delta: Tuple[int, int, int, int]
+
+    @final
+    class Scale:
+        """CtrlType 106 — scale delta with min/max clamp."""
+        scale_delta: float
+        min_scale: float
+        max_scale: float
+
+    @final
+    class ClNoise:
+        """CtrlType 107 — color noise overlay (``NoiseCtrl`` prefix + ``BaseColor``)."""
+        noise: NoiseCtrl
+        base_color: int
+
+    @final
+    class ClTrans:
+        """CtrlType 108 — color transition track."""
+        color_origin: int
+        dest_colors: List[int]
+        trans_times_ms: List[float]
+        alpha_only: Optional[bool]
+
+    @final
+    class ScaNoise:
+        """CtrlType 109 — scale noise overlay."""
+        noise: NoiseCtrl
+
+    @final
+    class CurveMove:
+        """CtrlType 110 — movement along a cubic-bezier curve."""
+        calc_dir: Optional[bool]
+        vertices: List[Tuple[float, float, float]]
+
+    @final
+    class ScaleTrans:
+        """CtrlType 111 — scale transition track."""
+        scale_origin: float
+        dest_scales: List[float]
+        trans_times_ms: List[float]
+
+    @final
+    class NoiseBase:
+        """CtrlType 112 — base Perlin-like noise controller."""
+        noise: NoiseCtrl
+
+    @final
+    class Unknown:
+        """Unknown ``CtrlType`` — raw lines preserved for forward compatibility."""
+        ctrl_type: int
+        raw_lines: List[str]
+
+
+@final
+class KpController:
+    """Single keypoint controller — same wire format as a particle affector."""
+    start_time: Optional[float]
+    end_time: Optional[float]
+    body: KpCtrlBody
+
+
+@final
+class KeyPoint:
+    """One animation keyframe — transform snapshot plus per-frame controller overlays."""
+    interpolate_mode: int
+    time_span: int
+    position: Tuple[float, float, float]
+    color: int
+    scale: float
+    direction: Tuple[float, float, float, float]
+    rad_2d: float
+    controllers: List[KpController]
+
+
+@final
+class KeyPointSet:
+    """Animation keyframe track attached to most GFX elements."""
+    start_time: int
+    keypoints: List[KeyPoint]
 
 
 @final
@@ -1162,6 +1294,8 @@ class GfxElement:
     is_dummy: int
     priority: int
     body: ElementBody
+    affectors: List[KpController]
+    key_point_set: Optional[KeyPointSet]
 
 
 @final

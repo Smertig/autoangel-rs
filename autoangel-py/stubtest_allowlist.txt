@@ -14,9 +14,11 @@ autoangel.ElementsDataList.__iter__
 # documents the read-only fields, which is what consumers use.
 autoangel\.ElementBody\.\w+\.__new__
 autoangel\.EmitterShape\.\w+\.__new__
+autoangel\.KpCtrlBody\.\w+\.__new__
 
 # PyO3 complex-enum parent classes register as "disjoint bases" at
 # runtime (can't be multiply-inherited). Not worth marking the stub
 # classes with `@disjoint_base` — users never subclass these.
 autoangel.ElementBody
 autoangel.EmitterShape
+autoangel.KpCtrlBody

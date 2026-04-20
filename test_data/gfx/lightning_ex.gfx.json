@@ -13,6 +13,7 @@
   "default_scale": 1.0,
   "elements": [
     {
+      "affectors": [],
       "body": {
         "grnd_norm_only": false,
         "height": 0.054999999701976776,
@@ -30,24 +31,36 @@
         "rot_from_view": false,
         "screen_space": null,
         "surface_use_parent_dir": false,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: -0.169078, 0.000000, 0.000000",
-          "Color: -16777216",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, -0.976296, 0.216439",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "width": 0.02500000037252903,
         "yaw_effect": false,
         "z_offset": 0.0
       },
       "dest_blend": 6,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4278190080,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.0,
+              -0.9762960076332092,
+              0.21643899381160736
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              -0.1690780073404312,
+              0.0,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed2",
       "priority": 1,
       "repeat_count": 1,
@@ -62,6 +75,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "grnd_norm_only": false,
         "height": 0.08500000089406967,
@@ -79,24 +93,36 @@
         "rot_from_view": false,
         "screen_space": null,
         "surface_use_parent_dir": false,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: -0.069830, 0.038095, 0.000000",
-          "Color: -16777216",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, -0.675590, 0.737278",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "width": 0.014999999664723873,
         "yaw_effect": false,
         "z_offset": 0.0
       },
       "dest_blend": 6,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4278190080,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.0,
+              -0.6755899786949158,
+              0.7372779846191406
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              -0.06983000040054321,
+              0.03809500113129616,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed3",
       "priority": 1,
       "repeat_count": 1,
@@ -111,6 +137,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "grnd_norm_only": false,
         "height": 0.07500000298023224,
@@ -128,24 +155,36 @@
         "rot_from_view": false,
         "screen_space": null,
         "surface_use_parent_dir": false,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: -0.069392, 0.038710, 0.000000",
-          "Color: -16777216",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, -0.675590, 0.737278",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "width": 0.02500000037252903,
         "yaw_effect": false,
         "z_offset": 0.0
       },
       "dest_blend": 6,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4278190080,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.0,
+              -0.6755899786949158,
+              0.7372779846191406
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              -0.06939200311899185,
+              0.03871000185608864,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed4",
       "priority": 1,
       "repeat_count": 1,
@@ -160,6 +199,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "grnd_norm_only": false,
         "height": 0.05000000074505806,
@@ -177,24 +217,36 @@
         "rot_from_view": false,
         "screen_space": null,
         "surface_use_parent_dir": false,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: -0.028978, 0.012635, 0.000000",
-          "Color: -16777216",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, -0.906308, -0.422618",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "width": 0.03500000014901161,
         "yaw_effect": false,
         "z_offset": 0.0
       },
       "dest_blend": 6,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4278190080,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.0,
+              -0.9063079953193665,
+              -0.42261800169944763
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              -0.028977999463677406,
+              0.012635000050067902,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed5",
       "priority": 1,
       "repeat_count": 1,
@@ -209,6 +261,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "grnd_norm_only": false,
         "height": 0.07999999821186066,
@@ -226,24 +279,36 @@
         "rot_from_view": false,
         "screen_space": null,
         "surface_use_parent_dir": false,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: -0.049599, -0.007543, 0.000000",
-          "Color: -16777216",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, -0.461748, 0.887011",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "width": 0.014999999664723873,
         "yaw_effect": false,
         "z_offset": 0.0
       },
       "dest_blend": 6,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4278190080,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.0,
+              -0.46174800395965576,
+              0.8870109915733337
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              -0.049598999321460724,
+              -0.007542999926954508,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed6",
       "priority": 1,
       "repeat_count": 1,
@@ -258,6 +323,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "grnd_norm_only": false,
         "height": 0.20000000298023224,
@@ -275,24 +341,36 @@
         "rot_from_view": false,
         "screen_space": null,
         "surface_use_parent_dir": false,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: -0.086631, -0.067080, 0.000000",
-          "Color: -16777216",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, -1.000000, -0.000000",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "width": 0.019999999552965164,
         "yaw_effect": false,
         "z_offset": 0.0
       },
       "dest_blend": 6,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4278190080,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.0,
+              -1.0,
+              -0.0
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              -0.08663100004196167,
+              -0.06707999855279922,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed7",
       "priority": 1,
       "repeat_count": 1,
@@ -307,6 +385,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "grnd_norm_only": false,
         "height": 0.05000000074505806,
@@ -324,24 +403,36 @@
         "rot_from_view": false,
         "screen_space": null,
         "surface_use_parent_dir": false,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: -0.086631, -0.283003, 0.000000",
-          "Color: -16777216",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.000000, 1.000000",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "width": 0.02500000037252903,
         "yaw_effect": false,
         "z_offset": 0.0
       },
       "dest_blend": 6,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4278190080,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              -0.08663100004196167,
+              -0.2830030024051666,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed8",
       "priority": 1,
       "repeat_count": 1,
@@ -356,6 +447,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "grnd_norm_only": false,
         "height": 0.03500000014901161,
@@ -373,24 +465,36 @@
         "rot_from_view": false,
         "screen_space": null,
         "surface_use_parent_dir": false,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: 0.027856, -0.116649, 0.000000",
-          "Color: -16777216",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.923880, 0.382683",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "width": 0.019999999552965164,
         "yaw_effect": false,
         "z_offset": 0.0
       },
       "dest_blend": 6,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4278190080,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.0,
+              0.9238799810409546,
+              0.38268300890922546
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.027855999767780304,
+              -0.11664900183677673,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed9",
       "priority": 1,
       "repeat_count": 1,
@@ -405,6 +509,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "grnd_norm_only": false,
         "height": 0.029999999329447746,
@@ -422,24 +527,36 @@
         "rot_from_view": false,
         "screen_space": null,
         "surface_use_parent_dir": false,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: 0.031525, -0.144220, 0.000000",
-          "Color: -16777216",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.887011, -0.461749",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "width": 0.014999999664723873,
         "yaw_effect": false,
         "z_offset": 0.0
       },
       "dest_blend": 6,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4278190080,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.0,
+              0.8870109915733337,
+              -0.46174898743629456
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.03152500092983246,
+              -0.1442199945449829,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed10",
       "priority": 1,
       "repeat_count": 1,
@@ -454,6 +571,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "grnd_norm_only": false,
         "height": 0.03500000014901161,
@@ -471,24 +589,36 @@
         "rot_from_view": false,
         "screen_space": null,
         "surface_use_parent_dir": false,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: 0.033889, -0.140456, 0.000000",
-          "Color: -16777216",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.537300, 0.843391",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "width": 0.02500000037252903,
         "yaw_effect": false,
         "z_offset": 0.0
       },
       "dest_blend": 6,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4278190080,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.0,
+              0.5372999906539917,
+              0.8433910012245178
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.03388899937272072,
+              -0.14045600593090057,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed11",
       "priority": 1,
       "repeat_count": 1,
@@ -503,6 +633,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "grnd_norm_only": false,
         "height": 0.05000000074505806,
@@ -520,24 +651,36 @@
         "rot_from_view": false,
         "screen_space": null,
         "surface_use_parent_dir": false,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: 0.023612, -0.167140, 0.000000",
-          "Color: -16777216",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.819152, 0.573576",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "width": 0.019999999552965164,
         "yaw_effect": false,
         "z_offset": 0.0
       },
       "dest_blend": 6,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4278190080,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.0,
+              0.8191519975662231,
+              0.5735759735107422
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.023612000048160553,
+              -0.16714000701904297,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed12",
       "priority": 1,
       "repeat_count": 1,
@@ -552,6 +695,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "grnd_norm_only": false,
         "height": 0.05000000074505806,
@@ -569,24 +713,36 @@
         "rot_from_view": false,
         "screen_space": null,
         "surface_use_parent_dir": false,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: 0.026594, -0.171053, 0.000000",
-          "Color: -16777216",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.819152, 0.573576",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "width": 0.019999999552965164,
         "yaw_effect": false,
         "z_offset": 0.0
       },
       "dest_blend": 6,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4278190080,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.0,
+              0.8191519975662231,
+              0.5735759735107422
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.026593999937176704,
+              -0.17105300724506378,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed13",
       "priority": 1,
       "repeat_count": 1,
@@ -601,6 +757,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "grnd_norm_only": false,
         "height": 0.06499999761581421,
@@ -618,24 +775,36 @@
         "rot_from_view": false,
         "screen_space": null,
         "surface_use_parent_dir": false,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: 0.049664, -0.197077, 0.000000",
-          "Color: -16777216",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.999048, -0.043619",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "width": 0.014999999664723873,
         "yaw_effect": false,
         "z_offset": 0.0
       },
       "dest_blend": 6,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4278190080,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.0,
+              0.9990479946136475,
+              -0.04361899942159653
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.04966399818658829,
+              -0.19707700610160828,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed14",
       "priority": 1,
       "repeat_count": 1,
@@ -650,6 +819,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "grnd_norm_only": false,
         "height": 0.05000000074505806,
@@ -667,24 +837,36 @@
         "rot_from_view": false,
         "screen_space": null,
         "surface_use_parent_dir": false,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: 0.030825, -0.215754, 0.000000",
-          "Color: -16777216",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.939693, -0.342020",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "width": 0.014999999664723873,
         "yaw_effect": false,
         "z_offset": 0.0
       },
       "dest_blend": 6,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4278190080,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.0,
+              0.9396929740905762,
+              -0.3420200049877167
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.030825000256299973,
+              -0.21575400233268738,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed15",
       "priority": 1,
       "repeat_count": 1,
@@ -699,6 +881,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "grnd_norm_only": false,
         "height": 0.054999999701976776,
@@ -716,24 +899,36 @@
         "rot_from_view": false,
         "screen_space": null,
         "surface_use_parent_dir": false,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: 0.049664, -0.211995, 0.000000",
-          "Color: -16777216",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, -0.043619, -0.999048",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "width": 0.019999999552965164,
         "yaw_effect": false,
         "z_offset": 0.0
       },
       "dest_blend": 6,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4278190080,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.0,
+              -0.04361899942159653,
+              -0.9990479946136475
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.04966399818658829,
+              -0.21199500560760498,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed16",
       "priority": 1,
       "repeat_count": 1,
@@ -748,6 +943,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "grnd_norm_only": false,
         "height": 0.03500000014901161,
@@ -765,24 +961,36 @@
         "rot_from_view": false,
         "screen_space": null,
         "surface_use_parent_dir": false,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: 0.033161, -0.174939, 0.000000",
-          "Color: -16777216",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.991445, 0.130526",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "width": 0.014999999664723873,
         "yaw_effect": false,
         "z_offset": 0.0
       },
       "dest_blend": 6,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4278190080,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.0,
+              0.991445004940033,
+              0.13052600622177124
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.03316099941730499,
+              -0.17493900656700134,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed17",
       "priority": 1,
       "repeat_count": 1,
@@ -797,6 +1005,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "grnd_norm_only": false,
         "height": 0.07500000298023224,
@@ -814,24 +1023,36 @@
         "rot_from_view": false,
         "screen_space": null,
         "surface_use_parent_dir": false,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: 0.086343, -0.171953, 0.000000",
-          "Color: -16777216",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.843391, 0.537300",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "width": 0.014999999664723873,
         "yaw_effect": false,
         "z_offset": 0.0
       },
       "dest_blend": 6,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4278190080,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.0,
+              0.8433910012245178,
+              0.5372999906539917
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.08634299784898758,
+              -0.1719529926776886,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed18",
       "priority": 1,
       "repeat_count": 1,
@@ -846,6 +1067,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "grnd_norm_only": false,
         "height": 0.06499999761581421,
@@ -863,24 +1085,36 @@
         "rot_from_view": false,
         "screen_space": null,
         "surface_use_parent_dir": false,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: 0.097262, -0.168025, 0.000000",
-          "Color: -16777216",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, -0.537300, 0.843391",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "width": 0.019999999552965164,
         "yaw_effect": false,
         "z_offset": 0.0
       },
       "dest_blend": 6,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4278190080,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.0,
+              -0.5372999906539917,
+              0.8433910012245178
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.09726200252771378,
+              -0.16802500188350677,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed19",
       "priority": 1,
       "repeat_count": 1,
@@ -895,6 +1129,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "fields": {
           "alpha_end": 1.0,
@@ -955,31 +1190,65 @@
         "is_tail_fadeout": false,
         "kind": "lightning_ex",
         "render_side": 0,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: 0.000000, 0.000000, 0.000000",
-          "Color: -16777216",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.000000, 1.000000",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 1",
-          "CtrlType: 110",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "CalcDir: 0",
-          "Count: 4",
-          "Pos: 0.114373, -0.121196, 0.000000",
-          "Pos: 0.111891, -0.171707, 0.000000",
-          "Pos: 0.103106, -0.218720, 0.000000",
-          "Pos: 0.070615, -0.239814, 0.000000"
-        ],
         "verts_life": 1000
       },
       "dest_blend": 6,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4278190080,
+            "controllers": [
+              {
+                "body": {
+                  "calc_dir": false,
+                  "kind": "curve_move",
+                  "vertices": [
+                    [
+                      0.11437299847602844,
+                      -0.12119600176811218,
+                      0.0
+                    ],
+                    [
+                      0.1118910014629364,
+                      -0.17170700430870056,
+                      0.0
+                    ],
+                    [
+                      0.10310599952936172,
+                      -0.21872000396251678,
+                      0.0
+                    ],
+                    [
+                      0.0706150010228157,
+                      -0.23981399834156036,
+                      0.0
+                    ]
+                  ]
+                },
+                "end_time": -1.0,
+                "start_time": 0.0
+              }
+            ],
+            "direction": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed20",
       "priority": 1,
       "repeat_count": 1,
@@ -994,6 +1263,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "grnd_norm_only": false,
         "height": 0.029999999329447746,
@@ -1011,24 +1281,36 @@
         "rot_from_view": false,
         "screen_space": null,
         "surface_use_parent_dir": false,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: 0.168285, -0.210983, 0.000000",
-          "Color: -16777216",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, -0.819152, 0.573576",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "width": 0.019999999552965164,
         "yaw_effect": false,
         "z_offset": 0.0
       },
       "dest_blend": 6,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4278190080,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.0,
+              -0.8191519975662231,
+              0.5735759735107422
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.16828499734401703,
+              -0.21098299324512482,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed21",
       "priority": 1,
       "repeat_count": 1,

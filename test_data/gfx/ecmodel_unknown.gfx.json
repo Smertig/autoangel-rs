@@ -13,6 +13,7 @@
   "default_scale": 1.0,
   "elements": [
     {
+      "affectors": [],
       "body": {
         "kind": "unknown",
         "lines": [
@@ -49,6 +50,7 @@
       },
       "dest_blend": 6,
       "is_dummy": 0,
+      "key_point_set": null,
       "name": "Unnamed28",
       "priority": 0,
       "repeat_count": -1,

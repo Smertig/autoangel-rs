@@ -21,7 +21,13 @@ pub fn init_py(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<gfx::NoiseCtrl>()?;
     m.add_class::<gfx::FloatValueTrans>()?;
     m.add_class::<gfx::LightningFields>()?;
+    m.add_class::<gfx::TrailPerturbSpreading>()?;
     m.add_class::<gfx::SoundParamInfo>()?;
     m.add_class::<gfx::SoundAudioEvent>()?;
+    // KeyPointSet + controller types, reachable from `GfxElement`.
+    m.add_class::<gfx::KeyPointSet>()?;
+    m.add_class::<gfx::KeyPoint>()?;
+    m.add_class::<gfx::KpController>()?;
+    m.add_class::<gfx::KpCtrlBody>()?;
     Ok(())
 }

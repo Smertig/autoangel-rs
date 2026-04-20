@@ -13,6 +13,7 @@
   "default_scale": 1.5,
   "elements": [
     {
+      "affectors": [],
       "body": {
         "grnd_norm_only": false,
         "height": 1.5,
@@ -30,39 +31,60 @@
         "rot_from_view": false,
         "screen_space": null,
         "surface_use_parent_dir": null,
-        "tail_lines": [
-          "StartTime: 500",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: 2000",
-          "Position: 0.000000, 0.080000, 0.000000",
-          "Color: -2522881",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.000000, 1.000000",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 1",
-          "CtrlType: 108",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "Color: -16777216",
-          "Count: 5",
-          "Color: -1763540737",
-          "TimeSpan: 300.000000",
-          "Color: -1776373535",
-          "TimeSpan: 300.000000",
-          "Color: -1765802240",
-          "TimeSpan: 300.000000",
-          "Color: -1764982529",
-          "TimeSpan: 300.000000",
-          "Color: -1775332143",
-          "TimeSpan: 300.000000"
-        ],
         "width": 1.5,
         "yaw_effect": null,
         "z_offset": null
       },
       "dest_blend": 2,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4292444415,
+            "controllers": [
+              {
+                "body": {
+                  "alpha_only": null,
+                  "color_origin": 4278190080,
+                  "dest_colors": [
+                    2531426559,
+                    2518593761,
+                    2529165056,
+                    2529984767,
+                    2519635153
+                  ],
+                  "kind": "cl_trans",
+                  "trans_times_ms": [
+                    300.0,
+                    300.0,
+                    300.0,
+                    300.0,
+                    300.0
+                  ]
+                },
+                "end_time": -1.0,
+                "start_time": 0.0
+              }
+            ],
+            "direction": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.0,
+              0.07999999821186066,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": 2000
+          }
+        ],
+        "start_time": 500
+      },
       "name": "Unnamed16",
       "priority": 2,
       "repeat_count": -1,
@@ -77,6 +99,45 @@
       "z_enable": 1
     },
     {
+      "affectors": [
+        {
+          "body": {
+            "acc": 0.0,
+            "center": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "centri_move",
+            "vel": 0.5
+          },
+          "end_time": -1.0,
+          "start_time": 0.0
+        },
+        {
+          "body": {
+            "color_delta": [
+              0,
+              0,
+              0,
+              -500
+            ],
+            "kind": "color"
+          },
+          "end_time": -1.0,
+          "start_time": 0.5
+        },
+        {
+          "body": {
+            "kind": "scale",
+            "max_scale": 9999.0,
+            "min_scale": 0.009999999776482582,
+            "scale_delta": 1.0
+          },
+          "end_time": -1.0,
+          "start_time": 0.0
+        }
+      ],
       "body": {
         "emitter": {
           "acc": 0.0,
@@ -132,38 +193,35 @@
         "quota": -1,
         "scale_no_off": false,
         "stop_emit_when_fade": null,
-        "tail_lines": [
-          "AffectorCount: 3",
-          "CtrlType: 104",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "Pos: 0.000000, 0.000000, 0.000000",
-          "Vel: 0.500000",
-          "Acc: 0.000000",
-          "CtrlType: 105",
-          "StartTime: 0.500000",
-          "EndTime: -1.000000",
-          "ColorDelta: 0, 0, 0, -500",
-          "CtrlType: 106",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "ScaleChage: 1.000000, 0.010000, 9999.000000",
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: 0.000000, 0.000000, 0.000000",
-          "Color: -1",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.000000, 1.000000",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "three_d_particle": true,
         "z_offset": null
       },
       "dest_blend": 2,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4294967295,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed8",
       "priority": 2,
       "repeat_count": 1,
@@ -178,6 +236,57 @@
       "z_enable": 1
     },
     {
+      "affectors": [
+        {
+          "body": {
+            "acc": 0.0,
+            "center": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "centri_move",
+            "vel": 1.0
+          },
+          "end_time": -1.0,
+          "start_time": 0.0
+        },
+        {
+          "body": {
+            "alpha_only": null,
+            "color_origin": 16755712,
+            "dest_colors": [
+              4294951259,
+              4294964185,
+              16774623
+            ],
+            "kind": "cl_trans",
+            "trans_times_ms": [
+              200.0,
+              600.0,
+              200.0
+            ]
+          },
+          "end_time": -1.0,
+          "start_time": 0.0
+        },
+        {
+          "body": {
+            "dest_scales": [
+              1.0,
+              0.30000001192092896
+            ],
+            "kind": "scale_trans",
+            "scale_origin": 0.30000001192092896,
+            "trans_times_ms": [
+              500.0,
+              500.0
+            ]
+          },
+          "end_time": -1.0,
+          "start_time": 0.0
+        }
+      ],
       "body": {
         "emitter": {
           "acc": 0.20000000298023224,
@@ -233,50 +342,35 @@
         "quota": -1,
         "scale_no_off": false,
         "stop_emit_when_fade": null,
-        "tail_lines": [
-          "AffectorCount: 3",
-          "CtrlType: 104",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "Pos: 0.000000, 0.000000, 0.000000",
-          "Vel: 1.000000",
-          "Acc: 0.000000",
-          "CtrlType: 108",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "Color: 16755712",
-          "Count: 3",
-          "Color: -16037",
-          "TimeSpan: 200.000000",
-          "Color: -3111",
-          "TimeSpan: 600.000000",
-          "Color: 16774623",
-          "TimeSpan: 200.000000",
-          "CtrlType: 111",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "Scale: 0.300000",
-          "Count: 2",
-          "Scale: 1.000000",
-          "TimeSpan: 500.000000",
-          "Scale: 0.300000",
-          "TimeSpan: 500.000000",
-          "StartTime: 250",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: 0.000000, 0.000000, 0.000000",
-          "Color: -1",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.000000, 1.000000",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "three_d_particle": false,
         "z_offset": null
       },
       "dest_blend": 2,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4294967295,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 250
+      },
       "name": "Unnamed2",
       "priority": 2,
       "repeat_count": 1,
@@ -291,6 +385,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "grnd_norm_only": false,
         "height": 1.0,
@@ -308,37 +403,69 @@
         "rot_from_view": false,
         "screen_space": null,
         "surface_use_parent_dir": null,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: 1500",
-          "Position: 0.000000, 0.000000, 0.000000",
-          "Color: -32768",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.000000, 1.000000",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 3",
-          "CtrlType: 106",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "ScaleChage: 0.900000, 0.010000, 9999.000000",
-          "CtrlType: 101",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "Vel: 0.349066",
-          "Acc: 0.000000",
-          "CtrlType: 105",
-          "StartTime: 0.500000",
-          "EndTime: -1.000000",
-          "ColorDelta: 0, 0, 0, -500"
-        ],
         "width": 1.0,
         "yaw_effect": null,
         "z_offset": null
       },
       "dest_blend": 2,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4294934528,
+            "controllers": [
+              {
+                "body": {
+                  "kind": "scale",
+                  "max_scale": 9999.0,
+                  "min_scale": 0.009999999776482582,
+                  "scale_delta": 0.8999999761581421
+                },
+                "end_time": -1.0,
+                "start_time": 0.0
+              },
+              {
+                "body": {
+                  "acc": 0.0,
+                  "kind": "rot",
+                  "vel": 0.34906598925590515
+                },
+                "end_time": -1.0,
+                "start_time": 0.0
+              },
+              {
+                "body": {
+                  "color_delta": [
+                    0,
+                    0,
+                    0,
+                    -500
+                  ],
+                  "kind": "color"
+                },
+                "end_time": -1.0,
+                "start_time": 0.5
+              }
+            ],
+            "direction": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": 1500
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed14",
       "priority": 2,
       "repeat_count": -1,
@@ -353,6 +480,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "grnd_norm_only": false,
         "height": 1.0,
@@ -370,37 +498,69 @@
         "rot_from_view": false,
         "screen_space": null,
         "surface_use_parent_dir": null,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: 1500",
-          "Position: 0.000000, 0.000000, 0.000000",
-          "Color: -32768",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.000000, 1.000000",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 3",
-          "CtrlType: 106",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "ScaleChage: 0.900000, 0.010000, 9999.000000",
-          "CtrlType: 101",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "Vel: -0.349066",
-          "Acc: 0.000000",
-          "CtrlType: 105",
-          "StartTime: 0.500000",
-          "EndTime: -1.000000",
-          "ColorDelta: 0, 0, 0, -500"
-        ],
         "width": 1.0,
         "yaw_effect": null,
         "z_offset": null
       },
       "dest_blend": 2,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4294934528,
+            "controllers": [
+              {
+                "body": {
+                  "kind": "scale",
+                  "max_scale": 9999.0,
+                  "min_scale": 0.009999999776482582,
+                  "scale_delta": 0.8999999761581421
+                },
+                "end_time": -1.0,
+                "start_time": 0.0
+              },
+              {
+                "body": {
+                  "acc": 0.0,
+                  "kind": "rot",
+                  "vel": -0.34906598925590515
+                },
+                "end_time": -1.0,
+                "start_time": 0.0
+              },
+              {
+                "body": {
+                  "color_delta": [
+                    0,
+                    0,
+                    0,
+                    -500
+                  ],
+                  "kind": "color"
+                },
+                "end_time": -1.0,
+                "start_time": 0.5
+              }
+            ],
+            "direction": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": 1500
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed15",
       "priority": 2,
       "repeat_count": -1,
@@ -415,6 +575,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "ambient": 4278190080,
         "attenuation0": 0.0,
@@ -438,37 +599,58 @@
         ],
         "range": 10.0,
         "specular": 4278190080,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: 2000",
-          "Position: 0.000000, 0.080000, 0.000000",
-          "Color: -2522881",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.000000, 1.000000",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 1",
-          "CtrlType: 108",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "Color: -16777216",
-          "Count: 5",
-          "Color: -1933057",
-          "TimeSpan: 300.000000",
-          "Color: -14765855",
-          "TimeSpan: 300.000000",
-          "Color: -4194560",
-          "TimeSpan: 300.000000",
-          "Color: -3374849",
-          "TimeSpan: 300.000000",
-          "Color: -13724463",
-          "TimeSpan: 300.000000"
-        ],
         "theta": 0.0
       },
       "dest_blend": 2,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4292444415,
+            "controllers": [
+              {
+                "body": {
+                  "alpha_only": null,
+                  "color_origin": 4278190080,
+                  "dest_colors": [
+                    4293034239,
+                    4280201441,
+                    4290772736,
+                    4291592447,
+                    4281242833
+                  ],
+                  "kind": "cl_trans",
+                  "trans_times_ms": [
+                    300.0,
+                    300.0,
+                    300.0,
+                    300.0,
+                    300.0
+                  ]
+                },
+                "end_time": -1.0,
+                "start_time": 0.0
+              }
+            ],
+            "direction": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.0,
+              0.07999999821186066,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": 2000
+          }
+        ],
+        "start_time": 0
+      },
       "name": "黄色光源",
       "priority": 2,
       "repeat_count": 1,
@@ -483,6 +665,45 @@
       "z_enable": 1
     },
     {
+      "affectors": [
+        {
+          "body": {
+            "acc": 0.0,
+            "center": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "centri_move",
+            "vel": 1.5
+          },
+          "end_time": -1.0,
+          "start_time": 0.0
+        },
+        {
+          "body": {
+            "color_delta": [
+              0,
+              0,
+              0,
+              -500
+            ],
+            "kind": "color"
+          },
+          "end_time": -1.0,
+          "start_time": 0.5
+        },
+        {
+          "body": {
+            "kind": "scale",
+            "max_scale": 9999.0,
+            "min_scale": 0.009999999776482582,
+            "scale_delta": 1.0
+          },
+          "end_time": -1.0,
+          "start_time": 0.0
+        }
+      ],
       "body": {
         "emitter": {
           "acc": 0.0,
@@ -538,38 +759,35 @@
         "quota": 80,
         "scale_no_off": false,
         "stop_emit_when_fade": null,
-        "tail_lines": [
-          "AffectorCount: 3",
-          "CtrlType: 104",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "Pos: 0.000000, 0.000000, 0.000000",
-          "Vel: 1.500000",
-          "Acc: 0.000000",
-          "CtrlType: 105",
-          "StartTime: 0.500000",
-          "EndTime: -1.000000",
-          "ColorDelta: 0, 0, 0, -500",
-          "CtrlType: 106",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "ScaleChage: 1.000000, 0.010000, 9999.000000",
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: 0.000000, 0.000000, 0.000000",
-          "Color: -1",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.000000, 1.000000",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "three_d_particle": true,
         "z_offset": null
       },
       "dest_blend": 2,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4294967295,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed1",
       "priority": 2,
       "repeat_count": 1,
@@ -584,6 +802,57 @@
       "z_enable": 1
     },
     {
+      "affectors": [
+        {
+          "body": {
+            "acc": 0.0,
+            "center": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "kind": "centri_move",
+            "vel": 2.0
+          },
+          "end_time": -1.0,
+          "start_time": 0.0
+        },
+        {
+          "body": {
+            "alpha_only": null,
+            "color_origin": 16755712,
+            "dest_colors": [
+              4294951259,
+              4294964185,
+              16774623
+            ],
+            "kind": "cl_trans",
+            "trans_times_ms": [
+              200.0,
+              600.0,
+              200.0
+            ]
+          },
+          "end_time": -1.0,
+          "start_time": 0.0
+        },
+        {
+          "body": {
+            "dest_scales": [
+              1.0,
+              0.30000001192092896
+            ],
+            "kind": "scale_trans",
+            "scale_origin": 0.30000001192092896,
+            "trans_times_ms": [
+              500.0,
+              500.0
+            ]
+          },
+          "end_time": -1.0,
+          "start_time": 0.0
+        }
+      ],
       "body": {
         "emitter": {
           "acc": 0.20000000298023224,
@@ -639,50 +908,35 @@
         "quota": 20,
         "scale_no_off": false,
         "stop_emit_when_fade": null,
-        "tail_lines": [
-          "AffectorCount: 3",
-          "CtrlType: 104",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "Pos: 0.000000, 0.000000, 0.000000",
-          "Vel: 2.000000",
-          "Acc: 0.000000",
-          "CtrlType: 108",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "Color: 16755712",
-          "Count: 3",
-          "Color: -16037",
-          "TimeSpan: 200.000000",
-          "Color: -3111",
-          "TimeSpan: 600.000000",
-          "Color: 16774623",
-          "TimeSpan: 200.000000",
-          "CtrlType: 111",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "Scale: 0.300000",
-          "Count: 2",
-          "Scale: 1.000000",
-          "TimeSpan: 500.000000",
-          "Scale: 0.300000",
-          "TimeSpan: 500.000000",
-          "StartTime: 250",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: 0.000000, 0.000000, 0.000000",
-          "Color: -1",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.000000, 1.000000",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "three_d_particle": false,
         "z_offset": null
       },
       "dest_blend": 2,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4294967295,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 250
+      },
       "name": "Unnamed4",
       "priority": 2,
       "repeat_count": 1,
@@ -697,6 +951,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "grnd_norm_only": false,
         "height": 1.5,
@@ -714,37 +969,69 @@
         "rot_from_view": false,
         "screen_space": null,
         "surface_use_parent_dir": null,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: 1500",
-          "Position: 0.000000, 0.000000, 0.000000",
-          "Color: -3132",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.000000, 1.000000",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 3",
-          "CtrlType: 106",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "ScaleChage: 0.900000, 0.010000, 9999.000000",
-          "CtrlType: 101",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "Vel: -0.349066",
-          "Acc: 0.000000",
-          "CtrlType: 105",
-          "StartTime: 0.500000",
-          "EndTime: -1.000000",
-          "ColorDelta: 0, 0, 0, -500"
-        ],
         "width": 1.5,
         "yaw_effect": null,
         "z_offset": null
       },
       "dest_blend": 2,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4294964164,
+            "controllers": [
+              {
+                "body": {
+                  "kind": "scale",
+                  "max_scale": 9999.0,
+                  "min_scale": 0.009999999776482582,
+                  "scale_delta": 0.8999999761581421
+                },
+                "end_time": -1.0,
+                "start_time": 0.0
+              },
+              {
+                "body": {
+                  "acc": 0.0,
+                  "kind": "rot",
+                  "vel": -0.34906598925590515
+                },
+                "end_time": -1.0,
+                "start_time": 0.0
+              },
+              {
+                "body": {
+                  "color_delta": [
+                    0,
+                    0,
+                    0,
+                    -500
+                  ],
+                  "kind": "color"
+                },
+                "end_time": -1.0,
+                "start_time": 0.5
+              }
+            ],
+            "direction": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": 1500
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed5",
       "priority": 2,
       "repeat_count": 1,
@@ -759,6 +1046,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "grnd_norm_only": false,
         "height": 1.0,
@@ -776,37 +1064,69 @@
         "rot_from_view": false,
         "screen_space": null,
         "surface_use_parent_dir": null,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: 1500",
-          "Position: 0.000000, 0.000000, 0.000000",
-          "Color: -3132",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.000000, 1.000000",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 3",
-          "CtrlType: 106",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "ScaleChage: 0.900000, 0.010000, 9999.000000",
-          "CtrlType: 101",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "Vel: -0.349066",
-          "Acc: 0.000000",
-          "CtrlType: 105",
-          "StartTime: 0.500000",
-          "EndTime: -1.000000",
-          "ColorDelta: 0, 0, 0, -500"
-        ],
         "width": 1.0,
         "yaw_effect": null,
         "z_offset": null
       },
       "dest_blend": 2,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4294964164,
+            "controllers": [
+              {
+                "body": {
+                  "kind": "scale",
+                  "max_scale": 9999.0,
+                  "min_scale": 0.009999999776482582,
+                  "scale_delta": 0.8999999761581421
+                },
+                "end_time": -1.0,
+                "start_time": 0.0
+              },
+              {
+                "body": {
+                  "acc": 0.0,
+                  "kind": "rot",
+                  "vel": -0.34906598925590515
+                },
+                "end_time": -1.0,
+                "start_time": 0.0
+              },
+              {
+                "body": {
+                  "color_delta": [
+                    0,
+                    0,
+                    0,
+                    -500
+                  ],
+                  "kind": "color"
+                },
+                "end_time": -1.0,
+                "start_time": 0.5
+              }
+            ],
+            "direction": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": 1500
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed6",
       "priority": 2,
       "repeat_count": 1,
@@ -821,6 +1141,35 @@
       "z_enable": 1
     },
     {
+      "affectors": [
+        {
+          "body": {
+            "kind": "scale",
+            "max_scale": 9999.0,
+            "min_scale": 0.0,
+            "scale_delta": 1.0
+          },
+          "end_time": -1.0,
+          "start_time": 0.0
+        },
+        {
+          "body": {
+            "alpha_only": null,
+            "color_origin": 4278190080,
+            "dest_colors": [
+              4294901744,
+              4278190080
+            ],
+            "kind": "cl_trans",
+            "trans_times_ms": [
+              100.0,
+              200.0
+            ]
+          },
+          "end_time": -1.0,
+          "start_time": 0.0
+        }
+      ],
       "body": {
         "emitter": {
           "acc": 0.0,
@@ -873,50 +1222,61 @@
         "quota": -1,
         "scale_no_off": false,
         "stop_emit_when_fade": null,
-        "tail_lines": [
-          "AffectorCount: 2",
-          "CtrlType: 106",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "ScaleChage: 1.000000, 0.000000, 9999.000000",
-          "CtrlType: 108",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "Color: -16777216",
-          "Count: 2",
-          "Color: -65552",
-          "TimeSpan: 100.000000",
-          "Color: -16777216",
-          "TimeSpan: 200.000000",
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: 0.000000, 0.000000, 0.000000",
-          "Color: -922746881",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.000000, 0.000000, 1.000000",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 2",
-          "CtrlType: 107",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "BufLen: 256",
-          "Amplitude: 2.000000",
-          "WaveLen: 1",
-          "Persistence: 0.250000",
-          "OctaveNum: 5",
-          "BaseColor: -1599986",
-          "CtrlType: 106",
-          "StartTime: 0.000000",
-          "EndTime: -1.000000",
-          "ScaleChage: 0.000000, 0.010000, 9999.000000"
-        ],
         "three_d_particle": true,
         "z_offset": null
       },
       "dest_blend": 2,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 3372220415,
+            "controllers": [
+              {
+                "body": {
+                  "base_color": 4293367310,
+                  "kind": "cl_noise",
+                  "noise": {
+                    "amplitude": 2.0,
+                    "buf_len": 256,
+                    "octave_num": 5,
+                    "persistence": 0.25,
+                    "wave_len": 1
+                  }
+                },
+                "end_time": -1.0,
+                "start_time": 0.0
+              },
+              {
+                "body": {
+                  "kind": "scale",
+                  "max_scale": 9999.0,
+                  "min_scale": 0.009999999776482582,
+                  "scale_delta": 0.0
+                },
+                "end_time": -1.0,
+                "start_time": 0.0
+              }
+            ],
+            "direction": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed3",
       "priority": 2,
       "repeat_count": -1,
