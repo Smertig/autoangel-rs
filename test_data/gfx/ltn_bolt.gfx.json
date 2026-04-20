@@ -66,6 +66,7 @@
         "no_scale": null,
         "org_pt": null,
         "rot_from_view": false,
+        "screen_space": null,
         "surface_use_parent_dir": null,
         "tail_lines": [
           "StartTime: 0",
@@ -129,6 +130,7 @@
         "no_scale": null,
         "org_pt": null,
         "rot_from_view": false,
+        "screen_space": null,
         "surface_use_parent_dir": null,
         "tail_lines": [
           "StartTime: 0",
@@ -192,6 +194,7 @@
         "no_scale": null,
         "org_pt": null,
         "rot_from_view": false,
+        "screen_space": null,
         "surface_use_parent_dir": null,
         "tail_lines": [
           "StartTime: 0",
@@ -247,6 +250,7 @@
         "no_scale": null,
         "org_pt": null,
         "rot_from_view": false,
+        "screen_space": null,
         "surface_use_parent_dir": null,
         "tail_lines": [
           "StartTime: 0",
@@ -302,6 +306,7 @@
         "no_scale": null,
         "org_pt": null,
         "rot_from_view": false,
+        "screen_space": null,
         "surface_use_parent_dir": null,
         "tail_lines": [
           "StartTime: 0",

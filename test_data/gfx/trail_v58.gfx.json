@@ -139,6 +139,7 @@
           0.5
         ],
         "rot_from_view": false,
+        "screen_space": null,
         "surface_use_parent_dir": null,
         "tail_lines": [
           "StartTime: 0",
@@ -200,6 +201,7 @@
           0.5
         ],
         "rot_from_view": false,
+        "screen_space": null,
         "surface_use_parent_dir": null,
         "tail_lines": [
           "StartTime: 0",
@@ -292,7 +294,8 @@
           "Axis: 0.000000, 1.000000, 0.000000",
           "Vel: 5.235988",
           "Acc: 0.000000"
-        ]
+        ],
+        "trail_perturb": null
       },
       "dest_blend": 2,
       "is_dummy": 0,
@@ -349,7 +352,8 @@
           "Axis: 0.000000, 0.000000, 1.000000",
           "Vel: 5.235988",
           "Acc: 0.000000"
-        ]
+        ],
+        "trail_perturb": null
       },
       "dest_blend": 2,
       "is_dummy": 0,
@@ -406,7 +410,8 @@
           "Axis: 0.000000, 0.000000, 1.000000",
           "Vel: 5.235988",
           "Acc: 0.000000"
-        ]
+        ],
+        "trail_perturb": null
       },
       "dest_blend": 2,
       "is_dummy": 0,
@@ -546,6 +551,7 @@
           0.5
         ],
         "rot_from_view": false,
+        "screen_space": null,
         "surface_use_parent_dir": null,
         "tail_lines": [
           "StartTime: 0",
@@ -631,7 +637,8 @@
           "Axis: 0.000000, 1.000000, 0.000000",
           "Vel: 5.235988",
           "Acc: 0.000000"
-        ]
+        ],
+        "trail_perturb": null
       },
       "dest_blend": 2,
       "is_dummy": 0,
@@ -688,7 +695,8 @@
           "Axis: 0.000000, 0.000000, 1.000000",
           "Vel: 5.235988",
           "Acc: 0.000000"
-        ]
+        ],
+        "trail_perturb": null
       },
       "dest_blend": 2,
       "is_dummy": 0,
@@ -745,7 +753,8 @@
           "Axis: 0.000000, 0.000000, 1.000000",
           "Vel: 5.235988",
           "Acc: 0.000000"
-        ]
+        ],
+        "trail_perturb": null
       },
       "dest_blend": 2,
       "is_dummy": 0,
@@ -802,7 +811,8 @@
           "Axis: 0.000000, 1.000000, 0.000000",
           "Vel: 5.235988",
           "Acc: 0.000000"
-        ]
+        ],
+        "trail_perturb": null
       },
       "dest_blend": 2,
       "is_dummy": 0,
@@ -859,7 +869,8 @@
           "Axis: 0.000000, 0.000000, 1.000000",
           "Vel: 5.235988",
           "Acc: 0.000000"
-        ]
+        ],
+        "trail_perturb": null
       },
       "dest_blend": 2,
       "is_dummy": 0,
@@ -1090,7 +1101,8 @@
           "Axis: 0.000000, 1.000000, 0.000000",
           "Vel: 6.283185",
           "Acc: 0.000000"
-        ]
+        ],
+        "trail_perturb": null
       },
       "dest_blend": 2,
       "is_dummy": 1,

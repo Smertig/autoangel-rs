@@ -152,6 +152,8 @@ pub enum ElementBody {
         surface_use_parent_dir: Option<bool>,
         max_extent: Option<f32>,
         yaw_effect: Option<bool>,
+        /// `ScreenSpace: %d` (v>=115) — engine's `m_b2DScreenDimension`.
+        screen_space: Option<bool>,
         tail_lines: Vec<String>,
     },
     /// Ribbon trail between two moving endpoints (type 110).
@@ -167,6 +169,8 @@ pub enum ElementBody {
         spline: Option<i32>,
         sample_freq: Option<i32>,
         perturb_mode: Option<i32>,
+        /// Perturb `Spreading` sub-block (v>=122 and `perturb_mode == 1`).
+        trail_perturb: Option<TrailPerturbSpreading>,
         face_camera: Option<bool>,
         tail_lines: Vec<String>,
     },
@@ -327,6 +331,21 @@ impl ElementBody {
         };
         lines.join("\n")
     }
+}
+
+/// Trail `Spreading` perturb sub-block (v>=122, `PerturbMode == 1`).
+/// Mirrors `A3DTrail::Load`'s `eTrailPerturbMode_Spreading` branch.
+#[apply(bindable)]
+pub struct TrailPerturbSpreading {
+    pub disappear_speed: f32,
+    pub spread_speed: f32,
+    pub spread_seg_count: i32,
+    pub spread_acceleration: f32,
+    pub spread_dir_min: [f32; 3],
+    pub spread_dir_max: [f32; 3],
+    pub disappear_acceleration: f32,
+    pub spread_delay: f32,
+    pub disappear_delay: f32,
 }
 
 /// Particle emitter block — shared emitter fields plus shape-specific
@@ -774,6 +793,7 @@ fn parse_decal_body(r: &mut Lines<'_>, version: u32) -> Result<ElementBody> {
     let surface_use_parent_dir = r.read_if::<bool>(version >= 86, "SurfaceUseParentDir")?;
     let max_extent = r.read_if::<f32>(version >= 55, "MaxExtent")?;
     let yaw_effect = r.read_if::<bool>(version >= 61, "YawEffect")?;
+    let screen_space = r.read_if::<bool>(version >= 115, "ScreenSpace")?;
     let tail_lines = collect_tail(r)?;
     Ok(ElementBody::Decal {
         width,
@@ -787,6 +807,7 @@ fn parse_decal_body(r: &mut Lines<'_>, version: u32) -> Result<ElementBody> {
         surface_use_parent_dir,
         max_extent,
         yaw_effect,
+        screen_space,
         tail_lines,
     })
 }
@@ -1355,6 +1376,23 @@ fn parse_trail_body(r: &mut Lines<'_>, version: u32) -> Result<ElementBody> {
     let spline = r.read_if::<i32>(version >= 87, "Spline")?;
     let sample_freq = r.read_if::<i32>(version >= 111, "SampleFreq")?;
     let perturb_mode = r.read_if::<i32>(version >= 122, "PerturbMode")?;
+    // v>=122 + PerturbMode == 1 (eTrailPerturbMode_Spreading) emits a
+    // nine-line Spreading block before the v>=123 FaceCamera field.
+    let trail_perturb = if version >= 122 && perturb_mode == Some(1) {
+        Some(TrailPerturbSpreading {
+            disappear_speed: r.read::<f32>("DisappearSpeed")?,
+            spread_speed: r.read::<f32>("SpreadSpeed")?,
+            spread_seg_count: r.read::<i32>("SpreadSegCount")?,
+            spread_acceleration: r.read::<f32>("SpreadAcceleration")?,
+            spread_dir_min: r.read::<[f32; 3]>("SpreadDirRangeMin")?,
+            spread_dir_max: r.read::<[f32; 3]>("SpreadDirRangeMax")?,
+            disappear_acceleration: r.read::<f32>("DisappearAcceleration")?,
+            spread_delay: r.read::<f32>("SpreadDelay")?,
+            disappear_delay: r.read::<f32>("DisappearDelay")?,
+        })
+    } else {
+        None
+    };
     let face_camera = r.read_if::<bool>(version >= 123, "FaceCamera")?;
     let tail_lines = collect_tail(r)?;
     Ok(ElementBody::Trail {
@@ -1368,6 +1406,7 @@ fn parse_trail_body(r: &mut Lines<'_>, version: u32) -> Result<ElementBody> {
         spline,
         sample_freq,
         perturb_mode,
+        trail_perturb,
         face_camera,
         tail_lines,
     })
@@ -1693,6 +1732,7 @@ mod tests {
             surface_use_parent_dir,
             max_extent,
             yaw_effect,
+            screen_space,
             tail_lines,
         } = &effect.elements[0].body
         else {
@@ -1709,6 +1749,7 @@ mod tests {
         assert_eq!(*max_extent, Some(50.0));
         assert_eq!(*surface_use_parent_dir, None);
         assert_eq!(*yaw_effect, None);
+        assert_eq!(*screen_space, None);
         assert_eq!(tail_lines, &vec!["AffectorCount: 0"]);
     }
 
@@ -1902,6 +1943,121 @@ mod tests {
         };
         assert_eq!(area_size, [1.0, 0.5, 2.0]);
         assert_eq!(tail_lines, &vec!["AffectorCount: 0"]);
+    }
+
+    fn make_lines(body: &str) -> Lines<'_> {
+        Lines::new(body)
+    }
+
+    #[test]
+    fn parse_decal_body_v115_reads_screen_space() {
+        // v>=115 activates `ScreenSpace: %d` after `YawEffect`.
+        let input = concat!(
+            "Width: 1.000000\r\n",
+            "Height: 1.000000\r\n",
+            "RotFromView: 0\r\n",
+            "GrndNormOnly: 0\r\n",
+            "NoScale: 0\r\n",
+            "NoScale: 0\r\n",
+            "OrgPt: 0.500000\r\n",
+            "OrgPt: 0.500000\r\n",
+            "ZOffset: 0.000000\r\n",
+            "MatchSurface: 0\r\n",
+            "SurfaceUseParentDir: 0\r\n",
+            "MaxExtent: 0.000000\r\n",
+            "YawEffect: 0\r\n",
+            "ScreenSpace: 1\r\n",
+        );
+        let mut r = make_lines(input);
+        let body = super::parse_decal_body(&mut r, 115).unwrap();
+        let ElementBody::Decal { screen_space, .. } = body else {
+            panic!("expected decal body");
+        };
+        assert_eq!(screen_space, Some(true));
+    }
+
+    #[test]
+    fn parse_trail_body_v122_with_spreading_perturb() {
+        // v>=122 + PerturbMode == 1 emits the nine-line Spreading block
+        // between PerturbMode and FaceCamera.
+        let input = concat!(
+            "OrgPos1: 0.000000, 0.000000, 0.000000\r\n",
+            "OrgPos2: 0.000000, 1.000000, 0.000000\r\n",
+            "EnableMat: 1\r\n",
+            "EnableOrgPos1: 1\r\n",
+            "EnableOrgPos2: 1\r\n",
+            "SegLife: 300\r\n",
+            "Bind: 1\r\n",
+            "Spline: 0\r\n",
+            "SampleFreq: 5\r\n",
+            "PerturbMode: 1\r\n",
+            "DisappearSpeed: 1.500000\r\n",
+            "SpreadSpeed: 2.000000\r\n",
+            "SpreadSegCount: 3\r\n",
+            "SpreadAcceleration: 0.250000\r\n",
+            "SpreadDirRangeMin: -1.000000, -0.500000, -0.250000\r\n",
+            "SpreadDirRangeMax: 1.000000, 0.500000, 0.250000\r\n",
+            "DisappearAcceleration: -0.125000\r\n",
+            "SpreadDelay: 0.050000\r\n",
+            "DisappearDelay: 0.100000\r\n",
+            "FaceCamera: 1\r\n",
+        );
+        let mut r = make_lines(input);
+        let body = super::parse_trail_body(&mut r, 123).unwrap();
+        let ElementBody::Trail {
+            perturb_mode,
+            trail_perturb,
+            face_camera,
+            ..
+        } = body
+        else {
+            panic!("expected trail body");
+        };
+        assert_eq!(perturb_mode, Some(1));
+        let p = trail_perturb.expect("expected Spreading perturb block");
+        assert!((p.disappear_speed - 1.5).abs() < 1e-6);
+        assert!((p.spread_speed - 2.0).abs() < 1e-6);
+        assert_eq!(p.spread_seg_count, 3);
+        assert!((p.spread_acceleration - 0.25).abs() < 1e-6);
+        assert_eq!(p.spread_dir_min, [-1.0, -0.5, -0.25]);
+        assert_eq!(p.spread_dir_max, [1.0, 0.5, 0.25]);
+        assert!((p.disappear_acceleration - -0.125).abs() < 1e-6);
+        assert!((p.spread_delay - 0.05).abs() < 1e-6);
+        assert!((p.disappear_delay - 0.1).abs() < 1e-6);
+        assert_eq!(face_camera, Some(true));
+    }
+
+    #[test]
+    fn parse_trail_body_v122_perturb_mode_zero_skips_spreading() {
+        // v>=122 but PerturbMode != 1 → no Spreading block; parser
+        // proceeds directly to FaceCamera.
+        let input = concat!(
+            "OrgPos1: 0.000000, 0.000000, 0.000000\r\n",
+            "OrgPos2: 0.000000, 1.000000, 0.000000\r\n",
+            "EnableMat: 0\r\n",
+            "EnableOrgPos1: 0\r\n",
+            "EnableOrgPos2: 0\r\n",
+            "SegLife: 100\r\n",
+            "Bind: 0\r\n",
+            "Spline: 0\r\n",
+            "SampleFreq: 5\r\n",
+            "PerturbMode: 0\r\n",
+            "FaceCamera: 0\r\n",
+        );
+        let mut r = make_lines(input);
+        let body = super::parse_trail_body(&mut r, 123).unwrap();
+        let ElementBody::Trail {
+            perturb_mode,
+            trail_perturb,
+            face_camera,
+            ..
+        } = body
+        else {
+            panic!("expected trail body");
+        };
+        assert_eq!(perturb_mode, Some(0));
+        assert!(trail_perturb.is_none());
+        assert_eq!(face_camera, Some(false));
     }
 
     #[test]
