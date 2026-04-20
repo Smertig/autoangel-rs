@@ -18,15 +18,20 @@ export function useRenderEffect(
     run(container).catch((e: unknown) => {
       if (currentPathRef.current !== path) return;
       console.error('[model] Preview failed:', e);
-      disposeViewer();
+      disposeViewer(container);
       container.innerHTML = '';
       setError(`Model preview failed: ${e instanceof Error ? e.message : String(e)}`);
     });
   }, deps); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => () => {
-    disposeViewer();
-    if (containerRef.current) containerRef.current.innerHTML = '';
+  useEffect(() => {
+    const container = containerRef.current;
+    return () => {
+      if (container) {
+        disposeViewer(container);
+        container.innerHTML = '';
+      }
+    };
   }, []);
 
   return { containerRef, error };
