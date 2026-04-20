@@ -6,6 +6,7 @@ use macro_rules_attribute::apply;
 
 mod keypoint;
 pub use keypoint::{KeyPoint, KeyPointSet, KpController, KpCtrlBody};
+use keypoint::{parse_affector_list, parse_key_point_set};
 
 /// Type identifier for a GFX element.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -127,11 +128,19 @@ pub struct GfxElement {
     /// Typed element-specific body; unparsed types keep their raw lines in
     /// `ElementBody::Unknown`.
     pub body: ElementBody,
+    /// Particle affector controllers — always empty for non-particle
+    /// element types (the engine only emits `AffectorCount:` inside
+    /// `A3DParticleSystemEx::Load`).
+    pub affectors: Vec<KpController>,
+    /// Animation `KeyPointSet` appended to most elements. A small
+    /// minority of real-world elements (~0.6%) omit it — in that case
+    /// this field is `None`.
+    pub key_point_set: Option<KeyPointSet>,
 }
 
-/// Element-type-specific body data. Each variant holds the parsed
-/// fields inline plus any unparsed `tail_lines` (affector blocks +
-/// KeyPointSet) relevant to that element type.
+/// Element-type-specific body data. Each variant holds only its
+/// structurally-parsed fields — the affector list (for particle types)
+/// and the per-element `KeyPointSet` hang off `GfxElement` itself.
 #[apply(bindable)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum ElementBody {
@@ -154,7 +163,6 @@ pub enum ElementBody {
         yaw_effect: Option<bool>,
         /// `ScreenSpace: %d` (v>=115) — engine's `m_b2DScreenDimension`.
         screen_space: Option<bool>,
-        tail_lines: Vec<String>,
     },
     /// Ribbon trail between two moving endpoints (type 110).
     Trail {
@@ -172,7 +180,6 @@ pub enum ElementBody {
         /// Perturb `Spreading` sub-block (v>=122 and `perturb_mode == 1`).
         trail_perturb: Option<TrailPerturbSpreading>,
         face_camera: Option<bool>,
-        tail_lines: Vec<String>,
     },
     /// Dynamic light source (type 130). Mirrors D3D D3DLIGHT9 parameters
     /// plus an engine-specific `inner_use` flag.
@@ -191,7 +198,6 @@ pub enum ElementBody {
         theta: f32,
         phi: f32,
         inner_use: Option<bool>,
-        tail_lines: Vec<String>,
     },
     /// Expanding ring effect (type 140).
     Ring {
@@ -202,7 +208,6 @@ pub enum ElementBody {
         no_rad_scale: Option<bool>,
         no_hei_scale: Option<bool>,
         org_at_center: Option<bool>,
-        tail_lines: Vec<String>,
     },
     /// Embedded 3D model (type 160).
     Model {
@@ -213,7 +218,6 @@ pub enum ElementBody {
         write_z: Option<bool>,
         use_3d_cam: Option<bool>,
         facing_dir: Option<bool>,
-        tail_lines: Vec<String>,
     },
     /// Reference to another `.gfx` (type 200).
     Container {
@@ -223,7 +227,6 @@ pub enum ElementBody {
         play_speed: Option<f32>,
         /// Engine emits a shortened key `DummyUseGScale:` for this field.
         dummy_use_g_scale: Option<bool>,
-        tail_lines: Vec<String>,
     },
     /// Particle system (types 120 / 121 / 122 / 123 / 124 / 125).
     Particle {
@@ -243,8 +246,6 @@ pub enum ElementBody {
         init_random_texture: Option<bool>,
         z_offset: Option<f32>,
         emitter: Emitter,
-        /// AffectorCount + affector blocks + KeyPointSet, not yet structured.
-        tail_lines: Vec<String>,
     },
     /// Freeform w×h vertex grid with per-vertex colors (type 210).
     #[serde(rename = "grid_decal_3d")]
@@ -262,13 +263,9 @@ pub enum ElementBody {
         rot_from_view: Option<bool>,
         offset_height: Option<f32>,
         always_on_ground: Option<bool>,
-        tail_lines: Vec<String>,
     },
     /// Segmented lightning bolt between two points (type 150).
-    Lightning {
-        fields: LightningFields,
-        tail_lines: Vec<String>,
-    },
+    Lightning { fields: LightningFields },
     /// Branching lightning bolt with randomized paths (type 151). No
     /// `NoiseCtrl` prefix — just scalar parameters.
     LtnBolt {
@@ -285,7 +282,6 @@ pub enum ElementBody {
         interval: i32,
         per_bolts: i32,
         circles: i32,
-        tail_lines: Vec<String>,
     },
     /// Extended lightning with v>=67 tail fade / render-side flags (type 152).
     LightningEx {
@@ -295,7 +291,6 @@ pub enum ElementBody {
         is_tail_disappear: Option<bool>,
         verts_life: Option<i32>,
         is_tail_fadeout: Option<bool>,
-        tail_lines: Vec<String>,
     },
     /// 3D positional sound emitter (type 170).
     Sound {
@@ -306,30 +301,18 @@ pub enum ElementBody {
         /// New audio-event block (v>=96) — event path + distance /
         /// custom-attenuation flags.
         audio_event: Option<SoundAudioEvent>,
-        tail_lines: Vec<String>,
     },
 }
 
 impl ElementBody {
-    /// Raw body text for debug display — raw lines for `Unknown`, or the
-    /// unparsed affector/KeyPointSet tail for typed variants.
+    /// Raw body text for debug display. Typed variants no longer carry
+    /// trailing unparsed lines (affector list + `KeyPointSet` now live
+    /// on `GfxElement`), so only the `Unknown` fallback emits text.
     pub fn raw_text(&self) -> String {
-        let lines: &[String] = match self {
-            ElementBody::Unknown { lines } => lines,
-            ElementBody::Decal { tail_lines, .. }
-            | ElementBody::Trail { tail_lines, .. }
-            | ElementBody::Light { tail_lines, .. }
-            | ElementBody::Ring { tail_lines, .. }
-            | ElementBody::Model { tail_lines, .. }
-            | ElementBody::Container { tail_lines, .. }
-            | ElementBody::Particle { tail_lines, .. }
-            | ElementBody::GridDecal3D { tail_lines, .. }
-            | ElementBody::Lightning { tail_lines, .. }
-            | ElementBody::LtnBolt { tail_lines, .. }
-            | ElementBody::LightningEx { tail_lines, .. }
-            | ElementBody::Sound { tail_lines, .. } => tail_lines,
-        };
-        lines.join("\n")
+        match self {
+            ElementBody::Unknown { lines } => lines.join("\n"),
+            _ => String::new(),
+        }
     }
 }
 
@@ -794,7 +777,6 @@ fn parse_decal_body(r: &mut Lines<'_>, version: u32) -> Result<ElementBody> {
     let max_extent = r.read_if::<f32>(version >= 55, "MaxExtent")?;
     let yaw_effect = r.read_if::<bool>(version >= 61, "YawEffect")?;
     let screen_space = r.read_if::<bool>(version >= 115, "ScreenSpace")?;
-    let tail_lines = collect_tail(r)?;
     Ok(ElementBody::Decal {
         width,
         height,
@@ -808,7 +790,6 @@ fn parse_decal_body(r: &mut Lines<'_>, version: u32) -> Result<ElementBody> {
         max_extent,
         yaw_effect,
         screen_space,
-        tail_lines,
     })
 }
 
@@ -830,7 +811,6 @@ fn parse_light_body(r: &mut Lines<'_>, version: u32) -> Result<ElementBody> {
     let theta = r.read::<f32>("Theta")?;
     let phi = r.read::<f32>("Phi")?;
     let inner_use = r.read_if::<bool>(version >= 119, "InnerUse")?;
-    let tail_lines = collect_tail(r)?;
     Ok(ElementBody::Light {
         light_type,
         diffuse,
@@ -846,7 +826,6 @@ fn parse_light_body(r: &mut Lines<'_>, version: u32) -> Result<ElementBody> {
         theta,
         phi,
         inner_use,
-        tail_lines,
     })
 }
 
@@ -858,7 +837,6 @@ fn parse_ring_body(r: &mut Lines<'_>, version: u32) -> Result<ElementBody> {
     let no_rad_scale = r.read_if::<bool>(version >= 14, "NoRadScale")?;
     let no_hei_scale = r.read_if::<bool>(version >= 14, "NoHeiScale")?;
     let org_at_center = r.read_if::<bool>(version >= 15, "OrgAtCenter")?;
-    let tail_lines = collect_tail(r)?;
     Ok(ElementBody::Ring {
         radius,
         height,
@@ -867,7 +845,6 @@ fn parse_ring_body(r: &mut Lines<'_>, version: u32) -> Result<ElementBody> {
         no_rad_scale,
         no_hei_scale,
         org_at_center,
-        tail_lines,
     })
 }
 
@@ -879,7 +856,6 @@ fn parse_model_body(r: &mut Lines<'_>, version: u32) -> Result<ElementBody> {
     let write_z = r.read_if::<bool>(version >= 49, "WriteZ")?;
     let use_3d_cam = r.read_if::<bool>(version >= 77, "Use3DCam")?;
     let facing_dir = r.read_if::<bool>(version >= 99, "FacingDir")?;
-    let tail_lines = collect_tail(r)?;
     Ok(ElementBody::Model {
         model_path,
         model_act_name,
@@ -888,7 +864,6 @@ fn parse_model_body(r: &mut Lines<'_>, version: u32) -> Result<ElementBody> {
         write_z,
         use_3d_cam,
         facing_dir,
-        tail_lines,
     })
 }
 
@@ -920,7 +895,6 @@ fn parse_particle_body(
     let z_offset = r.read_if::<f32>(version >= 108, "ZOffset")?;
 
     let emitter = parse_emitter(r, version, element_type)?;
-    let tail_lines = collect_tail(r)?;
     Ok(ElementBody::Particle {
         quota,
         particle_width,
@@ -936,7 +910,6 @@ fn parse_particle_body(
         init_random_texture,
         z_offset,
         emitter,
-        tail_lines,
     })
 }
 
@@ -1094,7 +1067,6 @@ fn parse_grid_decal_body(r: &mut Lines<'_>, version: u32) -> Result<ElementBody>
     let rot_from_view = r.read_if::<bool>(version >= 100, "RotFromView")?;
     let offset_height = r.read_if::<f32>(version >= 101, "fOffsetHeight")?;
     let always_on_ground = r.read_if::<bool>(version >= 114, "bAlwaysOnGround")?;
-    let tail_lines = collect_tail(r)?;
     Ok(ElementBody::GridDecal3D {
         w_number,
         h_number,
@@ -1106,7 +1078,6 @@ fn parse_grid_decal_body(r: &mut Lines<'_>, version: u32) -> Result<ElementBody>
         rot_from_view,
         offset_height,
         always_on_ground,
-        tail_lines,
     })
 }
 
@@ -1247,7 +1218,6 @@ fn parse_lightning_fields(r: &mut Lines<'_>, version: u32) -> Result<LightningFi
 fn parse_lightning_body(r: &mut Lines<'_>, version: u32) -> Result<ElementBody> {
     Ok(ElementBody::Lightning {
         fields: parse_lightning_fields(r, version)?,
-        tail_lines: collect_tail(r)?,
     })
 }
 
@@ -1259,7 +1229,6 @@ fn parse_lightning_ex_body(r: &mut Lines<'_>, version: u32) -> Result<ElementBod
         is_tail_disappear: r.read_if(version >= 68, "istaildisappear")?,
         verts_life: r.read_if(version >= 68, "vertslife")?,
         is_tail_fadeout: r.read_if(version >= 69, "tailfadeout")?,
-        tail_lines: collect_tail(r)?,
     })
 }
 
@@ -1278,7 +1247,6 @@ fn parse_ltn_bolt_body(r: &mut Lines<'_>, _version: u32) -> Result<ElementBody> 
         interval: r.read("Interval")?,
         per_bolts: r.read("PerBolts")?,
         circles: r.read("Circles")?,
-        tail_lines: collect_tail(r)?,
     })
 }
 
@@ -1344,7 +1312,6 @@ fn parse_sound_body(r: &mut Lines<'_>, version: u32) -> Result<ElementBody> {
         audio_event: (version >= 96)
             .then(|| parse_sound_audio_event(r))
             .transpose()?,
-        tail_lines: collect_tail(r)?,
     })
 }
 
@@ -1354,14 +1321,12 @@ fn parse_container_body(r: &mut Lines<'_>, version: u32) -> Result<ElementBody> 
     let loop_flag = r.read_if::<bool>(version >= 56, "LoopFlag")?;
     let play_speed = r.read_if::<f32>(version >= 78, "PlaySpeed")?;
     let dummy_use_g_scale = r.read_if::<bool>(version >= 94, "DummyUseGScale")?;
-    let tail_lines = collect_tail(r)?;
     Ok(ElementBody::Container {
         gfx_path,
         out_color,
         loop_flag,
         play_speed,
         dummy_use_g_scale,
-        tail_lines,
     })
 }
 
@@ -1394,7 +1359,6 @@ fn parse_trail_body(r: &mut Lines<'_>, version: u32) -> Result<ElementBody> {
         None
     };
     let face_camera = r.read_if::<bool>(version >= 123, "FaceCamera")?;
-    let tail_lines = collect_tail(r)?;
     Ok(ElementBody::Trail {
         org_pos1,
         org_pos2,
@@ -1408,7 +1372,6 @@ fn parse_trail_body(r: &mut Lines<'_>, version: u32) -> Result<ElementBody> {
         perturb_mode,
         trail_perturb,
         face_camera,
-        tail_lines,
     })
 }
 
@@ -1495,6 +1458,33 @@ fn parse_element(r: &mut Lines<'_>, version: u32) -> Result<GfxElement> {
 
     let body = parse_body(r, version, &element_type)?;
 
+    // Particle types emit an `AffectorCount:` block (from
+    // `A3DParticleSystemEx::Load`) before the `KeyPointSet`. Other
+    // element types jump straight to the `KeyPointSet`.
+    let is_particle = matches!(
+        element_type,
+        GfxElementType::ParticlePoint
+            | GfxElementType::ParticleBox
+            | GfxElementType::ParticleMultiplane
+            | GfxElementType::ParticleEllipsoid
+            | GfxElementType::ParticleCylinder
+            | GfxElementType::ParticleCurve
+    );
+    let affectors = if is_particle {
+        parse_affector_list(r, version)?
+    } else {
+        Vec::new()
+    };
+
+    // The engine always calls `m_KeyPointSet.Load`, but a small minority
+    // of real-world archive files omit the block. Only consume it when
+    // we can see a `StartTime:` line.
+    let key_point_set = if !r.done() && r.peek_key() == Some("StartTime") {
+        Some(parse_key_point_set(r, version)?)
+    } else {
+        None
+    };
+
     Ok(GfxElement {
         type_id,
         name,
@@ -1511,12 +1501,33 @@ fn parse_element(r: &mut Lines<'_>, version: u32) -> Result<GfxElement> {
         is_dummy,
         priority,
         body,
+        affectors,
+        key_point_set,
     })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Smallest `KeyPointSet` that still parses — one keypoint, no
+    /// inner controllers. Append to a per-element fixture's `extra_body`
+    /// so `parse_element`'s new `key_point_set` reader has something
+    /// well-formed to consume.
+    fn minimal_kpset() -> &'static str {
+        concat!(
+            "StartTime: 0\r\n",
+            "KEYPOINTCOUNT: 1\r\n",
+            "InterpolateMode: 0\r\n",
+            "TimeSpan: -1\r\n",
+            "Position: 0.000000, 0.000000, 0.000000\r\n",
+            "Color: -1\r\n",
+            "Scale: 1.000000\r\n",
+            "Direction: 0.000000, 0.000000, 0.000000, 1.000000\r\n",
+            "Rad_2D: 0.000000\r\n",
+            "CtrlMethodCount: 0\r\n",
+        )
+    }
 
     fn make_gfx_v58_header(element_count: usize) -> String {
         // v58 activates: DedaultScale(16), PlaySpeed(17), DefaultAlpha(18),
@@ -1699,27 +1710,30 @@ mod tests {
         // v>=61 YawEffect (not at v58), v>=86 SurfaceUseParentDir (not
         // at v58).
         let mut input = make_gfx_v58_header(1);
-        input.push_str(&make_element_v58(
-            100,
-            "ground_decal",
-            concat!(
-                "Width: 2.500000\r\n",
-                "Height: 1.750000\r\n",
-                "RotFromView: 1\r\n",
-                "GrndNormOnly: 0\r\n",
-                "NoScale: 0\r\n",
-                "NoScale: 1\r\n",
-                "OrgPt: 0.500000\r\n",
-                "OrgPt: 0.750000\r\n",
-                "ZOffset: 0.010000\r\n",
-                "MatchSurface: 1\r\n",
-                "MaxExtent: 50.000000\r\n",
-                "AffectorCount: 0\r\n",
-            ),
+        let mut extra = String::new();
+        extra.push_str(concat!(
+            "Width: 2.500000\r\n",
+            "Height: 1.750000\r\n",
+            "RotFromView: 1\r\n",
+            "GrndNormOnly: 0\r\n",
+            "NoScale: 0\r\n",
+            "NoScale: 1\r\n",
+            "OrgPt: 0.500000\r\n",
+            "OrgPt: 0.750000\r\n",
+            "ZOffset: 0.010000\r\n",
+            "MatchSurface: 1\r\n",
+            "MaxExtent: 50.000000\r\n",
         ));
+        // Decal is non-particle: no `AffectorCount:` block. KeyPointSet
+        // follows the body directly.
+        extra.push_str(minimal_kpset());
+        input.push_str(&make_element_v58(100, "ground_decal", &extra));
 
         let effect = GfxEffect::parse(input.as_bytes()).unwrap();
         assert_eq!(effect.elements.len(), 1);
+        let elem = &effect.elements[0];
+        assert!(elem.affectors.is_empty());
+        assert!(elem.key_point_set.is_some());
         let ElementBody::Decal {
             width,
             height,
@@ -1733,8 +1747,7 @@ mod tests {
             max_extent,
             yaw_effect,
             screen_space,
-            tail_lines,
-        } = &effect.elements[0].body
+        } = &elem.body
         else {
             panic!("expected decal body");
         };
@@ -1750,7 +1763,6 @@ mod tests {
         assert_eq!(*surface_use_parent_dir, None);
         assert_eq!(*yaw_effect, None);
         assert_eq!(*screen_space, None);
-        assert_eq!(tail_lines, &vec!["AffectorCount: 0"]);
     }
 
     #[test]
@@ -1758,22 +1770,23 @@ mod tests {
         // v58 Trail. No gates for fixed fields; v>=18 Bind (yes at v58),
         // v>=87 Spline (no at v58).
         let mut input = make_gfx_v58_header(1);
-        input.push_str(&make_element_v58(
-            110,
-            "sword_trail",
-            concat!(
-                "OrgPos1: 0.000000, 0.000000, 0.000000\r\n",
-                "OrgPos2: 0.000000, 0.800000, 0.000000\r\n",
-                "EnableMat: 1\r\n",
-                "EnableOrgPos1: 1\r\n",
-                "EnableOrgPos2: 1\r\n",
-                "SegLife: 300\r\n",
-                "Bind: 1\r\n",
-                "AffectorCount: 0\r\n",
-            ),
+        let mut extra = String::new();
+        extra.push_str(concat!(
+            "OrgPos1: 0.000000, 0.000000, 0.000000\r\n",
+            "OrgPos2: 0.000000, 0.800000, 0.000000\r\n",
+            "EnableMat: 1\r\n",
+            "EnableOrgPos1: 1\r\n",
+            "EnableOrgPos2: 1\r\n",
+            "SegLife: 300\r\n",
+            "Bind: 1\r\n",
         ));
+        extra.push_str(minimal_kpset());
+        input.push_str(&make_element_v58(110, "sword_trail", &extra));
 
         let effect = GfxEffect::parse(input.as_bytes()).unwrap();
+        let elem = &effect.elements[0];
+        assert!(elem.affectors.is_empty());
+        assert!(elem.key_point_set.is_some());
         let ElementBody::Trail {
             org_pos1,
             org_pos2,
@@ -1783,9 +1796,8 @@ mod tests {
             seg_life,
             bind,
             spline,
-            tail_lines,
             ..
-        } = &effect.elements[0].body
+        } = &elem.body
         else {
             panic!("expected trail body");
         };
@@ -1797,7 +1809,6 @@ mod tests {
         assert_eq!(*seg_life, 300);
         assert_eq!(*bind, Some(true));
         assert_eq!(*spline, None);
-        assert_eq!(tail_lines, &vec!["AffectorCount: 0"]);
     }
 
     #[test]
@@ -1805,25 +1816,25 @@ mod tests {
         // v58 GfxContainer: GfxPath (always), OutColor (v>=47), LoopFlag
         // (v>=56), PlaySpeed (v>=78, not at v58), DummyUseGfxScale (v>=94).
         let mut input = make_gfx_v58_header(1);
-        input.push_str(&make_element_v58(
-            200,
-            "nested_fx",
-            concat!(
-                "GfxPath: sub\\sparkle.gfx\r\n",
-                "OutColor: 1\r\n",
-                "LoopFlag: 0\r\n",
-                "AffectorCount: 0\r\n",
-            ),
+        let mut extra = String::new();
+        extra.push_str(concat!(
+            "GfxPath: sub\\sparkle.gfx\r\n",
+            "OutColor: 1\r\n",
+            "LoopFlag: 0\r\n",
         ));
+        extra.push_str(minimal_kpset());
+        input.push_str(&make_element_v58(200, "nested_fx", &extra));
         let effect = GfxEffect::parse(input.as_bytes()).unwrap();
+        let elem = &effect.elements[0];
+        assert!(elem.affectors.is_empty());
+        assert!(elem.key_point_set.is_some());
         let ElementBody::Container {
             gfx_path,
             out_color,
             loop_flag,
             play_speed,
             dummy_use_g_scale,
-            ..
-        } = &effect.elements[0].body
+        } = &elem.body
         else {
             panic!("expected container body");
         };
@@ -1839,28 +1850,29 @@ mod tests {
         // v58 Ring: Radius/Height/Pitch (always), v>=14 Sects/NoRadScale/
         // NoHeiScale, v>=15 OrgAtCenter.
         let mut input = make_gfx_v58_header(1);
-        input.push_str(&make_element_v58(
-            140,
-            "shockwave",
-            concat!(
-                "Radius: 2.500000\r\n",
-                "Height: 0.250000\r\n",
-                "Pitch: 0.000000\r\n",
-                "Sects: 32\r\n",
-                "NoRadScale: 0\r\n",
-                "NoHeiScale: 0\r\n",
-                "OrgAtCenter: 1\r\n",
-                "AffectorCount: 0\r\n",
-            ),
+        let mut extra = String::new();
+        extra.push_str(concat!(
+            "Radius: 2.500000\r\n",
+            "Height: 0.250000\r\n",
+            "Pitch: 0.000000\r\n",
+            "Sects: 32\r\n",
+            "NoRadScale: 0\r\n",
+            "NoHeiScale: 0\r\n",
+            "OrgAtCenter: 1\r\n",
         ));
+        extra.push_str(minimal_kpset());
+        input.push_str(&make_element_v58(140, "shockwave", &extra));
         let effect = GfxEffect::parse(input.as_bytes()).unwrap();
+        let elem = &effect.elements[0];
+        assert!(elem.affectors.is_empty());
+        assert!(elem.key_point_set.is_some());
         let ElementBody::Ring {
             radius,
             height,
             sects,
             org_at_center,
             ..
-        } = &effect.elements[0].body
+        } = &elem.body
         else {
             panic!("expected ring body");
         };
@@ -1877,55 +1889,56 @@ mod tests {
         // RotMin/Max (v>=10), IsDrag (v>=43), DragPow (v>=48). Box shape
         // adds AreaSize.
         let mut input = make_gfx_v58_header(1);
-        input.push_str(&make_element_v58(
-            121,
-            "spark_box",
-            concat!(
-                // Particle header
-                "Quota: 100\r\n",
-                "ParticleWidth: 0.200000\r\n",
-                "ParticleHeight: 0.300000\r\n",
-                "3DParticle: 0\r\n",
-                "Facing: 0\r\n",
-                "ScaleNoOff: 0\r\n",
-                "NoScale: 0\r\n",
-                "NoScale: 0\r\n",
-                "OrgPt: 0.500000\r\n",
-                "OrgPt: 0.500000\r\n",
-                // Emitter — shared
-                "EmissionRate: 25.000000\r\n",
-                "Angle: 45.000000\r\n",
-                "Speed: 2.000000\r\n",
-                "ParAcc: 0.000000\r\n",
-                "AccDir: 0.000000, -1.000000, 0.000000\r\n",
-                "Acc: 9.800000\r\n",
-                "TTL: 1.500000\r\n",
-                "ColorMin: -1\r\n",
-                "ColorMax: -1\r\n",
-                "ScaleMin: 0.100000\r\n",
-                "ScaleMax: 0.400000\r\n",
-                "RotMin: 0.000000\r\n",
-                "RotMax: 6.283185\r\n",
-                "IsSurface: 0\r\n",
-                "IsBind: 0\r\n",
-                "IsDrag: 0\r\n",
-                "DragPow: 1.000000\r\n",
-                // Box shape
-                "AreaSize: 1.000000, 0.500000, 2.000000\r\n",
-                // Affector count boundary
-                "AffectorCount: 0\r\n",
-            ),
+        let mut extra = String::new();
+        extra.push_str(concat!(
+            // Particle header
+            "Quota: 100\r\n",
+            "ParticleWidth: 0.200000\r\n",
+            "ParticleHeight: 0.300000\r\n",
+            "3DParticle: 0\r\n",
+            "Facing: 0\r\n",
+            "ScaleNoOff: 0\r\n",
+            "NoScale: 0\r\n",
+            "NoScale: 0\r\n",
+            "OrgPt: 0.500000\r\n",
+            "OrgPt: 0.500000\r\n",
+            // Emitter — shared
+            "EmissionRate: 25.000000\r\n",
+            "Angle: 45.000000\r\n",
+            "Speed: 2.000000\r\n",
+            "ParAcc: 0.000000\r\n",
+            "AccDir: 0.000000, -1.000000, 0.000000\r\n",
+            "Acc: 9.800000\r\n",
+            "TTL: 1.500000\r\n",
+            "ColorMin: -1\r\n",
+            "ColorMax: -1\r\n",
+            "ScaleMin: 0.100000\r\n",
+            "ScaleMax: 0.400000\r\n",
+            "RotMin: 0.000000\r\n",
+            "RotMax: 6.283185\r\n",
+            "IsSurface: 0\r\n",
+            "IsBind: 0\r\n",
+            "IsDrag: 0\r\n",
+            "DragPow: 1.000000\r\n",
+            // Box shape
+            "AreaSize: 1.000000, 0.500000, 2.000000\r\n",
+            // Particle affector list (consumed by `parse_element`)
+            "AffectorCount: 0\r\n",
         ));
+        extra.push_str(minimal_kpset());
+        input.push_str(&make_element_v58(121, "spark_box", &extra));
         let effect = GfxEffect::parse(input.as_bytes()).unwrap();
+        let elem = &effect.elements[0];
+        assert!(elem.affectors.is_empty());
+        assert!(elem.key_point_set.is_some());
         let ElementBody::Particle {
             quota,
             particle_width,
             scale_no_off,
             no_scale,
             emitter,
-            tail_lines,
             ..
-        } = &effect.elements[0].body
+        } = &elem.body
         else {
             panic!("expected particle body");
         };
@@ -1942,7 +1955,6 @@ mod tests {
             panic!("expected Box emitter shape");
         };
         assert_eq!(area_size, [1.0, 0.5, 2.0]);
-        assert_eq!(tail_lines, &vec!["AffectorCount: 0"]);
     }
 
     fn make_lines(body: &str) -> Lines<'_> {

@@ -13,6 +13,7 @@
   "default_scale": 1.5,
   "elements": [
     {
+      "affectors": [],
       "body": {
         "aff_by_scl": false,
         "always_on_ground": null,
@@ -22,18 +23,6 @@
         "kind": "grid_decal_3d",
         "offset_height": 0.10000000149011612,
         "rot_from_view": false,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: 0.016597, 1.488325, 0.041724",
-          "Color: -16777216",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.193767, 0.000000, 0.981048",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "vertices": [
           {
             "color": 16777215,
@@ -329,6 +318,30 @@
       },
       "dest_blend": 6,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4278190080,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.1937669962644577,
+              0.0,
+              0.9810479879379272
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.016597000882029533,
+              1.4883249998092651,
+              0.04172400012612343
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed9",
       "priority": 1,
       "repeat_count": 1,
@@ -343,6 +356,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "aff_by_scl": false,
         "always_on_ground": null,
@@ -352,18 +366,6 @@
         "kind": "grid_decal_3d",
         "offset_height": 0.10000000149011612,
         "rot_from_view": false,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: 0.016597, 1.488325, 0.041724",
-          "Color: -1",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.193767, 0.000000, 0.981048",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "vertices": [
           {
             "color": 16777215,
@@ -659,6 +661,30 @@
       },
       "dest_blend": 2,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4294967295,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.1937669962644577,
+              0.0,
+              0.9810479879379272
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.016597000882029533,
+              1.4883249998092651,
+              0.04172400012612343
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed10",
       "priority": 4,
       "repeat_count": 1,
@@ -673,6 +699,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "aff_by_scl": false,
         "always_on_ground": null,
@@ -682,18 +709,6 @@
         "kind": "grid_decal_3d",
         "offset_height": 0.10000000149011612,
         "rot_from_view": false,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: 0.016597, 1.488325, 0.041724",
-          "Color: -16777216",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.193767, 0.000000, 0.981048",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "vertices": [
           {
             "color": 16777215,
@@ -989,6 +1004,30 @@
       },
       "dest_blend": 6,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 4278190080,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.1937669962644577,
+              0.0,
+              0.9810479879379272
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.016597000882029533,
+              1.4883249998092651,
+              0.04172400012612343
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed11",
       "priority": 3,
       "repeat_count": 1,
@@ -1003,6 +1042,7 @@
       "z_enable": 1
     },
     {
+      "affectors": [],
       "body": {
         "aff_by_scl": false,
         "always_on_ground": null,
@@ -1012,18 +1052,6 @@
         "kind": "grid_decal_3d",
         "offset_height": 0.10000000149011612,
         "rot_from_view": false,
-        "tail_lines": [
-          "StartTime: 0",
-          "KEYPOINTCOUNT: 1",
-          "InterpolateMode: 0",
-          "TimeSpan: -1",
-          "Position: 0.016597, 1.488325, 0.041724",
-          "Color: -939524096",
-          "Scale: 1.000000",
-          "Direction: 0.000000, 0.193767, 0.000000, 0.981048",
-          "Rad_2D: 0.000000",
-          "CtrlMethodCount: 0"
-        ],
         "vertices": [
           {
             "color": 16777215,
@@ -1319,6 +1347,30 @@
       },
       "dest_blend": 6,
       "is_dummy": 0,
+      "key_point_set": {
+        "keypoints": [
+          {
+            "color": 3355443200,
+            "controllers": [],
+            "direction": [
+              0.0,
+              0.1937669962644577,
+              0.0,
+              0.9810479879379272
+            ],
+            "interpolate_mode": 0,
+            "position": [
+              0.016597000882029533,
+              1.4883249998092651,
+              0.04172400012612343
+            ],
+            "rad_2d": 0.0,
+            "scale": 1.0,
+            "time_span": -1
+          }
+        ],
+        "start_time": 0
+      },
       "name": "Unnamed35",
       "priority": 2,
       "repeat_count": 1,

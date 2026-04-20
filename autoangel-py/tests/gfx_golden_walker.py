@@ -37,6 +37,23 @@ _EMITTER_SHAPE_TAG = {
     "Curve": "curve",
 }
 
+_KP_CTRL_BODY_TAG = {
+    "Move": "move",
+    "Rot": "rot",
+    "RotAxis": "rot_axis",
+    "Revol": "revol",
+    "CentriMove": "centri_move",
+    "Color": "color",
+    "Scale": "scale",
+    "ClNoise": "cl_noise",
+    "ClTrans": "cl_trans",
+    "ScaNoise": "sca_noise",
+    "CurveMove": "curve_move",
+    "ScaleTrans": "scale_trans",
+    "NoiseBase": "noise_base",
+    "Unknown": "unknown",
+}
+
 
 def _discriminator(cls: type) -> dict[str, str]:
     parent = cls.__bases__[0] if cls.__bases__ else object
@@ -44,6 +61,8 @@ def _discriminator(cls: type) -> dict[str, str]:
         return {"kind": _ELEMENT_BODY_TAG[cls.__name__]}
     if parent is autoangel.EmitterShape:
         return {"shape": _EMITTER_SHAPE_TAG[cls.__name__]}
+    if parent is autoangel.KpCtrlBody:
+        return {"kind": _KP_CTRL_BODY_TAG[cls.__name__]}
     return {}
 
 
