@@ -5,9 +5,7 @@ import { loadSkinFile } from './internal/mesh';
 import { mountScene } from './internal/scene';
 import { withWarnOnThrow } from './internal/paths';
 import { useRenderEffect } from './internal/useRenderEffect';
-import styles from './ModelViewer.module.css';
-
-const HIDDEN_STYLE: React.CSSProperties = { display: 'none' };
+import { ModelSurface } from './internal/ModelSurface';
 
 async function renderSki(
   container: HTMLElement,
@@ -39,10 +37,5 @@ export function SkiViewer({ path, wasm, getData }: SkiViewerProps) {
     [path, wasm, getData],
     (container) => renderSki(container, wasm, getData, path),
   );
-  return (
-    <>
-      {error && <div className={styles.modelError}>{error}</div>}
-      <div ref={containerRef} className={styles.modelContainer} style={error ? HIDDEN_STYLE : undefined} />
-    </>
-  );
+  return <ModelSurface containerRef={containerRef} error={error} />;
 }

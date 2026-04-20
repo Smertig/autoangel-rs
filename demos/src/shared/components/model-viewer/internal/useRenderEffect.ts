@@ -4,7 +4,7 @@ import { disposeViewer } from './viewer';
 export function useRenderEffect(
   path: string,
   deps: React.DependencyList,
-  run: (container: HTMLElement, isStale: () => boolean) => Promise<void>,
+  run: (container: HTMLElement) => Promise<void>,
 ): { containerRef: React.RefObject<HTMLDivElement | null>; error: string | null } {
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -15,11 +15,11 @@ export function useRenderEffect(
     if (!container) return;
     setError(null);
     currentPathRef.current = path;
-    run(container, () => currentPathRef.current !== path).catch((e: unknown) => {
+    run(container).catch((e: unknown) => {
       if (currentPathRef.current !== path) return;
       console.error('[model] Preview failed:', e);
       disposeViewer();
-      if (container) container.innerHTML = '';
+      container.innerHTML = '';
       setError(`Model preview failed: ${e instanceof Error ? e.message : String(e)}`);
     });
   }, deps); // eslint-disable-line react-hooks/exhaustive-deps

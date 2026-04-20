@@ -1,5 +1,6 @@
 import { SmdViewer } from '@shared/components/model-viewer';
-import { sideBySideDiffer, useNullableGetData } from './helpers';
+import { sideBySideDiffer } from './helpers';
+import { useNullableGetData } from '@shared/hooks/useNullableGetData';
 import type { FormatDescriptor, ViewerContext } from './types';
 
 function SmdFormatViewer({ path, getData, wasm, listFiles }: ViewerContext) {

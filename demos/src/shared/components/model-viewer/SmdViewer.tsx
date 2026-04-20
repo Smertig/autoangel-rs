@@ -2,9 +2,7 @@ import type { AutoangelModule } from '../../../types/autoangel';
 import type { GetFile } from './internal/paths';
 import { renderSmd } from './internal/render-smd';
 import { useRenderEffect } from './internal/useRenderEffect';
-import styles from './ModelViewer.module.css';
-
-const HIDDEN_STYLE: React.CSSProperties = { display: 'none' };
+import { ModelSurface } from './internal/ModelSurface';
 
 interface SmdViewerProps {
   path: string;
@@ -20,10 +18,5 @@ export function SmdViewer({ path, wasm, getData, listFiles, initialClipName }: S
     [path, wasm, getData],
     (container) => renderSmd(container, wasm, getData, path, { listFiles, initialClipName }),
   );
-  return (
-    <>
-      {error && <div className={styles.modelError}>{error}</div>}
-      <div ref={containerRef} className={styles.modelContainer} style={error ? HIDDEN_STYLE : undefined} />
-    </>
-  );
+  return <ModelSurface containerRef={containerRef} error={error} />;
 }
