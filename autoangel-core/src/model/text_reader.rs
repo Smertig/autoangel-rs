@@ -166,6 +166,21 @@ impl LineValue for [f32; 3] {
     }
 }
 
+impl LineValue for [f32; 4] {
+    const TYPE_NAME: &'static str = "vec4";
+    fn parse_line_value(s: &str) -> Option<Self> {
+        let (a, rest) = s.split_once(',')?;
+        let (b, rest) = rest.split_once(',')?;
+        let (c, d) = rest.split_once(',')?;
+        Some([
+            f32::parse_line_value(a.trim())?,
+            f32::parse_line_value(b.trim())?,
+            f32::parse_line_value(c.trim())?,
+            f32::parse_line_value(d.trim())?,
+        ])
+    }
+}
+
 impl LineValue for String {
     const TYPE_NAME: &'static str = "string";
     fn parse_line_value(s: &str) -> Option<Self> {
@@ -193,4 +208,31 @@ fn format_alt_keys(keys: &[&str]) -> String {
 pub(crate) fn split_kv(line: &str) -> Option<(&str, &str)> {
     let (k, v) = line.split_once(':')?;
     Some((k.trim(), v.trim()))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn vec4_parses_four_floats() {
+        let v = <[f32; 4]>::parse_line_value("1.0, 2.0, 3.0, 4.0").unwrap();
+        assert_eq!(v, [1.0, 2.0, 3.0, 4.0]);
+    }
+
+    #[test]
+    fn vec4_tolerates_no_space_after_comma() {
+        let v = <[f32; 4]>::parse_line_value("0.0,0.0,0.0,1.0").unwrap();
+        assert_eq!(v, [0.0, 0.0, 0.0, 1.0]);
+    }
+
+    #[test]
+    fn vec4_rejects_three_components() {
+        assert!(<[f32; 4]>::parse_line_value("1.0, 2.0, 3.0").is_none());
+    }
+
+    #[test]
+    fn vec4_rejects_non_numeric() {
+        assert!(<[f32; 4]>::parse_line_value("1.0, abc, 3.0, 4.0").is_none());
+    }
 }
