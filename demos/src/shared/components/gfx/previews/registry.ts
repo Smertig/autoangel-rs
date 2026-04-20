@@ -2,6 +2,7 @@ import type { FC } from 'react';
 import type { ElementBodyKind, PreviewProps } from './types';
 import { DefaultPreview } from './DefaultPreview';
 import { LightPreview } from './LightPreview';
+import { ModelPreview } from './ModelPreview';
 import { UnknownPreview } from './UnknownPreview';
 
 type Registry = { [K in ElementBodyKind]: FC<PreviewProps<K>> };
@@ -12,7 +13,7 @@ export const PREVIEW_REGISTRY: Registry = {
   trail:         DefaultPreview as FC<PreviewProps<'trail'>>,
   light:         LightPreview,
   ring:          DefaultPreview as FC<PreviewProps<'ring'>>,
-  model:         DefaultPreview as FC<PreviewProps<'model'>>,
+  model:         ModelPreview,
   container:     DefaultPreview as FC<PreviewProps<'container'>>,
   grid_decal_3d: DefaultPreview as FC<PreviewProps<'grid_decal_3d'>>,
   lightning:     DefaultPreview as FC<PreviewProps<'lightning'>>,
