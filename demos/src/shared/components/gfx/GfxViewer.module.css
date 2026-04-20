@@ -1,0 +1,109 @@
+/* ----- Root — design tokens + container query ----- */
+.root {
+  container-type: inline-size;
+  position: relative;
+  height: 100%;
+  overflow: auto;
+  padding: 12px;
+  box-sizing: border-box;
+
+  /* Fonts — match the demo's existing stack.
+     - body: system-ui (same as NavBar / viewers elsewhere).
+     - data/label: JetBrains Mono (already loaded by the demo). */
+  --gfx-font-body:    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --gfx-font-data:    'JetBrains Mono', ui-monospace, 'SF Mono', Consolas, monospace;
+  /* Label/chip font — same JetBrains Mono stack; aliased so per-component
+     CSS can keep using --gfx-font-display without knowing the actual face. */
+  --gfx-font-display: var(--gfx-font-data);
+
+  /* Neutrals — derive from demo globals */
+  --gfx-bg-deep:    var(--bg);
+  --gfx-bg-card:    var(--surface);
+  --gfx-bg-elev:    color-mix(in oklab, var(--surface) 90%, var(--text) 10%);
+  --gfx-border:     var(--border);
+  --gfx-rule:       color-mix(in oklab, var(--border) 70%, var(--text) 30%);
+  --gfx-text:       var(--text);
+  --gfx-text-muted: var(--text-muted);
+  --gfx-text-dim:   color-mix(in oklab, var(--text-muted) 60%, var(--bg) 40%);
+  --gfx-acc-info:   var(--accent);
+
+  /* Accents — light default; dark override below */
+  --gfx-acc-data: #5F7A1C;
+  --gfx-acc-dim:  #8BA048;
+  --gfx-acc-warn: #C7492A;
+
+  /* Variant tints — light defaults.
+     Names use snake_case because they match ElementBody['kind'] strings
+     from the Rust/tsify binding; ElementCard looks these up via
+     `var(--gfx-kind-${body.kind})`. */
+  --gfx-kind-particle:       #4A7A0D;
+  --gfx-kind-decal:          #B22872;
+  --gfx-kind-trail:          #A34100;
+  --gfx-kind-light:          #6B2FC4;
+  --gfx-kind-ring:           #1E5EB3;
+  --gfx-kind-model:          #187A4A;
+  --gfx-kind-container:      #8A6100;
+  --gfx-kind-grid_decal_3d:  #B23838;
+  --gfx-kind-lightning:      #1478A3;
+  --gfx-kind-lightning_ex:   #1478A3;
+  --gfx-kind-ltn_bolt:       #1478A3;
+  --gfx-kind-sound:          #7A5A2E;
+  --gfx-kind-unknown:        #A8A8B2;
+
+  background: var(--gfx-bg-deep);
+  color: var(--gfx-text);
+  font-family: var(--gfx-font-body);
+}
+
+:global([data-theme="dark"]) .root {
+  --gfx-acc-data: #CBF56A;
+  --gfx-acc-dim:  #7A9A3F;
+  --gfx-acc-warn: #FF7B54;
+
+  --gfx-kind-particle:       #CBF56A;
+  --gfx-kind-decal:          #FF9FC7;
+  --gfx-kind-trail:          #FF9F45;
+  --gfx-kind-light:          #E8D7FF;
+  --gfx-kind-ring:           #8AADE8;
+  --gfx-kind-model:          #A8F0D4;
+  --gfx-kind-container:      #FFE4A3;
+  --gfx-kind-grid_decal_3d:  #FFAFAF;
+  --gfx-kind-lightning:      #B3E5FF;
+  --gfx-kind-lightning_ex:   #B3E5FF;
+  --gfx-kind-ltn_bolt:       #B3E5FF;
+  --gfx-kind-sound:          #D4B896;
+  --gfx-kind-unknown:        #5D5D67;
+}
+
+/* ----- Reduced motion ----- */
+@media (prefers-reduced-motion: reduce) {
+  .root *, .root *::before, .root *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay:    0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ----- Header ----- */
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.headerBadge {
+  font: 600 10px/1 var(--gfx-font-data);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  background: color-mix(in oklab, var(--gfx-acc-info) 10%, transparent);
+  color: var(--gfx-acc-info);
+  border-radius: 2px;
+}
+.headerSubtitle {
+  font: 400 12px/1 var(--gfx-font-body);
+  color: var(--gfx-text-muted);
+}
+
+/* ----- Elements list ----- */
+.elements { display: flex; flex-direction: column; gap: 4px; }
