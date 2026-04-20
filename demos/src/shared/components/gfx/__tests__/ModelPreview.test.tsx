@@ -3,7 +3,9 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 
 // ModelViewer pulls in three.js which doesn't work in jsdom. Stub it.
 vi.mock('@shared/components/ModelViewer', () => ({
-  ModelViewer: ({ path }: { path: string }) => <div data-testid="model-viewer-stub">{path}</div>,
+  ModelViewer: ({ path, initialClipName }: { path: string; initialClipName?: string }) => (
+    <div data-testid="model-viewer-stub" data-initial-clip={initialClipName ?? ''}>{path}</div>
+  ),
 }));
 
 import { render, screen, cleanup } from '@testing-library/react';
@@ -53,7 +55,7 @@ describe('ModelPreview', () => {
     expect(screen.queryByText('use_3d_cam')).toBeNull();
   });
 
-  it('embeds ModelViewer with the resolved engine path (case-insensitive)', () => {
+  it('embeds ModelViewer with the resolved engine path + initialClipName from model_act_name', () => {
     const ctx = makeCtx({
       listFiles: (prefix: string) =>
         prefix === 'gfx\\models\\' ? ['gfx\\models\\石头\\石头.smd'] : [],
@@ -62,6 +64,18 @@ describe('ModelPreview', () => {
     const stub = screen.getByTestId('model-viewer-stub');
     // Passes the ACTUAL pck path (lowercase), not the raw body.model_path.
     expect(stub.textContent).toBe('gfx\\models\\石头\\石头.smd');
+    // Fixture has model_act_name='idle' — should flow through to ModelViewer.
+    expect(stub.getAttribute('data-initial-clip')).toBe('idle');
+  });
+
+  it('omits initialClipName when model_act_name is absent', () => {
+    const bodyNoAct = { ...body, model_act_name: undefined };
+    const ctx = makeCtx({
+      listFiles: (prefix: string) =>
+        prefix === 'gfx\\models\\' ? ['gfx\\models\\石头\\石头.smd'] : [],
+    });
+    render(<ModelPreview body={bodyNoAct} element={element} context={ctx} expanded={true} />);
+    expect(screen.getByTestId('model-viewer-stub').getAttribute('data-initial-clip')).toBe('');
   });
 
   it('shows missing-package banner when the file is not in any loaded package', () => {

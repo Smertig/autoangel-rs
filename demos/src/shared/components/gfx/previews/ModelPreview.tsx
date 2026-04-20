@@ -73,6 +73,7 @@ function ModelPreviewViewer({
         wasm={context.wasm}
         getData={context.getData}
         listFiles={context.listFiles}
+        initialClipName={body.model_act_name}
       />
     </div>
   );

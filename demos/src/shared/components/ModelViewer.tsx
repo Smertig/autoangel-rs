@@ -28,6 +28,13 @@ interface ModelViewerProps {
   wasm: AutoangelModule;
   getData: (path: string) => Promise<Uint8Array | null>;
   listFiles?: (prefix: string) => string[];
+  /**
+   * The engine drives a GFX `Model` element with the clip named by its
+   * `model_act_name`; without this we'd always start on the idle-hint
+   * heuristic and the preview wouldn't match what actually plays in-game.
+   * Unknown names fall back to the heuristic with a console warning.
+   */
+  initialClipName?: string;
 }
 
 // ── Three.js module cache ──
@@ -1194,6 +1201,7 @@ async function renderFromSmd(
     boneScaleInfo?: { entries: BoneScaleData[]; isNew: boolean; baseBone: string | undefined };
     eventMapFromAnimNames?: (animNames: string[]) => Map<string, AnimEvent[]> | undefined;
     source?: { data: Uint8Array; ext: string };
+    initialClipName?: string;
   },
 ): Promise<void> {
   let smdSkinPaths: string[] = [];
@@ -1316,7 +1324,12 @@ async function renderFromSmd(
     v.onBeforeRender = null;
     if (animNames.length > 0 && loadClip) {
       v.mixer = new THREE.AnimationMixer(group);
-      const preferredName = animNames.find((n) => n.includes(PREFERRED_ANIM_HINT)) ?? animNames[0];
+      if (opts?.initialClipName && !animNames.includes(opts.initialClipName)) {
+        console.warn(`[model] initialClipName '${opts.initialClipName}' not in track set; falling back to idle heuristic`);
+      }
+      const preferredName = (opts?.initialClipName && animNames.includes(opts.initialClipName))
+        ? opts.initialClipName
+        : animNames.find((n) => n.includes(PREFERRED_ANIM_HINT)) ?? animNames[0];
       try {
         const clip = await loadClip(preferredName);
         initialClip = { name: preferredName, clip };
@@ -1342,12 +1355,17 @@ async function renderFromSmd(
   );
 }
 
+interface RenderOptions {
+  listFiles?: (prefix: string) => string[];
+  initialClipName?: string;
+}
+
 async function renderModel(
   container: HTMLElement,
   wasm: AutoangelModule,
   getFileRaw: GetFile,
   ecmPath: string,
-  listFiles?: (prefix: string) => string[],
+  opts: RenderOptions = {},
 ): Promise<void> {
   await ensureThree();
   const getFile = withWarnOnThrow(getFileRaw);
@@ -1363,11 +1381,12 @@ async function renderModel(
   // Snapshot additionalSkins before ecm's `using` scope frees it.
   const additionalSkinPaths = [...(ecm.additionalSkins || [])];
 
-  await renderFromSmd(container, wasm, getFile, smdPath, smdData, listFiles, {
+  await renderFromSmd(container, wasm, getFile, smdPath, smdData, opts.listFiles, {
     additionalSkins: { paths: additionalSkinPaths, basePath: ecmPath },
     boneScaleInfo: ecm.boneScaleCount > 0 ? readEcmBoneScales(ecm) : undefined,
     eventMapFromAnimNames: (animNames) => buildAnimEventMap(ecm, animNames),
     source: { data: ecmData, ext: '.ecm' },
+    initialClipName: opts.initialClipName,
   });
 }
 
@@ -1376,7 +1395,7 @@ async function renderSmd(
   wasm: AutoangelModule,
   getFileRaw: GetFile,
   smdPath: string,
-  listFiles?: (prefix: string) => string[],
+  opts: RenderOptions = {},
 ): Promise<void> {
   await ensureThree();
   const getFile = withWarnOnThrow(getFileRaw);
@@ -1384,7 +1403,9 @@ async function renderSmd(
   const smdData = await getFile(smdPath);
   if (!smdData) throw new Error(`File not found: ${smdPath}`);
 
-  await renderFromSmd(container, wasm, getFile, smdPath, smdData, listFiles);
+  await renderFromSmd(container, wasm, getFile, smdPath, smdData, opts.listFiles, {
+    initialClipName: opts.initialClipName,
+  });
 }
 
 async function renderSkin(
@@ -1438,7 +1459,7 @@ async function renderTrackSet(
 
 // ── React Component ──
 
-export function ModelViewer({ path, wasm, getData, listFiles }: ModelViewerProps) {
+export function ModelViewer({ path, wasm, getData, listFiles, initialClipName }: ModelViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -1454,9 +1475,9 @@ export function ModelViewer({ path, wasm, getData, listFiles }: ModelViewerProps
 
     const ext = getExtension(path);
     const renderFn = ext === '.ecm'
-      ? () => renderModel(container, wasm, getData, path, listFiles)
+      ? () => renderModel(container, wasm, getData, path, { listFiles, initialClipName })
       : ext === '.smd'
-      ? () => renderSmd(container, wasm, getData, path, listFiles)
+      ? () => renderSmd(container, wasm, getData, path, { listFiles, initialClipName })
       : ext === '.stck'
       ? () => renderTrackSet(container, wasm, getData, path)
       : () => renderSkin(container, wasm, getData, path);
@@ -1474,6 +1495,10 @@ export function ModelViewer({ path, wasm, getData, listFiles }: ModelViewerProps
     // No cleanup on path change — the persistent viewer pattern lets the
     // new render() paint over the old scene without a white flash.
     // Cleanup on component unmount is handled by a separate effect below.
+    // `initialClipName` intentionally omitted: changing it alone shouldn't
+    // trigger a full model re-download. The right fix (swap the live
+    // mixer's clip in place) is a follow-up; until then, the clip applies
+    // on the next path change, which covers every current caller.
   }, [path, wasm, getData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Dispose viewer only on component unmount (not path change)
