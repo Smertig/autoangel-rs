@@ -1,0 +1,63 @@
+.card {
+  position: relative;
+  background: var(--gfx-bg-card);
+  border-left: 2px solid var(--gfx-kind-tint);
+  transition: background 80ms ease-out;
+}
+.card:hover { background: var(--gfx-bg-elev); }
+.cardUnknown { border-left: 1px dashed var(--gfx-kind-unknown); }
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  min-height: 32px;
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+}
+.header:focus-visible { outline: 2px solid var(--gfx-acc-info); outline-offset: -2px; }
+
+.kindBadge {
+  font: 500 9px/1 var(--gfx-font-data);
+  letter-spacing: 0.3px;
+  padding: 1px 5px;
+  background: color-mix(in oklab, var(--gfx-kind-tint) 12%, transparent);
+  color: var(--gfx-kind-tint);
+  white-space: nowrap;
+  flex-shrink: 0;
+  border-radius: 2px;
+}
+.name { flex: 1; font: 400 13px/1.2 var(--gfx-font-body); color: var(--gfx-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.unnamed { color: var(--gfx-text-muted); font-style: italic; }
+.dim { color: var(--gfx-text-dim); font-style: normal; }
+
+.dummyBadge {
+  font: 500 9px/1 var(--gfx-font-data);
+  letter-spacing: 0.3px;
+  padding: 1px 5px;
+  color: var(--gfx-acc-warn);
+  background: color-mix(in oklab, var(--gfx-acc-warn) 10%, transparent);
+  flex-shrink: 0;
+  border-radius: 2px;
+}
+
+.chevron { color: var(--gfx-text-dim); transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1); transform: rotate(0deg); flex-shrink: 0; font-size: 11px; }
+.chevronOpen { transform: rotate(90deg); }
+
+.expandedBlock {
+  padding: 10px 12px 12px 12px;
+  border-top: 1px solid var(--gfx-border);
+  background: var(--gfx-bg-deep);
+  animation: slideIn 180ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes slideIn { from { opacity: 0; transform: translateY(-2px); } to { opacity: 1; transform: translateY(0); } }
+
+@container (max-width: 420px) {
+  .name { font-size: 12px; }
+}
