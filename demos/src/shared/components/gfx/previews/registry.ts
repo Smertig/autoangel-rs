@@ -1,5 +1,6 @@
 import type { FC } from 'react';
 import type { ElementBodyKind, PreviewProps } from './types';
+import { ContainerPreview } from './ContainerPreview';
 import { DefaultPreview } from './DefaultPreview';
 import { LightPreview } from './LightPreview';
 import { ModelPreview } from './ModelPreview';
@@ -14,7 +15,7 @@ export const PREVIEW_REGISTRY: Registry = {
   light:         LightPreview,
   ring:          DefaultPreview as FC<PreviewProps<'ring'>>,
   model:         ModelPreview,
-  container:     DefaultPreview as FC<PreviewProps<'container'>>,
+  container:     ContainerPreview,
   grid_decal_3d: DefaultPreview as FC<PreviewProps<'grid_decal_3d'>>,
   lightning:     DefaultPreview as FC<PreviewProps<'lightning'>>,
   lightning_ex:  DefaultPreview as FC<PreviewProps<'lightning_ex'>>,

@@ -1,8 +1,12 @@
 import { FieldPanel, FieldRow } from '../fieldPanel';
 import { BoolDot, MonoNum, PathOrText } from '../formatters';
 import { SmdViewer } from '@shared/components/model-viewer';
+import { MissingPackageBanner } from '../MissingPackageBanner';
+import { resolveEnginePath } from '../util/resolveEnginePath';
 import type { PreviewProps } from './types';
 import styles from './ModelPreview.module.css';
+
+const MODEL_PREFIXES = ['gfx\\models\\', 'gfx\\Models\\'] as const;
 
 export function ModelPreview({ body, context, expanded }: PreviewProps<'model'>) {
   if (!expanded) return <span className={styles.thumb}>M</span>;
@@ -28,41 +32,21 @@ export function ModelPreview({ body, context, expanded }: PreviewProps<'model'>)
   );
 }
 
-// Engine prepends "gfx\Models\" before loading — see
-// third_party/angelica_src/A3DGFXModel.cpp:419. Match case-insensitively
-// because pcks store lowercase paths and ".smd" but model_path usually
-// has ".SMD" engine-casing.
-function resolveModelPath(
-  modelPath: string,
-  listFiles: (prefix: string) => string[],
-): string | null {
-  const target = `gfx\\Models\\${modelPath}`.toLowerCase();
-  for (const prefix of ['gfx\\models\\', 'gfx\\Models\\']) {
-    const match = listFiles(prefix).find((p) => p.toLowerCase() === target);
-    if (match) return match;
-  }
-  return null;
-}
-
 function ModelPreviewViewer({
   body,
   context,
 }: Pick<PreviewProps<'model'>, 'body' | 'context'>) {
   const resolved = context.listFiles
-    ? resolveModelPath(body.model_path, context.listFiles)
+    ? resolveEnginePath(body.model_path, MODEL_PREFIXES, context.listFiles)
     : `gfx\\Models\\${body.model_path}`;
 
   if (resolved === null) {
     return (
-      <div className={styles.missingBanner} role="status">
-        <span className={styles.missingIcon} aria-hidden="true">⊘</span>
-        <div className={styles.missingText}>
-          <strong>Model source not in any loaded package.</strong>{' '}
-          Engine loads <code>gfx\Models\{body.model_path}</code> —
-          add the package containing this file via the{' '}
-          <em>+ Add packages</em> button above.
-        </div>
-      </div>
+      <MissingPackageBanner title="Model source not in any loaded package.">
+        Engine loads <code>gfx\Models\{body.model_path}</code> —
+        add the package containing this file via the{' '}
+        <em>+ Add packages</em> button above.
+      </MissingPackageBanner>
     );
   }
 

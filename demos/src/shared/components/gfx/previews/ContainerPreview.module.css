@@ -1,0 +1,31 @@
+.thumb {
+  display: inline-block;
+  width: 28px;
+  height: 20px;
+  background: color-mix(in oklab, var(--gfx-kind-container) 14%, transparent);
+  color: var(--gfx-kind-container);
+  font: 500 10px/20px var(--gfx-font-data);
+  text-align: center;
+  letter-spacing: 0.5px;
+  border-radius: 2px;
+}
+
+.expanded {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.loading {
+  padding: 10px 14px;
+  font: 400 12px/1.5 var(--gfx-font-body);
+  color: var(--gfx-text-muted);
+}
+
+.errorChip {
+  padding: 10px 14px;
+  border-left: 2px solid var(--gfx-acc-warn);
+  background: color-mix(in oklab, var(--gfx-acc-warn) 8%, transparent);
+  color: var(--gfx-text);
+  font: 400 12px/1.5 var(--gfx-font-body);
+}
