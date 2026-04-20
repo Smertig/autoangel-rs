@@ -1,0 +1,6 @@
+.root { padding: 16px; font-family: monospace; color: #ccc; }
+.title { margin: 0 0 12px; color: #fff; }
+.table { border-collapse: collapse; }
+.table td { padding: 2px 12px 2px 0; }
+.table td:first-child { color: #888; }
+.error { padding: 12px; color: var(--accent-warn, #e87b7b); font-family: monospace; }
