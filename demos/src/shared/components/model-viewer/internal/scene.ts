@@ -33,6 +33,7 @@ export function mountScene(
   initialClip?: { name: string; clip: any } | null,
   skeleton?: any,
   animEventMap?: Map<string, AnimEvent[]>,
+  onClipSwitch?: (clipName: string, action: any) => void,
 ): void {
   const { THREE, OrbitControls } = getThree();
   const v = getViewer(container);
@@ -251,6 +252,7 @@ export function mountScene(
           item.classList.add(styles.animListItemActive);
           activeItemEl = item;
           rebuildEventLane(clipName);
+          onClipSwitch?.(clipName, action);
         } catch (e) {
           if (gen !== loadGeneration) return;
           console.warn('[model] Failed to load clip:', clipName, e);

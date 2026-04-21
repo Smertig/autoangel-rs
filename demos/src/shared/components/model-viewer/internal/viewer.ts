@@ -12,6 +12,8 @@ export interface Viewer {
   onBeforeRender: (() => void) | null;
   /** Called each frame to update transport bar UI (scrubber, time display). */
   onFrameUpdate: (() => void) | null;
+  /** Seconds elapsed since last frame; available inside onBeforeRender/onFrameUpdate. */
+  lastDt: number;
   dispose(): void;
   _disposeScene(): void;
 }
@@ -46,6 +48,7 @@ export function getViewer(container: HTMLElement): Viewer {
     mixer: null,
     onBeforeRender: null,
     onFrameUpdate: null,
+    lastDt: 0,
     dispose() {
       cancelAnimationFrame(animId);
       v.resizeObs.disconnect();
@@ -83,6 +86,7 @@ export function getViewer(container: HTMLElement): Viewer {
   function animate() {
     animId = requestAnimationFrame(animate);
     const delta = clock.getDelta();
+    v.lastDt = delta;
     if (v.mixer) v.mixer.update(delta);
     if (v.onBeforeRender) v.onBeforeRender();
     if (v.onFrameUpdate) v.onFrameUpdate();

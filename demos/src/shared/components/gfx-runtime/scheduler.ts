@@ -15,6 +15,13 @@ export interface GfxEventScheduler {
   tickRuntimes(dtSec: number): void;
   /** Mark a loop boundary — non-once events become re-eligible. */
   onLoop(): void;
+  /**
+   * Register an externally-spawned runtime so it participates in ticking and
+   * disposal. Needed because GFX resolution is async: the `spawn` callback
+   * returns a synchronous placeholder, and the resolved real runtime(s) are
+   * attached later once their files have loaded.
+   */
+  attachRuntime(rt: GfxElementRuntime): void;
   /** Tear down everything (clip change or viewer unmount). */
   disposeAll(): void;
 }
@@ -49,6 +56,9 @@ export function createGfxEventScheduler(args: SchedulerArgs): GfxEventScheduler 
     onLoop() {
       last = 0;
       // Non-once events auto-eligible — firedOnce only retains once=true.
+    },
+    attachRuntime(rt) {
+      active.push(rt);
     },
     disposeAll() {
       while (active.length > 0) active.pop()!.dispose();

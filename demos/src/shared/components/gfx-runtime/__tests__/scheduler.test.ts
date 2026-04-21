@@ -66,6 +66,21 @@ describe('createGfxEventScheduler', () => {
     expect(dispose).toHaveBeenCalled();
   });
 
+  it('attachRuntime registers an externally-spawned runtime for ticking', () => {
+    const tick = vi.fn();
+    const dispose = vi.fn();
+    const spawn = vi.fn(() => ({ root: new THREE.Group(), tick() {}, dispose() {} }));
+    const s = createGfxEventScheduler({
+      events: [], spawn, bones: [], sceneRoot: new THREE.Group(),
+    });
+    const extRt = { root: new THREE.Group(), tick, dispose, finished: () => false };
+    s.attachRuntime(extRt);
+    s.tickRuntimes(0.016);
+    expect(tick).toHaveBeenCalledWith(0.016);
+    s.disposeAll();
+    expect(dispose).toHaveBeenCalled();
+  });
+
   it('tickRuntimes ticks active runtimes and removes finished ones', () => {
     const tick = vi.fn();
     const dispose = vi.fn();

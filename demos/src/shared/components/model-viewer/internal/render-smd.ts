@@ -12,9 +12,15 @@ import {
   buildSkeleton,
 } from './skeleton';
 import { ClipCache, buildAnimationClip } from './clip';
-import { type AnimEvent, buildAnimEventMap } from './event-map';
+import { type AnimEvent, buildAnimEventMap, EVENT_GFX } from './event-map';
 import { getViewer } from './viewer';
 import { mountScene } from './scene';
+import { createGfxEventScheduler, type GfxEventScheduler } from '../../gfx-runtime/scheduler';
+import { spawnElementRuntime } from '../../gfx-runtime/registry';
+import { createGfxLoader } from '../../gfx-runtime/loader';
+import { createNoopRuntime } from '../../gfx-runtime/noop';
+import { attachToHook } from '../../gfx-runtime/hook';
+import { resolveEnginePath, ENGINE_PATH_PREFIXES } from '../../gfx/util/resolveEnginePath';
 
 // "站立" (standing) — preferred default animation clip
 const PREFERRED_ANIM_HINT = '\u7AD9\u7ACB';
@@ -156,8 +162,11 @@ export async function renderFromSmd(
 
   // Set up AnimationMixer and eagerly load the preferred clip
   let initialClip: { name: string; clip: any } | null = null;
+  let scheduler: GfxEventScheduler | null = null;
+  let currentAction: any = null;
+  let mixerLoopListener: ((evt: any) => void) | null = null;
+  const v = getViewer(container);
   {
-    const v = getViewer(container);
     if (v.mixer) { v.mixer.stopAllAction(); v.mixer = null; }
     v.onBeforeRender = null;
     if (animNames.length > 0 && loadClip) {
@@ -171,25 +180,128 @@ export async function renderFromSmd(
       try {
         const clip = await loadClip(preferredName);
         initialClip = { name: preferredName, clip };
-        v.mixer.clipAction(clip).play();
+        currentAction = v.mixer.clipAction(clip);
+        currentAction.play();
       } catch (e) {
         console.warn('[model] Failed to load initial clip:', preferredName, e);
       }
-
-      if (skelData?.bones.some((b: any) => b.userData.wholeScale || b.userData.lenScale)) {
-        const animBones = skelData!.bones;
-        v.onBeforeRender = () => {
-          applyBoneScalesToHierarchy(animBones);
-        };
-      }
     }
   }
+
+  // ── GFX event scheduler ──────────────────────────────────────────────
+  // Built once per `renderFromSmd` call; rebuilt on every clip switch. GFX
+  // file resolution is async, so `spawn` returns a synchronous placeholder
+  // and attaches the resolved runtime(s) via `attachRuntime` once they load.
+  const gfxLoader = (animNames.length > 0 && listFiles)
+    ? createGfxLoader(wasm, (p) => getFile(p))
+    : null;
+
+  const rebuildSchedulerForClip = (clipName: string) => {
+    scheduler?.disposeAll();
+    scheduler = null;
+    if (!gfxLoader) return;
+    const events = animEventMap?.get(clipName) ?? [];
+    // Milestone B: only GFX (type 100). Sound events (101) stay timeline-only.
+    const gfxEvents = events.filter((e) => e.type === EVENT_GFX);
+    if (gfxEvents.length === 0) return;
+    const localScheduler = createGfxEventScheduler({
+      events: gfxEvents,
+      bones: skelData?.bones ?? [],
+      sceneRoot: group,
+      spawn: (ev) => {
+        // Synchronously return a no-op placeholder; resolve + attach the real
+        // runtime(s) asynchronously. If the GFX is already cached this
+        // usually completes in the same tick.
+        (async () => {
+          const resolved = listFiles
+            ? resolveEnginePath(ev.filePath, ENGINE_PATH_PREFIXES.gfx, listFiles)
+            : null;
+          if (!resolved) return;
+          const gfx = await gfxLoader.load(resolved);
+          const elements = (gfx as any)?.elements;
+          if (!elements?.length) return;
+          // Guard: scheduler may have been disposed during the await.
+          if (scheduler !== localScheduler) return;
+          for (const el of elements) {
+            const rt = spawnElementRuntime(el.body, {
+              three: THREE,
+              gfxScale: ev.gfxScale,
+              gfxSpeed: ev.gfxSpeed,
+              timeSpanSec: ev.timeSpan > 0 ? ev.timeSpan / 1000 : undefined,
+              getData: async (p: string) => (await getFile(p)) ?? new Uint8Array(0),
+              wasm,
+              listFiles,
+              element: el,
+            });
+            attachToHook(rt.root, {
+              hookName: ev.hookName,
+              hookOffset: ev.hookOffset,
+              hookYaw: ev.hookYaw,
+              hookPitch: ev.hookPitch,
+              hookRot: ev.hookRot,
+              bindParent: ev.bindParent,
+            }, skelData?.bones ?? [], group);
+            localScheduler.attachRuntime(rt);
+          }
+        })().catch((e) => console.warn('[gfx-runtime] spawn failed:', e));
+        return createNoopRuntime(THREE);
+      },
+    });
+    scheduler = localScheduler;
+  };
+
+  // Mixer 'loop' listener — reset scheduler time cursor at each loop. Only
+  // fires the reset when the firing action matches the currently-tracked
+  // clip, so overlapping actions (e.g. crossfade residue) don't skew time.
+  if (v.mixer) {
+    mixerLoopListener = (evt: any) => {
+      if (evt.action === currentAction) scheduler?.onLoop();
+    };
+    v.mixer.addEventListener('loop', mixerLoopListener);
+  }
+
+  // Per-frame driver: bone scaling (if needed) + scheduler tick.
+  const needsBoneScale = skelData?.bones.some(
+    (b: any) => b.userData.wholeScale || b.userData.lenScale,
+  );
+  if (v.mixer || needsBoneScale) {
+    const animBones = skelData?.bones;
+    v.onBeforeRender = () => {
+      if (needsBoneScale && animBones) applyBoneScalesToHierarchy(animBones);
+      if (scheduler) {
+        if (currentAction && isFinite(currentAction.time)) {
+          scheduler.tickToClipTime(currentAction.time);
+        }
+        scheduler.tickRuntimes(v.lastDt);
+      }
+    };
+  }
+
+  if (initialClip) rebuildSchedulerForClip(initialClip.name);
+
+  // Tear down GFX scheduler + mixer loop listener on viewer disposal.
+  // Wraps v.dispose so React unmount / path change / renderer re-init all
+  // route through the same cleanup (cf. useRenderEffect + disposeViewer).
+  const prevDispose = v.dispose.bind(v);
+  v.dispose = () => {
+    scheduler?.disposeAll();
+    scheduler = null;
+    if (mixerLoopListener && v.mixer) {
+      try { v.mixer.removeEventListener('loop', mixerLoopListener); } catch { /* mixer already gone */ }
+    }
+    mixerLoopListener = null;
+    prevDispose();
+  };
 
   mountScene(
     container, group, totalStats,
     opts?.source?.data ?? smdData,
     opts?.source?.ext ?? '.smd',
     animNames, loadClip, initialClip, skelData?.skeleton, animEventMap,
+    (clipName, action) => {
+      currentAction = action;
+      rebuildSchedulerForClip(clipName);
+    },
   );
 }
 
