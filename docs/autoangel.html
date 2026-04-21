@@ -104,16 +104,82 @@
 
             </li>
             <li>
+                    <a class="class" href="#EcmEvent">EcmEvent</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#EcmEvent.bind_parent">bind_parent</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmEvent.event_type">event_type</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmEvent.fade_out">fade_out</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmEvent.force_2d">force_2d</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmEvent.fx_file_path">fx_file_path</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmEvent.gfx_scale">gfx_scale</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmEvent.gfx_speed">gfx_speed</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmEvent.hook_name">hook_name</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmEvent.hook_offset">hook_offset</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmEvent.hook_pitch">hook_pitch</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmEvent.hook_rot">hook_rot</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmEvent.hook_yaw">hook_yaw</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmEvent.is_loop">is_loop</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmEvent.max_dist">max_dist</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmEvent.min_dist">min_dist</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmEvent.once">once</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmEvent.start_time">start_time</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmEvent.time_span">time_span</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmEvent.use_model_alpha">use_model_alpha</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#EcmEvent.volume">volume</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
                     <a class="class" href="#EcmModel">EcmModel</a>
                             <ul class="memberlist">
                         <li>
                                 <a class="variable" href="#EcmModel.additional_skins">additional_skins</a>
                         </li>
                         <li>
-                                <a class="variable" href="#EcmModel.bone_scales">bone_scales</a>
+                                <a class="variable" href="#EcmModel.bone_scale_count">bone_scale_count</a>
                         </li>
                         <li>
-                                <a class="variable" href="#EcmModel.child_models">child_models</a>
+                                <a class="variable" href="#EcmModel.child_count">child_count</a>
                         </li>
                         <li>
                                 <a class="variable" href="#EcmModel.co_gfx_count">co_gfx_count</a>
@@ -140,16 +206,13 @@
                                 <a class="variable" href="#EcmModel.dest_blend">dest_blend</a>
                         </li>
                         <li>
-                                <a class="function" href="#EcmModel.event_fx_file_path">event_fx_file_path</a>
+                                <a class="function" href="#EcmModel.get_bone_scale">get_bone_scale</a>
                         </li>
                         <li>
-                                <a class="function" href="#EcmModel.event_hook_name">event_hook_name</a>
+                                <a class="function" href="#EcmModel.get_child">get_child</a>
                         </li>
                         <li>
-                                <a class="function" href="#EcmModel.event_start_time">event_start_time</a>
-                        </li>
-                        <li>
-                                <a class="function" href="#EcmModel.event_type">event_type</a>
+                                <a class="function" href="#EcmModel.get_event">get_event</a>
                         </li>
                         <li>
                                 <a class="variable" href="#EcmModel.new_bone_scale">new_bone_scale</a>
@@ -1991,6 +2054,10 @@ This should work for you, if you don't use exotic game version (otherwise, you s
     <a class="headerlink" href="#BoneScaleEntry"></a>
     
             <div class="docstring"><p>Bone scale entry from an ECM model.</p>
+
+<p>Old format: <code><a href="#BoneScaleEntry.scale">scale</a></code> is (scale_x, scale_y, scale_z) and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code>
+is populated. New (BoneScaleEx) format: <code><a href="#BoneScaleEntry.scale">scale</a></code> is (len, thick, whole)
+and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>None</code>.</p>
 </div>
 
 
@@ -2007,13 +2074,13 @@ This should work for you, if you don't use exotic game version (otherwise, you s
                             </div>
                             <div id="BoneScaleEntry.scale" class="classattr">
                                 <div class="attr variable">
-            <span class="name">scale</span><span class="annotation">: tuple[float, float, float]</span>
+            <span class="name">scale</span><span class="annotation">: Tuple[float, float, float]</span>
 
         
     </div>
     <a class="headerlink" href="#BoneScaleEntry.scale"></a>
     
-            <div class="docstring"><p>Scale as (x, y, z) tuple.</p>
+            <div class="docstring"><p>Old format: (scale_x, scale_y, scale_z). New (BoneScaleEx): (len, thick, whole).</p>
 </div>
 
 
@@ -2026,7 +2093,7 @@ This should work for you, if you don't use exotic game version (otherwise, you s
     </div>
     <a class="headerlink" href="#BoneScaleEntry.scale_type"></a>
     
-            <div class="docstring"><p>Old format scale type; <code>None</code> for BoneScaleEx (new format).</p>
+            <div class="docstring"><p><code>Some(type)</code> for old format, <code>None</code> for BoneScaleEx.</p>
 </div>
 
 
@@ -2108,9 +2175,7 @@ This should work for you, if you don't use exotic game version (otherwise, you s
     </div>
     <a class="headerlink" href="#ChildModel.cc_name"></a>
     
-            <div class="docstring"><p>Child connection point (CC).</p>
-</div>
-
+    
 
                             </div>
                             <div id="ChildModel.hh_name" class="classattr">
@@ -2121,9 +2186,7 @@ This should work for you, if you don't use exotic game version (otherwise, you s
     </div>
     <a class="headerlink" href="#ChildModel.hh_name"></a>
     
-            <div class="docstring"><p>Parent hook name (HH).</p>
-</div>
-
+    
 
                             </div>
                             <div id="ChildModel.name" class="classattr">
@@ -2144,6 +2207,245 @@ This should work for you, if you don't use exotic game version (otherwise, you s
         
     </div>
     <a class="headerlink" href="#ChildModel.path"></a>
+    
+    
+
+                            </div>
+                </section>
+                <section id="EcmEvent">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">EcmEvent</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#EcmEvent"></a>
+    
+            <div class="docstring"><p>A visual/sound event triggered during animation or as persistent CoGfx.</p>
+
+<p><code><a href="#EcmEvent.event_type">event_type</a></code> determines which optional fields are populated:
+100 = GFX (<code><a href="#EcmEvent.gfx_scale">gfx_scale</a></code> / <code><a href="#EcmEvent.gfx_speed">gfx_speed</a></code>), 101 = Sound
+(<code><a href="#EcmEvent.volume">volume</a></code> / <code><a href="#EcmEvent.min_dist">min_dist</a></code> / <code><a href="#EcmEvent.max_dist">max_dist</a></code> / <code><a href="#EcmEvent.force_2d">force_2d</a></code> / <code><a href="#EcmEvent.is_loop">is_loop</a></code>).</p>
+</div>
+
+
+                            <div id="EcmEvent.bind_parent" class="classattr">
+                                <div class="attr variable">
+            <span class="name">bind_parent</span><span class="annotation">: bool</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmEvent.bind_parent"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmEvent.event_type" class="classattr">
+                                <div class="attr variable">
+            <span class="name">event_type</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmEvent.event_type"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmEvent.fade_out" class="classattr">
+                                <div class="attr variable">
+            <span class="name">fade_out</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmEvent.fade_out"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmEvent.force_2d" class="classattr">
+                                <div class="attr variable">
+            <span class="name">force_2d</span><span class="annotation">: bool | None</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmEvent.force_2d"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmEvent.fx_file_path" class="classattr">
+                                <div class="attr variable">
+            <span class="name">fx_file_path</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmEvent.fx_file_path"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmEvent.gfx_scale" class="classattr">
+                                <div class="attr variable">
+            <span class="name">gfx_scale</span><span class="annotation">: float | None</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmEvent.gfx_scale"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmEvent.gfx_speed" class="classattr">
+                                <div class="attr variable">
+            <span class="name">gfx_speed</span><span class="annotation">: float | None</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmEvent.gfx_speed"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmEvent.hook_name" class="classattr">
+                                <div class="attr variable">
+            <span class="name">hook_name</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmEvent.hook_name"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmEvent.hook_offset" class="classattr">
+                                <div class="attr variable">
+            <span class="name">hook_offset</span><span class="annotation">: Tuple[float, float, float]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmEvent.hook_offset"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmEvent.hook_pitch" class="classattr">
+                                <div class="attr variable">
+            <span class="name">hook_pitch</span><span class="annotation">: float</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmEvent.hook_pitch"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmEvent.hook_rot" class="classattr">
+                                <div class="attr variable">
+            <span class="name">hook_rot</span><span class="annotation">: float</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmEvent.hook_rot"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmEvent.hook_yaw" class="classattr">
+                                <div class="attr variable">
+            <span class="name">hook_yaw</span><span class="annotation">: float</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmEvent.hook_yaw"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmEvent.is_loop" class="classattr">
+                                <div class="attr variable">
+            <span class="name">is_loop</span><span class="annotation">: bool | None</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmEvent.is_loop"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmEvent.max_dist" class="classattr">
+                                <div class="attr variable">
+            <span class="name">max_dist</span><span class="annotation">: float | None</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmEvent.max_dist"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmEvent.min_dist" class="classattr">
+                                <div class="attr variable">
+            <span class="name">min_dist</span><span class="annotation">: float | None</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmEvent.min_dist"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmEvent.once" class="classattr">
+                                <div class="attr variable">
+            <span class="name">once</span><span class="annotation">: bool</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmEvent.once"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmEvent.start_time" class="classattr">
+                                <div class="attr variable">
+            <span class="name">start_time</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmEvent.start_time"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmEvent.time_span" class="classattr">
+                                <div class="attr variable">
+            <span class="name">time_span</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmEvent.time_span"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmEvent.use_model_alpha" class="classattr">
+                                <div class="attr variable">
+            <span class="name">use_model_alpha</span><span class="annotation">: bool</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmEvent.use_model_alpha"></a>
+    
+    
+
+                            </div>
+                            <div id="EcmEvent.volume" class="classattr">
+                                <div class="attr variable">
+            <span class="name">volume</span><span class="annotation">: int | None</span>
+
+        
+    </div>
+    <a class="headerlink" href="#EcmEvent.volume"></a>
     
     
 
@@ -2174,26 +2476,30 @@ This should work for you, if you don't use exotic game version (otherwise, you s
     
 
                             </div>
-                            <div id="EcmModel.bone_scales" class="classattr">
+                            <div id="EcmModel.bone_scale_count" class="classattr">
                                 <div class="attr variable">
-            <span class="name">bone_scales</span><span class="annotation">: List[<a href="#BoneScaleEntry">BoneScaleEntry</a>]</span>
+            <span class="name">bone_scale_count</span><span class="annotation">: int</span>
 
         
     </div>
-    <a class="headerlink" href="#EcmModel.bone_scales"></a>
+    <a class="headerlink" href="#EcmModel.bone_scale_count"></a>
     
-    
+            <div class="docstring"><p>Number of bone scale entries.</p>
+</div>
+
 
                             </div>
-                            <div id="EcmModel.child_models" class="classattr">
+                            <div id="EcmModel.child_count" class="classattr">
                                 <div class="attr variable">
-            <span class="name">child_models</span><span class="annotation">: List[<a href="#ChildModel">ChildModel</a>]</span>
+            <span class="name">child_count</span><span class="annotation">: int</span>
 
         
     </div>
-    <a class="headerlink" href="#EcmModel.child_models"></a>
+    <a class="headerlink" href="#EcmModel.child_count"></a>
     
-    
+            <div class="docstring"><p>Number of child-model attachments.</p>
+</div>
+
 
                             </div>
                             <div id="EcmModel.co_gfx_count" class="classattr">
@@ -2304,64 +2610,47 @@ This should work for you, if you don't use exotic game version (otherwise, you s
     
 
                             </div>
-                            <div id="EcmModel.event_fx_file_path" class="classattr">
+                            <div id="EcmModel.get_bone_scale" class="classattr">
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">event_fx_file_path</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">action_idx</span><span class="p">:</span> <span class="nb">int</span>, </span><span class="param"><span class="n">event_idx</span><span class="p">:</span> <span class="nb">int</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+        <span class="name">get_bone_scale</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">i</span><span class="p">:</span> <span class="nb">int</span></span><span class="return-annotation">) -> <span class="n"><a href="#BoneScaleEntry">BoneScaleEntry</a></span> <span class="o">|</span> <span class="kc">None</span>:</span></span>
 
         
     </div>
-    <a class="headerlink" href="#EcmModel.event_fx_file_path"></a>
+    <a class="headerlink" href="#EcmModel.get_bone_scale"></a>
     
-            <div class="docstring"><p>FX file path of event <code>event_idx</code> in combined action <code>action_idx</code>.</p>
+            <div class="docstring"><p>Return the bone-scale entry at <code>i</code>, or <code>None</code> if out of bounds.</p>
 </div>
 
 
                             </div>
-                            <div id="EcmModel.event_hook_name" class="classattr">
+                            <div id="EcmModel.get_child" class="classattr">
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">event_hook_name</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">action_idx</span><span class="p">:</span> <span class="nb">int</span>, </span><span class="param"><span class="n">event_idx</span><span class="p">:</span> <span class="nb">int</span></span><span class="return-annotation">) -> <span class="nb">str</span>:</span></span>
+        <span class="name">get_child</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">i</span><span class="p">:</span> <span class="nb">int</span></span><span class="return-annotation">) -> <span class="n"><a href="#ChildModel">ChildModel</a></span> <span class="o">|</span> <span class="kc">None</span>:</span></span>
 
         
     </div>
-    <a class="headerlink" href="#EcmModel.event_hook_name"></a>
+    <a class="headerlink" href="#EcmModel.get_child"></a>
     
-            <div class="docstring"><p>Hook name of event <code>event_idx</code> in combined action <code>action_idx</code>.</p>
+            <div class="docstring"><p>Return the child-model entry at <code>i</code>, or <code>None</code> if out of bounds.</p>
 </div>
 
 
                             </div>
-                            <div id="EcmModel.event_start_time" class="classattr">
+                            <div id="EcmModel.get_event" class="classattr">
                                 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">event_start_time</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">action_idx</span><span class="p">:</span> <span class="nb">int</span>, </span><span class="param"><span class="n">event_idx</span><span class="p">:</span> <span class="nb">int</span></span><span class="return-annotation">) -> <span class="nb">int</span>:</span></span>
+        <span class="name">get_event</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">action_idx</span><span class="p">:</span> <span class="nb">int</span>, </span><span class="param"><span class="n">event_idx</span><span class="p">:</span> <span class="nb">int</span></span><span class="return-annotation">) -> <span class="n"><a href="#EcmEvent">EcmEvent</a></span> <span class="o">|</span> <span class="kc">None</span>:</span></span>
 
         
     </div>
-    <a class="headerlink" href="#EcmModel.event_start_time"></a>
+    <a class="headerlink" href="#EcmModel.get_event"></a>
     
-            <div class="docstring"><p>Start time (ms) of event <code>event_idx</code> in combined action <code>action_idx</code>.</p>
-</div>
-
-
-                            </div>
-                            <div id="EcmModel.event_type" class="classattr">
-                                <div class="attr function">
-            
-        <span class="def">def</span>
-        <span class="name">event_type</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">action_idx</span><span class="p">:</span> <span class="nb">int</span>, </span><span class="param"><span class="n">event_idx</span><span class="p">:</span> <span class="nb">int</span></span><span class="return-annotation">) -> <span class="nb">int</span>:</span></span>
-
-        
-    </div>
-    <a class="headerlink" href="#EcmModel.event_type"></a>
-    
-            <div class="docstring"><p>Event type of event <code>event_idx</code> in combined action <code>action_idx</code>.</p>
-
-<p>100 = GFX, 101 = Sound.</p>
+            <div class="docstring"><p>Return the event at (<code>action_idx</code>, <code>event_idx</code>), or <code>None</code> if either index is out of bounds.</p>
 </div>
 
 

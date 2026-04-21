@@ -1,8 +1,11 @@
+use crate::model::bindable;
 use crate::model::common::decode_gbk;
 use crate::model::text_reader::Lines;
 use eyre::{Result, eyre};
+use macro_rules_attribute::apply;
 
-#[derive(Debug, Clone, Default)]
+#[apply(bindable)]
+#[derive(Default)]
 pub struct BoneScaleEntry {
     pub bone_index: i32,
     /// Old format: (scale_x, scale_y, scale_z). New (BoneScaleEx): (len, thick, whole).
@@ -11,7 +14,8 @@ pub struct BoneScaleEntry {
     pub scale_type: Option<i32>,
 }
 
-#[derive(Debug, Clone, Default)]
+#[apply(bindable)]
+#[derive(Default)]
 pub struct ChildModel {
     pub name: String,
     pub path: String,
@@ -20,7 +24,8 @@ pub struct ChildModel {
 }
 
 /// A visual/sound event triggered during animation or as persistent CoGfx.
-#[derive(Debug, Clone, Default)]
+#[apply(bindable)]
+#[derive(Default)]
 pub struct EcmEvent {
     pub event_type: i32, // 100=GFX, 101=Sound, 102+=other
     pub start_time: i32,

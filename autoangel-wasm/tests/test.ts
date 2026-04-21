@@ -571,17 +571,6 @@ describe("EcmModel", () => {
     assert.deepEqual(ecm.additionalSkins, ["fallen_general.ski"]);
     assert.equal(ecm.boneScaleCount, 0);
     assert.equal(ecm.childCount, 2);
-    assert.equal(ecm.childName(0), "wq_l");
-    assert.equal(ecm.childHhName(0), "HH_lefthandweapon");
-    assert.equal(ecm.childCcName(0), "CC_weapon");
-    assert.equal(ecm.childName(1), "wq_r");
-    assert.equal(ecm.childHhName(1), "HH_righthandweapon");
-  });
-
-  it("returns undefined for out-of-bounds child", () => {
-    using ecm = EcmModel.parse(CARNIVORE_ECM);
-    assert.equal(ecm.childName(999), undefined);
-    assert.equal(ecm.childPath(999), undefined);
   });
 
   it("returns default playback speed", () => {
@@ -591,6 +580,103 @@ describe("EcmModel", () => {
 
   it("rejects empty bytes", () => {
     assert.throws(() => EcmModel.parse(new Uint8Array([])));
+  });
+});
+
+describe("EcmModel getEvent", () => {
+  it("returns the GFX event at (0, 0) with expected field values", () => {
+    using ecm = EcmModel.parse(FALLEN_ECM);
+    // Action 0 event 0 is EventType=100 GFX per core's parse_fallen_general_events test.
+    const ev = ecm.getEvent(0, 0);
+    assert.ok(ev, "event should exist");
+    // Exact values from the fallen_general fixture (ECM v21).
+    assert.equal(ev.event_type, 100);
+    assert.equal(ev.start_time, 0);
+    assert.equal(ev.time_span, -1);
+    assert.equal(ev.once, false);
+    assert.equal(ev.bind_parent, true);
+    assert.equal(ev.use_model_alpha, false);
+    assert.equal(ev.fade_out, 1);
+    assert.equal(ev.hook_yaw, 0);
+    assert.equal(ev.hook_pitch, 0);
+    assert.equal(ev.hook_rot, 0);
+    assert.equal(ev.hook_name, "");
+    // hook_offset is [f32; 3] — y ≈ 0.2, others 0.
+    assert.equal(ev.hook_offset.length, 3);
+    assert.equal(ev.hook_offset[0], 0);
+    assert.ok(Math.abs(ev.hook_offset[1] - 0.2) < 1e-5);
+    assert.equal(ev.hook_offset[2], 0);
+    // GFX-only fields populated; sound-only fields absent.
+    assert.ok(ev.gfx_scale !== undefined && Math.abs(ev.gfx_scale - 0.8) < 1e-2);
+    assert.equal(ev.gfx_speed, 1.0);
+    assert.equal(ev.volume, undefined);
+    assert.equal(ev.min_dist, undefined);
+    assert.equal(ev.max_dist, undefined);
+    assert.equal(ev.force_2d, undefined);
+    assert.equal(ev.is_loop, undefined);
+    // fx_file_path is a non-empty GBK-decoded string (contains CJK chars).
+    assert.equal(typeof ev.fx_file_path, "string");
+    assert.ok(ev.fx_file_path.endsWith(".gfx"));
+  });
+
+  it("returns the Sound event at (3, 0) with expected field values", () => {
+    using ecm = EcmModel.parse(FALLEN_ECM);
+    // Action 3 event 0 is EventType=101 Sound per core's parse_fallen_general_events test.
+    const ev = ecm.getEvent(3, 0);
+    assert.ok(ev, "event should exist");
+    assert.equal(ev.event_type, 101);
+    assert.equal(ev.volume, 100);
+    assert.equal(ev.min_dist, 5.0);
+    assert.equal(ev.max_dist, 25.0);
+    assert.equal(ev.force_2d, false);
+    assert.equal(ev.is_loop, false);
+    // GFX-only fields absent for Sound events.
+    assert.equal(ev.gfx_scale, undefined);
+    assert.equal(ev.gfx_speed, undefined);
+  });
+
+  it("returns undefined for out-of-bounds indices", () => {
+    using ecm = EcmModel.parse(FALLEN_ECM);
+    assert.equal(ecm.getEvent(99, 99), undefined);
+    assert.equal(ecm.getEvent(0, 99), undefined);
+  });
+});
+
+describe("EcmModel getChild", () => {
+  it("returns child-model entries with expected field values", () => {
+    using ecm = EcmModel.parse(FALLEN_ECM);
+    assert.equal(ecm.childCount, 2);
+
+    const c0 = ecm.getChild(0);
+    assert.ok(c0, "child 0 should exist");
+    assert.equal(c0.name, "wq_l");
+    assert.equal(c0.hh_name, "HH_lefthandweapon");
+    assert.equal(c0.cc_name, "CC_weapon");
+    assert.equal(typeof c0.path, "string");
+
+    const c1 = ecm.getChild(1);
+    assert.ok(c1, "child 1 should exist");
+    assert.equal(c1.name, "wq_r");
+    assert.equal(c1.hh_name, "HH_righthandweapon");
+  });
+
+  it("returns undefined for out-of-bounds index", () => {
+    using ecm = EcmModel.parse(CARNIVORE_ECM);
+    assert.equal(ecm.getChild(999), undefined);
+  });
+});
+
+describe("EcmModel getBoneScale", () => {
+  it("returns undefined when there are no bone scales", () => {
+    // fallen_general and carnivore_plant both have boneScaleCount == 0.
+    using ecm = EcmModel.parse(FALLEN_ECM);
+    assert.equal(ecm.boneScaleCount, 0);
+    assert.equal(ecm.getBoneScale(0), undefined);
+  });
+
+  it("returns undefined for out-of-bounds index", () => {
+    using ecm = EcmModel.parse(CARNIVORE_ECM);
+    assert.equal(ecm.getBoneScale(999), undefined);
   });
 });
 

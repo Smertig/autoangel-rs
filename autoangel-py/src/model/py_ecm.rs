@@ -3,98 +3,9 @@ use pyo3::exceptions::PyIndexError;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
-#[pyclass(name = "BoneScaleEntry", frozen)]
-struct PyBoneScaleEntry {
-    inner: ecm::BoneScaleEntry,
-}
-
-#[pymethods]
-impl PyBoneScaleEntry {
-    #[getter]
-    fn bone_index(&self) -> i32 {
-        self.inner.bone_index
-    }
-
-    /// Scale as (x, y, z) tuple.
-    #[getter]
-    fn scale(&self) -> (f32, f32, f32) {
-        (
-            self.inner.scale[0],
-            self.inner.scale[1],
-            self.inner.scale[2],
-        )
-    }
-
-    /// Old format scale type; `None` for BoneScaleEx (new format).
-    #[getter]
-    fn scale_type(&self) -> Option<i32> {
-        self.inner.scale_type
-    }
-
-    fn __repr__(&self) -> String {
-        format!(
-            "BoneScaleEntry(bone_index={}, scale=({}, {}, {}), scale_type={:?})",
-            self.inner.bone_index,
-            self.inner.scale[0],
-            self.inner.scale[1],
-            self.inner.scale[2],
-            self.inner.scale_type
-        )
-    }
-}
-
-#[pyclass(name = "ChildModel", frozen)]
-struct PyChildModel {
-    inner: ecm::ChildModel,
-}
-
-#[pymethods]
-impl PyChildModel {
-    #[getter]
-    fn name(&self) -> &str {
-        &self.inner.name
-    }
-
-    #[getter]
-    fn path(&self) -> &str {
-        &self.inner.path
-    }
-
-    /// Parent hook name (HH).
-    #[getter]
-    fn hh_name(&self) -> &str {
-        &self.inner.hh_name
-    }
-
-    /// Child connection point (CC).
-    #[getter]
-    fn cc_name(&self) -> &str {
-        &self.inner.cc_name
-    }
-
-    fn __repr__(&self) -> String {
-        format!(
-            "ChildModel(name='{}', path='{}', hh_name='{}', cc_name='{}')",
-            self.inner.name, self.inner.path, self.inner.hh_name, self.inner.cc_name
-        )
-    }
-}
-
 #[pyclass(name = "EcmModel", frozen)]
 struct PyEcmModel {
     inner: ecm::EcmModel,
-}
-
-impl PyEcmModel {
-    fn get_event(&self, action_idx: usize, event_idx: usize) -> PyResult<&ecm::EcmEvent> {
-        let action = self.inner.combine_actions.get(action_idx).ok_or_else(|| {
-            PyIndexError::new_err(format!("action index {action_idx} out of range"))
-        })?;
-        action
-            .events
-            .get(event_idx)
-            .ok_or_else(|| PyIndexError::new_err(format!("event index {event_idx} out of range")))
-    }
 }
 
 #[pymethods]
@@ -142,13 +53,15 @@ impl PyEcmModel {
         self.inner.new_bone_scale
     }
 
+    /// Number of bone scale entries.
     #[getter]
-    fn bone_scales(&self) -> Vec<PyBoneScaleEntry> {
-        self.inner
-            .bone_scales
-            .iter()
-            .map(|e| PyBoneScaleEntry { inner: e.clone() })
-            .collect()
+    fn bone_scale_count(&self) -> usize {
+        self.inner.bone_scales.len()
+    }
+
+    /// Return the bone-scale entry at `i`, or None if out of bounds.
+    fn get_bone_scale(&self, i: usize) -> Option<ecm::BoneScaleEntry> {
+        self.inner.bone_scales.get(i).cloned()
     }
 
     #[getter]
@@ -161,13 +74,15 @@ impl PyEcmModel {
         self.inner.def_play_speed
     }
 
+    /// Number of child-model attachments.
     #[getter]
-    fn child_models(&self) -> Vec<PyChildModel> {
-        self.inner
-            .child_models
-            .iter()
-            .map(|c| PyChildModel { inner: c.clone() })
-            .collect()
+    fn child_count(&self) -> usize {
+        self.inner.child_models.len()
+    }
+
+    /// Return the child-model entry at `i`, or None if out of bounds.
+    fn get_child(&self, i: usize) -> Option<ecm::ChildModel> {
+        self.inner.child_models.get(i).cloned()
     }
 
     /// Number of combined actions.
@@ -206,28 +121,13 @@ impl PyEcmModel {
         Ok(action.events.len())
     }
 
-    /// Event type of event `event_idx` in action `action_idx`.
-    fn event_type(&self, action_idx: usize, event_idx: usize) -> PyResult<i32> {
-        let event = self.get_event(action_idx, event_idx)?;
-        Ok(event.event_type)
-    }
-
-    /// FX file path of event `event_idx` in action `action_idx`.
-    fn event_fx_file_path(&self, action_idx: usize, event_idx: usize) -> PyResult<&str> {
-        let event = self.get_event(action_idx, event_idx)?;
-        Ok(&event.fx_file_path)
-    }
-
-    /// Start time (ms) of event `event_idx` in action `action_idx`.
-    fn event_start_time(&self, action_idx: usize, event_idx: usize) -> PyResult<i32> {
-        let event = self.get_event(action_idx, event_idx)?;
-        Ok(event.start_time)
-    }
-
-    /// Hook name of event `event_idx` in action `action_idx`.
-    fn event_hook_name(&self, action_idx: usize, event_idx: usize) -> PyResult<&str> {
-        let event = self.get_event(action_idx, event_idx)?;
-        Ok(&event.hook_name)
+    /// Return the event at (action_idx, event_idx), or None if either index is out of bounds.
+    fn get_event(&self, action_idx: usize, event_idx: usize) -> Option<ecm::EcmEvent> {
+        self.inner
+            .combine_actions
+            .get(action_idx)
+            .and_then(|a| a.events.get(event_idx))
+            .cloned()
     }
 
     /// Number of persistent CoGfx events.
@@ -265,9 +165,10 @@ fn read_ecm(data: &[u8]) -> PyResult<PyEcmModel> {
 }
 
 pub fn init_py(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add_class::<PyBoneScaleEntry>()?;
-    m.add_class::<PyChildModel>()?;
     m.add_class::<PyEcmModel>()?;
+    m.add_class::<ecm::BoneScaleEntry>()?;
+    m.add_class::<ecm::ChildModel>()?;
+    m.add_class::<ecm::EcmEvent>()?;
     m.add_function(pyo3::wrap_pyfunction!(read_ecm, m)?)?;
     Ok(())
 }

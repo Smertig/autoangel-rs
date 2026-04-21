@@ -55,25 +55,10 @@ impl EcmModel {
         self.inner.bone_scales.len()
     }
 
-    /// Bone index for scale entry at given index.
-    #[wasm_bindgen(js_name = "boneScaleBoneIndex")]
-    pub fn bone_scale_bone_index(&self, i: usize) -> i32 {
-        self.inner.bone_scales.get(i).map_or(-1, |e| e.bone_index)
-    }
-
-    /// Scale values [x, y, z] for bone scale entry at given index.
-    #[wasm_bindgen(js_name = "boneScaleValues")]
-    pub fn bone_scale_values(&self, i: usize) -> Option<Vec<f32>> {
-        self.inner.bone_scales.get(i).map(|e| e.scale.to_vec())
-    }
-
-    /// Scale type for old-format entry (-1 if BoneScaleEx).
-    #[wasm_bindgen(js_name = "boneScaleType")]
-    pub fn bone_scale_type(&self, i: usize) -> i32 {
-        self.inner
-            .bone_scales
-            .get(i)
-            .map_or(-1, |e| e.scale_type.unwrap_or(-1))
+    /// Returns `undefined` if `i` is out of bounds.
+    #[wasm_bindgen(js_name = "getBoneScale")]
+    pub fn get_bone_scale(&self, i: usize) -> Option<autoangel_core::model::ecm::BoneScaleEntry> {
+        self.inner.bone_scales.get(i).cloned()
     }
 
     /// Bone name used for foot offset calculation.
@@ -94,28 +79,10 @@ impl EcmModel {
         self.inner.child_models.len()
     }
 
-    /// Get the name of child model at the given index.
-    #[wasm_bindgen(js_name = "childName")]
-    pub fn child_name(&self, i: usize) -> Option<String> {
-        self.inner.child_models.get(i).map(|c| c.name.clone())
-    }
-
-    /// Get the path of child model at the given index.
-    #[wasm_bindgen(js_name = "childPath")]
-    pub fn child_path(&self, i: usize) -> Option<String> {
-        self.inner.child_models.get(i).map(|c| c.path.clone())
-    }
-
-    /// Get the parent hook name (HH) for child model at the given index.
-    #[wasm_bindgen(js_name = "childHhName")]
-    pub fn child_hh_name(&self, i: usize) -> Option<String> {
-        self.inner.child_models.get(i).map(|c| c.hh_name.clone())
-    }
-
-    /// Get the child connection point (CC) for child model at the given index.
-    #[wasm_bindgen(js_name = "childCcName")]
-    pub fn child_cc_name(&self, i: usize) -> Option<String> {
-        self.inner.child_models.get(i).map(|c| c.cc_name.clone())
+    /// Returns `undefined` if `i` is out of bounds.
+    #[wasm_bindgen(js_name = "getChild")]
+    pub fn get_child(&self, i: usize) -> Option<autoangel_core::model::ecm::ChildModel> {
+        self.inner.child_models.get(i).cloned()
     }
 
     // Combined actions
@@ -175,55 +142,18 @@ impl EcmModel {
 
     // Events within combined actions (double-indexed)
 
-    /// Event type for the event at (action_idx, event_idx).
-    #[wasm_bindgen(js_name = "eventType")]
-    pub fn event_type(&self, action_idx: usize, event_idx: usize) -> i32 {
+    /// Returns `undefined` if either index is out of bounds.
+    #[wasm_bindgen(js_name = "getEvent")]
+    pub fn get_event(
+        &self,
+        action_idx: usize,
+        event_idx: usize,
+    ) -> Option<autoangel_core::model::ecm::EcmEvent> {
         self.inner
             .combine_actions
             .get(action_idx)
             .and_then(|a| a.events.get(event_idx))
-            .map_or(0, |e| e.event_type)
-    }
-
-    /// FX file path for the event at (action_idx, event_idx).
-    #[wasm_bindgen(js_name = "eventFxFilePath")]
-    pub fn event_fx_file_path(&self, action_idx: usize, event_idx: usize) -> Option<String> {
-        self.inner
-            .combine_actions
-            .get(action_idx)
-            .and_then(|a| a.events.get(event_idx))
-            .map(|e| e.fx_file_path.clone())
-    }
-
-    /// Start time for the event at (action_idx, event_idx).
-    #[wasm_bindgen(js_name = "eventStartTime")]
-    pub fn event_start_time(&self, action_idx: usize, event_idx: usize) -> i32 {
-        self.inner
-            .combine_actions
-            .get(action_idx)
-            .and_then(|a| a.events.get(event_idx))
-            .map_or(0, |e| e.start_time)
-    }
-
-    /// Hook name for the event at (action_idx, event_idx).
-    #[wasm_bindgen(js_name = "eventHookName")]
-    pub fn event_hook_name(&self, action_idx: usize, event_idx: usize) -> Option<String> {
-        self.inner
-            .combine_actions
-            .get(action_idx)
-            .and_then(|a| a.events.get(event_idx))
-            .map(|e| e.hook_name.clone())
-    }
-
-    /// GFX scale for the event at (action_idx, event_idx) (1.0 if not a GFX event or out of bounds).
-    #[wasm_bindgen(js_name = "eventGfxScale")]
-    pub fn event_gfx_scale(&self, action_idx: usize, event_idx: usize) -> f32 {
-        self.inner
-            .combine_actions
-            .get(action_idx)
-            .and_then(|a| a.events.get(event_idx))
-            .and_then(|e| e.gfx_scale)
-            .unwrap_or(1.0)
+            .cloned()
     }
 
     // CoGfx persistent events

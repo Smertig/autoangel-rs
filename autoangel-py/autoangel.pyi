@@ -629,9 +629,14 @@ def read_pck_bytes(
 
 @final
 class BoneScaleEntry:
-    """Bone scale entry from an ECM model."""
+    """Bone scale entry from an ECM model.
+
+    Old format: ``scale`` is (scale_x, scale_y, scale_z) and ``scale_type``
+    is populated. New (BoneScaleEx) format: ``scale`` is (len, thick, whole)
+    and ``scale_type`` is ``None``.
+    """
     bone_index: int
-    scale: tuple[float, float, float]
+    scale: Tuple[float, float, float]
     scale_type: Optional[int]
 
 
@@ -645,6 +650,36 @@ class ChildModel:
 
 
 @final
+class EcmEvent:
+    """A visual/sound event triggered during animation or as persistent CoGfx.
+
+    ``event_type`` determines which optional fields are populated:
+    100 = GFX (``gfx_scale`` / ``gfx_speed``), 101 = Sound
+    (``volume`` / ``min_dist`` / ``max_dist`` / ``force_2d`` / ``is_loop``).
+    """
+    event_type: int
+    start_time: int
+    time_span: int
+    once: bool
+    fx_file_path: str
+    hook_name: str
+    hook_offset: Tuple[float, float, float]
+    hook_yaw: float
+    hook_pitch: float
+    hook_rot: float
+    bind_parent: bool
+    fade_out: int
+    use_model_alpha: bool
+    gfx_scale: Optional[float]
+    gfx_speed: Optional[float]
+    volume: Optional[int]
+    min_dist: Optional[float]
+    max_dist: Optional[float]
+    force_2d: Optional[bool]
+    is_loop: Optional[bool]
+
+
+@final
 class EcmModel:
     """Parsed ECM (composite model) file."""
     version: int
@@ -655,12 +690,20 @@ class EcmModel:
     dest_blend: int
     outer_floats: List[float]
     new_bone_scale: bool
-    bone_scales: List[BoneScaleEntry]
+    bone_scale_count: int
     scale_base_bone: Optional[str]
     def_play_speed: float
-    child_models: List[ChildModel]
+    child_count: int
     combine_action_count: int
     co_gfx_count: int
+
+    def get_bone_scale(self, i: int) -> Optional[BoneScaleEntry]:
+        """Return the bone-scale entry at ``i``, or ``None`` if out of bounds."""
+        ...
+
+    def get_child(self, i: int) -> Optional[ChildModel]:
+        """Return the child-model entry at ``i``, or ``None`` if out of bounds."""
+        ...
 
     def combine_action_name(self, i: int) -> str:
         """Name of combined action at index ``i``."""
@@ -674,24 +717,8 @@ class EcmModel:
         """Number of events in combined action at index ``i``."""
         ...
 
-    def event_type(self, action_idx: int, event_idx: int) -> int:
-        """
-        Event type of event ``event_idx`` in combined action ``action_idx``.
-
-        100 = GFX, 101 = Sound.
-        """
-        ...
-
-    def event_fx_file_path(self, action_idx: int, event_idx: int) -> str:
-        """FX file path of event ``event_idx`` in combined action ``action_idx``."""
-        ...
-
-    def event_start_time(self, action_idx: int, event_idx: int) -> int:
-        """Start time (ms) of event ``event_idx`` in combined action ``action_idx``."""
-        ...
-
-    def event_hook_name(self, action_idx: int, event_idx: int) -> str:
-        """Hook name of event ``event_idx`` in combined action ``action_idx``."""
+    def get_event(self, action_idx: int, event_idx: int) -> Optional[EcmEvent]:
+        """Return the event at (``action_idx``, ``event_idx``), or ``None`` if either index is out of bounds."""
         ...
 
     def co_gfx_fx_file_path(self, i: int) -> str:

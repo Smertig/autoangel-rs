@@ -7,8 +7,8 @@ def test_read_ecm_carnivore_plant():
     assert ecm.version == 21
     assert ecm.skin_model_path == 'carnivore_plant.SMD'
     assert ecm.additional_skins == ['carnivore_plant.SKI']
-    assert len(ecm.bone_scales) == 0
-    assert len(ecm.child_models) == 0
+    assert ecm.bone_scale_count == 0
+    assert ecm.child_count == 0
     assert ecm.org_color == 0xFFFFFFFF
 
 
@@ -18,12 +18,16 @@ def test_read_ecm_fallen_general():
     assert ecm.version == 21
     assert ecm.skin_model_path == 'fallen_general.SMD'
     assert ecm.additional_skins == ['fallen_general.ski']
-    assert len(ecm.child_models) == 2
-    assert ecm.child_models[0].name == 'wq_l'
-    assert ecm.child_models[0].hh_name == 'HH_lefthandweapon'
-    assert ecm.child_models[0].cc_name == 'CC_weapon'
-    assert ecm.child_models[1].name == 'wq_r'
-    assert ecm.child_models[1].hh_name == 'HH_righthandweapon'
+    assert ecm.child_count == 2
+    c0 = ecm.get_child(0)
+    assert c0 is not None
+    assert c0.name == 'wq_l'
+    assert c0.hh_name == 'HH_lefthandweapon'
+    assert c0.cc_name == 'CC_weapon'
+    c1 = ecm.get_child(1)
+    assert c1 is not None
+    assert c1.name == 'wq_r'
+    assert c1.hh_name == 'HH_righthandweapon'
 
 
 def test_read_ecm_invalid():
