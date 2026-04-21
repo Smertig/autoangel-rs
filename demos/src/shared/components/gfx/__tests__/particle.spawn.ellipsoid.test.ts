@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { SimConfig, SimState } from '../previews/particle/simulation';
+import { spawnParticle } from '../previews/particle/spawn';
 import { spawnEllipsoid } from '../previews/particle/spawn/ellipsoid';
 
 function makeCfg(overrides: Partial<Extract<SimConfig['shape'], { kind: 'ellipsoid' }>> = {}): SimConfig {
@@ -172,5 +173,15 @@ describe('spawnEllipsoid — GenAverage (deterministic grid)', () => {
     const s = state.shapeState as { angleAlpha: number; angleBeta: number };
     expect(s.angleAlpha).toBeCloseTo((2 * Math.PI) / 4, 6);
     expect(s.angleBeta).toBeCloseTo(Math.PI / 4, 6);
+  });
+});
+
+describe('spawnParticle dispatcher', () => {
+  it('routes ellipsoid-kind config to spawnEllipsoid (shell invariant holds)', () => {
+    const cfg = makeCfg({ areaSize: [1, 1, 1], isSurface: true, isAvgGen: false });
+    const rng = queuedRng([0.25, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]);
+    const p = spawnParticle(cfg, makeState(), rng);
+    const len = Math.sqrt(p.px * p.px + p.py * p.py + p.pz * p.pz);
+    expect(len).toBeCloseTo(1, 4);
   });
 });

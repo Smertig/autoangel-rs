@@ -332,6 +332,26 @@ function orientConeToAxis(
   mesh.position.copy(offset);
 }
 
+function buildShapeCfg(emitter: ParticleBody['emitter']): ShapeCfg {
+  const s = emitter.shape;
+  switch (s.shape) {
+    case 'point':
+      return { kind: 'point' };
+    case 'ellipsoid':
+      return {
+        kind: 'ellipsoid',
+        areaSize: s.area_size,
+        isSurface: emitter.is_surface ?? false,
+        isAvgGen: s.is_avg_gen ?? false,
+        alphaSeg: Math.max(1, s.alpha_seg ?? 10),
+        betaSeg: Math.max(1, s.beta_seg ?? 10),
+      };
+    default:
+      // Caller gates on shape; fallback to point keeps runtime safe.
+      return { kind: 'point' };
+  }
+}
+
 function buildSimConfig(
   body: ParticleBody,
   element: GfxElement,
@@ -363,7 +383,7 @@ function buildSimConfig(
     initRandomTexture: !!body.init_random_texture,
     particleWidth: body.particle_width,
     particleHeight: body.particle_height,
-    shape: { kind: 'point' } satisfies ShapeCfg,
+    shape: buildShapeCfg(e),
   };
 }
 

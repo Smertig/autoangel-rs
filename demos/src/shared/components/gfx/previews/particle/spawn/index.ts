@@ -1,8 +1,10 @@
 import { argbChannels } from '../../../util/argb';
 import { lerp, type ParticleInstance, type SimConfig, type SimState } from '../simulation';
+import { spawnEllipsoid } from './ellipsoid';
 import { spawnPoint } from './point';
 
 export { sampleConeDirection } from './cone';
+export { spawnEllipsoid } from './ellipsoid';
 export { spawnPoint } from './point';
 
 /**
@@ -42,13 +44,13 @@ export function buildBirth(
  */
 export function spawnParticle(
   cfg: SimConfig,
-  _state: SimState,
+  state: SimState,
   rng: () => number,
 ): ParticleInstance {
   switch (cfg.shape.kind) {
     case 'point':
       return spawnPoint(cfg, rng);
     case 'ellipsoid':
-      throw new Error('spawnEllipsoid not yet implemented');
+      return spawnEllipsoid(cfg, state, rng);
   }
 }
