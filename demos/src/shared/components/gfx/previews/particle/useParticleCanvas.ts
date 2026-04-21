@@ -83,6 +83,34 @@ export function useParticleCanvas(
       dir.position.set(5, 10, 7);
       scene.add(dir);
 
+      // --- Ellipsoid shape-volume wireframe ----------------------------
+      // Spawn-volume cue for ellipsoid emitters. Drawn alongside (not
+      // instead of) the emission cone, which is an independent direction
+      // cue.
+      let ellipsoidWireGeo: any = null;
+      let ellipsoidWireMat: any = null;
+      {
+        const shape = body.emitter.shape;
+        if (shape.shape === 'ellipsoid') {
+          const [ax, ay, az] = shape.area_size;
+          if (ax > 1e-6 && ay > 1e-6 && az > 1e-6) {
+            const sphereGeo = new THREE.SphereGeometry(1, 24, 12);
+            ellipsoidWireGeo = new THREE.WireframeGeometry(sphereGeo);
+            ellipsoidWireMat = new THREE.LineBasicMaterial({
+              color: 0xcbf56a,
+              transparent: true,
+              opacity: 0.18,
+              depthWrite: false,
+            });
+            const wire = new THREE.LineSegments(ellipsoidWireGeo, ellipsoidWireMat);
+            wire.scale.set(ax, ay, az);
+            scene.add(wire);
+            // WireframeGeometry holds its own buffers; source geo can be freed now.
+            sphereGeo.dispose();
+          }
+        }
+      }
+
       // --- Emission-cone wireframe -------------------------------------
       const emitterAngle = body.emitter.angle ?? 0;
       const parIniDir: [number, number, number] = body.emitter.par_ini_dir ?? [0, 0, 1];
@@ -276,6 +304,8 @@ export function useParticleCanvas(
         if (texture?.dispose) texture.dispose();
         if (coneMat) coneMat.dispose();
         if (coneGeo) coneGeo.dispose();
+        if (ellipsoidWireMat) ellipsoidWireMat.dispose();
+        if (ellipsoidWireGeo) ellipsoidWireGeo.dispose();
         renderer.dispose();
         if (container.contains(renderer.domElement)) {
           container.removeChild(renderer.domElement);
