@@ -79,28 +79,49 @@ export function App() {
   // path change within the same package.
   const selectedPkgId = selectedFile?.pkgId ?? null;
 
-  // Get file data for the selected slot. If the slot is removed mid-call,
-  // `getFile` rejects with `PackageRemovedError`; the selection-clearing
-  // effect above drops the preview on the next render, so we don't surface
-  // that rejection to the error banner.
+  // Get file data, searching across ALL loaded packages so cross-package
+  // references (e.g. an ECM in models.pck pointing at a GFX in gfx.pck)
+  // resolve. Tries the selected slot first (fast common case), then falls
+  // back to other slots in order. Each slot's `fileList` lookup is
+  // case-insensitive to match how engine paths are stored.
+  // If no slot has the path, rejects with PackageRemovedError-shaped Error
+  // so the existing not-found handling stays consistent.
   const getFileData = useCallback(
     (path: string): Promise<Uint8Array> => {
       if (selectedPkgId === null) return Promise.reject(new PackageRemovedError());
-      return getFile(selectedPkgId, path);
+      const lower = path.toLowerCase();
+      // Try selected slot first
+      const selected = slotLookup.get(selectedPkgId);
+      if (selected && selected.fileList.some((f) => f.toLowerCase() === lower)) {
+        return getFile(selectedPkgId, path);
+      }
+      // Fall back to other slots in pkgId order
+      for (const slot of slotLookup.values()) {
+        if (slot.pkgId === selectedPkgId) continue;
+        if (slot.fileList.some((f) => f.toLowerCase() === lower)) {
+          return getFile(slot.pkgId, path);
+        }
+      }
+      return Promise.reject(new PackageRemovedError());
     },
-    [selectedPkgId, getFile],
+    [selectedPkgId, slotLookup, getFile],
   );
 
-  // List files by prefix, scoped to the selected file's package
+  // List files by prefix, spanning ALL loaded packages. Scoping to a single
+  // package broke cross-package references (e.g. an ECM event in models.pck
+  // referencing a GFX in gfx.pck — the resolver couldn't see the gfx slot).
   const listFiles = useCallback(
     (prefix: string): string[] => {
-      if (selectedPkgId === null) return [];
-      const slot = slotLookup.get(selectedPkgId);
-      if (!slot) return [];
       const lower = prefix.toLowerCase();
-      return slot.fileList.filter((f) => f.toLowerCase().startsWith(lower));
+      const out: string[] = [];
+      for (const slot of slotLookup.values()) {
+        for (const f of slot.fileList) {
+          if (f.toLowerCase().startsWith(lower)) out.push(f);
+        }
+      }
+      return out;
     },
-    [selectedPkgId, slotLookup],
+    [slotLookup],
   );
 
   // Handle file drop / picker: classify and load. Drops whose stem matches an
