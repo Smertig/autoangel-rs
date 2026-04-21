@@ -1,0 +1,2 @@
+.wrap { display: flex; justify-content: center; padding: 12px; background: var(--gfx-bg-elev); }
+.canvas { display: block; image-rendering: pixelated; max-width: 100%; outline: 1px solid var(--gfx-border); }

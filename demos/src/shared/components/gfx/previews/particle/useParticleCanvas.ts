@@ -3,7 +3,7 @@ import { ensureThree, getThree } from '@shared/components/model-viewer/internal/
 import { useFileData } from '@shared/hooks/useFileData';
 import type { ElementBody, GfxElement, ViewerCtx } from '../types';
 import { d3dBlendToThreeFactor } from '../../util/blendModes';
-import { loadParticleTexture, resolveTexturePath } from './texture';
+import { loadParticleTexture, noopGetData, resolveTexturePath } from './texture';
 import { createSimState, resolvePoolSize, tickSim, type ShapeCfg, type SimConfig } from './simulation';
 
 type ParticleBody = Extract<ElementBody, { kind: 'particle' }>;
@@ -359,10 +359,6 @@ export function useParticleCanvas(
 }
 
 // --- Helpers ---------------------------------------------------------------
-
-function noopGetData(_: string): Promise<Uint8Array> {
-  return Promise.resolve(new Uint8Array());
-}
 
 function readBgColor(THREE: any, container: HTMLElement): any {
   try {
