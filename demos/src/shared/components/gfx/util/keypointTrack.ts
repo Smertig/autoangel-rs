@@ -44,12 +44,17 @@ export function buildTrack(kps: KeyPointSet | undefined): Track {
   const rad2ds = kps.keypoints.map((kp) => kp.rad_2d);
   const spans = kps.keypoints.map((kp) => kp.time_span);
   const controllers = kps.keypoints.map((kp) => kp.controllers);
+  // Engine semantics: `kp.time_span` is the delta ms from the previous
+  // keypoint's arrival time. kp[0] arrives at `time_span[0]` (an initial
+  // hold/delay), kp[i] arrives at `sum(time_span[0..=i])`. Interpolation
+  // between kp[i] and kp[i+1] therefore happens during
+  // [absTimes[i], absTimes[i+1]) with duration `time_span[i+1]`.
   const absTimes: number[] = [];
   let acc = 0;
   let sawFinite = false;
   for (const s of spans) {
-    absTimes.push(acc);
     if (s > 0) { acc += s; sawFinite = true; }
+    absTimes.push(acc);
   }
   const unhandledKinds = new Set<KpCtrlKind>();
   for (const list of controllers) {
@@ -87,11 +92,15 @@ export function sampleTrack(track: Track, tMs: number): Sample {
     return { ...baseStateAt(track, 0), normalized: 0 };
   }
   const last = track.colors.length - 1;
+  // Pre-kp[0] delay: hold at kp[0].
+  if (tMs < track.absTimes[0]) {
+    return { ...baseStateAt(track, 0), normalized: tMs / track.loopDurationMs };
+  }
   for (let i = 0; i < last; i++) {
     const segStart = track.absTimes[i];
-    const segSpan = track.spans[i];
+    const segEnd = track.absTimes[i + 1];
+    const segSpan = segEnd - segStart;
     if (segSpan <= 0) continue;
-    const segEnd = segStart + segSpan;
     if (tMs >= segStart && tMs < segEnd) {
       const localT = (tMs - segStart) / segSpan;
       const localMs = tMs - segStart;
@@ -105,7 +114,7 @@ export function sampleTrack(track: Track, tMs: number): Sample {
         ],
         rad2d: lerp(track.rad2ds[i], track.rad2ds[i + 1], localT),
       };
-      for (const ctrl of track.controllers[i]) {
+      for (const ctrl of track.controllers[i + 1]) {
         applyController(ctrl, state, { localMs });
       }
       return {

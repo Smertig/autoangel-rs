@@ -1,0 +1,5 @@
+.thumb { display: block; width: 40px; height: 28px; outline: 1px solid var(--gfx-border); }
+.expanded { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@container (max-width: 640px) { .expanded { grid-template-columns: 1fr; } }
+.holdForever { font: 400 11px/1 var(--gfx-font-data); color: var(--gfx-text-muted); }
+.unhandled { font: 400 11px/1 var(--gfx-font-data); color: var(--gfx-text-warn, #c97); }

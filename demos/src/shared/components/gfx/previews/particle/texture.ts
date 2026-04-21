@@ -28,3 +28,6 @@ export async function loadParticleTexture(
 ): Promise<unknown | null> {
   return loadThreeTexture(wasm, data, texFile);
 }
+
+/** `useFileData` must always have a `getData` arg; this is the no-op one for when no texture path resolved. */
+export const noopGetData = async (_: string): Promise<Uint8Array> => new Uint8Array();

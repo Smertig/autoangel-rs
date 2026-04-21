@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import type { ElementBodyKind, PreviewProps } from './types';
 import { ContainerPreview } from './ContainerPreview';
+import { DecalPreview } from './decal/DecalPreview';
 import { DefaultPreview } from './DefaultPreview';
 import { LightPreview } from './LightPreview';
 import { ModelPreview } from './ModelPreview';
@@ -11,7 +12,7 @@ type Registry = { [K in ElementBodyKind]: FC<PreviewProps<K>> };
 
 export const PREVIEW_REGISTRY: Registry = {
   particle:      ParticlePreview,
-  decal:         DefaultPreview as FC<PreviewProps<'decal'>>,
+  decal:         DecalPreview,
   trail:         DefaultPreview as FC<PreviewProps<'trail'>>,
   light:         LightPreview,
   ring:          DefaultPreview as FC<PreviewProps<'ring'>>,

@@ -75,29 +75,43 @@ describe('sampleTrack', () => {
   });
 
   it('lerps between keypoint colors at segment midpoint', () => {
+    // time_span is delay BEFORE the keypoint: kp[0] arrives at t=0,
+    // kp[1] arrives at t=1000 — interp window is [0, 1000).
     const t = buildTrack({
       start_time: 0,
-      keypoints: [kp({ time_span: 1000, color: 0xFF000000 }), kp({ time_span: 0, color: 0xFFFFFFFF })],
+      keypoints: [kp({ time_span: 0, color: 0xFF000000 }), kp({ time_span: 1000, color: 0xFFFFFFFF })],
     });
     const s = sampleTrack(t, 500);
     const r = (s.color >>> 16) & 0xff;
     expect(r).toBe(128);
   });
 
-  it('applies a SCALE controller within a segment', () => {
+  it('holds at kp[0] during the pre-delay window (time_span[0])', () => {
+    // kp[0] has time_span=500, so [0, 500) is pre-kp[0] hold at kp[0] state.
+    const t = buildTrack({
+      start_time: 0,
+      keypoints: [kp({ time_span: 500, color: 0xFFAA0000 }), kp({ time_span: 500, color: 0xFF00FF00 })],
+    });
+    const s = sampleTrack(t, 250);
+    expect(s.color).toBe(0xFFAA0000);
+  });
+
+  it('applies a SCALE controller during the interp into its keypoint', () => {
+    // Controllers live on the destination keypoint — they fire during
+    // the interpolation FROM kp[i] TO kp[i+1]. Here kp[1] has the ctrl
+    // and arrives at t=1000; window [0, 1000) uses kp[1]'s controllers.
     const t = buildTrack({
       start_time: 0,
       keypoints: [
+        kp({ time_span: 0, scale: 1 }),
         kp({
           time_span: 1000,
           scale: 1,
           controllers: [{ start_time: 0, end_time: -1, body: { kind: 'scale', scale_delta: 1, min_scale: 0, max_scale: 10 } as any }],
         }),
-        kp({ time_span: 0, scale: 1 }),
       ],
     });
     const s = sampleTrack(t, 500);
-    // 1 + 1 * 0.5 = 1.5
     expect(s.scale).toBeCloseTo(1.5);
   });
 });
