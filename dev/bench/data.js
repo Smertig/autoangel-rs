@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1776755278185,
+  "lastUpdate": 1776784568006,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -3551,6 +3551,102 @@ window.BENCHMARK_DATA = {
             "name": "PackageInfo::save_to",
             "value": 854457,
             "range": "± 3461",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "51ab9c78d96327b42e222b7d5be9be584e60d7d7",
+          "message": "feat [ecm]: bindable EcmEvent / BoneScaleEntry / ChildModel; drop legacy accessors\n\n* Apply #[apply(bindable)] to EcmEvent, BoneScaleEntry, and ChildModel\n  in autoangel-core. Auto-derives pyo3::pyclass(get_all) + tsify_next\n  bindings, mirroring the pattern already used on every type in gfx/.\n\n* Register the three classes in the Python module; delete the\n  hand-rolled PyBoneScaleEntry / PyChildModel wrappers.\n\n* Add getEvent / getBoneScale / getChild accessors on both Python and\n  WASM EcmModel. Delete the per-field event_*, bone_scale_*, child_*\n  accessors on both bindings — demos pin to a published WASM version,\n  so the unpublished API can be reshaped freely; demos migrate after\n  the next version bump.\n\n* CombineAction and BaseAction stay hand-rolled — their bindable\n  conversion is deferred until the scheduler wires in.\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+          "timestamp": "2026-04-21T18:06:15+03:00",
+          "tree_id": "1be1fc78c24a1fa5e6a7327457627284add684e2",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/51ab9c78d96327b42e222b7d5be9be584e60d7d7"
+        },
+        "date": 1776784566925,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 32238,
+            "range": "± 162",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 148,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::access_fields",
+            "value": 106,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 220,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 16529,
+            "range": "± 58",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::iterate_lists",
+            "value": 28701,
+            "range": "± 237",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 70,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 284064,
+            "range": "± 1623",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::find_prefix",
+            "value": 6085,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 3351,
+            "range": "± 97",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_all_files",
+            "value": 10658550,
+            "range": "± 20774",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::save_to",
+            "value": 857771,
+            "range": "± 732",
             "unit": "ns/iter"
           }
         ]
