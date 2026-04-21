@@ -4,8 +4,9 @@ import { useFileData } from '@shared/hooks/useFileData';
 import type { ElementBody, GfxElement, ViewerCtx } from '../types';
 import { d3dBlendToThreeFactor } from '../../util/blendModes';
 import { readBgColor } from '../../util/bg';
+import { buildSimConfig } from './config';
 import { loadParticleTexture, noopGetData, resolveTexturePath } from './texture';
-import { createSimState, resolvePoolSize, tickSim, type ShapeCfg, type SimConfig } from './simulation';
+import { createSimState, tickSim } from './simulation';
 
 type ParticleBody = Extract<ElementBody, { kind: 'particle' }>;
 
@@ -171,7 +172,7 @@ export function useParticleCanvas(
       // --- Simulation config (drives both GPU pool size and sim cap) ----
       const atlasRows = Math.max(1, element.tex_row);
       const atlasCols = Math.max(1, element.tex_col);
-      const cfg = buildSimConfig(body, element, atlasRows, atlasCols);
+      const cfg = buildSimConfig(body, atlasRows, atlasCols);
       const quota = cfg.quota;
 
       // --- InstancedMesh + shader material -----------------------------
@@ -378,70 +379,6 @@ function orientConeToAxis(
   // Offset along axis by -height/2 so apex sits at origin.
   const offset = new THREE.Vector3().copy(ax).multiplyScalar(height * 0.5);
   mesh.position.copy(offset);
-}
-
-function buildShapeCfg(emitter: ParticleBody['emitter']): ShapeCfg {
-  const s = emitter.shape;
-  switch (s.shape) {
-    case 'point':
-      return { kind: 'point' };
-    case 'ellipsoid':
-      return {
-        kind: 'ellipsoid',
-        areaSize: s.area_size,
-        isSurface: emitter.is_surface ?? false,
-        isAvgGen: s.is_avg_gen ?? false,
-        alphaSeg: Math.max(1, s.alpha_seg ?? 10),
-        betaSeg: Math.max(1, s.beta_seg ?? 10),
-      };
-    case 'cylinder':
-      return {
-        kind: 'cylinder',
-        areaSize: s.area_size,
-        isSurface: emitter.is_surface ?? false,
-        isAvgGen: s.is_avg_gen ?? false,
-        alphaSeg: Math.max(1, s.alpha_seg ?? 10),
-        betaSeg: Math.max(1, s.beta_seg ?? 10),
-      };
-    default:
-      // Caller gates on shape; fallback to point keeps runtime safe.
-      return { kind: 'point' };
-  }
-}
-
-function buildSimConfig(
-  body: ParticleBody,
-  element: GfxElement,
-  atlasRows: number,
-  atlasCols: number,
-): SimConfig {
-  const e = body.emitter;
-  const parIniDir: [number, number, number] = e.par_ini_dir ?? [0, 0, 1];
-  return {
-    quota: resolvePoolSize(body.quota, e.emission_rate, e.ttl),
-    emissionRate: e.emission_rate,
-    ttl: e.ttl,
-    angle: e.angle,
-    speed: e.speed,
-    parAcc: e.par_acc ?? 0,
-    acc: e.acc,
-    accDir: e.acc_dir,
-    dragPow: e.drag_pow,
-    colorMin: e.color_min,
-    colorMax: e.color_max,
-    scaleMin: e.scale_min,
-    scaleMax: e.scale_max,
-    rotMin: e.rot_min ?? 0,
-    rotMax: e.rot_max ?? 0,
-    parIniDir,
-    atlasRows,
-    atlasCols,
-    atlasFrames: atlasRows * atlasCols,
-    initRandomTexture: !!body.init_random_texture,
-    particleWidth: body.particle_width,
-    particleHeight: body.particle_height,
-    shape: buildShapeCfg(e),
-  };
 }
 
 // --- Shaders --------------------------------------------------------------
