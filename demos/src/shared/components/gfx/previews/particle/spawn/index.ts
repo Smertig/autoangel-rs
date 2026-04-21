@@ -1,9 +1,11 @@
 import { argbChannels } from '../../../util/argb';
 import { lerp, type ParticleInstance, type SimConfig, type SimState } from '../simulation';
+import { spawnCylinder } from './cylinder';
 import { spawnEllipsoid } from './ellipsoid';
 import { spawnPoint } from './point';
 
 export { sampleConeDirection } from './cone';
+export { spawnCylinder } from './cylinder';
 export { spawnEllipsoid } from './ellipsoid';
 export { spawnPoint } from './point';
 
@@ -52,6 +54,8 @@ export function spawnParticle(
       return spawnPoint(cfg, rng);
     case 'ellipsoid':
       return spawnEllipsoid(cfg, state, rng);
+    case 'cylinder':
+      return spawnCylinder(cfg, state, rng);
     default: {
       const _exhaustive: never = cfg.shape;
       throw new Error(

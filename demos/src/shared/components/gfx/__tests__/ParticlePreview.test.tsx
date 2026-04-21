@@ -128,7 +128,7 @@ describe('ParticlePreview', () => {
     expect(screen.queryByText(/simulation for/i)).toBeNull();
   });
 
-  it('still shows ShapePending for unsupported shapes (cylinder)', () => {
+  it('renders simulation for cylinder shape (not ShapePending)', () => {
     const cylinderBody = {
       ...body,
       emitter: {
@@ -150,7 +150,30 @@ describe('ParticlePreview', () => {
         expanded={true}
       />,
     );
+    expect(screen.getByText('emission_rate')).toBeDefined();
+    expect(screen.queryByText(/simulation for/i)).toBeNull();
+  });
+
+  it('still shows ShapePending for unsupported shapes (box)', () => {
+    const boxBody = {
+      ...body,
+      emitter: {
+        ...body.emitter,
+        shape: {
+          shape: 'box',
+          area_size: [1, 1, 1],
+        },
+      },
+    };
+    render(
+      <ParticlePreview
+        body={boxBody}
+        element={element}
+        context={ctx}
+        expanded={true}
+      />,
+    );
     expect(screen.getByText(/simulation for/i)).toBeDefined();
-    expect(screen.getByText('cylinder')).toBeDefined();
+    expect(screen.getByText('box')).toBeDefined();
   });
 });

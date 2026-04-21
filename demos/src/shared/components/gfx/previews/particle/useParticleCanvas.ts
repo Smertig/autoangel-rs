@@ -111,6 +111,35 @@ export function useParticleCanvas(
         }
       }
 
+      // --- Cylinder shape-volume wireframe -----------------------------
+      // Spawn-volume cue for cylinder emitters. Drawn alongside (not
+      // instead of) the emission cone, which is an independent direction
+      // cue.
+      let cylWireGeo: any = null;
+      let cylWireMat: any = null;
+      {
+        const shape = body.emitter.shape;
+        if (shape.shape === 'cylinder') {
+          const [ax, ay, az] = shape.area_size;
+          if (ax > 1e-6 && ay > 1e-6 && az > 1e-6) {
+            const cylGeo = new THREE.CylinderGeometry(1, 1, 2, 24, 1, true);
+            // three.js CylinderGeometry aligns to +Y; engine uses +Z (vZRange).
+            cylGeo.rotateX(Math.PI / 2);
+            cylWireGeo = new THREE.WireframeGeometry(cylGeo);
+            cylWireMat = new THREE.LineBasicMaterial({
+              color: 0xcbf56a,
+              transparent: true,
+              opacity: 0.18,
+              depthWrite: false,
+            });
+            const wire = new THREE.LineSegments(cylWireGeo, cylWireMat);
+            wire.scale.set(ax, ay, az);
+            scene.add(wire);
+            cylGeo.dispose();
+          }
+        }
+      }
+
       // --- Emission-cone wireframe -------------------------------------
       const emitterAngle = body.emitter.angle ?? 0;
       const parIniDir: [number, number, number] = body.emitter.par_ini_dir ?? [0, 0, 1];
@@ -306,6 +335,8 @@ export function useParticleCanvas(
         if (coneGeo) coneGeo.dispose();
         if (ellipsoidWireMat) ellipsoidWireMat.dispose();
         if (ellipsoidWireGeo) ellipsoidWireGeo.dispose();
+        if (cylWireMat) cylWireMat.dispose();
+        if (cylWireGeo) cylWireGeo.dispose();
         renderer.dispose();
         if (container.contains(renderer.domElement)) {
           container.removeChild(renderer.domElement);
@@ -370,6 +401,15 @@ function buildShapeCfg(emitter: ParticleBody['emitter']): ShapeCfg {
     case 'ellipsoid':
       return {
         kind: 'ellipsoid',
+        areaSize: s.area_size,
+        isSurface: emitter.is_surface ?? false,
+        isAvgGen: s.is_avg_gen ?? false,
+        alphaSeg: Math.max(1, s.alpha_seg ?? 10),
+        betaSeg: Math.max(1, s.beta_seg ?? 10),
+      };
+    case 'cylinder':
+      return {
+        kind: 'cylinder',
         areaSize: s.area_size,
         isSurface: emitter.is_surface ?? false,
         isAvgGen: s.is_avg_gen ?? false,

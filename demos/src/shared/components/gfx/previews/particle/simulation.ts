@@ -12,6 +12,14 @@ export type ShapeCfg =
       isAvgGen: boolean;
       alphaSeg: number;
       betaSeg: number;
+    }
+  | {
+      kind: 'cylinder';
+      areaSize: [number, number, number];
+      isSurface: boolean;
+      isAvgGen: boolean;
+      alphaSeg: number;
+      betaSeg: number;
     };
 
 export interface SimConfig {
