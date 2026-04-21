@@ -78,3 +78,35 @@ describe('spawnEllipsoid — GenTotal (volume)', () => {
     expect(p.pz).toBeCloseTo(0);
   });
 });
+
+describe('spawnEllipsoid — GenSurface (shell)', () => {
+  it('spawns on the shell: normalized position has magnitude ≈ 1', () => {
+    const cfg = makeCfg({ areaSize: [2, 3, 1], isSurface: true, isAvgGen: false });
+    // RNG order for GenSurface:
+    //   1. yaw   = rng() * 2π
+    //   2. pitch = rng() * 2π
+    //   (no cone draws — moveDir = -v)
+    //   Then buildBirth: 6 draws (r, g, b, a, scale, rot).
+    const rng = queuedRng([
+      0.1, 0.3,                              // yaw, pitch
+      0.5, 0.5, 0.5, 0.5, 0.5, 0.5,          // birth
+    ]);
+    const p = spawnEllipsoid(cfg, makeState(), rng);
+    const [ax, ay, az] = [2, 3, 1];
+    const nx = p.px / ax, ny = p.py / ay, nz = p.pz / az;
+    expect(nx * nx + ny * ny + nz * nz).toBeCloseTo(1, 4);
+  });
+
+  it('sets moveDir to -v (inward): dot(moveDir, normPos) = -1 on unit sphere', () => {
+    const cfg = makeCfg({ areaSize: [1, 1, 1], isSurface: true, isAvgGen: false });
+    const rng = queuedRng([
+      0.25, 0.5,
+      0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+    ]);
+    const p = spawnEllipsoid(cfg, makeState(), rng);
+    // On unit sphere (areaSize = 1,1,1), pos is the unit outward vector v.
+    // moveDir = -v, so dot(pos, moveDir) = -|v|² = -1.
+    const dot = p.px * p.dx + p.py * p.dy + p.pz * p.dz;
+    expect(dot).toBeCloseTo(-1, 4);
+  });
+});
