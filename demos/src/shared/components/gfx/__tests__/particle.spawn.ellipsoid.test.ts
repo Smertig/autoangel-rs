@@ -110,3 +110,67 @@ describe('spawnEllipsoid — GenSurface (shell)', () => {
     expect(dot).toBeCloseTo(-1, 4);
   });
 });
+
+describe('spawnEllipsoid — GenAverage (deterministic grid)', () => {
+  it('first spawn at (α=0, β=0): direction is +y, scaled by areaSize × ratio', () => {
+    const cfg = makeCfg({
+      areaSize: [2, 3, 4],
+      isSurface: false,   // volume: ratio consumes 1 rng draw
+      isAvgGen: true,
+      alphaSeg: 4,
+      betaSeg: 4,
+    });
+    // RNG order for GenAverage (volume, angle=0):
+    //   1. ratio = rng()
+    //   cone: 0 draws (angle = 0)
+    //   buildBirth: 6 draws
+    const rng = queuedRng([
+      0.5,                                 // ratio
+      0.5, 0.5, 0.5, 0.5, 0.5, 0.5,        // birth
+    ]);
+    const state = makeState();
+    const p = spawnEllipsoid(cfg, state, rng);
+    // At (α=0, β=0), applyAngles(0, 0) = rotY(0) · rotX(0) · (0, 1, 0) = (0, 1, 0).
+    // pos = v .* areaSize × ratio = (0, 1, 0) .* (2, 3, 4) × 0.5 = (0, 1.5, 0).
+    expect(p.px).toBeCloseTo(0, 4);
+    expect(p.py).toBeCloseTo(3 * 0.5, 4);
+    expect(p.pz).toBeCloseTo(0, 4);
+  });
+
+  it('first call advances cursor to angleBeta = π/betaSeg, angleAlpha = 0', () => {
+    const cfg = makeCfg({
+      areaSize: [1, 1, 1],
+      isSurface: true,    // surface: ratio NOT drawn (fixed at 1)
+      isAvgGen: true,
+      alphaSeg: 4,
+      betaSeg: 4,
+    });
+    // RNG order for GenAverage (surface, angle=0):
+    //   cone: 0 draws
+    //   buildBirth: 6 draws
+    //   (no ratio — surface mode uses 1.0)
+    const rng = queuedRng([0.5, 0.5, 0.5, 0.5, 0.5, 0.5]);
+    const state = makeState();
+    spawnEllipsoid(cfg, state, rng);
+    const s = state.shapeState as { angleAlpha: number; angleBeta: number };
+    expect(s.angleAlpha).toBe(0);
+    expect(s.angleBeta).toBeCloseTo(Math.PI / 4, 6);
+  });
+
+  it('second call advances angleAlpha = 2π/alphaSeg, angleBeta = π/betaSeg', () => {
+    const cfg = makeCfg({
+      areaSize: [1, 1, 1],
+      isSurface: true,
+      isAvgGen: true,
+      alphaSeg: 4,
+      betaSeg: 4,
+    });
+    const rng = queuedRng([0.5, 0.5, 0.5, 0.5, 0.5, 0.5]);
+    const state = makeState();
+    spawnEllipsoid(cfg, state, rng);
+    spawnEllipsoid(cfg, state, rng);
+    const s = state.shapeState as { angleAlpha: number; angleBeta: number };
+    expect(s.angleAlpha).toBeCloseTo((2 * Math.PI) / 4, 6);
+    expect(s.angleBeta).toBeCloseTo(Math.PI / 4, 6);
+  });
+});
