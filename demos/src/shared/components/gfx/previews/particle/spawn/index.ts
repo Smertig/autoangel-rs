@@ -52,5 +52,11 @@ export function spawnParticle(
       return spawnPoint(cfg, rng);
     case 'ellipsoid':
       return spawnEllipsoid(cfg, state, rng);
+    default: {
+      const _exhaustive: never = cfg.shape;
+      throw new Error(
+        `spawnParticle: unhandled shape kind ${(_exhaustive as { kind?: string })?.kind}`,
+      );
+    }
   }
 }
