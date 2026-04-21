@@ -81,6 +81,30 @@ describe('createGfxEventScheduler', () => {
     expect(dispose).toHaveBeenCalled();
   });
 
+  it('_activeCount tracks spawn → finished → disposeAll lifecycle', () => {
+    let finishedFlag = false;
+    const spawn = () => ({
+      root: new THREE.Group(),
+      tick() {},
+      dispose() {},
+      finished: () => finishedFlag,
+    });
+    const s = createGfxEventScheduler({
+      events: [fakeEvent({ startTime: 50 }), fakeEvent({ startTime: 100 })],
+      spawn,
+      bones: [], sceneRoot: new THREE.Group(),
+    });
+    expect(s._activeCount()).toBe(0);
+    s.tickToClipTime(0.2); // crosses both 50 ms and 100 ms
+    expect(s._activeCount()).toBe(2);
+    finishedFlag = true;
+    s.tickRuntimes(0.016); // runtimes report finished → removed
+    expect(s._activeCount()).toBe(0);
+    // disposeAll on an empty scheduler is a no-op.
+    s.disposeAll();
+    expect(s._activeCount()).toBe(0);
+  });
+
   it('tickRuntimes ticks active runtimes and removes finished ones', () => {
     const tick = vi.fn();
     const dispose = vi.fn();

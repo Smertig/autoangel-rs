@@ -24,6 +24,8 @@ export interface GfxEventScheduler {
   attachRuntime(rt: GfxElementRuntime): void;
   /** Tear down everything (clip change or viewer unmount). */
   disposeAll(): void;
+  /** Test-only: number of currently-active runtimes. */
+  _activeCount(): number;
 }
 
 export function createGfxEventScheduler(args: SchedulerArgs): GfxEventScheduler {
@@ -62,6 +64,9 @@ export function createGfxEventScheduler(args: SchedulerArgs): GfxEventScheduler 
     },
     disposeAll() {
       while (active.length > 0) active.pop()!.dispose();
+    },
+    _activeCount() {
+      return active.length;
     },
   };
 }

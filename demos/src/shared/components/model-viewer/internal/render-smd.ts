@@ -279,6 +279,11 @@ export async function renderFromSmd(
 
   if (initialClip) rebuildSchedulerForClip(initialClip.name);
 
+  // test-only: read via window.__gfxRuntimeCount in Playwright specs
+  if (typeof window !== 'undefined') {
+    (window as any).__gfxRuntimeCount = () => scheduler?._activeCount() ?? 0;
+  }
+
   // Tear down GFX scheduler + mixer loop listener on viewer disposal.
   // Wraps v.dispose so React unmount / path change / renderer re-init all
   // route through the same cleanup (cf. useRenderEffect + disposeViewer).
@@ -290,6 +295,10 @@ export async function renderFromSmd(
       try { v.mixer.removeEventListener('loop', mixerLoopListener); } catch { /* mixer already gone */ }
     }
     mixerLoopListener = null;
+    // test-only: drop the hook so a later viewer doesn't report stale counts
+    if (typeof window !== 'undefined') {
+      delete (window as any).__gfxRuntimeCount;
+    }
     prevDispose();
   };
 

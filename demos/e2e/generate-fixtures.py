@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Generate test .pck fixtures for E2E tests.
 
 Usage: cd autoangel-py && uv run python ../demos/e2e/generate-fixtures.py
@@ -6,9 +7,16 @@ import autoangel
 import io
 import pathlib
 import struct
+import sys
 import zlib
 
-FIXTURES_DIR = pathlib.Path(__file__).parent / "fixtures"
+# Model-fixture generation injects Chinese characters into log output —
+# reconfigure stdout so CI runners with ASCII-only codecs don't die on print.
+sys.stdout.reconfigure(encoding="utf-8")
+
+HERE = pathlib.Path(__file__).parent
+REPO = HERE.parent.parent
+FIXTURES_DIR = HERE / "fixtures"
 FIXTURES_DIR.mkdir(exist_ok=True)
 
 
@@ -60,3 +68,74 @@ print(f"  right.pck: {(FIXTURES_DIR / 'right.pck').stat().st_size} bytes, {len(r
 #   deleted:   removed.ini, deleted.png
 #   modified:  game.ini, binary.dat, icon.png
 #   unchanged: server.ini, unchanged.txt
+
+
+# --- ECM + GFX particle event fixture (ecm-gfx-particle.spec.ts) ---
+# Takes models_npc_animated.pck (which has the NPC with 站立 as the preferred-
+# anim-hint default clip) and rewrites its ECM so that clip carries an
+# EventType=100 GFX event at StartTime=50 ms. Bundles a real particle GFX
+# file under the engine-expected gfx\\ prefix so resolveEnginePath finds it.
+def build_ecm_gfx_fixture() -> None:
+    src_pck = REPO / "test_data" / "packages" / "models_npc_animated.pck"
+    src_gfx = REPO / "test_data" / "gfx" / "particle_point.gfx"
+    out = FIXTURES_DIR / "models" / "ecm_with_gfx_event.pck"
+    out.parent.mkdir(parents=True, exist_ok=True)
+
+    # GFX event fields in ECM v66 order — see autoangel-core/src/model/ecm.rs
+    # parse_event. Missing any line here breaks the subsequent-action parse.
+    gfx_event_block = "\n".join([
+        "EventType: 100",
+        "StartTime: 50",       # fires 50 ms into the clip
+        "TimeSpan: -1",        # no auto-dispose
+        "Once: 0",
+        "FxFileNum: 1",
+        "FxFilePath: particle_point.gfx",
+        "HookName: ",
+        "HookOffset: 0.000000, 0.000000, 0.000000",
+        "HookYaw: 0.000000",
+        "HookPitch: 0.000000",
+        "HookRot: 0.000000",
+        "BindParent: 1",
+        "FadeOut: 1",
+        "UseModelAlpha: 0",
+        "CustomPath: ",
+        "CustomData: ",
+        "GfxScale: 0.800000",
+        "GfxAlpha: 1.000000",
+        "GfxSpeed: 1.000000",
+        "GfxOuterPath: ",
+        "GfxRelToECM: 0",
+        "GfxDelayTime: 0",
+        "GfxRotWithModel: 0",
+        "GfxParamCount: 0",
+    ])
+
+    pkg = autoangel.read_pck(str(src_pck))
+    files = pkg.file_list()
+    ecm_path = next(f for f in files if f.endswith(".ecm"))
+    ecm_bytes = pkg.get_file(ecm_path)
+    assert ecm_bytes is not None
+
+    text = ecm_bytes.decode("gbk")
+    assert text.count("EventCount: 0") == 1, \
+        "Source ECM shape changed — update build_ecm_gfx_fixture"
+    modified = text.replace("EventCount: 0", "EventCount: 1\n" + gfx_event_block)
+    modified_bytes = modified.encode("gbk")
+
+    # Smoke-test the rewrite before packaging.
+    parsed = autoangel.read_ecm(modified_bytes)
+    ev = parsed.get_event(0, 0)
+    assert ev.event_type == 100
+    assert ev.fx_file_path == "particle_point.gfx"
+
+    builder = autoangel.PackageBuilder()
+    for f in files:
+        data = modified_bytes if f == ecm_path else pkg.get_file(f)
+        if data is not None:
+            builder.add_file(f, data)
+    builder.add_file("gfx\\particle_point.gfx", src_gfx.read_bytes())
+    builder.save(str(out))
+    print(f"  {out.name}: {out.stat().st_size} bytes")
+
+
+build_ecm_gfx_fixture()
