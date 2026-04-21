@@ -1,19 +1,49 @@
+import { useEffect, useRef, type RefObject } from 'react';
 import { FieldPanel, FieldRow } from '../fieldPanel';
 import { MonoNum, Vec3, ColorSwatch, BoolDot } from '../formatters';
-import { argbToCss, argbToHex } from '../util/argb';
+import { argbLerp, argbToCss, argbToHex } from '../util/argb';
 import type { PreviewProps } from './types';
 import styles from './LightPreview.module.css';
 
-export function LightPreview({ body, expanded }: PreviewProps<'light'>) {
+export function LightPreview({ body, element, expanded }: PreviewProps<'light'>) {
+  const diffuseRef = useRef<HTMLSpanElement | null>(null);
+  const cursorRef = useRef<HTMLDivElement | null>(null);
+  const track = buildTrack(element.key_point_set);
+  const signature = trackSignature(track);
+
+  useEffect(() => {
+    const paintStatic = () => {
+      const c = track.colors[0];
+      if (diffuseRef.current) {
+        diffuseRef.current.style.background = c !== undefined ? argbToCss(c) : '';
+      }
+      if (cursorRef.current) cursorRef.current.style.left = '0%';
+    };
+    if (!expanded || !track.loopable) {
+      paintStatic();
+      return;
+    }
+    let raf = 0;
+    const startMs = performance.now();
+    const tick = () => {
+      const localMs = (performance.now() - startMs) % track.loopDurationMs;
+      const { color, normalized } = sampleTrack(track, localMs);
+      if (diffuseRef.current) diffuseRef.current.style.background = argbToCss(color);
+      if (cursorRef.current) cursorRef.current.style.left = `${(normalized * 100).toFixed(2)}%`;
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+    // `signature` captures track content as a primitive — avoids re-running
+    // when the wasm binding re-creates an identity-equivalent object.
+  }, [expanded, signature]);
+
   if (!expanded) {
     return (
       <span className={styles.thumb} style={{ background: `linear-gradient(135deg, ${argbToCss(body.diffuse)}, ${argbToCss(body.ambient)})` }} />
     );
   }
-  // Radiometric scalars (range/falloff/theta/phi) appear in both the
-  // left-column summary AND the right-column FieldPanel — deliberate
-  // "specimen catalogue" duplication per the design doc (field photo +
-  // full taxonomy).
+
   const rows: FieldRow[] = [
     { label: 'type', value: <MonoNum value={body.light_type} /> },
     { label: 'inner_use', value: <BoolDot on={!!body.inner_use} /> },
@@ -31,14 +61,27 @@ export function LightPreview({ body, expanded }: PreviewProps<'light'>) {
     { label: 'phi', value: <MonoNum value={body.phi} /> },
     { label: 'attenuation', value: <Vec3 value={[body.attenuation0, body.attenuation1, body.attenuation2]} /> },
   ];
+  if (track.colors.length > 0) {
+    rows.push({ divider: true });
+    rows.push({ label: 'kp_start', value: <MonoNum value={track.startTimeMs} /> });
+    rows.push({ label: 'kp_count', value: <MonoNum value={track.colors.length} /> });
+    rows.push({
+      label: 'kp_duration',
+      value: track.loopable
+        ? <MonoNum value={track.loopDurationMs} />
+        : <span className={styles.holdForever}>∞ (hold)</span>,
+    });
+  }
+
   return (
     <div className={styles.expanded}>
       <div className={styles.summary}>
         <div className={styles.swatchColumn}>
-          <LightBigSwatch label="diffuse" argb={body.diffuse} />
+          <LightBigSwatch label="diffuse" argb={body.diffuse} fillRef={diffuseRef} animated={track.loopable} />
           <LightBigSwatch label="specular" argb={body.specular} />
           <LightBigSwatch label="ambient" argb={body.ambient} />
         </div>
+        {track.colors.length > 0 && <KeyPointTimeline track={track} cursorRef={cursorRef} />}
         <div className={styles.scalarGrid}>
           <ScalarCell label="range" value={body.range} />
           <ScalarCell label="theta" value={body.theta} />
@@ -51,10 +94,26 @@ export function LightPreview({ body, expanded }: PreviewProps<'light'>) {
   );
 }
 
-function LightBigSwatch({ label, argb }: { label: string; argb: number }) {
+function LightBigSwatch({
+  label,
+  argb,
+  fillRef,
+  animated,
+}: {
+  label: string;
+  argb: number;
+  fillRef?: RefObject<HTMLSpanElement | null>;
+  animated?: boolean;
+}) {
   return (
     <div className={styles.bigSwatch}>
-      <span className={styles.bigSwatchFill} style={{ background: argbToCss(argb) }} data-testid="big-swatch" />
+      <span
+        ref={fillRef}
+        className={styles.bigSwatchFill}
+        style={{ background: argbToCss(argb) }}
+        data-testid="big-swatch"
+        data-animated={animated ? 'true' : undefined}
+      />
       <span className={styles.bigSwatchLabel}>{label}</span>
       <span className={styles.bigSwatchHex}>{argbToHex(argb)}</span>
     </div>
@@ -68,4 +127,95 @@ function ScalarCell({ label, value }: { label: string; value: number }) {
       <MonoNum value={value} />
     </div>
   );
+}
+
+function KeyPointTimeline({
+  track,
+  cursorRef,
+}: {
+  track: Track;
+  cursorRef: RefObject<HTMLDivElement | null>;
+}) {
+  return (
+    <div className={styles.timeline} data-testid="kp-timeline">
+      {track.colors.map((argb, i) => {
+        const span = track.spans[i];
+        const isHold = span < 0;
+        return (
+          <span
+            key={i}
+            className={isHold ? styles.timelineHold : styles.timelineBlock}
+            style={{
+              flex: isHold ? '0 0 32px' : `${Math.max(span, 1)} 0 0`,
+              background: argbToCss(argb),
+            }}
+            title={isHold ? `kp ${i}: hold` : `kp ${i}: ${span} ms`}
+          />
+        );
+      })}
+      <div ref={cursorRef} className={styles.timelineCursor} aria-hidden />
+    </div>
+  );
+}
+
+type KeyPointSet = NonNullable<PreviewProps<'light'>['element']['key_point_set']>;
+
+interface Track {
+  colors: number[];
+  /** Raw `time_span` values, may include `-1` for hold-forever keypoints. */
+  spans: number[];
+  absTimes: number[];
+  startTimeMs: number;
+  loopDurationMs: number;
+  loopable: boolean;
+}
+
+function buildTrack(kps: KeyPointSet | undefined): Track {
+  if (kps === undefined) {
+    return { colors: [], spans: [], absTimes: [], startTimeMs: 0, loopDurationMs: 0, loopable: false };
+  }
+  const colors = kps.keypoints.map((kp) => kp.color);
+  const spans = kps.keypoints.map((kp) => kp.time_span);
+  const absTimes: number[] = [];
+  let acc = 0;
+  let sawFinite = false;
+  for (const s of spans) {
+    absTimes.push(acc);
+    if (s > 0) {
+      acc += s;
+      sawFinite = true;
+    }
+  }
+  return {
+    colors,
+    spans,
+    absTimes,
+    startTimeMs: kps.start_time,
+    loopDurationMs: acc,
+    loopable: sawFinite && colors.length >= 2 && acc > 0,
+  };
+}
+
+function trackSignature(track: Track): string {
+  return `${track.startTimeMs}|${track.loopDurationMs}|${track.colors.join(',')}|${track.spans.join(',')}`;
+}
+
+function sampleTrack(track: Track, tMs: number): { color: number; normalized: number } {
+  if (track.colors.length === 0) return { color: 0, normalized: 0 };
+  if (!track.loopable) return { color: track.colors[0], normalized: 0 };
+  const last = track.colors.length - 1;
+  for (let i = 0; i < last; i++) {
+    const segStart = track.absTimes[i];
+    const segSpan = track.spans[i];
+    if (segSpan <= 0) continue;
+    const segEnd = segStart + segSpan;
+    if (tMs >= segStart && tMs < segEnd) {
+      const local = (tMs - segStart) / segSpan;
+      return {
+        color: argbLerp(track.colors[i], track.colors[i + 1], local),
+        normalized: tMs / track.loopDurationMs,
+      };
+    }
+  }
+  return { color: track.colors[last], normalized: 1 };
 }
