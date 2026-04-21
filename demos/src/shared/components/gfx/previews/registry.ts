@@ -4,12 +4,13 @@ import { ContainerPreview } from './ContainerPreview';
 import { DefaultPreview } from './DefaultPreview';
 import { LightPreview } from './LightPreview';
 import { ModelPreview } from './ModelPreview';
+import { ParticlePreview } from './ParticlePreview';
 import { UnknownPreview } from './UnknownPreview';
 
 type Registry = { [K in ElementBodyKind]: FC<PreviewProps<K>> };
 
 export const PREVIEW_REGISTRY: Registry = {
-  particle:      DefaultPreview as FC<PreviewProps<'particle'>>,
+  particle:      ParticlePreview,
   decal:         DefaultPreview as FC<PreviewProps<'decal'>>,
   trail:         DefaultPreview as FC<PreviewProps<'trail'>>,
   light:         LightPreview,

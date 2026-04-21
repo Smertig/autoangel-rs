@@ -2,11 +2,10 @@ import { FieldPanel, FieldRow } from '../fieldPanel';
 import { BoolDot, MonoNum, PathOrText } from '../formatters';
 import { SmdViewer } from '@shared/components/model-viewer';
 import { MissingPackageBanner } from '../MissingPackageBanner';
-import { resolveEnginePath } from '../util/resolveEnginePath';
+import { resolveEnginePath, ENGINE_PATH_PREFIXES } from '../util/resolveEnginePath';
 import type { PreviewProps } from './types';
 import styles from './ModelPreview.module.css';
 
-const MODEL_PREFIXES = ['gfx\\models\\', 'gfx\\Models\\'] as const;
 
 export function ModelPreview({ body, context, expanded }: PreviewProps<'model'>) {
   if (!expanded) return <span className={styles.thumb}>M</span>;
@@ -37,7 +36,7 @@ function ModelPreviewViewer({
   context,
 }: Pick<PreviewProps<'model'>, 'body' | 'context'>) {
   const resolved = context.listFiles
-    ? resolveEnginePath(body.model_path, MODEL_PREFIXES, context.listFiles)
+    ? resolveEnginePath(body.model_path, ENGINE_PATH_PREFIXES.models, context.listFiles)
     : `gfx\\Models\\${body.model_path}`;
 
   if (resolved === null) {

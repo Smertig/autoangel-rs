@@ -9,3 +9,12 @@ export function argbToCss(argb: number): string {
 export function argbToHex(argb: number): string {
   return `0x${(argb >>> 0).toString(16).padStart(8, '0').toUpperCase()}`;
 }
+
+/** Decode packed u32 ARGB to four normalised floats in [0, 1]. */
+export function argbChannels(argb: number): [number, number, number, number] {
+  const a = ((argb >>> 24) & 0xff) / 255;
+  const r = ((argb >>> 16) & 0xff) / 255;
+  const g = ((argb >>> 8) & 0xff) / 255;
+  const b = (argb & 0xff) / 255;
+  return [r, g, b, a];
+}

@@ -3,12 +3,11 @@ import { FieldPanel, FieldRow } from '../fieldPanel';
 import { BoolDot, MonoNum, PathOrText } from '../formatters';
 import { GfxViewer } from '@shared/components/gfx/GfxViewer';
 import { MissingPackageBanner } from '../MissingPackageBanner';
-import { resolveEnginePath } from '../util/resolveEnginePath';
+import { resolveEnginePath, ENGINE_PATH_PREFIXES } from '../util/resolveEnginePath';
 import { useFileData } from '@shared/hooks/useFileData';
 import type { PreviewProps, ViewerCtx } from './types';
 import styles from './ContainerPreview.module.css';
 
-const CONTAINER_PREFIXES = ['gfx\\', 'GFX\\'] as const;
 
 export function ContainerPreview({ body, context, expanded }: PreviewProps<'container'>) {
   if (!expanded) return <span className={styles.thumb}>C</span>;
@@ -33,7 +32,7 @@ function NestedGfxViewer({ gfxPath, context }: { gfxPath: string; context: Viewe
     if (!context.listFiles) {
       return { kind: 'fallback' as const, path: `gfx\\${gfxPath}` };
     }
-    const match = resolveEnginePath(gfxPath, CONTAINER_PREFIXES, context.listFiles);
+    const match = resolveEnginePath(gfxPath, ENGINE_PATH_PREFIXES.gfx, context.listFiles);
     return match
       ? { kind: 'resolved' as const, path: match }
       : { kind: 'missing' as const, engineTarget: `gfx\\${gfxPath}` };
