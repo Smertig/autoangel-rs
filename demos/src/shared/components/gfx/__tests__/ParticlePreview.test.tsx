@@ -100,7 +100,7 @@ describe('ParticlePreview', () => {
     expect(screen.getByText(/SrcAlpha \/ One\s+\(additive\)/)).toBeDefined();
   });
 
-  it('renders typed fields for non-point shapes but shows ShapePending placeholder', () => {
+  it('renders simulation for ellipsoid shape (not ShapePending)', () => {
     const ellipsoidBody = {
       ...body,
       emitter: {
@@ -122,8 +122,35 @@ describe('ParticlePreview', () => {
         expanded={true}
       />,
     );
+    // Field panel still renders.
     expect(screen.getByText('emission_rate')).toBeDefined();
+    // The "coming later" placeholder should NOT appear for ellipsoid.
+    expect(screen.queryByText(/simulation for/i)).toBeNull();
+  });
+
+  it('still shows ShapePending for unsupported shapes (cylinder)', () => {
+    const cylinderBody = {
+      ...body,
+      emitter: {
+        ...body.emitter,
+        shape: {
+          shape: 'cylinder',
+          area_size: [1, 1, 1],
+          is_avg_gen: false,
+          alpha_seg: 8,
+          beta_seg: 8,
+        },
+      },
+    };
+    render(
+      <ParticlePreview
+        body={cylinderBody}
+        element={element}
+        context={ctx}
+        expanded={true}
+      />,
+    );
     expect(screen.getByText(/simulation for/i)).toBeDefined();
-    expect(screen.getByText('ellipsoid')).toBeDefined();
+    expect(screen.getByText('cylinder')).toBeDefined();
   });
 });

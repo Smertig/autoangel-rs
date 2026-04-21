@@ -19,7 +19,7 @@ export function ParticlePreview({ body, element, context, expanded }: PreviewPro
     <div className={styles.expanded}>
       <div className={styles.split}>
         <div>
-          {shape === 'point'
+          {shape === 'point' || shape === 'ellipsoid'
             ? <ParticleSim body={body} element={element} context={context} />
             : <ShapePending shape={shape} />}
         </div>
