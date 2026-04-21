@@ -123,6 +123,31 @@ Demos load WASM from the published npm CDN, so they must never reference an unpu
 
 The owner pushes each batch manually after verifying CI passes on the previous one.
 
+## Worktrees
+
+Use `git worktree` for isolated feature work that might span multiple commits or collide with other in-flight changes. Two directory conventions in use:
+
+- **`.worktrees/<branch-name>/`** — project-local, hidden. The `.worktrees` line in `.gitignore` keeps the directory untracked. Default choice.
+- **Sibling directory `../<project>-<tag>/`** — peer of the main checkout (e.g. `autoangel-rs-hlsl`, `autoangel-rs-ecm-gfx`). Useful when the worktree will own resource-heavy builds you don't want nested inside the main tree.
+
+### Per-worktree setup checklist
+
+Git only carries tracked files. **Everything below is gitignored and must be set up in every new worktree**, or tests and builds won't work:
+
+1. **LFS content** — `git lfs pull` inside the worktree. Test data in `test_data/` are LFS pointers until hydrated. The LFS object store lives in the main `.git/lfs/` (shared), but checkout is per-worktree.
+2. **`demos/node_modules/`** — `cd demos && npm ci`.
+3. **`autoangel-wasm/pkg/`** (web target) — `cd autoangel-wasm && wasm-pack build --target web --out-name autoangel`. Required for `test:e2e:local` and the `?local` dev param.
+4. **`autoangel-wasm/pkg-node/`** (nodejs target) — `cd autoangel-wasm && wasm-pack build --target nodejs --out-dir pkg-node --out-name autoangel`. Required for `autoangel-wasm && npm test`.
+5. **`autoangel-py/.venv/`** — created lazily on first `uv run`. If Python tests throw unexpected `AttributeError`/`TypeError` in a worktree, delete `.venv` and let `uv run` recreate it (same `globwalk`-cache-keys bug noted in the Build section — it misses cross-worktree `.rs` changes).
+6. **`target/`** — cargo rebuilds cold. Slow first `cargo build`, harmless. Cross-worktree concurrent `cargo` / `wasm-pack` invocations serialize safely on Cargo's per-target-dir flock.
+7. **`/docs/plans/`** — gitignored. Design/plan docs don't carry into worktrees automatically; hand-copy from the main tree.
+
+### Behavioral gotchas
+
+- **Stale worktree metadata** — if a worktree directory is deleted from disk while git still references it, `git worktree list` keeps showing the zombie. Run `git worktree remove <path>` (or `git worktree prune` if the dir is already gone) to clean up.
+- **Relative paths inside a worktree** can be confusing when a subshell `cd`s: `.worktrees/` seen from `autoangel-rs/.worktrees/foo/` does not exist — use absolute paths in cross-tree scripts.
+- **Don't delete or merge worktree branches without the owner's permission.** Branches may represent paused or abandoned work; the owner decides.
+
 ## CI
 
 GitHub Actions (`.github/workflows/build.yml`): cargo check, cross-platform tests (Windows/Ubuntu/macOS with Python 3.10), rustfmt, clippy, WASM compilation check + JS tests. Version bumps in `autoangel-py/Cargo.toml` or `autoangel-wasm/Cargo.toml` trigger PyPI publishing, npm publishing, and docs update.
