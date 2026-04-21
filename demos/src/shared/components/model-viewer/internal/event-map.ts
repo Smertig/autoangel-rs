@@ -23,15 +23,15 @@ export function buildAnimEventMap(ecm: any, animNames: string[]): Map<string, An
       // Collect events for this combined action
       const events: AnimEvent[] = [];
       for (let e = 0; e < eventCount; e++) {
-        const evType: number = ecm.eventType(i, e);
-        if (evType !== EVENT_GFX && evType !== EVENT_SOUND) continue;
-        const rawPath: string = ecm.eventFxFilePath(i, e) ?? '';
-        const basePath = rawPath.replace(/\\/g, '/').split('/').pop() ?? rawPath;
+        const ev = ecm.getEvent(i, e);
+        if (!ev) continue;
+        if (ev.event_type !== EVENT_GFX && ev.event_type !== EVENT_SOUND) continue;
+        const basePath = ev.fx_file_path.replace(/\\/g, '/').split('/').pop() ?? ev.fx_file_path;
         events.push({
-          type: evType as 100 | 101,
+          type: ev.event_type as 100 | 101,
           filePath: basePath,
-          startTime: ecm.eventStartTime(i, e) ?? 0,
-          hookName: ecm.eventHookName(i, e) ?? '',
+          startTime: ev.start_time,
+          hookName: ev.hook_name,
         });
       }
       if (events.length === 0) continue;

@@ -187,9 +187,9 @@ export async function collectEcmDependencies(
     }
 
     for (let i = 0; i < ecm.childCount; i++) {
-      const childRel = ecm.childPath(i);
-      if (!childRel) continue;
-      await collect(resolvePath(childRel, normalizedEcm));
+      const child = ecm.getChild(i);
+      if (!child) continue;
+      await collect(resolvePath(child.path, normalizedEcm));
     }
   }
 

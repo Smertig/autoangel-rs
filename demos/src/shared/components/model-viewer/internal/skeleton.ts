@@ -11,12 +11,14 @@ export function readEcmBoneScales(ecm: any): { entries: BoneScaleData[]; isNew: 
   const count: number = ecm.boneScaleCount;
   const entries: BoneScaleData[] = [];
   for (let i = 0; i < count; i++) {
-    const vals = ecm.boneScaleValues(i);
-    if (!vals) continue;
+    const bs = ecm.getBoneScale(i);
+    if (!bs) continue;
     entries.push({
-      boneIndex: ecm.boneScaleBoneIndex(i),
-      scale: [vals[0], vals[1], vals[2]],
-      scaleType: ecm.boneScaleType(i),
+      boneIndex: bs.bone_index,
+      scale: [bs.scale[0], bs.scale[1], bs.scale[2]],
+      // BoneScaleEx (new format) leaves scale_type as null; preserve the
+      // legacy -1 sentinel so downstream consumers don't have to special-case.
+      scaleType: bs.scale_type ?? -1,
     });
   }
   return { entries, isNew: ecm.newBoneScale, baseBone: ecm.scaleBaseBone };
