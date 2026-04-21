@@ -2,7 +2,7 @@
 // three.js-specific writeback into InstancedMesh happens in the hook.
 
 import { argbChannels } from '../../util/argb';
-import { sampleConeDirection } from './spawn';
+import { sampleConeDirection } from './spawn/cone';
 
 export interface SimConfig {
   quota: number;

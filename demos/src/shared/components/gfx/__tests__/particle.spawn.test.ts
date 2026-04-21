@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sampleConeDirection } from '../previews/particle/spawn';
+import { sampleConeDirection } from '../previews/particle/spawn/cone';
 
 describe('sampleConeDirection', () => {
   it('returns axis exactly when angle is 0', () => {
