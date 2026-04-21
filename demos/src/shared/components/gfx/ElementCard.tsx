@@ -1,24 +1,9 @@
 import { useId, useState, KeyboardEvent } from 'react';
 import type { FC } from 'react';
 import { PREVIEW_REGISTRY } from './previews/registry';
-import type { GfxElement, PreviewProps, ViewerCtx, ElementBodyKind } from './previews/types';
+import type { GfxElement, PreviewProps, ViewerCtx } from './previews/types';
+import { formatKindBadge } from './util/kindLabel';
 import styles from './ElementCard.module.css';
-
-const KIND_LABELS: Record<ElementBodyKind, string> = {
-  particle: 'PARTICLE',
-  decal: 'DECAL',
-  trail: 'TRAIL',
-  light: 'LIGHT',
-  ring: 'RING',
-  model: 'MODEL',
-  container: 'CONTAINER',
-  grid_decal_3d: 'GRID DECAL 3D',
-  lightning: 'LIGHTNING',
-  lightning_ex: 'LIGHTNING EX',
-  ltn_bolt: 'LTN BOLT',
-  sound: 'SOUND',
-  unknown: 'UNKNOWN',
-};
 
 export function ElementCard({ element, context }: { element: GfxElement; context: ViewerCtx }) {
   const [expanded, setExpanded] = useState(false);
@@ -43,7 +28,7 @@ export function ElementCard({ element, context }: { element: GfxElement; context
         onClick={() => setExpanded(e => !e)}
         onKeyDown={onKey}
       >
-        <span className={styles.kindBadge}>{KIND_LABELS[kind]}</span>
+        <span className={styles.kindBadge}>{formatKindBadge(element)}</span>
         <span className={styles.name}>
           {element.name
             ? element.name
