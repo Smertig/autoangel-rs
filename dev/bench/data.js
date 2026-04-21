@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1776753870560,
+  "lastUpdate": 1776753871254,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -7879,6 +7879,156 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Smertig/autoangel-rs/commit/aa8a7372bd46a722753592c42e9c98fd7688f732"
         },
         "date": 1776540431877,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 71639,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 64,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 236,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 501280,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 36,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [just parsed]/allocated",
+            "value": 71639,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [just parsed]/retained",
+            "value": 58279,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [parsed + iterated]/allocated",
+            "value": 2038239,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [parsed + iterated]/retained",
+            "value": 774647,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [parsed + 3 searches]/allocated",
+            "value": 75723,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [parsed + 3 searches]/retained",
+            "value": 62103,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 865807,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 10808,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo::get_all_files",
+            "value": 7444164,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo::save_to",
+            "value": 21570066,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo [just parsed]/allocated",
+            "value": 865807,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo [just parsed]/retained",
+            "value": 11268,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo [parsed + all files]/allocated",
+            "value": 8311819,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo [parsed + all files]/retained",
+            "value": 6651260,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo [parsed + 3 files]/allocated",
+            "value": 906369,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo [parsed + 3 files]/retained",
+            "value": 20070,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "Smertig@users.noreply.github.com",
+            "name": "Alexander",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "ba431acefe1afadd624f69efe713ac002ff97540",
+          "message": "feat [gfx]: wire affectors + KeyPointSet into GfxElement\n\nTasks 20 and 21 of the GFX KeyPointSet plan.\n\n* Drop `tail_lines: Vec<String>` from the eleven typed `ElementBody`\n  variants (`Decal`, `Trail`, `Light`, `Ring`, `Model`, `Container`,\n  `Particle`, `GridDecal3D`, `Lightning`, `LtnBolt`, `LightningEx`,\n  `Sound`). `ElementBody::Unknown { lines }` is unchanged — it remains\n  the fallback for element types without a typed parser\n  (180/190/211/220/221/230/240).\n\n* Promote affector list + `KeyPointSet` from raw tail lines to typed\n  fields on `GfxElement`:\n\n  - `affectors: Vec<KpController>` is non-empty only for particle\n    element types (120–125), mirroring where\n    `A3DParticleSystemEx::Load` emits the `AffectorCount:` block.\n\n  - `key_point_set: Option<KeyPointSet>` is consumed when a\n    `StartTime:` line is pending. About 0.6% of real-world archive\n    elements lack the block, so the field is optional rather than\n    required.\n\n* `ElementBody::raw_text()` simplifies to returning `String::new()`\n  for typed variants; only `Unknown` emits text.\n\n* Register `KeyPointSet`, `KeyPoint`, `KpController`, `KpCtrlBody`,\n  and `TrailPerturbSpreading` as Python classes. Update\n  `autoangel.pyi` stubs to drop `tail_lines` from the body variants\n  and add the new types + `GfxElement.affectors` /\n  `GfxElement.key_point_set` attributes.\n\n* Rebuild `docs/autoangel.html` to match the new stub surface.\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+          "timestamp": "2026-04-21T10:41:22+04:00",
+          "tree_id": "abe80f99d4214ae95ab58ad27588af1f2fc54fc8",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/ba431acefe1afadd624f69efe713ac002ff97540"
+        },
+        "date": 1776753870966,
         "tool": "cargo",
         "benches": [
           {
