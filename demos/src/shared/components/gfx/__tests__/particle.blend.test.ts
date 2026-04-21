@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { d3dBlendLabel, blendPresetName, formatBlendMode } from '../previews/particle/blend';
+import { d3dBlendLabel, blendPresetName, formatBlendMode } from '../util/blendModes';
 
 describe('d3dBlendLabel', () => {
   it('maps known D3DBLEND values to names', () => {

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { ensureThree, getThree } from '@shared/components/model-viewer/internal/three';
 import { useFileData } from '@shared/hooks/useFileData';
 import type { ElementBody, GfxElement, ViewerCtx } from '../types';
-import { d3dBlendToThreeFactor } from './blend';
+import { d3dBlendToThreeFactor } from '../../util/blendModes';
 import { loadParticleTexture, resolveTexturePath } from './texture';
 import { createSimState, resolvePoolSize, tickSim, type ShapeCfg, type SimConfig } from './simulation';
 

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { FieldPanel, type FieldRow } from '../fieldPanel';
 import { BoolDot, ColorSwatch, MonoNum, PathOrText, Vec3 } from '../formatters';
 import { argbToCss } from '../util/argb';
-import { formatBlendMode } from './particle/blend';
+import { formatBlendMode } from '../util/blendModes';
 import { useParticleCanvas } from './particle/useParticleCanvas';
 import type { ElementBody, GfxElement, PreviewProps, ViewerCtx } from './types';
 import styles from './ParticlePreview.module.css';
