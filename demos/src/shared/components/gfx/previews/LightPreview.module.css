@@ -14,3 +14,9 @@
 .scalarGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; padding-top: 8px; border-top: 1px solid var(--gfx-rule); }
 .scalarCell { display: flex; flex-direction: column; gap: 3px; }
 .scalarLabel { font: 500 9px/1 var(--gfx-font-data); letter-spacing: 0.3px; text-transform: uppercase; color: var(--gfx-text-muted); }
+
+.timeline { position: relative; display: flex; height: 20px; border: 1px solid var(--gfx-border); overflow: hidden; }
+.timelineBlock { display: block; height: 100%; min-width: 2px; }
+.timelineHold { display: block; height: 100%; min-width: 32px; background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.15) 0 4px, transparent 4px 8px); }
+.timelineCursor { position: absolute; top: 0; bottom: 0; left: 0; width: 2px; background: var(--gfx-text); box-shadow: 0 0 3px rgba(0,0,0,0.5); pointer-events: none; }
+.holdForever { font: 400 11px/1 var(--gfx-font-data); color: var(--gfx-text-muted); }

@@ -18,3 +18,16 @@ export function argbChannels(argb: number): [number, number, number, number] {
   const b = (argb & 0xff) / 255;
   return [r, g, b, a];
 }
+
+/** Channel-wise linear blend of two packed `0xAARRGGBB` colors. */
+export function argbLerp(a: number, b: number, t: number): number {
+  const lerp = (x: number, y: number) => Math.round(x + (y - x) * t);
+  const aa = (a >>> 24) & 0xff, ar = (a >>> 16) & 0xff, ag = (a >>> 8) & 0xff, ab = a & 0xff;
+  const ba = (b >>> 24) & 0xff, br = (b >>> 16) & 0xff, bg = (b >>> 8) & 0xff, bb = b & 0xff;
+  return (
+    (lerp(aa, ba) << 24) |
+    (lerp(ar, br) << 16) |
+    (lerp(ag, bg) << 8) |
+    lerp(ab, bb)
+  ) >>> 0;
+}
