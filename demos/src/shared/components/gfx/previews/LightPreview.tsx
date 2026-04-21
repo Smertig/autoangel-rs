@@ -1,7 +1,8 @@
 import { useEffect, useRef, type RefObject } from 'react';
 import { FieldPanel, FieldRow } from '../fieldPanel';
 import { MonoNum, Vec3, ColorSwatch, BoolDot } from '../formatters';
-import { argbLerp, argbToCss, argbToHex } from '../util/argb';
+import { argbToCss, argbToHex } from '../util/argb';
+import { buildTrack, sampleTrack, trackSignature, type Track } from '../util/keypointTrack';
 import type { PreviewProps } from './types';
 import styles from './LightPreview.module.css';
 
@@ -158,64 +159,3 @@ function KeyPointTimeline({
   );
 }
 
-type KeyPointSet = NonNullable<PreviewProps<'light'>['element']['key_point_set']>;
-
-interface Track {
-  colors: number[];
-  /** Raw `time_span` values, may include `-1` for hold-forever keypoints. */
-  spans: number[];
-  absTimes: number[];
-  startTimeMs: number;
-  loopDurationMs: number;
-  loopable: boolean;
-}
-
-function buildTrack(kps: KeyPointSet | undefined): Track {
-  if (kps === undefined) {
-    return { colors: [], spans: [], absTimes: [], startTimeMs: 0, loopDurationMs: 0, loopable: false };
-  }
-  const colors = kps.keypoints.map((kp) => kp.color);
-  const spans = kps.keypoints.map((kp) => kp.time_span);
-  const absTimes: number[] = [];
-  let acc = 0;
-  let sawFinite = false;
-  for (const s of spans) {
-    absTimes.push(acc);
-    if (s > 0) {
-      acc += s;
-      sawFinite = true;
-    }
-  }
-  return {
-    colors,
-    spans,
-    absTimes,
-    startTimeMs: kps.start_time,
-    loopDurationMs: acc,
-    loopable: sawFinite && colors.length >= 2 && acc > 0,
-  };
-}
-
-function trackSignature(track: Track): string {
-  return `${track.startTimeMs}|${track.loopDurationMs}|${track.colors.join(',')}|${track.spans.join(',')}`;
-}
-
-function sampleTrack(track: Track, tMs: number): { color: number; normalized: number } {
-  if (track.colors.length === 0) return { color: 0, normalized: 0 };
-  if (!track.loopable) return { color: track.colors[0], normalized: 0 };
-  const last = track.colors.length - 1;
-  for (let i = 0; i < last; i++) {
-    const segStart = track.absTimes[i];
-    const segSpan = track.spans[i];
-    if (segSpan <= 0) continue;
-    const segEnd = segStart + segSpan;
-    if (tMs >= segStart && tMs < segEnd) {
-      const local = (tMs - segStart) / segSpan;
-      return {
-        color: argbLerp(track.colors[i], track.colors[i + 1], local),
-        normalized: tMs / track.loopDurationMs,
-      };
-    }
-  }
-  return { color: track.colors[last], normalized: 1 };
-}
