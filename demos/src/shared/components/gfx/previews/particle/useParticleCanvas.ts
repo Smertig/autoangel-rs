@@ -4,7 +4,7 @@ import { useFileData } from '@shared/hooks/useFileData';
 import type { ElementBody, GfxElement, ViewerCtx } from '../types';
 import { d3dBlendToThreeFactor } from './blend';
 import { loadParticleTexture, resolveTexturePath } from './texture';
-import { createSimState, resolvePoolSize, tickSim, type SimConfig } from './simulation';
+import { createSimState, resolvePoolSize, tickSim, type ShapeCfg, type SimConfig } from './simulation';
 
 type ParticleBody = Extract<ElementBody, { kind: 'particle' }>;
 
@@ -363,6 +363,7 @@ function buildSimConfig(
     initRandomTexture: !!body.init_random_texture,
     particleWidth: body.particle_width,
     particleHeight: body.particle_height,
+    shape: { kind: 'point' } satisfies ShapeCfg,
   };
 }
 

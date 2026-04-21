@@ -29,6 +29,7 @@ function makeCfg(overrides: Partial<SimConfig> = {}): SimConfig {
     initRandomTexture: false,
     particleWidth: 1,
     particleHeight: 1,
+    shape: { kind: 'point' },
     ...overrides,
   };
 }

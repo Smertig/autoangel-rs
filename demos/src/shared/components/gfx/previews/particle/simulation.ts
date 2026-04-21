@@ -1,7 +1,18 @@
 // Core simulation types + per-frame tick. Kept framework-agnostic — the
 // three.js-specific writeback into InstancedMesh happens in the hook.
 
-import { spawnPoint } from './spawn/point';
+import { spawnParticle } from './spawn';
+
+export type ShapeCfg =
+  | { kind: 'point' }
+  | {
+      kind: 'ellipsoid';
+      areaSize: [number, number, number];
+      isSurface: boolean;
+      isAvgGen: boolean;
+      alphaSeg: number;
+      betaSeg: number;
+    };
 
 export interface SimConfig {
   quota: number;
@@ -26,6 +37,7 @@ export interface SimConfig {
   initRandomTexture: boolean;
   particleWidth: number;
   particleHeight: number;
+  shape: ShapeCfg;
 }
 
 export interface ParticleInstance {
@@ -52,6 +64,11 @@ export interface SimState {
    * saving a per-frame rewrite of every alive particle at 60 Hz.
    */
   dirtyIndices: number[];
+  /**
+   * Opaque per-shape scratch slot (e.g. ellipsoid GenAverage march cursors).
+   * Shape spawners own its concrete type; the sim core treats it as unknown.
+   */
+  shapeState: unknown;
 }
 
 export function createSimState(puffCount = 30): SimState {
@@ -60,6 +77,7 @@ export function createSimState(puffCount = 30): SimState {
     emissionAcc: puffCount,
     time: 0,
     dirtyIndices: [],
+    shapeState: null,
   };
 }
 
@@ -97,7 +115,7 @@ export function tickSim(
   // Emit.
   state.emissionAcc += dt * cfg.emissionRate;
   while (state.emissionAcc >= 1 && state.alive.length < cfg.quota) {
-    const p = spawnPoint(cfg, rng);
+    const p = spawnParticle(cfg, state, rng);
     // For the initial "puff" pre-load, stagger ages so they don't all die
     // simultaneously; rng() is cheap and bounded.
     if (state.time < 0.001) {
