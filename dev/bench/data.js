@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1776540432155,
+  "lastUpdate": 1776753870560,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -3359,6 +3359,102 @@ window.BENCHMARK_DATA = {
             "name": "PackageInfo::save_to",
             "value": 913246,
             "range": "± 2103",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "Smertig@users.noreply.github.com",
+            "name": "Alexander",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "ba431acefe1afadd624f69efe713ac002ff97540",
+          "message": "feat [gfx]: wire affectors + KeyPointSet into GfxElement\n\nTasks 20 and 21 of the GFX KeyPointSet plan.\n\n* Drop `tail_lines: Vec<String>` from the eleven typed `ElementBody`\n  variants (`Decal`, `Trail`, `Light`, `Ring`, `Model`, `Container`,\n  `Particle`, `GridDecal3D`, `Lightning`, `LtnBolt`, `LightningEx`,\n  `Sound`). `ElementBody::Unknown { lines }` is unchanged — it remains\n  the fallback for element types without a typed parser\n  (180/190/211/220/221/230/240).\n\n* Promote affector list + `KeyPointSet` from raw tail lines to typed\n  fields on `GfxElement`:\n\n  - `affectors: Vec<KpController>` is non-empty only for particle\n    element types (120–125), mirroring where\n    `A3DParticleSystemEx::Load` emits the `AffectorCount:` block.\n\n  - `key_point_set: Option<KeyPointSet>` is consumed when a\n    `StartTime:` line is pending. About 0.6% of real-world archive\n    elements lack the block, so the field is optional rather than\n    required.\n\n* `ElementBody::raw_text()` simplifies to returning `String::new()`\n  for typed variants; only `Unknown` emits text.\n\n* Register `KeyPointSet`, `KeyPoint`, `KpController`, `KpCtrlBody`,\n  and `TrailPerturbSpreading` as Python classes. Update\n  `autoangel.pyi` stubs to drop `tail_lines` from the body variants\n  and add the new types + `GfxElement.affectors` /\n  `GfxElement.key_point_set` attributes.\n\n* Rebuild `docs/autoangel.html` to match the new stub surface.\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+          "timestamp": "2026-04-21T10:41:22+04:00",
+          "tree_id": "abe80f99d4214ae95ab58ad27588af1f2fc54fc8",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/ba431acefe1afadd624f69efe713ac002ff97540"
+        },
+        "date": 1776753869846,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 31241,
+            "range": "± 104",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 112,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::access_fields",
+            "value": 62,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 170,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 20915,
+            "range": "± 25",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::iterate_lists",
+            "value": 13645,
+            "range": "± 79",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 47,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 313093,
+            "range": "± 212",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::find_prefix",
+            "value": 308,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 3532,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_all_files",
+            "value": 10275599,
+            "range": "± 38812",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::save_to",
+            "value": 919897,
+            "range": "± 2108",
             "unit": "ns/iter"
           }
         ]
