@@ -1985,7 +1985,7 @@ This should work for you, if you don't use exotic game version (otherwise, you s
     </div>
     <a class="headerlink" href="#Bone.is_flipped"></a>
     
-            <div class="docstring"><p>Whether this bone is flipped.</p>
+            <div class="docstring"><p>Whether this bone is flipped (mirrored axis).</p>
 </div>
 
 
@@ -1998,7 +1998,7 @@ This should work for you, if you don't use exotic game version (otherwise, you s
     </div>
     <a class="headerlink" href="#Bone.mat_bone_init"></a>
     
-            <div class="docstring"><p>Initial bone-space transform matrix (column-major, 4x4 = 16 floats).</p>
+            <div class="docstring"><p>Inverse bind-pose transform matrix (column-major, 4x4 = 16 floats).</p>
 </div>
 
 
@@ -2037,7 +2037,7 @@ This should work for you, if you don't use exotic game version (otherwise, you s
     </div>
     <a class="headerlink" href="#Bone.parent"></a>
     
-            <div class="docstring"><p>Parent bone index (-1 if root).</p>
+            <div class="docstring"><p>Parent bone index (<code>-1</code> for a root bone).</p>
 </div>
 
 
@@ -2069,7 +2069,9 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#BoneScaleEntry.bone_index"></a>
     
-    
+            <div class="docstring"><p>Index of the bone this scale applies to.</p>
+</div>
+
 
                             </div>
                             <div id="BoneScaleEntry.scale" class="classattr">
@@ -2080,7 +2082,7 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#BoneScaleEntry.scale"></a>
     
-            <div class="docstring"><p>Old format: (scale_x, scale_y, scale_z). New (BoneScaleEx): (len, thick, whole).</p>
+            <div class="docstring"><p>Scale triple — meaning depends on format (see class docstring).</p>
 </div>
 
 
@@ -2093,7 +2095,7 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#BoneScaleEntry.scale_type"></a>
     
-            <div class="docstring"><p><code>Some(type)</code> for old format, <code>None</code> for BoneScaleEx.</p>
+            <div class="docstring"><p>Old-format scale-type tag; <code>None</code> for the new BoneScaleEx format.</p>
 </div>
 
 
@@ -2175,7 +2177,9 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#ChildModel.cc_name"></a>
     
-    
+            <div class="docstring"><p>Counterpart hook name on the child model.</p>
+</div>
+
 
                             </div>
                             <div id="ChildModel.hh_name" class="classattr">
@@ -2186,7 +2190,9 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#ChildModel.hh_name"></a>
     
-    
+            <div class="docstring"><p>Hook name on the parent skeleton (e.g. <code>HH_lefthandweapon</code>).</p>
+</div>
+
 
                             </div>
                             <div id="ChildModel.name" class="classattr">
@@ -2197,7 +2203,9 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#ChildModel.name"></a>
     
-    
+            <div class="docstring"><p>Logical attachment slot name (e.g. <code>wq_l</code>, <code>wq_r</code>).</p>
+</div>
+
 
                             </div>
                             <div id="ChildModel.path" class="classattr">
@@ -2208,7 +2216,9 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#ChildModel.path"></a>
     
-    
+            <div class="docstring"><p>Engine-relative path to the child ECM.</p>
+</div>
+
 
                             </div>
                 </section>
@@ -2238,7 +2248,9 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#EcmEvent.bind_parent"></a>
     
-    
+            <div class="docstring"><p>If true, the spawned effect follows the bone; otherwise frozen at spawn world position.</p>
+</div>
+
 
                             </div>
                             <div id="EcmEvent.event_type" class="classattr">
@@ -2249,7 +2261,9 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#EcmEvent.event_type"></a>
     
-    
+            <div class="docstring"><p>Event-type id (100 = GFX, 101 = Sound, 102+ = engine-internal types).</p>
+</div>
+
 
                             </div>
                             <div id="EcmEvent.fade_out" class="classattr">
@@ -2260,7 +2274,9 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#EcmEvent.fade_out"></a>
     
-    
+            <div class="docstring"><p>Fade-out duration in milliseconds.</p>
+</div>
+
 
                             </div>
                             <div id="EcmEvent.force_2d" class="classattr">
@@ -2271,7 +2287,9 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#EcmEvent.force_2d"></a>
     
-    
+            <div class="docstring"><p>Sound events only: if true, plays as 2D (no spatial positioning).</p>
+</div>
+
 
                             </div>
                             <div id="EcmEvent.fx_file_path" class="classattr">
@@ -2282,7 +2300,9 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#EcmEvent.fx_file_path"></a>
     
-    
+            <div class="docstring"><p>Engine-relative path to the GFX (event_type=100) or sound (101) file.</p>
+</div>
+
 
                             </div>
                             <div id="EcmEvent.gfx_scale" class="classattr">
@@ -2293,7 +2313,9 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#EcmEvent.gfx_scale"></a>
     
-    
+            <div class="docstring"><p>GFX events only: scale multiplier for the spawned effect.</p>
+</div>
+
 
                             </div>
                             <div id="EcmEvent.gfx_speed" class="classattr">
@@ -2304,7 +2326,9 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#EcmEvent.gfx_speed"></a>
     
-    
+            <div class="docstring"><p>GFX events only: playback-rate multiplier.</p>
+</div>
+
 
                             </div>
                             <div id="EcmEvent.hook_name" class="classattr">
@@ -2315,7 +2339,9 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#EcmEvent.hook_name"></a>
     
-    
+            <div class="docstring"><p>Skeleton attachment-point name (typically <code>HH_*</code>); empty if unset.</p>
+</div>
+
 
                             </div>
                             <div id="EcmEvent.hook_offset" class="classattr">
@@ -2326,7 +2352,9 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#EcmEvent.hook_offset"></a>
     
-    
+            <div class="docstring"><p>Local-space offset on the hook bone.</p>
+</div>
+
 
                             </div>
                             <div id="EcmEvent.hook_pitch" class="classattr">
@@ -2337,7 +2365,9 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#EcmEvent.hook_pitch"></a>
     
-    
+            <div class="docstring"><p>Pitch rotation on the hook (radians).</p>
+</div>
+
 
                             </div>
                             <div id="EcmEvent.hook_rot" class="classattr">
@@ -2348,7 +2378,9 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#EcmEvent.hook_rot"></a>
     
-    
+            <div class="docstring"><p>Roll rotation on the hook (radians).</p>
+</div>
+
 
                             </div>
                             <div id="EcmEvent.hook_yaw" class="classattr">
@@ -2359,7 +2391,9 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#EcmEvent.hook_yaw"></a>
     
-    
+            <div class="docstring"><p>Yaw rotation on the hook (radians).</p>
+</div>
+
 
                             </div>
                             <div id="EcmEvent.is_loop" class="classattr">
@@ -2370,7 +2404,9 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#EcmEvent.is_loop"></a>
     
-    
+            <div class="docstring"><p>Sound events only: if true, sound loops.</p>
+</div>
+
 
                             </div>
                             <div id="EcmEvent.max_dist" class="classattr">
@@ -2381,7 +2417,9 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#EcmEvent.max_dist"></a>
     
-    
+            <div class="docstring"><p>Sound events only: maximum audible distance.</p>
+</div>
+
 
                             </div>
                             <div id="EcmEvent.min_dist" class="classattr">
@@ -2392,7 +2430,9 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#EcmEvent.min_dist"></a>
     
-    
+            <div class="docstring"><p>Sound events only: minimum audible distance.</p>
+</div>
+
 
                             </div>
                             <div id="EcmEvent.once" class="classattr">
@@ -2403,7 +2443,9 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#EcmEvent.once"></a>
     
-    
+            <div class="docstring"><p>If true, the event fires only once per clip iteration.</p>
+</div>
+
 
                             </div>
                             <div id="EcmEvent.start_time" class="classattr">
@@ -2414,7 +2456,9 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#EcmEvent.start_time"></a>
     
-    
+            <div class="docstring"><p>Start time in milliseconds (0 if unset).</p>
+</div>
+
 
                             </div>
                             <div id="EcmEvent.time_span" class="classattr">
@@ -2425,7 +2469,9 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#EcmEvent.time_span"></a>
     
-    
+            <div class="docstring"><p>Lifetime in milliseconds; <code>-1</code> = infinite.</p>
+</div>
+
 
                             </div>
                             <div id="EcmEvent.use_model_alpha" class="classattr">
@@ -2436,7 +2482,9 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#EcmEvent.use_model_alpha"></a>
     
-    
+            <div class="docstring"><p>If true, the effect inherits the parent model's alpha.</p>
+</div>
+
 
                             </div>
                             <div id="EcmEvent.volume" class="classattr">
@@ -2447,7 +2495,9 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#EcmEvent.volume"></a>
     
-    
+            <div class="docstring"><p>Sound events only: playback volume.</p>
+</div>
+
 
                             </div>
                 </section>
@@ -5973,6 +6023,10 @@ this field is <code>None</code>.</p>
     <a class="headerlink" href="#Hook"></a>
     
             <div class="docstring"><p>A hook (attachment point) in a skeleton.</p>
+
+<p>Distinct from a bone: an attachment point parented to a bone with a
+fixed local transform. ECM events typically target hooks (<code>HH_*</code>)
+rather than bones directly.</p>
 </div>
 
 
@@ -5997,7 +6051,7 @@ this field is <code>None</code>.</p>
     </div>
     <a class="headerlink" href="#Hook.hook_type"></a>
     
-            <div class="docstring"><p>Hook type identifier.</p>
+            <div class="docstring"><p>Engine-defined hook-type identifier.</p>
 </div>
 
 
@@ -6010,7 +6064,7 @@ this field is <code>None</code>.</p>
     </div>
     <a class="headerlink" href="#Hook.name"></a>
     
-            <div class="docstring"><p>Hook name.</p>
+            <div class="docstring"><p>Hook name (typically <code>HH_*</code> for engine-recognized attachment points).</p>
 </div>
 
 
@@ -6023,7 +6077,7 @@ this field is <code>None</code>.</p>
     </div>
     <a class="headerlink" href="#Hook.transform"></a>
     
-            <div class="docstring"><p>Hook transform matrix (column-major, 4x4 = 16 floats).</p>
+            <div class="docstring"><p>Local-to-bone transform matrix (column-major, 4x4 = 16 floats).</p>
 </div>
 
 

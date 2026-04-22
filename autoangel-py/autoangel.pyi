@@ -636,17 +636,24 @@ class BoneScaleEntry:
     and ``scale_type`` is ``None``.
     """
     bone_index: int
+    """Index of the bone this scale applies to."""
     scale: Tuple[float, float, float]
+    """Scale triple — meaning depends on format (see class docstring)."""
     scale_type: Optional[int]
+    """Old-format scale-type tag; ``None`` for the new BoneScaleEx format."""
 
 
 @final
 class ChildModel:
     """Child model attachment from an ECM model."""
     name: str
+    """Logical attachment slot name (e.g. ``wq_l``, ``wq_r``)."""
     path: str
+    """Engine-relative path to the child ECM."""
     hh_name: str
+    """Hook name on the parent skeleton (e.g. ``HH_lefthandweapon``)."""
     cc_name: str
+    """Counterpart hook name on the child model."""
 
 
 @final
@@ -658,25 +665,45 @@ class EcmEvent:
     (``volume`` / ``min_dist`` / ``max_dist`` / ``force_2d`` / ``is_loop``).
     """
     event_type: int
+    """Event-type id (100 = GFX, 101 = Sound, 102+ = engine-internal types)."""
     start_time: int
+    """Start time in milliseconds (0 if unset)."""
     time_span: int
+    """Lifetime in milliseconds; ``-1`` = infinite."""
     once: bool
+    """If true, the event fires only once per clip iteration."""
     fx_file_path: str
+    """Engine-relative path to the GFX (event_type=100) or sound (101) file."""
     hook_name: str
+    """Skeleton attachment-point name (typically ``HH_*``); empty if unset."""
     hook_offset: Tuple[float, float, float]
+    """Local-space offset on the hook bone."""
     hook_yaw: float
+    """Yaw rotation on the hook (radians)."""
     hook_pitch: float
+    """Pitch rotation on the hook (radians)."""
     hook_rot: float
+    """Roll rotation on the hook (radians)."""
     bind_parent: bool
+    """If true, the spawned effect follows the bone; otherwise frozen at spawn world position."""
     fade_out: int
+    """Fade-out duration in milliseconds."""
     use_model_alpha: bool
+    """If true, the effect inherits the parent model's alpha."""
     gfx_scale: Optional[float]
+    """GFX events only: scale multiplier for the spawned effect."""
     gfx_speed: Optional[float]
+    """GFX events only: playback-rate multiplier."""
     volume: Optional[int]
+    """Sound events only: playback volume."""
     min_dist: Optional[float]
+    """Sound events only: minimum audible distance."""
     max_dist: Optional[float]
+    """Sound events only: maximum audible distance."""
     force_2d: Optional[bool]
+    """Sound events only: if true, plays as 2D (no spatial positioning)."""
     is_loop: Optional[bool]
+    """Sound events only: if true, sound loops."""
 
 
 @final
@@ -739,29 +766,48 @@ class SmdModel:
 class Bone:
     """A single bone in a skeleton."""
     name: str
+    """Bone name."""
     parent: int
+    """Parent bone index (``-1`` for a root bone)."""
     children: List[int]
+    """Indices of child bones."""
     mat_relative: List[float]
+    """Relative transform matrix (column-major, 4x4 = 16 floats)."""
     mat_bone_init: List[float]
+    """Inverse bind-pose transform matrix (column-major, 4x4 = 16 floats)."""
     is_fake: bool
+    """Whether this bone is a fake (non-rendering) bone."""
     is_flipped: bool
+    """Whether this bone is flipped (mirrored axis)."""
 
 
 @final
 class Hook:
-    """A hook (attachment point) in a skeleton."""
+    """A hook (attachment point) in a skeleton.
+
+    Distinct from a bone: an attachment point parented to a bone with a
+    fixed local transform. ECM events typically target hooks (``HH_*``)
+    rather than bones directly.
+    """
     name: str
+    """Hook name (typically ``HH_*`` for engine-recognized attachment points)."""
     hook_type: int
+    """Engine-defined hook-type identifier."""
     bone_index: int
+    """Index of the bone this hook is attached to."""
     transform: List[float]
+    """Local-to-bone transform matrix (column-major, 4x4 = 16 floats)."""
 
 
 @final
 class Skeleton:
     """Parsed BON (skeleton) file."""
     version: int
+    """BON format version."""
     bones: List[Bone]
+    """List of bones in the skeleton."""
     hooks: List[Hook]
+    """List of hook attachment points."""
 
 
 @final

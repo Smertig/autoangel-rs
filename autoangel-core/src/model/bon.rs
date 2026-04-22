@@ -1,6 +1,8 @@
+use crate::model::bindable;
 use crate::model::common::{detect_moxb_offset, read_astring, read_count, read_matrix};
 use crate::util::data_source::{DataReader, DataSource};
 use eyre::Result;
+use macro_rules_attribute::apply;
 
 const MAGIC: u32 = 0x41534B45; // "ASKE"
 const HEADER_SIZE: u64 = 96;
@@ -8,14 +10,14 @@ const BONEDATA_SIZE: u64 = 144;
 const JOINTDATA_SIZE: u64 = 12;
 const HOOKDATA_SIZE: u64 = 72;
 
-#[derive(Debug, Clone)]
+#[apply(bindable)]
 pub struct Skeleton {
     pub version: u32,
     pub bones: Vec<Bone>,
     pub hooks: Vec<Hook>,
 }
 
-#[derive(Debug, Clone)]
+#[apply(bindable)]
 pub struct Bone {
     pub name: String,
     pub parent: i32,
@@ -26,7 +28,8 @@ pub struct Bone {
     pub is_flipped: bool,
 }
 
-#[derive(Debug, Clone)]
+#[apply(bindable)]
+#[derive(Default)]
 pub struct Hook {
     pub name: String,
     pub hook_type: u32,

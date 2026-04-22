@@ -10,13 +10,13 @@ import {
   PackageConfig,
   PckBuilder,
   PckPackage,
-  Skeleton,
   SmdModel,
   TrackSet,
   Skin,
   decodeDds,
   decodeTga,
   parseGfx,
+  parseSkeleton,
   type FileEntry,
 } from "../pkg-node/autoangel.js";
 
@@ -718,40 +718,35 @@ const FALLEN_BON = readFileSync(resolve(root, "test_data/models/fallen_general/\
 
 describe("Skeleton", () => {
   it("parses carnivore_plant skeleton", () => {
-    using skel = Skeleton.parse(CARNIVORE_BON);
-    assert.equal(skel.boneCount, 26);
+    const skel = parseSkeleton(CARNIVORE_BON);
+    assert.equal(skel.bones.length, 26);
   });
 
   it("parses fallen_general skeleton", () => {
-    using skel = Skeleton.parse(FALLEN_BON);
-    assert.equal(skel.boneCount, 33);
+    const skel = parseSkeleton(FALLEN_BON);
+    assert.equal(skel.bones.length, 33);
   });
 
   it("returns bone names", () => {
-    using skel = Skeleton.parse(CARNIVORE_BON);
-    const name = skel.boneName(0);
+    const skel = parseSkeleton(CARNIVORE_BON);
+    const name = skel.bones[0].name;
     assert.equal(typeof name, "string");
-    assert.ok(name!.length > 0);
-  });
-
-  it("returns undefined for out-of-bounds bone name", () => {
-    using skel = Skeleton.parse(CARNIVORE_BON);
-    assert.equal(skel.boneName(9999), undefined);
+    assert.ok(name.length > 0);
   });
 
   it("root bone has parent -1", () => {
-    using skel = Skeleton.parse(CARNIVORE_BON);
-    assert.equal(skel.boneParent(0), -1);
+    const skel = parseSkeleton(CARNIVORE_BON);
+    assert.equal(skel.bones[0].parent, -1);
   });
 
   it("non-root bone has valid parent", () => {
-    using skel = Skeleton.parse(CARNIVORE_BON);
+    const skel = parseSkeleton(CARNIVORE_BON);
     // Find a non-root bone
     let found = false;
-    for (let i = 1; i < skel.boneCount; i++) {
-      const p = skel.boneParent(i);
+    for (let i = 1; i < skel.bones.length; i++) {
+      const p = skel.bones[i].parent;
       if (p >= 0) {
-        assert.ok(p < skel.boneCount);
+        assert.ok(p < skel.bones.length);
         found = true;
         break;
       }
@@ -760,34 +755,56 @@ describe("Skeleton", () => {
   });
 
   it("returns relative transform as 16 floats", () => {
-    using skel = Skeleton.parse(CARNIVORE_BON);
-    const m = skel.boneRelativeTransform(0);
-    assert.notEqual(m, undefined);
-    assert.equal(m!.length, 16);
-    assert.ok(m instanceof Float32Array);
+    const skel = parseSkeleton(CARNIVORE_BON);
+    const m = skel.bones[0].mat_relative;
+    assert.equal(m.length, 16);
   });
 
   it("returns init transform as 16 floats", () => {
-    using skel = Skeleton.parse(CARNIVORE_BON);
-    const m = skel.boneInitTransform(0);
-    assert.notEqual(m, undefined);
-    assert.equal(m!.length, 16);
-    assert.ok(m instanceof Float32Array);
+    const skel = parseSkeleton(CARNIVORE_BON);
+    const m = skel.bones[0].mat_bone_init;
+    assert.equal(m.length, 16);
   });
 
-  it("boneIsFlipped returns boolean", () => {
-    using skel = Skeleton.parse(CARNIVORE_BON);
-    for (let i = 0; i < skel.boneCount; i++) {
-      assert.equal(typeof skel.boneIsFlipped(i), "boolean");
+  it("is_flipped is boolean on every bone", () => {
+    const skel = parseSkeleton(CARNIVORE_BON);
+    for (const bone of skel.bones) {
+      assert.equal(typeof bone.is_flipped, "boolean");
     }
   });
 
+  it("exposes hooks as array", () => {
+    const skel = parseSkeleton(CARNIVORE_BON);
+    // Matches the core Rust test: carnivore has 3 hooks, fallen_general has 5.
+    assert.ok(Array.isArray(skel.hooks));
+    assert.equal(skel.hooks.length, 3);
+    const h = skel.hooks[0];
+    assert.equal(typeof h.name, "string");
+    assert.ok(h.name.length > 0);
+    assert.equal(typeof h.hook_type, "number");
+    assert.equal(typeof h.bone_index, "number");
+    assert.equal(h.transform.length, 16);
+  });
+
+  it("version is a number", () => {
+    const skel = parseSkeleton(CARNIVORE_BON);
+    assert.equal(typeof skel.version, "number");
+  });
+
+  it("fallen_general has 5 hooks with HH_* names", () => {
+    const skel = parseSkeleton(FALLEN_BON);
+    assert.equal(skel.hooks.length, 5);
+    // All fallen_general hooks are HH_* attachment points (weapon hands etc.).
+    const hooks = skel.hooks.map((h) => h.name);
+    assert.ok(hooks.some((n) => n.startsWith("HH_")), `expected HH_* hook, got ${hooks.join(",")}`);
+  });
+
   it("rejects empty bytes", () => {
-    assert.throws(() => Skeleton.parse(new Uint8Array([])));
+    assert.throws(() => parseSkeleton(new Uint8Array([])));
   });
 
   it("rejects bad magic", () => {
-    assert.throws(() => Skeleton.parse(new Uint8Array(100)));
+    assert.throws(() => parseSkeleton(new Uint8Array(100)));
   });
 });
 
