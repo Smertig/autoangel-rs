@@ -23,7 +23,9 @@
 
 @container (min-width: 640px) {
   .split {
-    grid-template-columns: minmax(280px, 360px) 1fr;
+    /* Field panel sizes to its natural content width (widest row — usually
+       color swatches + two hex labels); sim grows to fill whatever's left. */
+    grid-template-columns: minmax(0, 1fr) max-content;
   }
 }
 
@@ -46,7 +48,8 @@
 .sim {
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 16 / 10;
+  min-height: 320px;
 }
 
 .canvas {
