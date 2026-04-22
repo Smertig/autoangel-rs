@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo, useDeferredValue, useEffect, memo } from 'react';
+import { useStateSyncedWith } from '@shared/hooks/useStateSyncedWith';
 import styles from './FileTree.module.css';
 import {
   getExtension,
@@ -199,7 +200,8 @@ interface TreeFolderProps {
   autoExpand: boolean;
   expandedPaths: Set<string>;
   onToggleExpand: (path: string) => void;
-  selectedPath: string | null;
+  focusedPath: string | null;
+  onFocusPath: (path: string) => void;
   onSelectFile: (file: TreeFile) => void;
   visibleSet: Set<string> | null;
   visibleFolderPaths: Set<string> | null;
@@ -218,7 +220,8 @@ const TreeFolder = memo(function TreeFolder({
   autoExpand,
   expandedPaths,
   onToggleExpand,
-  selectedPath,
+  focusedPath,
+  onFocusPath,
   onSelectFile,
   visibleSet,
   visibleFolderPaths,
@@ -228,22 +231,25 @@ const TreeFolder = memo(function TreeFolder({
   fileRowStyle,
 }: TreeFolderProps) {
   const isExpanded = autoExpand || expandedPaths.has(folderPath);
+  const isFocused = folderPath === focusedPath;
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
+      onFocusPath(folderPath);
       onToggleExpand(folderPath);
     },
-    [folderPath, onToggleExpand],
+    [folderPath, onFocusPath, onToggleExpand],
   );
 
   const arrowClass = isExpanded ? `${styles.treeArrow} ${styles.expanded}` : styles.treeArrow;
   const folderIcon = isExpanded ? '\uD83D\uDCC2' : '\uD83D\uDCC1';
+  const rowClass = isFocused ? `${styles.treeItem} ${styles.selected}` : styles.treeItem;
 
   return (
     <div>
       <div
-        className={styles.treeItem}
+        className={rowClass}
         style={{ paddingLeft: `${8 + depth * 16}px` }}
         onClick={handleClick}
       >
@@ -262,7 +268,8 @@ const TreeFolder = memo(function TreeFolder({
             autoExpand={autoExpand}
             expandedPaths={expandedPaths}
             onToggleExpand={onToggleExpand}
-            selectedPath={selectedPath}
+            focusedPath={focusedPath}
+            onFocusPath={onFocusPath}
             onSelectFile={onSelectFile}
             visibleSet={visibleSet}
             visibleFolderPaths={visibleFolderPaths}
@@ -287,7 +294,8 @@ interface TreeNodeContentsProps {
   autoExpand: boolean;
   expandedPaths: Set<string>;
   onToggleExpand: (path: string) => void;
-  selectedPath: string | null;
+  focusedPath: string | null;
+  onFocusPath: (path: string) => void;
   onSelectFile: (file: TreeFile) => void;
   visibleSet: Set<string> | null;
   visibleFolderPaths: Set<string> | null;
@@ -305,7 +313,8 @@ function TreeNodeContents({
   autoExpand,
   expandedPaths,
   onToggleExpand,
-  selectedPath,
+  focusedPath,
+  onFocusPath,
   onSelectFile,
   visibleSet,
   visibleFolderPaths,
@@ -340,7 +349,8 @@ function TreeNodeContents({
             autoExpand={autoExpand}
             expandedPaths={expandedPaths}
             onToggleExpand={onToggleExpand}
-            selectedPath={selectedPath}
+            focusedPath={focusedPath}
+            onFocusPath={onFocusPath}
             onSelectFile={onSelectFile}
             visibleSet={visibleSet}
             visibleFolderPaths={visibleFolderPaths}
@@ -356,9 +366,10 @@ function TreeNodeContents({
           key={file.fullPath}
           file={file}
           depth={depth}
-          isSelected={file.fullPath === selectedPath}
+          isSelected={file.fullPath === focusedPath}
           filterLower={filterLower}
           onSelect={onSelectFile}
+          onFocusPath={onFocusPath}
           fileIconFn={fileIconFn}
           renderFileBadge={renderFileBadge}
           fileRowStyle={fileRowStyle}
@@ -376,18 +387,20 @@ interface FileRowProps {
   isSelected: boolean;
   filterLower: string;
   onSelect: (file: TreeFile) => void;
+  onFocusPath: (path: string) => void;
   fileIconFn: (name: string) => string;
   renderFileBadge?: (file: TreeFile) => React.ReactNode;
   fileRowStyle?: (file: TreeFile) => React.CSSProperties | undefined;
 }
 
 const FileRow = memo(function FileRow({
-  file, depth, isSelected, filterLower, onSelect, fileIconFn, renderFileBadge, fileRowStyle,
+  file, depth, isSelected, filterLower, onSelect, onFocusPath, fileIconFn, renderFileBadge, fileRowStyle,
 }: FileRowProps) {
   const handleClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
+    onFocusPath(file.fullPath);
     onSelect(file);
-  }, [file, onSelect]);
+  }, [file, onFocusPath, onSelect]);
 
   const rowClass = isSelected ? `${styles.treeItem} ${styles.selected}` : styles.treeItem;
   const rowStyle = fileRowStyle?.(file);
@@ -423,6 +436,10 @@ export function FileTree({
     root ? new Set(collectSingleChildPaths(root, { suppressRoot: suppressRootAutoExpand })) : new Set(),
   );
   const [lastRoot, setLastRoot] = useState<TreeNode | null>(root);
+
+  // Focused row (file OR folder) — diverges from selectedPath when a folder
+  // is clicked, so the preview panel stays put while the highlight moves.
+  const [focusedPath, setFocusedPath] = useStateSyncedWith(selectedPath);
 
   const handleToggleExpand = useCallback((path: string) => {
     setExpandedPaths((prev) => {
@@ -486,7 +503,8 @@ export function FileTree({
       autoExpand={autoExpand}
       expandedPaths={expandedPaths}
       onToggleExpand={handleToggleExpand}
-      selectedPath={selectedPath}
+      focusedPath={focusedPath}
+      onFocusPath={setFocusedPath}
       onSelectFile={onSelectFile}
       visibleSet={visibleSet}
       visibleFolderPaths={visibleFolderPaths}

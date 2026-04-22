@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { DiffStatus, DiffStatusValue } from '../types';
 import { HighlightedLabel } from '@shared/components/FileTree';
+import { useStateSyncedWith } from '@shared/hooks/useStateSyncedWith';
 import { normalizeFilter } from '@shared/util/files';
 import styles from '../App.module.css';
 import sharedStyles from '@shared/components/FileTree.module.css';
@@ -136,6 +137,7 @@ function DiffFileRow({
   isSelected,
   getFileStatus,
   onSelect,
+  onFocusPath,
 }: {
   file: DiffTreeFile;
   depth: number;
@@ -143,6 +145,7 @@ function DiffFileRow({
   isSelected: boolean;
   getFileStatus: (path: string) => DiffStatusValue | undefined;
   onSelect: (path: string) => void;
+  onFocusPath: (path: string) => void;
 }) {
   const liveStatus = getFileStatus(file.fullPath) ?? file.status;
 
@@ -158,7 +161,7 @@ function DiffFileRow({
       style={{ paddingLeft: `${8 + depth * 16}px` }}
       data-path={file.fullPath}
       data-status={liveStatus}
-      onClick={(e) => { e.stopPropagation(); onSelect(file.fullPath); }}
+      onClick={(e) => { e.stopPropagation(); onFocusPath(file.fullPath); onSelect(file.fullPath); }}
     >
       <span className={`${sharedStyles.treeArrow} ${sharedStyles.leaf}`} />
       <span className={sharedStyles.treeIcon}>{'\uD83D\uDCC4'}</span>
@@ -186,7 +189,8 @@ function DiffFolderNode({
   autoExpand,
   expandedPaths,
   onToggleExpand,
-  selectedPath,
+  focusedPath,
+  onFocusPath,
   getFileStatus,
   isFileVisible,
   onSelectFile,
@@ -201,7 +205,8 @@ function DiffFolderNode({
   autoExpand: boolean;
   expandedPaths: Set<string>;
   onToggleExpand: (path: string) => void;
-  selectedPath: string | null;
+  focusedPath: string | null;
+  onFocusPath: (path: string) => void;
   getFileStatus: (path: string) => DiffStatusValue | undefined;
   isFileVisible: (file: DiffTreeFile) => boolean;
   onSelectFile: (path: string) => void;
@@ -209,6 +214,7 @@ function DiffFolderNode({
 }) {
 
   const isExpanded = autoExpand || singleChild || expandedPaths.has(folderPath);
+  const isFocused = folderPath === focusedPath;
   const { status: fStatus, hasPending: fPending } = folderStatus;
 
   const arrowClass = [sharedStyles.treeArrow, isExpanded ? sharedStyles.expanded : ''].filter(Boolean).join(' ');
@@ -217,6 +223,7 @@ function DiffFolderNode({
   const rowClass = [
     sharedStyles.treeItem,
     fStatus === DiffStatus.UNCHANGED ? styles[`treeItem_${DiffStatus.UNCHANGED}`] : '',
+    isFocused ? sharedStyles.selected : '',
   ].filter(Boolean).join(' ');
 
   return (
@@ -224,7 +231,7 @@ function DiffFolderNode({
       <div
         className={rowClass}
         style={{ paddingLeft: `${8 + depth * 16}px` }}
-        onClick={(e) => { e.stopPropagation(); onToggleExpand(folderPath); }}
+        onClick={(e) => { e.stopPropagation(); onFocusPath(folderPath); onToggleExpand(folderPath); }}
       >
         <span className={arrowClass}>{'\u25B6'}</span>
         <span className={sharedStyles.treeIcon}>{folderIcon}</span>
@@ -246,7 +253,8 @@ function DiffFolderNode({
             autoExpand={autoExpand}
             expandedPaths={expandedPaths}
             onToggleExpand={onToggleExpand}
-            selectedPath={selectedPath}
+            focusedPath={focusedPath}
+            onFocusPath={onFocusPath}
             getFileStatus={getFileStatus}
             isFileVisible={isFileVisible}
             onSelectFile={onSelectFile}
@@ -267,7 +275,8 @@ function DiffNodeContents({
   autoExpand,
   expandedPaths,
   onToggleExpand,
-  selectedPath,
+  focusedPath,
+  onFocusPath,
   getFileStatus,
   isFileVisible,
   onSelectFile,
@@ -279,7 +288,8 @@ function DiffNodeContents({
   autoExpand: boolean;
   expandedPaths: Set<string>;
   onToggleExpand: (path: string) => void;
-  selectedPath: string | null;
+  focusedPath: string | null;
+  onFocusPath: (path: string) => void;
   getFileStatus: (path: string) => DiffStatusValue | undefined;
   isFileVisible: (file: DiffTreeFile) => boolean;
   onSelectFile: (path: string) => void;
@@ -308,7 +318,8 @@ function DiffNodeContents({
             autoExpand={autoExpand}
             expandedPaths={expandedPaths}
             onToggleExpand={onToggleExpand}
-            selectedPath={selectedPath}
+            focusedPath={focusedPath}
+            onFocusPath={onFocusPath}
             getFileStatus={getFileStatus}
             isFileVisible={isFileVisible}
             onSelectFile={onSelectFile}
@@ -322,9 +333,10 @@ function DiffNodeContents({
           file={file}
           depth={depth}
           filterLower={filterLower}
-          isSelected={file.fullPath === selectedPath}
+          isSelected={file.fullPath === focusedPath}
           getFileStatus={getFileStatus}
           onSelect={onSelectFile}
+          onFocusPath={onFocusPath}
         />
       ))}
     </>
@@ -351,6 +363,10 @@ export function DiffTree({
   onSelectFile,
 }: DiffTreeProps) {
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
+
+  // Focused row (file OR folder) — diverges from selectedPath when a folder
+  // is clicked, so the preview panel stays put while the highlight moves.
+  const [focusedPath, setFocusedPath] = useStateSyncedWith(selectedPath);
 
   const handleToggleExpand = useCallback((path: string) => {
     setExpandedPaths((prev) => {
@@ -382,7 +398,8 @@ export function DiffTree({
       autoExpand={autoExpand}
       expandedPaths={expandedPaths}
       onToggleExpand={handleToggleExpand}
-      selectedPath={selectedPath}
+      focusedPath={focusedPath}
+      onFocusPath={setFocusedPath}
       getFileStatus={getFileStatus}
       isFileVisible={isFileVisible}
       onSelectFile={onSelectFile}
