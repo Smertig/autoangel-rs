@@ -1,5 +1,22 @@
 import { describe, it, expect } from 'vitest';
-import { buildAnimEventMap } from '../event-map';
+import { buildAnimEventMap, clusterEvents, type AnimEvent } from '../event-map';
+
+function ev(overrides: Partial<AnimEvent> & Pick<AnimEvent, 'type' | 'startTime'>): AnimEvent {
+  return {
+    filePath: 'x.gfx',
+    timeSpan: 0,
+    once: false,
+    hookName: '',
+    hookOffset: [0, 0, 0],
+    hookYaw: 0,
+    hookPitch: 0,
+    hookRot: 0,
+    bindParent: false,
+    gfxScale: 1,
+    gfxSpeed: 1,
+    ...overrides,
+  };
+}
 
 const ecmStub = {
   combineActionCount: 1,
@@ -32,7 +49,7 @@ describe('buildAnimEventMap', () => {
     expect(evs).toHaveLength(1);
     const e = evs![0];
     expect(e.type).toBe(100);
-    expect(e.filePath).toBe('spark.gfx');
+    expect(e.filePath).toBe('effects\\spark.gfx');
     expect(e.startTime).toBe(500);
     expect(e.timeSpan).toBe(1000);
     expect(e.once).toBe(true);
@@ -60,5 +77,61 @@ describe('buildAnimEventMap', () => {
     const e = map.get('idle')![0];
     expect(e.gfxScale).toBe(1);
     expect(e.gfxSpeed).toBe(1);
+  });
+});
+
+describe('clusterEvents', () => {
+  it('groups same-type events at identical startTime into one cluster', () => {
+    const evs: AnimEvent[] = [
+      ev({ type: 100, startTime: 500, filePath: 'a.gfx' }),
+      ev({ type: 100, startTime: 500, filePath: 'b.gfx' }),
+      ev({ type: 101, startTime: 500, filePath: 'c.wav' }),
+      ev({ type: 100, startTime: 1000, filePath: 'd.gfx' }),
+    ];
+    const clusters = clusterEvents(evs);
+    // Two GFX at 500 -> one cluster, one Sound at 500 -> separate, one GFX at 1000 -> separate.
+    expect(clusters).toHaveLength(3);
+    expect(clusters[0].type).toBe(100);
+    expect(clusters[0].startTime).toBe(500);
+    expect(clusters[0].events).toHaveLength(2);
+    expect(clusters[1].type).toBe(101);
+    expect(clusters[1].startTime).toBe(500);
+    expect(clusters[1].events).toHaveLength(1);
+    expect(clusters[2].type).toBe(100);
+    expect(clusters[2].startTime).toBe(1000);
+    expect(clusters[2].events).toHaveLength(1);
+  });
+
+  it('preserves source order within a cluster', () => {
+    const evs: AnimEvent[] = [
+      ev({ type: 100, startTime: 500, filePath: 'a.gfx' }),
+      ev({ type: 100, startTime: 500, filePath: 'b.gfx' }),
+      ev({ type: 100, startTime: 500, filePath: 'c.gfx' }),
+    ];
+    const [c] = clusterEvents(evs);
+    expect(c.events.map((e) => e.filePath)).toEqual(['a.gfx', 'b.gfx', 'c.gfx']);
+  });
+
+  it('does not cluster GFX with Sound even at identical startTime', () => {
+    const evs: AnimEvent[] = [
+      ev({ type: 100, startTime: 250 }),
+      ev({ type: 101, startTime: 250 }),
+    ];
+    const clusters = clusterEvents(evs);
+    expect(clusters).toHaveLength(2);
+    expect(clusters[0].events).toHaveLength(1);
+    expect(clusters[1].events).toHaveLength(1);
+  });
+
+  it('returns empty array for empty input', () => {
+    expect(clusterEvents([])).toEqual([]);
+  });
+
+  it('keeps duplicate identical events (no dedup)', () => {
+    const dupA = ev({ type: 100, startTime: 500, filePath: 'a.gfx', hookName: 'HH_hand' });
+    const dupB = ev({ type: 100, startTime: 500, filePath: 'a.gfx', hookName: 'HH_hand' });
+    const clusters = clusterEvents([dupA, dupB]);
+    expect(clusters).toHaveLength(1);
+    expect(clusters[0].events).toHaveLength(2);
   });
 });

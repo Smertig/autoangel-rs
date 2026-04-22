@@ -1,4 +1,4 @@
-import type { AutoangelModule } from '../../../../types/autoangel';
+import type { AutoangelModule, GfxEffect } from '../../../../types/autoangel';
 import { resolvePath, collectSkinPaths, tryLoadSki, discoverStckPaths } from '@shared/util/model-dependencies';
 import { ensureThree, getThree } from './three';
 import { type GetFile, withWarnOnThrow } from './paths';
@@ -196,9 +196,13 @@ export async function renderFromSmd(
     ? createGfxLoader(wasm, (p) => getFile(p))
     : null;
 
+  let gfxEnabled = true;
+  let currentClipName: string | null = initialClip?.name ?? null;
+
   const rebuildSchedulerForClip = (clipName: string) => {
     scheduler?.disposeAll();
     scheduler = null;
+    if (!gfxEnabled) return;
     if (!gfxLoader) return;
     const events = animEventMap?.get(clipName) ?? [];
     // Milestone B: only GFX (type 100). Sound events (101) stay timeline-only.
@@ -302,6 +306,18 @@ export async function renderFromSmd(
     prevDispose();
   };
 
+  // Tooltip GFX lookup — mirrors the scheduler's spawn-path resolution,
+  // sharing `gfxLoader` so repeat hovers are cached. Returns null on any
+  // failure; caller uses that to leave the base tooltip unchanged.
+  const lookupGfx = gfxLoader && listFiles
+    ? async (filePath: string): Promise<GfxEffect | null> => {
+        const resolved = resolveEnginePath(filePath, ENGINE_PATH_PREFIXES.gfx, listFiles);
+        if (!resolved) return null;
+        const gfx = await gfxLoader.load(resolved);
+        return (gfx as GfxEffect | null) ?? null;
+      }
+    : undefined;
+
   mountScene(
     container, group, totalStats,
     opts?.source?.data ?? smdData,
@@ -309,7 +325,23 @@ export async function renderFromSmd(
     animNames, loadClip, initialClip, skelData?.skeleton, animEventMap,
     (clipName, action) => {
       currentAction = action;
+      currentClipName = clipName;
       rebuildSchedulerForClip(clipName);
+    },
+    {
+      lookupGfx,
+      gfxToggle: gfxLoader ? {
+        enabled: gfxEnabled,
+        onChange: (next) => {
+          gfxEnabled = next;
+          if (!next) {
+            scheduler?.disposeAll();
+            scheduler = null;
+          } else if (currentClipName) {
+            rebuildSchedulerForClip(currentClipName);
+          }
+        },
+      } : undefined,
     },
   );
 }

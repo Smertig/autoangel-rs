@@ -212,6 +212,32 @@
   box-shadow: 0 0 4px rgba(91, 155, 213, 0.4);
 }
 
+/* Cluster tick — thicker body (5px instead of 3px); hover scaling is inherited
+   from the base .eventTickGfx/.eventTickSound rules above. */
+.eventTickCluster {
+  width: 5px;
+}
+
+/* Count digit floating above a cluster tick. Color follows the tick's
+   type via descendant selectors — single source of truth in CSS. */
+.eventTickCountBadge {
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  transform: translateX(-50%);
+  font: 600 8px/1 "JetBrains Mono", Consolas, monospace;
+  pointer-events: none;
+  transition: transform 0.15s;
+}
+
+.eventTickGfx .eventTickCountBadge { color: #d4a04a; }
+.eventTickSound .eventTickCountBadge { color: #5b9bd5; }
+
+.eventTickGfx:hover .eventTickCountBadge,
+.eventTickSound:hover .eventTickCountBadge {
+  transform: translate(-50%, -2px);
+}
+
 /* ── Event tooltip ── */
 
 .eventTooltip {
@@ -225,12 +251,22 @@
   font-size: 10px;
   line-height: 1.4;
   color: rgba(255, 255, 255, 0.75);
-  pointer-events: none;
+  /* pointer-events: auto so the user can move into the tooltip and select
+     the file path for copy. The hover-bridge timer in scene.ts allows the
+     mouse to cross the small gap between tick and tooltip without flicker. */
+  pointer-events: auto;
+  user-select: text;
   opacity: 0;
   transform: translateY(4px);
   transition: opacity 0.12s, transform 0.12s;
   z-index: 50;
   white-space: nowrap;
+}
+
+/* Clusters contain multiple file paths + per-event meta — give them a bit
+   more room. Single-event tooltips keep the 220px cap above. */
+.eventTooltipCluster {
+  max-width: 280px;
 }
 
 .eventTooltipVisible {
@@ -272,6 +308,52 @@
 .eventTooltipDetail {
   color: rgba(255, 255, 255, 0.45);
   font-size: 9px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* Lookup failed (path unresolved or parse failed). Keep the message soft —
+   it's diagnostic chrome, not an error. Console has the detail. */
+.eventTooltipUnresolved {
+  color: rgba(255, 255, 255, 0.32);
+  font-style: italic;
+  margin-top: 1px;
+}
+
+/* Per-event row inside a cluster tooltip. Breathable vertical padding keeps
+   rows distinct without adding boxy chrome. */
+.eventTooltipRow {
+  padding: 4px 0;
+}
+
+.eventTooltipRow:first-of-type {
+  padding-top: 2px;
+}
+
+.eventTooltipRow:last-of-type {
+  padding-bottom: 2px;
+}
+
+/* Low-alpha type-color divider — echoes the tick color without shouting. */
+.eventTooltipRowSeparator {
+  height: 1px;
+  margin: 0;
+}
+
+.eventTooltipGfx .eventTooltipRowSeparator {
+  background: rgba(212, 160, 74, 0.15);
+}
+
+.eventTooltipSound .eventTooltipRowSeparator {
+  background: rgba(91, 155, 213, 0.15);
+}
+
+/* "...and N more" footer row when cluster size exceeds the visible cap. */
+.eventTooltipMore {
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 9px;
+  font-style: italic;
 }
 
 .scrubber {
@@ -335,6 +417,32 @@
   height: 18px;
   background: rgba(255, 255, 255, 0.15);
   flex-shrink: 0;
+}
+
+.gfxToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+  padding: 0 4px;
+  transition: color 0.12s;
+}
+
+.gfxToggle:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.gfxToggle input[type="checkbox"] {
+  width: 12px;
+  height: 12px;
+  margin: 0;
+  accent-color: #7ba4e8;
+  cursor: pointer;
 }
 
 .animListPanel {

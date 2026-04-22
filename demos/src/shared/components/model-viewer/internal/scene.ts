@@ -3,8 +3,9 @@ import { hexDumpRows } from '@shared/util/hex';
 import styles from '../ModelViewer.module.css';
 import { getThree } from './three';
 import { getViewer } from './viewer';
-import { type AnimEvent, EVENT_GFX, EVENT_SOUND } from './event-map';
+import { type AnimEvent, type EventCluster, EVENT_GFX, EVENT_SOUND, clusterEvents } from './event-map';
 import type { SkinStats } from './mesh';
+import type { GfxEffect } from '../../../../types/autoangel';
 
 export function showClipToast(container: HTMLElement, message: string): void {
   const existing = container.querySelector('[data-clip-toast]');
@@ -22,6 +23,22 @@ export function showClipToast(container: HTMLElement, message: string): void {
   }, 3500);
 }
 
+export interface MountSceneExtras {
+  /**
+   * Async resolver used by the timeline event tooltip to enrich GFX ticks.
+   * Returns the parsed `GfxEffect` when the path resolves + loads, or `null`
+   * on any failure (unresolved path, fetch error, parse error). Failures
+   * degrade silently — the tooltip keeps its base 3-line state.
+   */
+  lookupGfx?: (filePath: string) => Promise<GfxEffect | null>;
+  /**
+   * Transport-bar toggle for live GFX rendering. When the box is unchecked,
+   * the caller disposes all active runtimes + stops scheduler rebuilds;
+   * rechecking rebuilds against the current clip.
+   */
+  gfxToggle?: { enabled: boolean; onChange: (next: boolean) => void };
+}
+
 export function mountScene(
   container: HTMLElement,
   group: any,
@@ -34,6 +51,7 @@ export function mountScene(
   skeleton?: any,
   animEventMap?: Map<string, AnimEvent[]>,
   onClipSwitch?: (clipName: string, action: any) => void,
+  extras?: MountSceneExtras,
 ): void {
   const { THREE, OrbitControls } = getThree();
   const v = getViewer(container);
@@ -326,41 +344,124 @@ export function mountScene(
     tooltip.className = styles.eventTooltip;
     tooltipEl = tooltip;
 
-    function showTooltip(tick: HTMLElement, ev: AnimEvent) {
-      const isGfx = ev.type === EVENT_GFX;
-      const prefix = isGfx ? '\u2726 GFX' : '\u266A Sound';
-      const typeClass = isGfx ? styles.eventTooltipGfx : styles.eventTooltipSound;
-      tooltip.className = `${styles.eventTooltip} ${typeClass} ${styles.eventTooltipVisible}`;
-      tooltip.innerHTML = '';
+    // Per-row tokens — bumped on every show/hide so slow async GFX lookups
+    // can't clobber a newer hover target. Each cluster row gets its own slot
+    // so a fast lookup isn't blocked by a slower sibling.
+    let tooltipRowTokens: number[] = [];
 
-      const header = document.createElement('div');
-      header.className = styles.eventTooltipHeader;
-      header.textContent = prefix;
-      tooltip.appendChild(header);
+    const MAX_ROWS_VISIBLE = 4;
+
+    function appendGfxMeta(row: HTMLElement, ev: AnimEvent, tokenIndex: number) {
+      if (!extras?.lookupGfx) return;
+      const expected = tooltipRowTokens[tokenIndex];
+      extras.lookupGfx(ev.filePath)
+        .then((gfx) => {
+          if (tooltipRowTokens[tokenIndex] !== expected) return; // stale
+          if (!gfx) {
+            // Loader returned null — path not in any loaded package, fetch
+            // failed, or parse failed. The full file path is already shown
+            // above; the user can compare it to what's actually in their
+            // packages. Console has the detail.
+            const note = document.createElement('div');
+            note.className = `${styles.eventTooltipDetail} ${styles.eventTooltipUnresolved}`;
+            note.textContent = 'unable to load';
+            row.appendChild(note);
+            return;
+          }
+          const elements = gfx.elements ?? [];
+          const kindCounts = new Map<string, number>();
+          for (const el of elements) {
+            const k = el.body?.kind ?? 'unknown';
+            kindCounts.set(k, (kindCounts.get(k) ?? 0) + 1);
+          }
+          const kindStr = [...kindCounts.entries()]
+            .map(([k, n]) => `${n} ${k}`)
+            .join(' · ');
+
+          const meta = document.createElement('div');
+          meta.className = styles.eventTooltipDetail;
+          meta.textContent = elements.length === 0
+            ? '0 elements'
+            : `${elements.length} element${elements.length === 1 ? '' : 's'}: ${kindStr}`;
+          row.appendChild(meta);
+
+          const ver = document.createElement('div');
+          ver.className = styles.eventTooltipDetail;
+          ver.textContent = `v${gfx.version} · scale ${gfx.default_scale.toFixed(2)} · speed ${gfx.play_speed.toFixed(2)} · alpha ${gfx.default_alpha.toFixed(2)}`;
+          row.appendChild(ver);
+        })
+        .catch(() => { /* swallow — tooltip stays at base state */ });
+    }
+
+    function appendEventRow(ev: AnimEvent, tokenIndex: number) {
+      const row = document.createElement('div');
+      row.className = styles.eventTooltipRow;
 
       const file = document.createElement('div');
       file.className = styles.eventTooltipFile;
       file.textContent = ev.filePath;
-      tooltip.appendChild(file);
+      row.appendChild(file);
 
-      if (ev.startTime > 0) {
-        const time = document.createElement('div');
-        time.className = styles.eventTooltipDetail;
-        time.textContent = `@ ${ev.startTime}ms`;
-        tooltip.appendChild(time);
-      }
       if (ev.hookName) {
         const hook = document.createElement('div');
         hook.className = styles.eventTooltipDetail;
         hook.textContent = `hook: ${ev.hookName}`;
-        tooltip.appendChild(hook);
+        row.appendChild(hook);
       }
 
-      // Position above the tick, in container coordinates
+      if (ev.type === EVENT_GFX) appendGfxMeta(row, ev, tokenIndex);
+
+      tooltip.appendChild(row);
+    }
+
+    function showTooltip(tick: HTMLElement, cluster: EventCluster) {
+      const isGfx = cluster.type === EVENT_GFX;
+      const count = cluster.events.length;
+      const typeClass = isGfx ? styles.eventTooltipGfx : styles.eventTooltipSound;
+      const clusterClass = count > 1 ? ` ${styles.eventTooltipCluster}` : '';
+      tooltip.className = `${styles.eventTooltip} ${typeClass}${clusterClass} ${styles.eventTooltipVisible}`;
+      tooltip.innerHTML = '';
+
+      // Header — "✦ GFX" alone, or "✦ GFX · ×N" for clusters.
+      const header = document.createElement('div');
+      header.className = styles.eventTooltipHeader;
+      const prefix = isGfx ? '✦ GFX' : '♪ Sound';
+      header.textContent = count > 1 ? `${prefix} · ×${count}` : prefix;
+      tooltip.appendChild(header);
+
+      // Shared time annotation for the whole cluster.
+      if (cluster.startTime > 0) {
+        const time = document.createElement('div');
+        time.className = styles.eventTooltipDetail;
+        time.textContent = `@ ${cluster.startTime}ms`;
+        tooltip.appendChild(time);
+      }
+
+      // Fresh row-token array — any dangling resolves from a prior hover are
+      // now stale because their stored `expected` no longer matches any slot.
+      tooltipRowTokens = [];
+      const visibleCount = count > MAX_ROWS_VISIBLE ? MAX_ROWS_VISIBLE - 1 : count;
+      for (let i = 0; i < visibleCount; i++) {
+        if (i > 0) {
+          const sep = document.createElement('div');
+          sep.className = styles.eventTooltipRowSeparator;
+          tooltip.appendChild(sep);
+        }
+        tooltipRowTokens.push(i);
+        appendEventRow(cluster.events[i], i);
+      }
+      if (count > MAX_ROWS_VISIBLE) {
+        const more = document.createElement('div');
+        more.className = styles.eventTooltipMore;
+        more.textContent = `…and ${count - visibleCount} more`;
+        tooltip.appendChild(more);
+      }
+
+      // Position above the tick, in container coordinates.
       const containerRect = container.getBoundingClientRect();
       const tickRect = tick.getBoundingClientRect();
       const tickCenterX = tickRect.left + tickRect.width / 2 - containerRect.left;
-      const tipWidth = 200;
+      const tipWidth = count > 1 ? 260 : 200;
       let left = tickCenterX - tipWidth / 2;
       left = Math.max(4, Math.min(left, containerRect.width - tipWidth - 4));
       tooltip.style.left = `${left}px`;
@@ -368,8 +469,24 @@ export function mountScene(
     }
 
     function hideTooltip() {
+      // Discard any in-flight row lookups — clearing the slot array makes
+      // every `expected === tooltipRowTokens[i]` check fail (undefined !== N).
+      tooltipRowTokens = [];
       tooltip.classList.remove(styles.eventTooltipVisible);
     }
+
+    // Hover-bridge: deferred hide so the mouse can travel from tick → tooltip
+    // (and back, while reading or selecting text) without losing the tooltip.
+    let hideTimer: number | null = null;
+    function scheduleHide() {
+      cancelHide();
+      hideTimer = window.setTimeout(() => { hideTimer = null; hideTooltip(); }, 120);
+    }
+    function cancelHide() {
+      if (hideTimer != null) { clearTimeout(hideTimer); hideTimer = null; }
+    }
+    tooltip.addEventListener('mouseenter', cancelHide);
+    tooltip.addEventListener('mouseleave', scheduleHide);
 
     /** Rebuild event tick marks on the timeline lane for the given clip. */
     function rebuildEventLane(clipName: string) {
@@ -378,13 +495,24 @@ export function mountScene(
       const events = animEventMap?.get(clipName);
       const dur = getDuration();
       if (!events || events.length === 0 || dur <= 0) return;
-      for (const ev of events) {
-        const pct = Math.min(100, Math.max(0, (ev.startTime / 1000) / dur * 100));
+      const clusters = clusterEvents(events);
+      for (const cluster of clusters) {
+        const pct = Math.min(100, Math.max(0, (cluster.startTime / 1000) / dur * 100));
+        const isGfx = cluster.type === EVENT_GFX;
         const tick = document.createElement('div');
-        tick.className = ev.type === EVENT_GFX ? styles.eventTickGfx : styles.eventTickSound;
+        const baseClass = isGfx ? styles.eventTickGfx : styles.eventTickSound;
+        tick.className = cluster.events.length > 1
+          ? `${baseClass} ${styles.eventTickCluster}`
+          : baseClass;
         tick.style.left = `${pct}%`;
-        tick.onmouseenter = () => showTooltip(tick, ev);
-        tick.onmouseleave = hideTooltip;
+        if (cluster.events.length > 1) {
+          const badge = document.createElement('span');
+          badge.className = styles.eventTickCountBadge;
+          badge.textContent = cluster.events.length >= 10 ? '…' : String(cluster.events.length);
+          tick.appendChild(badge);
+        }
+        tick.onmouseenter = () => { cancelHide(); showTooltip(tick, cluster); };
+        tick.onmouseleave = scheduleHide;
         eventLane.appendChild(tick);
       }
     }
@@ -431,6 +559,21 @@ export function mountScene(
       }
     };
     transport.appendChild(loopBtn);
+
+    // GFX render toggle — A/B compare clips with effects on vs. off
+    if (extras?.gfxToggle) {
+      addSep();
+      const toggleLabel = document.createElement('label');
+      toggleLabel.className = styles.gfxToggle;
+      toggleLabel.title = 'Render GFX effects referenced by animation events';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = extras.gfxToggle.enabled;
+      cb.onchange = () => extras.gfxToggle!.onChange(cb.checked);
+      toggleLabel.appendChild(cb);
+      toggleLabel.appendChild(document.createTextNode(' Render GFX'));
+      transport.appendChild(toggleLabel);
+    }
 
     // Per-frame update with change guard to avoid no-op DOM writes
     let prevScrubVal = -1;

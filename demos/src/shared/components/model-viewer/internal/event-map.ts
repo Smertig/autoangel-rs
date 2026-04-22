@@ -3,7 +3,7 @@ export const EVENT_SOUND = 101 as const;
 
 export interface AnimEvent {
   type: typeof EVENT_GFX | typeof EVENT_SOUND;
-  filePath: string; // basename only
+  filePath: string; // engine-relative path, e.g. "人物\技能\刺客\foo.gfx"
   startTime: number; // ms, 0 if not set
   timeSpan: number; // ms, -1 = infinite
   once: boolean;
@@ -35,10 +35,12 @@ export function buildAnimEventMap(ecm: any, animNames: string[]): Map<string, An
         const ev = ecm.getEvent(i, e);
         if (!ev) continue;
         if (ev.event_type !== EVENT_GFX && ev.event_type !== EVENT_SOUND) continue;
-        const basePath = ev.fx_file_path.replace(/\\/g, '/').split('/').pop() ?? ev.fx_file_path;
+        // Keep the full engine path (e.g. "人物\技能\刺客\foo.gfx") — basename
+        // alone breaks resolveEnginePath's lookup for assets in nested dirs of
+        // gfx.pck. Tooltip wraps long paths visually; resolution needs them.
         events.push({
           type: ev.event_type as typeof EVENT_GFX | typeof EVENT_SOUND,
-          filePath: basePath,
+          filePath: ev.fx_file_path,
           startTime: ev.start_time,
           timeSpan: ev.time_span,
           once: ev.once,
@@ -62,4 +64,34 @@ export function buildAnimEventMap(ecm: any, animNames: string[]): Map<string, An
     }
   }
   return result;
+}
+
+/** A group of events sharing the same `type` AND the same `startTime`. */
+export interface EventCluster {
+  type: typeof EVENT_GFX | typeof EVENT_SOUND;
+  startTime: number;
+  events: AnimEvent[];
+}
+
+/**
+ * Group consecutive-or-not events with matching `(type, startTime)` into
+ * clusters. Preserves source order within each cluster. GFX and Sound events
+ * NEVER co-cluster even at identical times — `type` is part of the key.
+ *
+ * Cluster emission order follows first-occurrence of each key in the input.
+ */
+export function clusterEvents(events: AnimEvent[]): EventCluster[] {
+  const byKey = new Map<string, EventCluster>();
+  const order: EventCluster[] = [];
+  for (const ev of events) {
+    const key = `${ev.type}:${ev.startTime}`;
+    let cluster = byKey.get(key);
+    if (!cluster) {
+      cluster = { type: ev.type, startTime: ev.startTime, events: [] };
+      byKey.set(key, cluster);
+      order.push(cluster);
+    }
+    cluster.events.push(ev);
+  }
+  return order;
 }
