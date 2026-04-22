@@ -9,6 +9,25 @@ use std::io::{Seek, Write};
 use std::path::Path;
 use subslice::SubsliceExt;
 
+#[derive(Debug)]
+enum VersionProbe {
+    Valid,
+    PastEof,
+    TooSmall,
+    BadVersion(u32),
+}
+
+impl std::fmt::Display for VersionProbe {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            VersionProbe::Valid => write!(f, "valid version"),
+            VersionProbe::PastEof => write!(f, "past end of data"),
+            VersionProbe::TooSmall => write!(f, "offset too small"),
+            VersionProbe::BadVersion(v) => write!(f, "unknown version 0x{v:X}"),
+        }
+    }
+}
+
 #[derive(Debug, Default, Eq, PartialEq)]
 pub(crate) struct KeyHeader {
     pub(crate) key1: u32,
@@ -23,17 +42,26 @@ impl KeyHeader {
         if self.wide { 16 } else { 12 }
     }
 
-    async fn has_valid_version_at<R: DataReader>(data: &DataSource<R>, offset: u64) -> bool {
-        if offset < 4 || offset > data.size() {
-            return false;
+    async fn probe_version_at<R: DataReader>(
+        data: &DataSource<R>,
+        offset: u64,
+    ) -> VersionProbe {
+        if offset < 4 {
+            return VersionProbe::TooSmall;
+        }
+        if offset > data.size() {
+            return VersionProbe::PastEof;
         }
         let Ok(d) = data.get(offset - 4..offset) else {
-            return false;
+            return VersionProbe::PastEof;
         };
         let Ok(ver) = d.as_le::<u32>().await else {
-            return false;
+            return VersionProbe::PastEof;
         };
-        PckVersion::from_raw(ver).is_ok()
+        match PckVersion::from_raw(ver) {
+            Ok(_) => VersionProbe::Valid,
+            Err(_) => VersionProbe::BadVersion(ver),
+        }
     }
 
     async fn parse<R: DataReader>(data: &DataSource<R>) -> Result<Self> {
@@ -41,7 +69,8 @@ impl KeyHeader {
 
         // Try 12-byte format (u32 offset)
         let offset_narrow: u64 = data.get(4..8)?.as_le::<u32>().await? as u64;
-        if Self::has_valid_version_at(data, offset_narrow).await {
+        let narrow = Self::probe_version_at(data, offset_narrow).await;
+        if matches!(narrow, VersionProbe::Valid) {
             return Ok(KeyHeader {
                 key1,
                 headers_end_offset: offset_narrow,
@@ -52,7 +81,8 @@ impl KeyHeader {
 
         // Try 16-byte format (u64 offset)
         let offset_wide: u64 = data.get(4..12)?.as_le().await?;
-        if Self::has_valid_version_at(data, offset_wide).await {
+        let wide = Self::probe_version_at(data, offset_wide).await;
+        if matches!(wide, VersionProbe::Valid) {
             return Ok(KeyHeader {
                 key1,
                 headers_end_offset: offset_wide,
@@ -61,8 +91,32 @@ impl KeyHeader {
             });
         }
 
+        // If either candidate offset lands past end-of-data, the archive is
+        // almost certainly split across pck + pkx/pkx1/pkx2/... and the caller
+        // only provided the .pck part. Surface this explicitly — the raw
+        // "unknown version" path is usually misread as corruption.
+        let data_size = data.size();
+        let split_hint = matches!(narrow, VersionProbe::PastEof)
+            || matches!(wide, VersionProbe::PastEof);
+        let hint = if split_hint {
+            "\n  Hint: at least one header offset points past end of data, which usually means \
+             the archive is split across multiple files. Provide the .pkx/.pkx1/.pkx2/... \
+             companions alongside the .pck and retry."
+        } else {
+            "\n  The file does not look like a valid PCK archive (neither header layout \
+             resolves to a known version)."
+        };
+
         eyre::bail!(
-            "Cannot parse key header: neither narrow (u32) nor wide (u64) offset yielded a valid version"
+            "Cannot parse PCK key header (data size: {} bytes)\n  \
+             - narrow 12-byte header: offset {} → {}\n  \
+             - wide 16-byte header:   offset {} → {}{}",
+            data_size,
+            offset_narrow,
+            narrow,
+            offset_wide,
+            wide,
+            hint,
         )
     }
 
@@ -959,6 +1013,27 @@ mod tests {
             err.to_string().contains("Invalid headers_end_offset"),
             "unexpected error: {err}"
         );
+    }
+
+    #[test]
+    fn parse_missing_pkx_split_archive() {
+        // Simulate a split archive where only the .pck part is present:
+        // truncate a real pck before its headers_end_offset so the stored
+        // offset now lands past end of data. The error should hint at the
+        // missing .pkx companions, not a generic "unknown version".
+        let full = configs_pck_bytes();
+        let heo = headers_end_offset(&full);
+        let truncated = full[..heo - 16].to_vec();
+        let config: PackageConfig = Default::default();
+        let err = pollster::block_on(PackageInfo::parse(
+            &DataSource::from_bytes(truncated),
+            config,
+            Default::default(),
+        ))
+        .unwrap_err();
+        let msg = err.to_string();
+        assert!(msg.contains("past end of data"), "unexpected error: {err}");
+        assert!(msg.contains(".pkx"), "missing split-archive hint: {err}");
     }
 
     #[test]
