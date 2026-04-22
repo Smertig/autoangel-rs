@@ -29,7 +29,7 @@ export function DecalPreview({ body, element, context, expanded }: PreviewProps<
     { label: 'subtype', value: <span>{subtypeLabel(element.type_id)}</span> },
     {
       label: 'tex_file',
-      value: <PathOrText value={element.tex_file} listFiles={context.listFiles} />,
+      value: <PathOrText value={element.tex_file} findFile={context.findFile} />,
     },
     { divider: true },
     { label: 'width', value: <MonoNum value={body.width} /> },

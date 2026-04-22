@@ -1,4 +1,5 @@
 import type { AutoangelModule } from '../../../../types/autoangel';
+import type { FindFile } from '../util/resolveEnginePath';
 
 type ParseGfxResult = ReturnType<AutoangelModule['parseGfx']>;
 export type GfxElement = ParseGfxResult['elements'][number];
@@ -9,7 +10,8 @@ export interface ViewerCtx {
   path: string;
   ext: string;
   getData: (path: string) => Promise<Uint8Array>;
-  listFiles?: (prefix: string) => string[];
+  listFiles: (prefix: string) => string[];
+  findFile: FindFile;
   wasm: AutoangelModule;
 }
 

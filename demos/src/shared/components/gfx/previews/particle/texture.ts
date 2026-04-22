@@ -1,19 +1,14 @@
-import { resolveEnginePath, ENGINE_PATH_PREFIXES } from '../../util/resolveEnginePath';
+import { resolveEnginePath, ENGINE_PATH_PREFIXES, type FindFile } from '../../util/resolveEnginePath';
 import { loadThreeTexture } from '@shared/components/model-viewer/internal/texture';
 import type { AutoangelModule } from '../../../../../types/autoangel';
 
 /**
- * Resolve an engine-relative particle texture path against the loaded
- * pcks. Returns the actual stored path (case may differ from what the
- * engine string says), or the fallback engine-prefixed path when
- * `listFiles` isn't available.
+ * Resolve an engine-relative particle texture path against the loaded pcks.
+ * Returns the actual stored path (case may differ from what the engine
+ * string says) or null if no loaded package contains it.
  */
-export function resolveTexturePath(
-  texFile: string,
-  listFiles: ((prefix: string) => string[]) | undefined,
-): string | null {
-  if (!listFiles) return `gfx\\textures\\${texFile}`;
-  return resolveEnginePath(texFile, ENGINE_PATH_PREFIXES.textures, listFiles);
+export function resolveTexturePath(texFile: string, findFile: FindFile): string | null {
+  return resolveEnginePath(texFile, ENGINE_PATH_PREFIXES.textures, findFile);
 }
 
 /**

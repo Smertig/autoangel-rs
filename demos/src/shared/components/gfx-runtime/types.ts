@@ -1,5 +1,6 @@
 import type { AutoangelModule } from '../../../types/autoangel';
 import type { ElementBody, GfxElement } from '../gfx/previews/types';
+import type { FindFile } from '../gfx/util/resolveEnginePath';
 
 export interface GfxElementRuntime {
   readonly root: any; // THREE.Object3D
@@ -19,10 +20,8 @@ export interface SpawnOpts {
   getData: (path: string) => Promise<Uint8Array>;
   /** WASM module — needed by texture decode (DDS/TGA/PNG). */
   wasm: AutoangelModule;
-  /** Resolves engine-relative paths against loaded packages. Without it,
-   *  texture/asset lookups can't find the files and runtimes degrade
-   *  (particles render as colored quads, no texture). */
-  listFiles?: (prefix: string) => string[];
+  /** O(1) full-path existence check; returns canonical-cased stored path or null. */
+  findFile: FindFile;
   /** Parent element — spawners need it for tex_file, src_blend, dest_blend. */
   element: GfxElement;
 }

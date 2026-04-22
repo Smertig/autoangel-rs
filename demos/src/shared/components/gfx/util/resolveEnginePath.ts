@@ -1,20 +1,21 @@
 /**
- * Some GFX references (Container's `gfx_path`, Model's `model_path`,
- * Particle's `tex_file`) are engine-relative — the runtime prepends a
- * fixed prefix before loading. Mirrors that resolution so we can look up
- * the file in the loaded pcks: build the engine-prefixed target, then
- * scan `listFiles` case-insensitively to find the actual stored path
- * (pcks are typically lowercase; engine strings often have title-casing
- * or uppercase extensions).
+ * Case-insensitive full-path lookup against the loaded pcks. Returns the
+ * canonical-cased stored path or null if no loaded package contains it.
+ */
+export type FindFile = (path: string) => string | null;
+
+/**
+ * GFX references (Container's `gfx_path`, Model's `model_path`, Particle's
+ * `tex_file`) are engine-relative — the runtime prepends a fixed prefix
+ * before loading. Tries each prefix in turn against the index.
  */
 export function resolveEnginePath(
   rawPath: string,
   prefixes: readonly string[],
-  listFiles: (prefix: string) => string[],
+  findFile: FindFile,
 ): string | null {
-  const target = (prefixes[0] + rawPath).toLowerCase();
   for (const prefix of prefixes) {
-    const match = listFiles(prefix).find((p) => p.toLowerCase() === target);
+    const match = findFile(prefix + rawPath);
     if (match) return match;
   }
   return null;

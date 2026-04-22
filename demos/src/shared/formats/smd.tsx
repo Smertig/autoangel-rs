@@ -3,9 +3,9 @@ import { sideBySideDiffer } from './helpers';
 import { useNullableGetData } from '@shared/hooks/useNullableGetData';
 import type { FormatDescriptor, ViewerContext } from './types';
 
-function SmdFormatViewer({ path, getData, wasm, listFiles }: ViewerContext) {
+function SmdFormatViewer({ path, getData, wasm, listFiles, findFile }: ViewerContext) {
   const getDataNullable = useNullableGetData(getData);
-  return <SmdViewer path={path} wasm={wasm} getData={getDataNullable} listFiles={listFiles} />;
+  return <SmdViewer path={path} wasm={wasm} getData={getDataNullable} listFiles={listFiles} findFile={findFile} />;
 }
 
 export const smdFormat: FormatDescriptor = {

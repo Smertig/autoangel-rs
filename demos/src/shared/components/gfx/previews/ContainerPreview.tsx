@@ -13,7 +13,7 @@ export function ContainerPreview({ body, context, expanded }: PreviewProps<'cont
   if (!expanded) return <span className={styles.thumb}>C</span>;
 
   const rows: FieldRow[] = [
-    { label: 'gfx_path', value: <PathOrText value={body.gfx_path} listFiles={context.listFiles} /> },
+    { label: 'gfx_path', value: <PathOrText value={body.gfx_path} findFile={context.findFile} /> },
     ...(body.loop_flag !== undefined ? [{ label: 'loop_flag', value: <BoolDot on={body.loop_flag} /> }] : []),
     ...(body.play_speed !== undefined ? [{ label: 'play_speed', value: <MonoNum value={body.play_speed} /> }] : []),
     ...flagRows({ out_color: body.out_color, dummy_use_g_scale: body.dummy_use_g_scale }),
@@ -29,14 +29,11 @@ export function ContainerPreview({ body, context, expanded }: PreviewProps<'cont
 
 function NestedGfxViewer({ gfxPath, context }: { gfxPath: string; context: ViewerCtx }) {
   const resolved = useMemo(() => {
-    if (!context.listFiles) {
-      return { kind: 'fallback' as const, path: `gfx\\${gfxPath}` };
-    }
-    const match = resolveEnginePath(gfxPath, ENGINE_PATH_PREFIXES.gfx, context.listFiles);
+    const match = resolveEnginePath(gfxPath, ENGINE_PATH_PREFIXES.gfx, context.findFile);
     return match
       ? { kind: 'resolved' as const, path: match }
       : { kind: 'missing' as const, engineTarget: `gfx\\${gfxPath}` };
-  }, [gfxPath, context.listFiles]);
+  }, [gfxPath, context.findFile]);
 
   if (resolved.kind === 'missing') {
     return (

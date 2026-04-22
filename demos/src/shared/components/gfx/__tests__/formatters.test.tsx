@@ -49,13 +49,13 @@ describe('BoolDot', () => {
 });
 
 describe('PathOrText', () => {
-  it('renders plain text when no listFiles', () => {
-    render(<PathOrText value="foo.dds" />);
+  it('renders plain text when findFile returns null', () => {
+    render(<PathOrText value="foo.dds" findFile={() => null} />);
     expect(screen.getByText('foo.dds')).toBeDefined();
   });
-  it('renders with arrow when listFiles confirms existence', () => {
+  it('renders with arrow when findFile resolves', () => {
     const { container } = render(
-      <PathOrText value="foo.dds" listFiles={() => ['foo.dds', 'bar.dds']} />
+      <PathOrText value="foo.dds" findFile={(p) => p === 'foo.dds' ? 'foo.dds' : null} />
     );
     expect(container.textContent).toContain('foo.dds');
     expect(container.textContent).toContain('→');

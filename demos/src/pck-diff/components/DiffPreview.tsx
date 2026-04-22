@@ -6,6 +6,7 @@ import type { AutoangelModule } from '@shared/../types/autoangel';
 import { DiffStatus, DiffStatusValue } from '../types';
 import { findFormat } from '@shared/formats/registry';
 import { CopyButton } from '@shared/components/CopyButton';
+import { noListFiles, noFindFile } from '@shared/formats/helpers';
 import styles from '../App.module.css';
 
 interface DiffPreviewProps {
@@ -178,7 +179,14 @@ export function DiffPreview({
   return (
     <>
       <DiffBanner status={previewState.status} />
-      <format.Viewer path={path} ext={ext} getData={singleGetData} wasm={wasm} />
+      <format.Viewer
+        path={path}
+        ext={ext}
+        getData={singleGetData}
+        wasm={wasm}
+        listFiles={noListFiles}
+        findFile={noFindFile}
+      />
     </>
   );
 }

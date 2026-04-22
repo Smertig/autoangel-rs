@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { MonoNum, ColorSwatch, BoolDot, PathOrText, MonoJson } from '../formatters';
 import type { PreviewProps } from './types';
+import type { FindFile } from '../util/resolveEnginePath';
 import styles from './DefaultPreview.module.css';
 
 const ARGB_KEY = /^(color|diffuse|specular|ambient)(_min|_max)?$/;
@@ -18,7 +19,7 @@ export function DefaultPreview({ body, expanded, context }: PreviewProps) {
 
   return (
     <div className={styles.panel}>
-      {renderEntries(obj, context.listFiles, 0)}
+      {renderEntries(obj, context.findFile, 0)}
       {tailLines.length > 0 && (
         <details className={styles.unparsed}>
           <summary className={styles.unparsedSummary}>
@@ -33,7 +34,7 @@ export function DefaultPreview({ body, expanded, context }: PreviewProps) {
 
 function renderEntries(
   obj: Record<string, unknown>,
-  listFiles: ((p: string) => string[]) | undefined,
+  findFile: FindFile,
   depth: number,
 ): ReactNode[] {
   const entries = Object.entries(obj).filter(
@@ -52,9 +53,9 @@ function renderEntries(
       if (next && next[0] === `${minMatch[1]}_max` && next[1] !== undefined && next[1] !== null) {
         rows.push(
           <Row key={k} label={minMatch[1]}>
-            {formatLeaf(`${minMatch[1]}_min`, v, listFiles)}
+            {formatLeaf(`${minMatch[1]}_min`, v, findFile)}
             <span className={styles.minMaxSep}>‥</span>
-            {formatLeaf(`${minMatch[1]}_max`, next[1], listFiles)}
+            {formatLeaf(`${minMatch[1]}_max`, next[1], findFile)}
           </Row>,
         );
         i += 2;
@@ -80,7 +81,7 @@ function renderEntries(
         <div key={k} className={styles.section}>
           <div className={styles.sectionLabel}>{k}</div>
           <div className={styles.sectionBody}>
-            {renderEntries(v as Record<string, unknown>, listFiles, depth + 1)}
+            {renderEntries(v as Record<string, unknown>, findFile, depth + 1)}
           </div>
         </div>,
       );
@@ -88,7 +89,7 @@ function renderEntries(
       continue;
     }
 
-    rows.push(<Row key={k} label={k}>{formatLeaf(k, v, listFiles)}</Row>);
+    rows.push(<Row key={k} label={k}>{formatLeaf(k, v, findFile)}</Row>);
     i++;
   }
   return rows;
@@ -124,7 +125,7 @@ function FlagsCluster({ pairs }: { pairs: [string, boolean][] }) {
 function formatLeaf(
   key: string,
   value: unknown,
-  listFiles?: (p: string) => string[],
+  findFile: FindFile,
 ): ReactNode {
   if (value === null || value === undefined) {
     return <span className={styles.nullValue}>∅</span>;
@@ -161,6 +162,6 @@ function formatLeaf(
     }
     return <MonoJson value={value} />;
   }
-  if (typeof value === 'string') return <PathOrText value={value} listFiles={listFiles} />;
+  if (typeof value === 'string') return <PathOrText value={value} findFile={findFile} />;
   return <MonoJson value={value} />;
 }

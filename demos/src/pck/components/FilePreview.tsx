@@ -4,13 +4,15 @@ import { findFormat } from '@shared/formats/registry';
 import { getExtension } from '@shared/util/files';
 import { downloadFile } from '@shared/util/download';
 import type { DownloadAction } from '@shared/formats/types';
+import type { FindFile } from '@shared/components/gfx/util/resolveEnginePath';
 import styles from './FilePreview.module.css';
 
 interface FilePreviewProps {
   path: string;
   getData: (path: string) => Promise<Uint8Array>;
   wasm: AutoangelModule;
-  listFiles?: (prefix: string) => string[];
+  listFiles: (prefix: string) => string[];
+  findFile: FindFile;
 }
 
 interface DownloadButtonProps {
@@ -85,11 +87,11 @@ function DownloadButton({ actions }: DownloadButtonProps) {
   );
 }
 
-export function FilePreview({ path, getData, wasm, listFiles }: FilePreviewProps) {
+export function FilePreview({ path, getData, wasm, listFiles, findFile }: FilePreviewProps) {
   const ext = getExtension(path);
   const format = findFormat(ext);
 
-  const ctx = { path, ext, getData, wasm, listFiles };
+  const ctx = { path, ext, getData, wasm, listFiles, findFile };
   const actions: DownloadAction[] = format.downloadActions?.(ctx) ?? [
     { label: '⬇ Download', onClick: () => downloadFile(path, getData) },
   ];
@@ -100,7 +102,14 @@ export function FilePreview({ path, getData, wasm, listFiles }: FilePreviewProps
         <DownloadButton actions={actions} />
       </div>
       <div className={styles.previewContent}>
-        <format.Viewer path={path} ext={ext} getData={getData} wasm={wasm} listFiles={listFiles} />
+        <format.Viewer
+          path={path}
+          ext={ext}
+          getData={getData}
+          wasm={wasm}
+          listFiles={listFiles}
+          findFile={findFile}
+        />
       </div>
     </div>
   );

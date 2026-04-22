@@ -130,7 +130,7 @@ export async function collectEcmDependencies(
   wasm: AutoangelModule,
   ecmPath: string,
   getData: (path: string) => Promise<Uint8Array>,
-  listFiles?: (prefix: string) => string[],
+  listFiles: (prefix: string) => string[],
 ): Promise<Map<string, Uint8Array>> {
   const files = new Map<string, Uint8Array>();
   const visited = new Set<string>();
@@ -178,7 +178,7 @@ export async function collectEcmDependencies(
       }
     }
 
-    if (listFiles && smdData) {
+    if (smdData) {
       for (const stckPath of discoverStckPaths(smdPath, smdTcksDir, listFiles)) {
         if (files.has(stckPath)) continue;
         const stckData = await getFile(stckPath);

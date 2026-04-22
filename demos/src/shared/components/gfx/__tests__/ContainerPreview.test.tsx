@@ -11,6 +11,7 @@ vi.mock('@shared/components/gfx/GfxViewer', () => ({
 
 import { render, screen, cleanup, waitFor } from '@testing-library/react';
 import { ContainerPreview } from '../previews/ContainerPreview';
+import { findFileFrom } from '@shared/components/gfx-runtime/__tests__/_fixtures';
 
 afterEach(cleanup);
 
@@ -30,8 +31,8 @@ function makeCtx(overrides: Partial<any> = {}): any {
     path: 'gfx\\foo.gfx',
     ext: '.gfx',
     getData: async (p: string) => new Uint8Array([1, 2, 3]),
-    listFiles: (prefix: string) =>
-      prefix === 'gfx\\' ? ['gfx\\场景\\模型\\水车模型.gfx'] : [],
+    listFiles: () => [],
+    findFile: findFileFrom(['gfx\\场景\\模型\\水车模型.gfx']),
     wasm: {},
     ...overrides,
   };
@@ -62,21 +63,13 @@ describe('ContainerPreview', () => {
     expect(stub.textContent).toContain('3 bytes');
   });
 
-  it('shows a missing-package banner when listFiles finds nothing', async () => {
-    const ctx = makeCtx({ listFiles: () => [] });
+  it('shows a missing-package banner when findFile resolves nothing', async () => {
+    const ctx = makeCtx({ findFile: () => null });
     const { container } = render(
       <ContainerPreview body={body} element={element} context={ctx} expanded={true} />,
     );
     expect(screen.queryByTestId('nested-gfx-stub')).toBeNull();
     expect(screen.getByText(/not found in any loaded package/i)).toBeDefined();
     expect(container.textContent).toContain('gfx\\场景\\模型\\水车模型.gfx');
-  });
-
-  it('falls back to engine-prefixed path when listFiles is undefined', async () => {
-    const ctx = makeCtx({ listFiles: undefined });
-    render(<ContainerPreview body={body} element={element} context={ctx} expanded={true} />);
-    const stub = await screen.findByTestId('nested-gfx-stub');
-    // No resolver to find actual casing; pass the engine-prefix string through.
-    expect(stub.getAttribute('data-child-path')).toBe('gfx\\场景\\模型\\水车模型.gfx');
   });
 });

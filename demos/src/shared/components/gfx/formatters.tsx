@@ -1,4 +1,5 @@
 import { argbToCss, argbToHex } from './util/argb';
+import type { FindFile } from './util/resolveEnginePath';
 import styles from './formatters.module.css';
 
 export function MonoNum({ value }: { value: number }) {
@@ -51,10 +52,10 @@ export function BoolDot({ on }: { on: boolean }) {
 
 interface PathOrTextProps {
   value: string;
-  listFiles?: (prefix: string) => string[];
+  findFile: FindFile;
 }
-export function PathOrText({ value, listFiles }: PathOrTextProps) {
-  const exists = listFiles ? listFiles(value).includes(value) : false;
+export function PathOrText({ value, findFile }: PathOrTextProps) {
+  const exists = findFile(value) !== null;
   return (
     <span className={styles.path}>
       <span>{value}</span>

@@ -10,6 +10,7 @@ vi.mock('@shared/components/model-viewer', () => ({
 
 import { render, screen, cleanup } from '@testing-library/react';
 import { ModelPreview } from '../previews/ModelPreview';
+import { findFileFrom } from '@shared/components/gfx-runtime/__tests__/_fixtures';
 
 afterEach(cleanup);
 
@@ -33,6 +34,7 @@ function makeCtx(overrides: Partial<any> = {}): any {
     path: '', ext: '.gfx',
     getData: async () => new Uint8Array(),
     listFiles: () => [],
+    findFile: () => null,
     wasm: {},
     ...overrides,
   };
@@ -56,10 +58,7 @@ describe('ModelPreview', () => {
   });
 
   it('embeds ModelViewer with the resolved engine path + initialClipName from model_act_name', () => {
-    const ctx = makeCtx({
-      listFiles: (prefix: string) =>
-        prefix === 'gfx\\models\\' ? ['gfx\\models\\石头\\石头.smd'] : [],
-    });
+    const ctx = makeCtx({ findFile: findFileFrom(['gfx\\models\\石头\\石头.smd']) });
     render(<ModelPreview body={body} element={element} context={ctx} expanded={true} />);
     const stub = screen.getByTestId('model-viewer-stub');
     // Passes the ACTUAL pck path (lowercase), not the raw body.model_path.
@@ -70,27 +69,18 @@ describe('ModelPreview', () => {
 
   it('omits initialClipName when model_act_name is absent', () => {
     const bodyNoAct = { ...body, model_act_name: undefined };
-    const ctx = makeCtx({
-      listFiles: (prefix: string) =>
-        prefix === 'gfx\\models\\' ? ['gfx\\models\\石头\\石头.smd'] : [],
-    });
+    const ctx = makeCtx({ findFile: findFileFrom(['gfx\\models\\石头\\石头.smd']) });
     render(<ModelPreview body={bodyNoAct} element={element} context={ctx} expanded={true} />);
     expect(screen.getByTestId('model-viewer-stub').getAttribute('data-initial-clip')).toBe('');
   });
 
   it('shows missing-package banner when the file is not in any loaded package', () => {
-    const ctx = makeCtx({ listFiles: () => [] });
+    const ctx = makeCtx();
     const { container } = render(
       <ModelPreview body={body} element={element} context={ctx} expanded={true} />,
     );
     expect(screen.queryByTestId('model-viewer-stub')).toBeNull();
     expect(screen.getByText(/not in any loaded package/i)).toBeDefined();
     expect(container.textContent).toContain('gfx\\Models\\石头\\石头.SMD');
-  });
-
-  it('falls back to engine-prefixed path when listFiles is undefined', () => {
-    const ctx = makeCtx({ listFiles: undefined });
-    render(<ModelPreview body={body} element={element} context={ctx} expanded={true} />);
-    expect(screen.getByTestId('model-viewer-stub').textContent).toBe('gfx\\Models\\石头\\石头.SMD');
   });
 });

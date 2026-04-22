@@ -1,12 +1,14 @@
 import type { ComponentType } from 'react';
 import type { AutoangelModule } from '../../types/autoangel';
+import type { FindFile } from '@shared/components/gfx/util/resolveEnginePath';
 
 export interface ViewerContext {
   path: string;
   ext: string;
   getData: (path: string) => Promise<Uint8Array>;
   wasm: AutoangelModule;
-  listFiles?: (prefix: string) => string[];
+  listFiles: (prefix: string) => string[];
+  findFile: FindFile;
 }
 
 // Currently pre-loads both sides because we can't compute hashes of

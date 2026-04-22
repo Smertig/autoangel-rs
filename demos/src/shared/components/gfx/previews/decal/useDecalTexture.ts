@@ -13,8 +13,8 @@ export function useDecalTexture(
   context: ViewerCtx,
 ): Uint8Array | null {
   const resolvedPath = useMemo(
-    () => resolveTexturePath(element.tex_file, context.listFiles),
-    [element.tex_file, context.listFiles],
+    () => resolveTexturePath(element.tex_file, context.findFile),
+    [element.tex_file, context.findFile],
   );
   const state = useFileData(
     resolvedPath ?? '__noop__',

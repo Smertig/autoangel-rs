@@ -38,8 +38,15 @@ export function minimalParticleElement() {
   } as any;
 }
 
+/** Build a case-insensitive `findFile` from a fixed path list. Mirrors
+ *  what App.tsx's path index does, but trivial enough to inline in tests. */
+export function findFileFrom(paths: string[]): (p: string) => string | null {
+  const lower = new Map(paths.map((p) => [p.toLowerCase(), p]));
+  return (p: string) => lower.get(p.toLowerCase()) ?? null;
+}
+
 /** Minimal SpawnOpts the particle/registry tests need. Texture loading is
- *  skipped when tex_file is empty (the default), so wasm/listFiles can be
+ *  skipped when tex_file is empty (the default), so wasm/findFile can be
  *  stubbed harmlessly. */
 export function minimalSpawnOpts(three: any, overrides: Record<string, any> = {}) {
   return {
@@ -49,7 +56,7 @@ export function minimalSpawnOpts(three: any, overrides: Record<string, any> = {}
     timeSpanSec: undefined as number | undefined,
     getData: async () => new Uint8Array(0),
     wasm: {} as any,
-    listFiles: undefined,
+    findFile: () => null,
     element: minimalParticleElement(),
     ...overrides,
   };

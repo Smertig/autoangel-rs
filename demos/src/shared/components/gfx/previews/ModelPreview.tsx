@@ -11,7 +11,7 @@ export function ModelPreview({ body, context, expanded }: PreviewProps<'model'>)
   if (!expanded) return <span className={styles.thumb}>M</span>;
 
   const rows: FieldRow[] = [
-    { label: 'model_path', value: <PathOrText value={body.model_path} listFiles={context.listFiles} /> },
+    { label: 'model_path', value: <PathOrText value={body.model_path} findFile={context.findFile} /> },
     ...(body.model_act_name ? [{ label: 'model_act_name', value: <span>{body.model_act_name}</span> }] : []),
     ...(body.loops !== undefined ? [{ label: 'loops', value: <MonoNum value={body.loops} /> }] : []),
     { divider: true },
@@ -35,9 +35,7 @@ function ModelPreviewViewer({
   body,
   context,
 }: Pick<PreviewProps<'model'>, 'body' | 'context'>) {
-  const resolved = context.listFiles
-    ? resolveEnginePath(body.model_path, ENGINE_PATH_PREFIXES.models, context.listFiles)
-    : `gfx\\Models\\${body.model_path}`;
+  const resolved = resolveEnginePath(body.model_path, ENGINE_PATH_PREFIXES.models, context.findFile);
 
   if (resolved === null) {
     return (
@@ -56,6 +54,7 @@ function ModelPreviewViewer({
         wasm={context.wasm}
         getData={context.getData}
         listFiles={context.listFiles}
+        findFile={context.findFile}
         initialClipName={body.model_act_name}
       />
     </div>

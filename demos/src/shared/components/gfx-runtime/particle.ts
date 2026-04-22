@@ -47,9 +47,9 @@ export function spawnParticleRuntime(
 
   // Async texture load — once resolved, swap into the mesh. Failures degrade
   // silently to colored quads (same fallback as the standalone preview).
-  if (element.tex_file && opts.listFiles) {
+  if (element.tex_file) {
     (async () => {
-      const texPath = resolveTexturePath(element.tex_file, opts.listFiles);
+      const texPath = resolveTexturePath(element.tex_file, opts.findFile);
       if (!texPath) return;
       const texData = await opts.getData(texPath).catch(() => null);
       if (!texData || texData.byteLength === 0) return;

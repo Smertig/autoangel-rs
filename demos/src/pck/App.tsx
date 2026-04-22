@@ -69,59 +69,56 @@ export function App() {
     [slots],
   );
 
-  // O(1) pkgId -> slot lookup, used by callbacks below
   const slotLookup = useMemo(
     () => new Map(slots.map((s) => [s.pkgId, s])),
     [slots],
   );
 
-  // Narrow selection to just the pkgId so callbacks don't rebuild on every
-  // path change within the same package.
+  const pathIndex = useMemo(() => {
+    const byLower = new Map<string, Array<{ orig: string; pkgId: number }>>();
+    for (const slot of slots) {
+      for (const f of slot.fileList) {
+        const lower = f.toLowerCase();
+        const entry = { orig: f, pkgId: slot.pkgId };
+        const bucket = byLower.get(lower);
+        if (bucket) bucket.push(entry);
+        else byLower.set(lower, [entry]);
+      }
+    }
+    return byLower;
+  }, [slots]);
+
   const selectedPkgId = selectedFile?.pkgId ?? null;
 
-  // Get file data, searching across ALL loaded packages so cross-package
-  // references (e.g. an ECM in models.pck pointing at a GFX in gfx.pck)
-  // resolve. Tries the selected slot first (fast common case), then falls
-  // back to other slots in order. Each slot's `fileList` lookup is
-  // case-insensitive to match how engine paths are stored.
-  // If no slot has the path, rejects with PackageRemovedError-shaped Error
-  // so the existing not-found handling stays consistent.
   const getFileData = useCallback(
     (path: string): Promise<Uint8Array> => {
       if (selectedPkgId === null) return Promise.reject(new PackageRemovedError());
-      const lower = path.toLowerCase();
-      // Try selected slot first
-      const selected = slotLookup.get(selectedPkgId);
-      if (selected && selected.fileList.some((f) => f.toLowerCase() === lower)) {
-        return getFile(selectedPkgId, path);
-      }
-      // Fall back to other slots in pkgId order
-      for (const slot of slotLookup.values()) {
-        if (slot.pkgId === selectedPkgId) continue;
-        if (slot.fileList.some((f) => f.toLowerCase() === lower)) {
-          return getFile(slot.pkgId, path);
-        }
-      }
-      return Promise.reject(new PackageRemovedError());
+      const bucket = pathIndex.get(path.toLowerCase());
+      if (!bucket) return Promise.reject(new PackageRemovedError());
+      // Selected slot wins on cross-package collision (rare).
+      const hit = bucket.find((e) => e.pkgId === selectedPkgId) ?? bucket[0];
+      return getFile(hit.pkgId, path);
     },
-    [selectedPkgId, slotLookup, getFile],
+    [selectedPkgId, pathIndex, getFile],
   );
 
-  // List files by prefix, spanning ALL loaded packages. Scoping to a single
-  // package broke cross-package references (e.g. an ECM event in models.pck
-  // referencing a GFX in gfx.pck — the resolver couldn't see the gfx slot).
+  const findFile = useCallback(
+    (path: string): string | null => pathIndex.get(path.toLowerCase())?.[0].orig ?? null,
+    [pathIndex],
+  );
+
   const listFiles = useCallback(
     (prefix: string): string[] => {
       const lower = prefix.toLowerCase();
       const out: string[] = [];
-      for (const slot of slotLookup.values()) {
-        for (const f of slot.fileList) {
-          if (f.toLowerCase().startsWith(lower)) out.push(f);
+      for (const [l, bucket] of pathIndex) {
+        if (l.startsWith(lower)) {
+          for (const e of bucket) out.push(e.orig);
         }
       }
       return out;
     },
-    [slotLookup],
+    [pathIndex],
   );
 
   // Handle file drop / picker: classify and load. Drops whose stem matches an
@@ -330,6 +327,7 @@ export function App() {
                 getData={getFileData}
                 wasm={wasmRef.current}
                 listFiles={listFiles}
+                findFile={findFile}
               />
             ) : (
               <div className={styles.placeholder}>Select a file to preview</div>

@@ -6,9 +6,9 @@ import { sideBySideDiffer } from './helpers';
 import { useNullableGetData } from '@shared/hooks/useNullableGetData';
 import type { DownloadAction, FormatDescriptor, ViewerContext } from './types';
 
-function EcmFormatViewer({ path, getData, wasm, listFiles }: ViewerContext) {
+function EcmFormatViewer({ path, getData, wasm, listFiles, findFile }: ViewerContext) {
   const getDataNullable = useNullableGetData(getData);
-  return <EcmViewer path={path} wasm={wasm} getData={getDataNullable} listFiles={listFiles} />;
+  return <EcmViewer path={path} wasm={wasm} getData={getDataNullable} listFiles={listFiles} findFile={findFile} />;
 }
 
 async function downloadModelZip(ctx: ViewerContext): Promise<void> {

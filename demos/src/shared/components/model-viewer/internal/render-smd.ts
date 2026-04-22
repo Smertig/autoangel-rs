@@ -20,7 +20,7 @@ import { spawnElementRuntime } from '../../gfx-runtime/registry';
 import { createGfxLoader } from '../../gfx-runtime/loader';
 import { createNoopRuntime } from '../../gfx-runtime/noop';
 import { attachToHook } from '../../gfx-runtime/hook';
-import { resolveEnginePath, ENGINE_PATH_PREFIXES } from '../../gfx/util/resolveEnginePath';
+import { resolveEnginePath, ENGINE_PATH_PREFIXES, type FindFile } from '../../gfx/util/resolveEnginePath';
 
 // "站立" (standing) — preferred default animation clip
 const PREFERRED_ANIM_HINT = '\u7AD9\u7ACB';
@@ -38,7 +38,8 @@ export async function renderFromSmd(
   getFile: GetFile,
   smdPath: string,
   smdData: Uint8Array,
-  listFiles: ((prefix: string) => string[]) | undefined,
+  listFiles: (prefix: string) => string[],
+  findFile: FindFile,
   opts?: {
     additionalSkins?: { paths: string[]; basePath: string };
     boneScaleInfo?: { entries: BoneScaleData[]; isNew: boolean; baseBone: string | undefined };
@@ -94,7 +95,7 @@ export async function renderFromSmd(
   // Discover animation file paths (no parsing yet — clips are loaded lazily on click)
   const animNames: string[] = [];
   let loadClip: ((name: string) => Promise<any>) | undefined;
-  if (listFiles && skelData) {
+  if (skelData) {
     const stckPaths = discoverStckPaths(smdPath, smdTcksDir, listFiles);
     const stckPathByName = new Map<string, string>();
     for (const stckPath of stckPaths) {
@@ -192,7 +193,7 @@ export async function renderFromSmd(
   // Built once per `renderFromSmd` call; rebuilt on every clip switch. GFX
   // file resolution is async, so `spawn` returns a synchronous placeholder
   // and attaches the resolved runtime(s) via `attachRuntime` once they load.
-  const gfxLoader = (animNames.length > 0 && listFiles)
+  const gfxLoader = animNames.length > 0
     ? createGfxLoader(wasm, (p) => getFile(p))
     : null;
 
@@ -217,9 +218,7 @@ export async function renderFromSmd(
         // runtime(s) asynchronously. If the GFX is already cached this
         // usually completes in the same tick.
         (async () => {
-          const resolved = listFiles
-            ? resolveEnginePath(ev.filePath, ENGINE_PATH_PREFIXES.gfx, listFiles)
-            : null;
+          const resolved = resolveEnginePath(ev.filePath, ENGINE_PATH_PREFIXES.gfx, findFile);
           if (!resolved) return;
           const gfx = await gfxLoader.load(resolved);
           const elements = (gfx as any)?.elements;
@@ -234,7 +233,7 @@ export async function renderFromSmd(
               timeSpanSec: ev.timeSpan > 0 ? ev.timeSpan / 1000 : undefined,
               getData: async (p: string) => (await getFile(p)) ?? new Uint8Array(0),
               wasm,
-              listFiles,
+              findFile,
               element: el,
             });
             // ECM events usually target hooks (HH_*); prefer hooks then fall
@@ -319,9 +318,9 @@ export async function renderFromSmd(
   // Tooltip GFX lookup — mirrors the scheduler's spawn-path resolution,
   // sharing `gfxLoader` so repeat hovers are cached. Returns null on any
   // failure; caller uses that to leave the base tooltip unchanged.
-  const lookupGfx = gfxLoader && listFiles
+  const lookupGfx = gfxLoader
     ? async (filePath: string): Promise<GfxEffect | null> => {
-        const resolved = resolveEnginePath(filePath, ENGINE_PATH_PREFIXES.gfx, listFiles);
+        const resolved = resolveEnginePath(filePath, ENGINE_PATH_PREFIXES.gfx, findFile);
         if (!resolved) return null;
         const gfx = await gfxLoader.load(resolved);
         return (gfx as GfxEffect | null) ?? null;
@@ -357,7 +356,8 @@ export async function renderFromSmd(
 }
 
 export interface RenderOptions {
-  listFiles?: (prefix: string) => string[];
+  listFiles: (prefix: string) => string[];
+  findFile: FindFile;
   initialClipName?: string;
 }
 
@@ -366,7 +366,7 @@ export async function renderEcm(
   wasm: AutoangelModule,
   getFileRaw: GetFile,
   ecmPath: string,
-  opts: RenderOptions = {},
+  opts: RenderOptions,
 ): Promise<void> {
   await ensureThree();
   const getFile = withWarnOnThrow(getFileRaw);
@@ -382,7 +382,7 @@ export async function renderEcm(
   // Snapshot additionalSkins before ecm's `using` scope frees it.
   const additionalSkinPaths = [...(ecm.additionalSkins || [])];
 
-  await renderFromSmd(container, wasm, getFile, smdPath, smdData, opts.listFiles, {
+  await renderFromSmd(container, wasm, getFile, smdPath, smdData, opts.listFiles, opts.findFile, {
     additionalSkins: { paths: additionalSkinPaths, basePath: ecmPath },
     boneScaleInfo: ecm.boneScaleCount > 0 ? readEcmBoneScales(ecm) : undefined,
     eventMapFromAnimNames: (animNames) => buildAnimEventMap(ecm, animNames),
@@ -396,7 +396,7 @@ export async function renderSmd(
   wasm: AutoangelModule,
   getFileRaw: GetFile,
   smdPath: string,
-  opts: RenderOptions = {},
+  opts: RenderOptions,
 ): Promise<void> {
   await ensureThree();
   const getFile = withWarnOnThrow(getFileRaw);
@@ -404,7 +404,7 @@ export async function renderSmd(
   const smdData = await getFile(smdPath);
   if (!smdData) throw new Error(`File not found: ${smdPath}`);
 
-  await renderFromSmd(container, wasm, getFile, smdPath, smdData, opts.listFiles, {
+  await renderFromSmd(container, wasm, getFile, smdPath, smdData, opts.listFiles, opts.findFile, {
     initialClipName: opts.initialClipName,
   });
 }

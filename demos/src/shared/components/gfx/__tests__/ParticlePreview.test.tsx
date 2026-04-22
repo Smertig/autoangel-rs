@@ -76,6 +76,7 @@ const ctx: any = {
   ext: '.gfx',
   getData: async () => new Uint8Array(),
   listFiles: () => [],
+  findFile: () => null,
   wasm: {},
 };
 

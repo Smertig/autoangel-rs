@@ -31,13 +31,13 @@ export function useParticleCanvas(
   const readoutRef = useRef<HTMLDivElement | null>(null);
 
   const resolvedPath = useMemo(
-    () => resolveTexturePath(element.tex_file, context.listFiles),
-    [element.tex_file, context.listFiles],
+    () => resolveTexturePath(element.tex_file, context.findFile),
+    [element.tex_file, context.findFile],
   );
 
-  // Fetch file data when we have a resolved path. If resolution failed
-  // (listFiles present but no match), skip the fetch and render with
-  // white material as designed — missing textures are non-fatal.
+  // Fetch file data when we have a resolved path. If resolution failed,
+  // skip the fetch and render with white material as designed — missing
+  // textures are non-fatal.
   const texDataState = useFileData(
     resolvedPath ?? '__noop__',
     resolvedPath ? context.getData : noopGetData,

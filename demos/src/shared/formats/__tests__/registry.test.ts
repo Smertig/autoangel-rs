@@ -41,6 +41,8 @@ describe('downloadActions', () => {
     ext,
     getData: vi.fn(),
     wasm: {} as any,
+    listFiles: () => [],
+    findFile: () => null,
   });
 
   it('ecm format returns download actions for .ecm', () => {
