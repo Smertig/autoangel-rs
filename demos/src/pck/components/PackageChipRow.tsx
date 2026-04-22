@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { LoadingEntry, PackageSlot } from '../usePackageSlots';
-import { useFileDrop } from '@shared/hooks/useFileDrop';
+import { useFileDrop, type PickedItem } from '@shared/hooks/useFileDrop';
 import { PackageChip, type PackageChipProps } from './PackageChip';
 import styles from './PackageChipRow.module.css';
 
@@ -8,7 +8,7 @@ interface PackageChipRowProps {
   slots: PackageSlot[];
   loadingEntries: LoadingEntry[];
   onRemove: (pkgId: number) => void;
-  onDrop: (files: File[]) => void;
+  onDrop: (items: PickedItem[]) => void;
 }
 
 export function PackageChipRow({ slots, loadingEntries, onRemove, onDrop }: PackageChipRowProps) {

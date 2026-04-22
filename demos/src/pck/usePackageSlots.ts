@@ -3,6 +3,7 @@ import { buildTree, emptyTreeNode, type TreeNode } from '@shared/components/File
 import type { KeyConfig } from '@shared/components/KeysPanel';
 import type { PackageDrop } from '@shared/util/files';
 import { ColorAllocator, PACKAGE_COLORS } from './colors';
+import { fileFingerprint } from './history/types';
 
 // --- Public types ---
 
@@ -14,7 +15,14 @@ export interface PackageSlot {
   fileList: string[];
   tree: TreeNode;
   version: number;
+  /** Number of files inside the .pck. */
   fileCount: number;
+  /** Original `.pck` filename as the user dropped it. */
+  pckName: string;
+  /** Size in bytes of the `.pck` file on disk. */
+  pckSize: number;
+  /** Stable id for the underlying `.pck` (`name|size|mtime`). */
+  fileId: string;
 }
 
 export interface LoadingEntry {
@@ -234,6 +242,9 @@ export function usePackageSlots(cdn: string): UsePackageSlotsResult {
           tree: emptyTreeNode(),
           version: 0,
           fileCount: 0,
+          pckName: drop.pck.name,
+          pckSize: drop.pck.size,
+          fileId: fileFingerprint(drop.pck),
         },
         pckFile: drop.pck,
         pkxFiles: drop.pkxFiles,

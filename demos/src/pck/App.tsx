@@ -4,6 +4,7 @@ import { resolveCDN } from '../cdn';
 import { initWasm } from '../wasm';
 import type { AutoangelModule } from '../types/autoangel';
 import { classifyMultiPackageDrop, type PackageDrop } from '@shared/util/files';
+import type { PickedItem } from '@shared/hooks/useFileDrop';
 import { NavBar } from '@shared/components/NavBar';
 import { ErrorBanner } from '@shared/components/ErrorBanner';
 import { ResizableSidebar } from '@shared/components/ResizableSidebar';
@@ -13,9 +14,11 @@ import { SourceLink } from '@shared/components/SourceLink';
 import { Breadcrumb } from './components/Breadcrumb';
 import { FilePreview } from './components/FilePreview';
 import { PackageChipRow } from './components/PackageChipRow';
-import { EmptyDropPanel } from './components/EmptyDropPanel';
+import { EmptyState } from './components/EmptyState';
 import { mergePackageTrees, type TaggedTreeFile } from './merge-tree';
 import { PackageRemovedError, usePackageSlots } from './usePackageSlots';
+import { useSessions } from './history/useSessions';
+import { fileFingerprint, sessionIdFromFileIds, type Session, type SessionFile } from './history/types';
 import styles from './App.module.css';
 
 const cdn = resolveCDN();
@@ -39,6 +42,8 @@ export function App() {
 
   // Multi-package slot state
   const { slots, loadingEntries, loadPackages, removeSlot, replaceSlot, getFile } = usePackageSlots(cdn);
+
+  const sessionsApi = useSessions();
 
   // Main-thread WASM init (runs once on mount) — needed for FilePreview image decoders
   useEffect(() => {
@@ -125,7 +130,13 @@ export function App() {
   // already-loaded slot are routed to `replaceSlot` (preserves color). The
   // rest go through `loadPackages`.
   const handleDrop = useCallback(
-    async (files: File[]) => {
+    async (items: PickedItem[]) => {
+      const files = items.map((it) => it.file);
+      const handleByName = new Map<string, FileSystemFileHandle>();
+      for (const it of items) {
+        if (it.handle) handleByName.set(it.file.name.toLowerCase(), it.handle);
+      }
+
       const result = classifyMultiPackageDrop(files);
       if (!result.ok) {
         setError(result.error);
@@ -146,22 +157,84 @@ export function App() {
       }
 
       const errors: string[] = [];
+      const succeeded: PackageDrop[] = [];
       await Promise.all([
         ...replacements.map((r) =>
-          replaceSlot(r.pkgId, r.drop, customKeys).catch((e: unknown) => {
-            errors.push(e instanceof Error ? e.message : String(e));
-          }),
+          replaceSlot(r.pkgId, r.drop, customKeys)
+            .then(() => {
+              succeeded.push(r.drop);
+            })
+            .catch((e: unknown) => {
+              errors.push(e instanceof Error ? e.message : String(e));
+            }),
         ),
         additions.length > 0
-          ? loadPackages(additions, customKeys).catch((e: unknown) => {
-              errors.push(e instanceof Error ? e.message : String(e));
-            })
+          ? loadPackages(additions, customKeys)
+              .then(() => {
+                // loadPackages may partially succeed even when it throws, but we
+                // can't tell which sub-drops landed; on the success path all did.
+                succeeded.push(...additions);
+              })
+              .catch((e: unknown) => {
+                errors.push(e instanceof Error ? e.message : String(e));
+              })
           : Promise.resolve(),
       ]);
 
+      // Persist the package's full handle set (`.pck` + every `.pkx`) so a
+      // future restore can reopen the whole package in one shot. A partial
+      // set would silently load a broken multi-part package, so we skip
+      // persistence when any part's handle is missing.
+      for (const drop of succeeded) {
+        const allParts = [drop.pck, ...drop.pkxFiles].map((f) =>
+          handleByName.get(f.name.toLowerCase()),
+        );
+        if (!allParts.every((h): h is FileSystemFileHandle => Boolean(h))) continue;
+        void sessionsApi.saveHandles(
+          fileFingerprint(drop.pck),
+          allParts as FileSystemFileHandle[],
+        );
+      }
+
       setError(errors.length > 0 ? errors.join('; ') : null);
     },
-    [slots, loadPackages, replaceSlot, customKeys],
+    [slots, loadPackages, replaceSlot, customKeys, sessionsApi],
+  );
+
+  // Upsert only when no parse is in flight — otherwise a sequential
+  // multi-package drop would record each transient slot state as its own
+  // session.
+  const { upsertCurrent } = sessionsApi;
+  const currentSessionFiles = useMemo<SessionFile[]>(
+    () => slots.map(({ fileId, pckName, pckSize }) => ({ fileId, pckName, pckSize })),
+    [slots],
+  );
+  const isStable = loadingEntries.length === 0;
+  useEffect(() => {
+    if (!isStable) return;
+    upsertCurrent(currentSessionFiles);
+  }, [currentSessionFiles, isStable, upsertCurrent]);
+
+  // Hash of the currently-loaded set, used to attribute exploration clicks.
+  const currentSessionId = useMemo(
+    () => sessionIdFromFileIds(currentSessionFiles.map((f) => f.fileId)),
+    [currentSessionFiles],
+  );
+
+  // Open every file in a session via stored handles. Failures (missing
+  // handle, denied permission) are surfaced; the partial set still loads.
+  const handleOpenSession = useCallback(
+    async (session: Session) => {
+      const { items, failed } = await sessionsApi.openSession(session);
+      if (items.length > 0) await handleDrop(items);
+      if (failed.length > 0) {
+        const verb = items.length > 0 ? 'restored partially' : 'couldn\u2019t auto-restore';
+        setError(
+          `Session ${verb}: ${failed.map((f) => f.pckName).join(', ')} need a fresh drop (no stored handle, or permission denied).`,
+        );
+      }
+    },
+    [sessionsApi, handleDrop],
   );
 
   const deferredFilter = useDeferredValue(filterText);
@@ -197,9 +270,11 @@ export function App() {
   // `pkgIndex` via the `TaggedTreeFile` tag, so duplicate siblings are
   // disambiguated automatically.
   const handleSelectFile = useCallback(
-    (file: TreeFile) =>
-      setSelectedFile({ pkgId: (file as TaggedTreeFile).pkgIndex, path: file.fullPath }),
-    [],
+    (file: TreeFile) => {
+      setSelectedFile({ pkgId: (file as TaggedTreeFile).pkgIndex, path: file.fullPath });
+      sessionsApi.incrementExplored(currentSessionId);
+    },
+    [sessionsApi, currentSessionId],
   );
 
   const handleReset = useCallback(() => {
@@ -277,7 +352,16 @@ export function App() {
 
       <ErrorBanner message={error} onDismiss={() => setError(null)} />
 
-      {!mergedTree && <EmptyDropPanel onDrop={handleDrop} />}
+      {!mergedTree && (
+        <EmptyState
+          sessions={sessionsApi.sessions}
+          loading={sessionsApi.loading}
+          onDrop={handleDrop}
+          onOpenSession={handleOpenSession}
+          onRemoveSession={sessionsApi.removeOne}
+          onClearAll={sessionsApi.clearAll}
+        />
+      )}
 
       {mergedTree && (
         <ResizableSidebar

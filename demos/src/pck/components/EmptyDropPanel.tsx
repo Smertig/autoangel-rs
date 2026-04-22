@@ -1,9 +1,9 @@
-import { useFileDrop } from '@shared/hooks/useFileDrop';
+import { useFileDrop, type PickedItem } from '@shared/hooks/useFileDrop';
 import { PACKAGE_COLORS } from '../colors';
 import styles from './EmptyDropPanel.module.css';
 
 interface EmptyDropPanelProps {
-  onDrop: (files: File[]) => void;
+  onDrop: (items: PickedItem[]) => void;
 }
 
 export function EmptyDropPanel({ onDrop }: EmptyDropPanelProps) {
