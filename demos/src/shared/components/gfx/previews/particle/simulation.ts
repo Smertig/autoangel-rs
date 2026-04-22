@@ -56,6 +56,20 @@ export interface SimConfig {
    * (all shipped fixtures).
    */
   affectors: readonly KpController[];
+  /** Precomputed: any `move`/`rot`/`centri_move`/`rot_axis`/`revol` present.
+   *  Skips position/rad2d seed+writeback when false. */
+  hasMotionAffector: boolean;
+}
+
+const MOTION_KINDS: ReadonlySet<string> = new Set([
+  'move', 'rot', 'centri_move', 'rot_axis', 'revol',
+]);
+
+export function hasMotionAffector(affectors: readonly KpController[]): boolean {
+  for (const a of affectors) {
+    if (MOTION_KINDS.has(a.body.kind)) return true;
+  }
+  return false;
 }
 
 export interface ParticleInstance {
@@ -184,7 +198,7 @@ export function tickSim(
     p.velAlongAcc = velAccEnd;
   }
 
-  applyAffectors(state, cfg);
+  applyAffectors(state, cfg, dt);
 
   state.time += dt;
   return state.alive.length;
@@ -198,9 +212,9 @@ const scratchCtrl: CtrlState = {
 };
 // Reused across every (particle, affector) pair — avoids per-call object
 // literal allocation in the `applyController` hot path.
-const scratchCtx: { localMs: number } = { localMs: 0 };
+const scratchCtx: { localMs: number; dtMs: number } = { localMs: 0, dtMs: 0 };
 
-function applyAffectors(state: SimState, cfg: SimConfig): void {
+function applyAffectors(state: SimState, cfg: SimConfig, dtSec: number): void {
   const affectors = cfg.affectors;
   if (affectors.length === 0) return;
 
@@ -209,15 +223,28 @@ function applyAffectors(state: SimState, cfg: SimConfig): void {
   // earlier in the tick so the mesh upload can iterate a single list.
   state.dirtyIndices.length = 0;
 
+  const dtMs = dtSec * 1000;
+  const motion = cfg.hasMotionAffector;
+
   for (let i = 0; i < state.alive.length; i++) {
     const p = state.alive[i];
     const ageSec = p.age;
     const ageMs = ageSec * 1000;
 
+    // Color/scale reset to spawn baseline so affectors re-integrate from age=0.
     scratchCtrl.color = p.baseColor;
     scratchCtrl.scale = p.baseScale;
+    if (motion) {
+      // Seed position/rad2d from current — motion affectors ADD to sim-
+      // integrated trajectory each frame.
+      scratchCtrl.position[0] = p.px;
+      scratchCtrl.position[1] = p.py;
+      scratchCtrl.position[2] = p.pz;
+      scratchCtrl.rad2d = p.rot;
+    }
 
     scratchCtx.localMs = ageMs;
+    scratchCtx.dtMs = dtMs;
     for (let k = 0; k < affectors.length; k++) {
       const a = affectors[k];
       if (a.start_time !== undefined && ageSec < a.start_time) continue;
@@ -228,6 +255,12 @@ function applyAffectors(state: SimState, cfg: SimConfig): void {
     const [r, g, b, a] = argbChannels(scratchCtrl.color);
     p.r = r; p.g = g; p.b = b; p.a = a;
     p.scale = scratchCtrl.scale;
+    if (motion) {
+      p.px = scratchCtrl.position[0];
+      p.py = scratchCtrl.position[1];
+      p.pz = scratchCtrl.position[2];
+      p.rot = scratchCtrl.rad2d;
+    }
 
     state.dirtyIndices.push(i);
   }

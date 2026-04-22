@@ -8,6 +8,7 @@ export type { KpController, KpCtrlBody } from './gfxTypes';
 /** CtrlType kinds for which `applyController` has a real implementation. */
 export const HANDLED_CTRL_KINDS: ReadonlySet<HandledCtrlKind> = new Set<HandledCtrlKind>([
   'color', 'scale', 'cl_trans', 'scale_trans',
+  'move', 'rot', 'centri_move',
 ]);
 
 export interface CtrlState {
@@ -21,6 +22,13 @@ export interface CtrlState {
 export interface ApplyContext {
   /** Wall-clock delta ms since keypoint start, for velocity-based ctrls. */
   localMs: number;
+  /**
+   * Frame delta in ms. Motion controllers (`move`, `rot`, `centri_move`)
+   * integrate per-frame translation via engine `CalcDist(vel, acc, age, dt)`.
+   * Keypoint-inner sampling passes 0 — `calcDist` returns 0 so motion
+   * controllers contribute nothing at a single sample.
+   */
+  dtMs: number;
 }
 
 /** Returns true if handled, false for deferred/unknown variants. */
@@ -35,13 +43,13 @@ export function applyController(
     case 'scale':       applyScale(body, state, ctx); return true;
     case 'cl_trans':    applyClTrans(body, state, ctx); return true;
     case 'scale_trans': applyScaleTrans(body, state, ctx); return true;
+    case 'move':        return applyMove(body, state, ctx);
+    case 'rot':         return applyRot(body, state, ctx);
+    case 'centri_move': return applyCentriMove(body, state, ctx);
 
     // Deferred — explicit no-op so the dispatcher is exhaustive.
-    case 'move':        return false;  // TODO(ctrl-move): translation via vel+acc
-    case 'rot':         return false;  // TODO(ctrl-rot): rotate rad2d via vel+acc
     case 'rot_axis':    return false;  // TODO(ctrl-rot-axis): quat rotation around arbitrary axis
     case 'revol':       return false;  // TODO(ctrl-revol): orbit position around axis
-    case 'centri_move': return false;  // TODO(ctrl-centri): move position toward center at vel+acc
     case 'cl_noise':    return false;  // TODO(ctrl-cl-noise): perlin alpha jitter on keypoint color
     case 'sca_noise':   return false;  // TODO(ctrl-sca-noise): perlin scale jitter
     case 'curve_move':  return false;  // TODO(ctrl-curve-move): position along cubic bezier
@@ -107,6 +115,78 @@ function applyScaleTrans(
   const end = body.dest_scales[seg.idx];
   if (start === undefined || end === undefined) return;
   s.scale = lerp(start, end, seg.local);
+}
+
+/**
+ * Engine `CalcDist(vel, acc, age, dt)` — trapezoidal integration of a
+ * linearly-changing velocity over one frame:
+ *   v_start = vel + acc * age
+ *   v_end   = v_start + acc * dt
+ *   dist    = 0.5 * (v_start + v_end) * dt
+ * Used by motion affectors (move, rot, centri_move, rot_axis, revol).
+ * `age` is the particle's age at the end of the current frame (engine
+ * increments `m_fTTL` before reading it in `TriggerAffectors`).
+ */
+function calcDist(vel: number, acc: number, ageSec: number, dtSec: number): number {
+  const vStart = vel + acc * ageSec;
+  const vEnd = vStart + acc * dtSec;
+  return 0.5 * (vStart + vEnd) * dtSec;
+}
+
+function applyMove(
+  body: Extract<KpCtrlBody, { kind: 'move' }>,
+  s: CtrlState,
+  ctx: ApplyContext,
+): boolean {
+  const age = ctx.localMs / 1000;
+  const dt = ctx.dtMs / 1000;
+  const d = calcDist(body.vel, body.acc, age, dt);
+  s.position[0] += body.dir[0] * d;
+  s.position[1] += body.dir[1] * d;
+  s.position[2] += body.dir[2] * d;
+  return true;
+}
+
+function applyRot(
+  body: Extract<KpCtrlBody, { kind: 'rot' }>,
+  s: CtrlState,
+  ctx: ApplyContext,
+): boolean {
+  const age = ctx.localMs / 1000;
+  const dt = ctx.dtMs / 1000;
+  s.rad2d += calcDist(body.vel, body.acc, age, dt);
+  return true;
+}
+
+function applyCentriMove(
+  body: Extract<KpCtrlBody, { kind: 'centri_move' }>,
+  s: CtrlState,
+  ctx: ApplyContext,
+): boolean {
+  if (body.vel === 0) return true;
+  const age = ctx.localMs / 1000;
+  const dt = ctx.dtMs / 1000;
+  const d = calcDist(body.vel, body.acc, age, dt);
+  const dx = s.position[0] - body.center[0];
+  const dy = s.position[1] - body.center[1];
+  const dz = s.position[2] - body.center[2];
+  const mag = Math.sqrt(dx * dx + dy * dy + dz * dz);
+  if (body.vel < 0 && mag === 0) return true;
+  // Inward overshoot past the center — snap to center (matches engine
+  // branch `if (fDist < 0 && fMag < -fDist)`).
+  if (d < 0 && mag < -d) {
+    s.position[0] = body.center[0];
+    s.position[1] = body.center[1];
+    s.position[2] = body.center[2];
+    return true;
+  }
+  if (mag > 0) {
+    const inv = 1 / mag;
+    s.position[0] += dx * inv * d;
+    s.position[1] += dy * inv * d;
+    s.position[2] += dz * inv * d;
+  }
+  return true;
 }
 
 /** Walks cumulative `timesMs`; values past the last segment clamp to `(last, 1)`. */

@@ -43,11 +43,11 @@ describe('buildTrack', () => {
     const t = buildTrack({
       start_time: 0,
       keypoints: [
-        kp({ time_span: 100, controllers: [{ start_time: 0, end_time: -1, body: { kind: 'move', dir: [0,0,0], vel: 0, acc: 0 } as any }] }),
+        kp({ time_span: 100, controllers: [{ start_time: 0, end_time: -1, body: { kind: 'rot_axis', pos: [0,0,0], axis: [0,1,0], vel: 0, acc: 0 } as any }] }),
         kp({ time_span: 100 }),
       ],
     });
-    expect(t.unhandledKinds.has('move')).toBe(true);
+    expect(t.unhandledKinds.has('rot_axis')).toBe(true);
     expect(t.unhandledKinds.size).toBe(1);
   });
 });

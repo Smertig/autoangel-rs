@@ -15,7 +15,7 @@ describe('applyController', () => {
     const handled = applyController(
       wrap('color', { color_delta: [10, -20, 0, 0] }) as any,
       s,
-      { localMs: 500 },
+      { localMs: 500, dtMs: 0 },
     );
     expect(handled).toBe(true);
     // ARGB format: 0xAARRGGBB. R=128+5=133, G=128-10=118, B=128.
@@ -31,7 +31,7 @@ describe('applyController', () => {
     applyController(
       wrap('color', { color_delta: [-50, -50, -50, 100] }) as any,
       s,
-      { localMs: 1000 },
+      { localMs: 1000, dtMs: 0 },
     );
     // RGB stays at 0, alpha clamps to 255 (already at FF).
     expect(s.color & 0xff).toBe(0); // B
@@ -46,7 +46,7 @@ describe('applyController', () => {
     applyController(
       wrap('scale', { scale_delta: 2, min_scale: 0.5, max_scale: 4 }) as any,
       s,
-      { localMs: 500 },
+      { localMs: 500, dtMs: 0 },
     );
     // 1 + 2 * 0.5 = 2 (within range)
     expect(s.scale).toBe(2);
@@ -55,7 +55,7 @@ describe('applyController', () => {
     applyController(
       wrap('scale', { scale_delta: 100, min_scale: 0.5, max_scale: 4 }) as any,
       s,
-      { localMs: 1000 },
+      { localMs: 1000, dtMs: 0 },
     );
     expect(s.scale).toBe(4); // clamped to max
   });
@@ -74,14 +74,14 @@ describe('applyController', () => {
     // At 500 ms (mid first segment) → halfway between red and green.
     const s1 = fresh();
     s1.color = 0;
-    applyController(ctrl as any, s1, { localMs: 500 });
+    applyController(ctrl as any, s1, { localMs: 500, dtMs: 0 });
     // 127.5 → rounds to 128 on both channels (Math.round half-up).
     expect((s1.color >>> 16) & 0xff).toBe(128); // R halfway
     expect((s1.color >>> 8) & 0xff).toBe(128);  // G halfway
 
     // At 1250 ms (mid second segment) → halfway between green and blue.
     const s2 = fresh();
-    applyController(ctrl as any, s2, { localMs: 1250 });
+    applyController(ctrl as any, s2, { localMs: 1250, dtMs: 0 });
     expect((s2.color >>> 16) & 0xff).toBe(0);
     expect((s2.color >>> 8) & 0xff).toBe(128);  // G halfway
     expect(s2.color & 0xff).toBe(128);          // B halfway
@@ -95,7 +95,7 @@ describe('applyController', () => {
       alpha_only: true,
     });
     const s = fresh();
-    applyController(ctrl as any, s, { localMs: 500 });
+    applyController(ctrl as any, s, { localMs: 500, dtMs: 0 });
     // 255 → 0 at t=0.5 is 127.5 → Math.round = 128.
     expect((s.color >>> 24) & 0xff).toBe(128); // alpha halfway
     expect((s.color >>> 16) & 0xff).toBe(0xFF); // R unchanged from origin
@@ -110,20 +110,19 @@ describe('applyController', () => {
       trans_times_ms: [1000, 500],
     });
     const s = fresh();
-    applyController(ctrl as any, s, { localMs: 500 });
+    applyController(ctrl as any, s, { localMs: 500, dtMs: 0 });
     expect(s.scale).toBeCloseTo(1.5);  // halfway 1→2
 
     const s2 = fresh();
-    applyController(ctrl as any, s2, { localMs: 1250 });
+    applyController(ctrl as any, s2, { localMs: 1250, dtMs: 0 });
     expect(s2.scale).toBeCloseTo(1.25); // halfway 2→0.5
   });
 
-  it('returns false (unhandled) for the 9 deferred kinds + unknown', () => {
-    const deferred = ['move', 'rot', 'rot_axis', 'revol', 'centri_move',
-                      'cl_noise', 'sca_noise', 'curve_move', 'noise_base', 'unknown'];
+  it('returns false for still-deferred kinds', () => {
+    const deferred = ['cl_noise', 'sca_noise', 'curve_move', 'noise_base', 'unknown'];
     for (const kind of deferred) {
       const s = fresh();
-      const handled = applyController(wrap(kind, {}) as any, s, { localMs: 0 });
+      const handled = applyController(wrap(kind, {}) as any, s, { localMs: 0, dtMs: 0 });
       expect(handled).toBe(false);
     }
   });

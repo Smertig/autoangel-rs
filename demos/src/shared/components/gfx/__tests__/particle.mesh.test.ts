@@ -16,6 +16,7 @@ function minimalCfg(quota: number): SimConfig {
     particleWidth: 1, particleHeight: 1,
     shape: { kind: 'point' },
     affectors: [],
+    hasMotionAffector: false,
   };
 }
 

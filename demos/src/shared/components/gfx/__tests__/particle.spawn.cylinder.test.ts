@@ -39,6 +39,7 @@ function makeCfg(
       ...overrides,
     },
     affectors: [],
+    hasMotionAffector: false,
   };
 }
 

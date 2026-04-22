@@ -37,6 +37,7 @@ function makeCfg(overrides: Partial<Extract<SimConfig['shape'], { kind: 'ellipso
       ...overrides,
     },
     affectors: [],
+    hasMotionAffector: false,
   };
 }
 
