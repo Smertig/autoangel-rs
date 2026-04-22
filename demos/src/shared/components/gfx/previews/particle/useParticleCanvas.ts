@@ -173,7 +173,7 @@ export function useParticleCanvas(
       // --- Simulation config (drives both GPU pool size and sim cap) ----
       const atlasRows = Math.max(1, element.tex_row);
       const atlasCols = Math.max(1, element.tex_col);
-      const cfg = buildSimConfig(body, atlasRows, atlasCols);
+      const cfg = buildSimConfig(body, atlasRows, atlasCols, element.affectors);
 
       // --- Texture load (async; mesh is built after so the shader can see it).
       let texture: any = null;

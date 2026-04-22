@@ -15,6 +15,7 @@ function minimalCfg(quota: number): SimConfig {
     initRandomTexture: false,
     particleWidth: 1, particleHeight: 1,
     shape: { kind: 'point' },
+    affectors: [],
   };
 }
 
@@ -24,6 +25,8 @@ function particle(overrides: Partial<ParticleInstance> = {}): ParticleInstance {
     selfVel: 0, velAlongAcc: 0,
     r: 1, g: 1, b: 1, a: 1,
     scale: 1, rot: 0, age: 0, ttl: 1, atlasFrame: 0,
+    baseColor: 0xffffffff,
+    baseScale: 1,
     ...overrides,
   };
 }

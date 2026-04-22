@@ -2,6 +2,9 @@
 // three.js-specific writeback into InstancedMesh happens in the hook.
 
 import { spawnParticle } from './spawn';
+import { applyController, type CtrlState } from '../../util/controllers';
+import type { KpController } from '../../util/gfxTypes';
+import { argbChannels } from '../../util/argb';
 
 export type ShapeCfg =
   | { kind: 'point' }
@@ -46,6 +49,13 @@ export interface SimConfig {
   particleWidth: number;
   particleHeight: number;
   shape: ShapeCfg;
+  /**
+   * Particle-element affectors (`GfxElement.affectors`). Evaluated per frame
+   * in reset-from-base style — mathematically equivalent to the engine's
+   * in-place accumulation when at most one affector touches a given channel
+   * (all shipped fixtures).
+   */
+  affectors: readonly KpController[];
 }
 
 export interface ParticleInstance {
@@ -59,6 +69,13 @@ export interface ParticleInstance {
   age: number;
   ttl: number;
   atlasFrame: number;
+  // Spawn-time baseline for affector evaluation. The affector loop resets
+  // live channels to these before re-running the stack each frame, so the
+  // N-frame integration result equals single-step `base + delta*age` for
+  // velocity affectors and pure `sample(age)` for transition affectors.
+  // `baseColor` is pre-packed 0xAARRGGBB to skip a per-frame repack.
+  baseColor: number;
+  baseScale: number;
 }
 
 export interface SimState {
@@ -167,6 +184,51 @@ export function tickSim(
     p.velAlongAcc = velAccEnd;
   }
 
+  applyAffectors(state, cfg);
+
   state.time += dt;
   return state.alive.length;
+}
+
+const scratchCtrl: CtrlState = {
+  color: 0,
+  scale: 1,
+  position: [0, 0, 0],
+  rad2d: 0,
+};
+// Reused across every (particle, affector) pair — avoids per-call object
+// literal allocation in the `applyController` hot path.
+const scratchCtx: { localMs: number } = { localMs: 0 };
+
+function applyAffectors(state: SimState, cfg: SimConfig): void {
+  const affectors = cfg.affectors;
+  if (affectors.length === 0) return;
+
+  // Every alive particle's held attributes change this tick — the affector
+  // pass owns the dirty set, replacing the birth/swap-remove marks from
+  // earlier in the tick so the mesh upload can iterate a single list.
+  state.dirtyIndices.length = 0;
+
+  for (let i = 0; i < state.alive.length; i++) {
+    const p = state.alive[i];
+    const ageSec = p.age;
+    const ageMs = ageSec * 1000;
+
+    scratchCtrl.color = p.baseColor;
+    scratchCtrl.scale = p.baseScale;
+
+    scratchCtx.localMs = ageMs;
+    for (let k = 0; k < affectors.length; k++) {
+      const a = affectors[k];
+      if (a.start_time !== undefined && ageSec < a.start_time) continue;
+      if (a.end_time !== undefined && a.end_time >= 0 && ageSec > a.end_time) continue;
+      applyController(a, scratchCtrl, scratchCtx);
+    }
+
+    const [r, g, b, a] = argbChannels(scratchCtrl.color);
+    p.r = r; p.g = g; p.b = b; p.a = a;
+    p.scale = scratchCtrl.scale;
+
+    state.dirtyIndices.push(i);
+  }
 }

@@ -38,6 +38,7 @@ function makeCfg(
       betaSeg: 10,
       ...overrides,
     },
+    affectors: [],
   };
 }
 

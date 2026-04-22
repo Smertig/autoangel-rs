@@ -32,11 +32,18 @@ export function buildBirth(
   const atlasFrame = cfg.initRandomTexture
     ? Math.floor(rng() * atlasFrames) % atlasFrames
     : 0;
+  const r8 = Math.round(r * 255);
+  const g8 = Math.round(g * 255);
+  const b8 = Math.round(b * 255);
+  const a8 = Math.round(a * 255);
+  const baseColor = ((a8 << 24) | (r8 << 16) | (g8 << 8) | b8) >>> 0;
   return {
     selfVel: cfg.speed, velAlongAcc: 0,
     r, g, b, a, scale, rot,
     age: 0, ttl: cfg.ttl,
     atlasFrame,
+    baseColor,
+    baseScale: scale,
   };
 }
 
