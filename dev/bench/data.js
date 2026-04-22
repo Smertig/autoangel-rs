@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1776835940318,
+  "lastUpdate": 1776841094712,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -3839,6 +3839,102 @@ window.BENCHMARK_DATA = {
             "name": "PackageInfo::save_to",
             "value": 940147,
             "range": "± 2658",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "5ea721d2821bb715374b97217ce3937d42c40b44",
+          "message": "feat [skeleton]: expose Hook, Skeleton, Bone via bindable\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+          "timestamp": "2026-04-22T09:55:01+03:00",
+          "tree_id": "6ec24d51293f5eb7aa5f955e7543580dc17894af",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/5ea721d2821bb715374b97217ce3937d42c40b44"
+        },
+        "date": 1776841094079,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 30669,
+            "range": "± 191",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 112,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::access_fields",
+            "value": 62,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 160,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 21964,
+            "range": "± 132",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::iterate_lists",
+            "value": 13224,
+            "range": "± 231",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 47,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 306620,
+            "range": "± 233",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::find_prefix",
+            "value": 332,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 3561,
+            "range": "± 111",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_all_files",
+            "value": 10244839,
+            "range": "± 15754",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::save_to",
+            "value": 949303,
+            "range": "± 1101",
             "unit": "ns/iter"
           }
         ]
