@@ -209,6 +209,7 @@ const scratchCtrl: CtrlState = {
   scale: 1,
   position: [0, 0, 0],
   rad2d: 0,
+  axisOff: [0, 0, 0],
 };
 // Reused across every (particle, affector) pair — avoids per-call object
 // literal allocation in the `applyController` hot path.
@@ -236,11 +237,15 @@ function applyAffectors(state: SimState, cfg: SimConfig, dtSec: number): void {
     scratchCtrl.scale = p.baseScale;
     if (motion) {
       // Seed position/rad2d from current — motion affectors ADD to sim-
-      // integrated trajectory each frame.
+      // integrated trajectory each frame. axisOff is a per-particle scratch
+      // accumulator for move → rotate pivot tracking.
       scratchCtrl.position[0] = p.px;
       scratchCtrl.position[1] = p.py;
       scratchCtrl.position[2] = p.pz;
       scratchCtrl.rad2d = p.rot;
+      scratchCtrl.axisOff[0] = 0;
+      scratchCtrl.axisOff[1] = 0;
+      scratchCtrl.axisOff[2] = 0;
     }
 
     scratchCtx.localMs = ageMs;

@@ -9,6 +9,7 @@ export type { KpController, KpCtrlBody } from './gfxTypes';
 export const HANDLED_CTRL_KINDS: ReadonlySet<HandledCtrlKind> = new Set<HandledCtrlKind>([
   'color', 'scale', 'cl_trans', 'scale_trans',
   'move', 'rot', 'centri_move',
+  'rot_axis', 'revol',
 ]);
 
 export interface CtrlState {
@@ -16,7 +17,16 @@ export interface CtrlState {
   scale: number;
   position: [number, number, number];
   rad2d: number;
-  // direction quaternion intentionally untouched in this batch
+  /**
+   * Cumulative displacement applied by translational affectors
+   * (`move`, `curve_move`) during this particle's affector pass — mirrors
+   * the engine's `PROC_DATA::m_vAxisOff`. Rotational affectors
+   * (`rot_axis`, `revol`) add it to their pivot so subsequent rotation
+   * follows the Move-translated frame rather than the world-static pivot.
+   */
+  axisOff: [number, number, number];
+  // direction quaternion intentionally untouched — our particles render
+  // with a single Z-axis angle (`rad2d`), not a full orientation frame.
 }
 
 export interface ApplyContext {
@@ -46,10 +56,10 @@ export function applyController(
     case 'move':        return applyMove(body, state, ctx);
     case 'rot':         return applyRot(body, state, ctx);
     case 'centri_move': return applyCentriMove(body, state, ctx);
+    case 'rot_axis':    return applyAxisRotation(body, state, ctx);
+    case 'revol':       return applyAxisRotation(body, state, ctx);
 
     // Deferred — explicit no-op so the dispatcher is exhaustive.
-    case 'rot_axis':    return false;  // TODO(ctrl-rot-axis): quat rotation around arbitrary axis
-    case 'revol':       return false;  // TODO(ctrl-revol): orbit position around axis
     case 'cl_noise':    return false;  // TODO(ctrl-cl-noise): perlin alpha jitter on keypoint color
     case 'sca_noise':   return false;  // TODO(ctrl-sca-noise): perlin scale jitter
     case 'curve_move':  return false;  // TODO(ctrl-curve-move): position along cubic bezier
@@ -141,9 +151,13 @@ function applyMove(
   const age = ctx.localMs / 1000;
   const dt = ctx.dtMs / 1000;
   const d = calcDist(body.vel, body.acc, age, dt);
-  s.position[0] += body.dir[0] * d;
-  s.position[1] += body.dir[1] * d;
-  s.position[2] += body.dir[2] * d;
+  const dx = body.dir[0] * d;
+  const dy = body.dir[1] * d;
+  const dz = body.dir[2] * d;
+  s.position[0] += dx; s.position[1] += dy; s.position[2] += dz;
+  // Engine also accumulates Move's translation into PROC_DATA::m_vAxisOff so
+  // later rotational affectors pivot around the translated frame.
+  s.axisOff[0] += dx; s.axisOff[1] += dy; s.axisOff[2] += dz;
   return true;
 }
 
@@ -186,6 +200,57 @@ function applyCentriMove(
     s.position[1] += dy * inv * d;
     s.position[2] += dz * inv * d;
   }
+  return true;
+}
+
+/**
+ * Rodrigues rotation of `s.position` around the line through `(px,py,pz)`
+ * with unit direction `(ax,ay,az)` by `angle` radians. Caller must supply
+ * a normalised axis — engine GFX files are authored with unit axes.
+ */
+function rotatePositionAroundLine(
+  s: CtrlState,
+  px: number, py: number, pz: number,
+  ax: number, ay: number, az: number,
+  angle: number,
+): void {
+  const vx = s.position[0] - px;
+  const vy = s.position[1] - py;
+  const vz = s.position[2] - pz;
+  const c = Math.cos(angle);
+  const sN = Math.sin(angle);
+  const oneMinusC = 1 - c;
+  const cx = ay * vz - az * vy;
+  const cy = az * vx - ax * vz;
+  const cz = ax * vy - ay * vx;
+  const dot = ax * vx + ay * vy + az * vz;
+  s.position[0] = px + vx * c + cx * sN + ax * dot * oneMinusC;
+  s.position[1] = py + vy * c + cy * sN + ay * dot * oneMinusC;
+  s.position[2] = pz + vz * c + cz * sN + az * dot * oneMinusC;
+}
+
+/**
+ * Shared impl for `rot_axis` (102) and `revol` (103) — both orbit the
+ * particle position around an axis-aligned line. `rot_axis` additionally
+ * rotates the engine's `m_vDir` orientation quaternion, but we render
+ * particles with a single Z-axis angle (`rad2d`), so that update is a
+ * visual no-op and skipped. Pivot follows the Move-accumulated `axisOff`
+ * so chained `move → rotate` pivots around the translated frame.
+ */
+function applyAxisRotation(
+  body: { pos: readonly [number, number, number]; axis: readonly [number, number, number]; vel: number; acc: number },
+  s: CtrlState,
+  ctx: ApplyContext,
+): boolean {
+  const age = ctx.localMs / 1000;
+  const dt = ctx.dtMs / 1000;
+  const angle = calcDist(body.vel, body.acc, age, dt);
+  rotatePositionAroundLine(
+    s,
+    body.pos[0] + s.axisOff[0], body.pos[1] + s.axisOff[1], body.pos[2] + s.axisOff[2],
+    body.axis[0], body.axis[1], body.axis[2],
+    angle,
+  );
   return true;
 }
 

@@ -233,6 +233,87 @@ describe('tickSim affectors', () => {
     expect(state.alive[0].rot).toBeCloseTo(Math.PI / 2, 3);
   });
 
+  it('applies RotAxis affector (orbit position around line)', () => {
+    // Rotate around Y axis through origin. Starting at (1, 0, 0), a quarter
+    // turn (π/2) places the particle at ≈(0, 0, -1) for +Y rotation (RH).
+    const affector: KpController = {
+      start_time: undefined, end_time: undefined,
+      body: {
+        kind: 'rot_axis',
+        pos: [0, 0, 0],
+        axis: [0, 1, 0],
+        vel: Math.PI / 2,
+        acc: 0,
+      },
+    } as KpController;
+    const cfg = makeCfg({
+      emissionRate: 0, quota: 1, ttl: 5,
+      speed: 0,
+      affectors: [affector],
+    });
+    const state = spawnOne(cfg);
+    state.alive[0].px = 1; state.alive[0].py = 0; state.alive[0].pz = 0;
+    // 1s at π/2 rad/s → quarter turn around +Y.
+    tickSim(1, state, cfg, rng);
+    const p = state.alive[0];
+    expect(p.px).toBeCloseTo(0, 3);
+    expect(p.pz).toBeCloseTo(-1, 3);
+  });
+
+  it('applies Revol affector (orbit position, same math as RotAxis)', () => {
+    const affector: KpController = {
+      start_time: undefined, end_time: undefined,
+      body: {
+        kind: 'revol',
+        pos: [0, 0, 0],
+        axis: [0, 1, 0],
+        vel: Math.PI,
+        acc: 0,
+      },
+    } as KpController;
+    const cfg = makeCfg({
+      emissionRate: 0, quota: 1, ttl: 5,
+      speed: 0,
+      affectors: [affector],
+    });
+    const state = spawnOne(cfg);
+    state.alive[0].px = 2; state.alive[0].py = 0; state.alive[0].pz = 0;
+    // 1s at π rad/s → half turn around +Y. (2,0,0) → (-2,0,0).
+    tickSim(1, state, cfg, rng);
+    expect(state.alive[0].px).toBeCloseTo(-2, 3);
+    expect(state.alive[0].pz).toBeCloseTo(0, 3);
+  });
+
+  it('chains Move → RotAxis: pivot follows Move-accumulated offset', () => {
+    // Move shifts +X by 3 units over the tick; RotAxis then rotates around
+    // the (shifted) origin pivot. Without axisOff tracking, the rotation
+    // would instead be around the world origin and produce a different
+    // final position.
+    const move: KpController = {
+      start_time: undefined, end_time: undefined,
+      body: { kind: 'move', dir: [1, 0, 0], vel: 3, acc: 0 },
+    } as KpController;
+    const rotAxis: KpController = {
+      start_time: undefined, end_time: undefined,
+      body: { kind: 'rot_axis', pos: [0, 0, 0], axis: [0, 1, 0], vel: Math.PI / 2, acc: 0 },
+    } as KpController;
+    const cfg = makeCfg({
+      emissionRate: 0, quota: 1, ttl: 5,
+      speed: 0,
+      affectors: [move, rotAxis],
+    });
+    const state = spawnOne(cfg);
+    // Starting position (4,0,0). After Move: (7,0,0). axisOff = (3,0,0).
+    // Pivot = body.pos(0,0,0) + axisOff(3,0,0) = (3,0,0). Quarter turn
+    // around +Y at (3,0,0): (7,0,0) → displacement (4,0,0) → rotates to
+    // (0,0,-4) → final (3,0,-4).
+    state.alive[0].px = 4; state.alive[0].py = 0; state.alive[0].pz = 0;
+    tickSim(1, state, cfg, rng);
+    const p = state.alive[0];
+    expect(p.px).toBeCloseTo(3, 3);
+    expect(p.pz).toBeCloseTo(-4, 3);
+  });
+
   it('applies CentriMove affector (radial translation from center)', () => {
     const affector: KpController = {
       start_time: undefined, end_time: undefined,
