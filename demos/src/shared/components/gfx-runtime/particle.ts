@@ -24,7 +24,7 @@ export function spawnParticleRuntime(
   const group = new THREE.Group();
   group.scale.setScalar(opts.gfxScale);
 
-  const cfg = buildSimConfig(body, 1, 1);
+  const cfg = buildSimConfig(body, 1, 1, opts.element.affectors);
   // puffCount=0 — engine A3DParticleEmitter starts empty (m_fRemainder=0)
   // and emits gradually at the configured rate. The default puffCount=30
   // exists for the standalone preview so the canvas isn't blank when you

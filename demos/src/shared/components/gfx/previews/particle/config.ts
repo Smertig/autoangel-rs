@@ -1,4 +1,5 @@
 import type { ElementBody } from '../types';
+import type { KpController } from '../../util/gfxTypes';
 import { resolvePoolSize, type ShapeCfg, type SimConfig } from './simulation';
 
 type ParticleBody = Extract<ElementBody, { kind: 'particle' }>;
@@ -36,6 +37,7 @@ export function buildSimConfig(
   body: ParticleBody,
   atlasRows: number,
   atlasCols: number,
+  affectors: readonly KpController[] = [],
 ): SimConfig {
   const e = body.emitter;
   const parIniDir: [number, number, number] = e.par_ini_dir ?? [0, 0, 1];
@@ -63,5 +65,6 @@ export function buildSimConfig(
     particleWidth: body.particle_width,
     particleHeight: body.particle_height,
     shape: buildShapeCfg(e),
+    affectors,
   };
 }
