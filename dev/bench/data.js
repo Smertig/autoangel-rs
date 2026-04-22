@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1776842162818,
+  "lastUpdate": 1776883656740,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -4031,6 +4031,102 @@ window.BENCHMARK_DATA = {
             "name": "PackageInfo::save_to",
             "value": 947490,
             "range": "± 2684",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "0d59d3f58b8466530bf75c3d9e6c2ba95623693d",
+          "message": "cleanup [pck]: clarify key-header parse error for missing pkx parts\n\n* Previously the error was a generic \"neither narrow (u32) nor wide (u64)\n  offset yielded a valid version\", which gave users no way to tell the\n  common \"archive split across .pck + .pkx/.pkx1/... and only .pck was\n  provided\" case apart from genuine corruption.\n\n* Replace the bool probe with a VersionProbe enum carrying the reason\n  (PastEof / TooSmall / BadVersion(u32)) and surface per-attempt detail\n  plus a targeted hint suggesting the missing .pkx companions when at\n  least one candidate offset lands past end-of-data.\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+          "timestamp": "2026-04-22T21:43:14+03:00",
+          "tree_id": "ee0a7ba5fde112e1920fafbfe07070fc4d3cfc5d",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/0d59d3f58b8466530bf75c3d9e6c2ba95623693d"
+        },
+        "date": 1776883654983,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 33710,
+            "range": "± 425",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 147,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::access_fields",
+            "value": 107,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 227,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 16005,
+            "range": "± 20",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::iterate_lists",
+            "value": 28435,
+            "range": "± 14",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 67,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 268101,
+            "range": "± 839",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::find_prefix",
+            "value": 6069,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 2984,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_all_files",
+            "value": 10805947,
+            "range": "± 145641",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::save_to",
+            "value": 895261,
+            "range": "± 3793",
             "unit": "ns/iter"
           }
         ]
