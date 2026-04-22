@@ -14,6 +14,19 @@ export interface Viewer {
   onFrameUpdate: (() => void) | null;
   /** Seconds elapsed since last frame; available inside onBeforeRender/onFrameUpdate. */
   lastDt: number;
+  /**
+   * Schedule one rAF render pass. Idempotent per frame. Callers must invoke
+   * this after mutating scene/camera/mixer/onBeforeRender state so the change
+   * becomes visible; during OrbitControls damping and active mixer playback
+   * the render loop self-sustains via an internal activity probe.
+   */
+  requestRender(): void;
+  /**
+   * Install or replace `v.controls`. Wires the `'change'` event so damping
+   * and user interaction automatically trigger renders. Pass `null` to
+   * detach.
+   */
+  setControls(controls: any | null): void;
   dispose(): void;
   _disposeScene(): void;
 }
@@ -38,6 +51,63 @@ export function getViewer(container: HTMLElement): Viewer {
   container.classList.add('model-active');
   container.replaceChildren(renderer.domElement);
 
+  let scheduledRaf = 0;
+  let controlsChangeHandler: (() => void) | null = null;
+  const clock = new THREE.Clock();
+
+  // Returns true while the mixer holds an action that would visibly advance
+  // on the next `mixer.update(dt)`. `AnimationAction.isRunning()` consults
+  // the action's own timeScale but not the mixer's, so we must guard on
+  // `mixer.timeScale` too — the transport bar pauses playback by setting it
+  // to 0. `mixer._actions` is private (underscore-prefixed) but stable across
+  // Three.js releases; filtered by `.isRunning()` it avoids plumbing
+  // track/untrack calls through every clipAction site.
+  function isMixerActive(): boolean {
+    const mixer = v.mixer;
+    if (!mixer || mixer.timeScale === 0) return false;
+    const actions = mixer._actions as any[] | undefined;
+    if (!actions) return false;
+    for (let i = 0; i < actions.length; i++) {
+      if (actions[i].isRunning()) return true;
+    }
+    return false;
+  }
+
+  function renderFrame() {
+    scheduledRaf = 0;
+    const delta = clock.getDelta();
+    v.lastDt = delta;
+    if (v.mixer) v.mixer.update(delta);
+    if (v.onBeforeRender) v.onBeforeRender();
+    if (v.onFrameUpdate) v.onFrameUpdate();
+    // `controls.update()` emits `'change'` when damping produces motion,
+    // which re-arms the scheduler via the handler installed in setControls.
+    if (v.controls) v.controls.update();
+    if (v.scene) renderer.render(v.scene, v.camera);
+    if (isMixerActive()) requestRender();
+  }
+
+  function requestRender() {
+    if (scheduledRaf !== 0) return;
+    scheduledRaf = requestAnimationFrame(renderFrame);
+  }
+
+  function detachControlsListener() {
+    if (v.controls && controlsChangeHandler) {
+      try { v.controls.removeEventListener('change', controlsChangeHandler); } catch { /* already gone */ }
+      controlsChangeHandler = null;
+    }
+  }
+
+  function setControls(controls: any | null) {
+    detachControlsListener();
+    v.controls = controls;
+    if (controls) {
+      controlsChangeHandler = () => requestRender();
+      controls.addEventListener('change', controlsChangeHandler);
+    }
+  }
+
   const v: Viewer = {
     container,
     renderer,
@@ -49,8 +119,14 @@ export function getViewer(container: HTMLElement): Viewer {
     onBeforeRender: null,
     onFrameUpdate: null,
     lastDt: 0,
+    requestRender,
+    setControls,
     dispose() {
-      cancelAnimationFrame(animId);
+      if (scheduledRaf !== 0) {
+        cancelAnimationFrame(scheduledRaf);
+        scheduledRaf = 0;
+      }
+      detachControlsListener();
       v.resizeObs.disconnect();
       if (v.controls) v.controls.dispose();
       renderer.dispose();
@@ -77,23 +153,10 @@ export function getViewer(container: HTMLElement): Viewer {
       v.camera.aspect = width / height;
       v.camera.updateProjectionMatrix();
       renderer.setSize(width, height);
+      v.requestRender();
     }
   });
   v.resizeObs.observe(container);
-
-  let animId: number;
-  const clock = new THREE.Clock();
-  function animate() {
-    animId = requestAnimationFrame(animate);
-    const delta = clock.getDelta();
-    v.lastDt = delta;
-    if (v.mixer) v.mixer.update(delta);
-    if (v.onBeforeRender) v.onBeforeRender();
-    if (v.onFrameUpdate) v.onFrameUpdate();
-    if (v.controls) v.controls.update();
-    if (v.scene) renderer.render(v.scene, v.camera);
-  }
-  animate();
 
   viewers.set(container, v);
   return v;

@@ -183,6 +183,10 @@ export async function renderFromSmd(
         initialClip = { name: preferredName, clip };
         currentAction = v.mixer.clipAction(clip);
         currentAction.play();
+        // Kick the render-on-demand scheduler so playback takes over; the
+        // eager first paint in mount-scene covered the static pose, but the
+        // mixer only starts advancing once we tick it.
+        v.requestRender();
       } catch (e) {
         console.warn('[model] Failed to load initial clip:', preferredName, e);
       }

@@ -79,12 +79,15 @@ export function mountScene(
   v.camera.position.copy(center).add(defaultCamOffset);
 
   if (v.controls) v.controls.dispose();
-  v.controls = new OrbitControls(v.camera, v.renderer.domElement);
-  v.controls.target.copy(center);
-  v.controls.enableDamping = true;
-  v.controls.dampingFactor = 0.08;
-  v.controls.update();
+  const controls = new OrbitControls(v.camera, v.renderer.domElement);
+  controls.target.copy(center);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  v.setControls(controls);
+  controls.update();
 
+  // Eager first paint so the model is visible immediately; subsequent frames
+  // go through the render-on-demand scheduler.
   v.renderer.render(v.scene, v.camera);
 
   // Toolbar
@@ -95,6 +98,7 @@ export function mountScene(
     (wireBtn as any)._on = !(wireBtn as any)._on;
     group.traverse((c: any) => { if (c.material) c.material.wireframe = (wireBtn as any)._on; });
     wireBtn.classList.toggle(styles.btnActive, (wireBtn as any)._on);
+    v.requestRender();
   });
   toolbar.appendChild(wireBtn);
 
@@ -102,6 +106,7 @@ export function mountScene(
     (bgBtn as any)._on = !(bgBtn as any)._on;
     scene.background = new THREE.Color((bgBtn as any)._on ? 0xe0e0e0 : 0x2a2a2a);
     bgBtn.classList.toggle(styles.btnActive, (bgBtn as any)._on);
+    v.requestRender();
   });
   toolbar.appendChild(bgBtn);
 
@@ -109,6 +114,7 @@ export function mountScene(
     v.camera.position.copy(center).add(defaultCamOffset);
     v.controls.target.copy(center);
     v.controls.update();
+    v.requestRender();
   });
   toolbar.appendChild(resetBtn);
 
@@ -129,6 +135,7 @@ export function mountScene(
         }
       }
       bonesBtn!.classList.toggle(styles.btnActive, (bonesBtn as any)._on);
+      v.requestRender();
     });
     toolbar.appendChild(bonesBtn);
   }
@@ -191,11 +198,15 @@ export function mountScene(
       playing = false;
       if (v.mixer) v.mixer.timeScale = 0;
       playBtn.textContent = '\u25B6';
+      // Render-on-demand: set timeScale=0 before the loop winds down so the
+      // final frame renders the paused state correctly.
+      v.requestRender();
     }
     function seekTo(t: number) {
       const action = getAction();
       if (action) action.time = t;
       if (v.mixer) v.mixer.update(0);
+      v.requestRender();
     }
     function stepFrame(dir: 1 | -1) {
       if (!v.mixer) return;
@@ -266,6 +277,7 @@ export function mountScene(
           action.clampWhenFinished = loopModes[loopMode].three === THREE.LoopOnce;
           action.play();
           if (!playing) v.mixer.timeScale = 0;
+          v.requestRender();
           if (activeItemEl) activeItemEl.classList.remove(styles.animListItemActive);
           item.classList.add(styles.animListItemActive);
           activeItemEl = item;
@@ -300,6 +312,9 @@ export function mountScene(
       playing = !playing;
       if (v.mixer) v.mixer.timeScale = playing ? currentSpeed : 0;
       playBtn.textContent = playing ? '\u23F8' : '\u25B6';
+      // Kick the render loop: playing → it self-sustains via isMixerActive;
+      // pausing → one trailing frame renders the halted pose, then idle.
+      v.requestRender();
     };
     transport.appendChild(playBtn);
 
@@ -534,7 +549,10 @@ export function mountScene(
       btn.textContent = label;
       btn.onclick = () => {
         currentSpeed = spd;
-        if (v.mixer && playing) v.mixer.timeScale = spd;
+        if (v.mixer && playing) {
+          v.mixer.timeScale = spd;
+          v.requestRender();
+        }
         speedBtns.forEach((b, i) => b.classList.toggle(styles.transportBtnActive, speeds[i][1] === spd));
       };
       speedBtns.push(btn);
