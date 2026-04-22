@@ -43,8 +43,7 @@ export function useDecal3DCanvas(
     (async () => {
       await ensureThree();
       if (disposed) return;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { THREE, OrbitControls }: { THREE: any; OrbitControls: any } = getThree();
+      const { THREE, OrbitControls } = getThree();
 
       // Fill the whole mount rectangle — the .expanded grid stretches the
       // left column to match the field-panel height on the right, so the

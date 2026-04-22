@@ -42,8 +42,7 @@ export function Decal2DCanvas({
     (async () => {
       await ensureThree();
       if (disposed) return;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const THREE: any = getThree().THREE;
+      const { THREE } = getThree();
 
       // Fill the whole mount rectangle (matches Decal3D's sizing).
       const sizeOf = (el: HTMLElement) => ({

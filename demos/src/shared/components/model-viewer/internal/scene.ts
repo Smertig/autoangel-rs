@@ -121,18 +121,16 @@ export function mountScene(
   // Skeleton overlay toggle (only if skeleton is available)
   let bonesBtn: HTMLButtonElement | undefined;
   if (skeleton) {
+    let skeletonHelper: InstanceType<typeof THREE.SkeletonHelper> | null = null;
     bonesBtn = makeToolbarBtn('Bones', () => {
       (bonesBtn as any)._on = !(bonesBtn as any)._on;
       if ((bonesBtn as any)._on) {
-        const helper = new THREE.SkeletonHelper(group);
-        helper.name = '__skeleton_helper__';
-        scene.add(helper);
-      } else {
-        const helper = scene.getObjectByName('__skeleton_helper__');
-        if (helper) {
-          scene.remove(helper);
-          helper.dispose();
-        }
+        skeletonHelper = new THREE.SkeletonHelper(group);
+        scene.add(skeletonHelper);
+      } else if (skeletonHelper) {
+        scene.remove(skeletonHelper);
+        skeletonHelper.dispose();
+        skeletonHelper = null;
       }
       bonesBtn!.classList.toggle(styles.btnActive, (bonesBtn as any)._on);
       v.requestRender();

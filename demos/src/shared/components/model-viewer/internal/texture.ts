@@ -2,6 +2,13 @@ import type { AutoangelModule } from '../../../../types/autoangel';
 import { getExtension, IMAGE_EXTENSIONS, IMAGE_MIME } from '@shared/util/files';
 import { getThree } from './three';
 
+// Opacity is decided once at texture-build time (cheap scan of the RGBA
+// buffer or known-opaque for browser-decoded formats) and stashed on the
+// texture so `mesh.ts` can set `transparent`/`alphaTest` without rescanning.
+declare module 'three' {
+  interface Texture { _hasAlpha?: boolean }
+}
+
 // Engine stores textures as DDS/TGA (need wasm decoder) or browser-native
 // formats like BMP/PNG/JPG (for skins of many scene models). Dispatch by
 // extension and build a THREE.CanvasTexture with consistent flipY/colorSpace.
