@@ -25,7 +25,7 @@
     "@types/react-dom": "^19.0.0",
     "@types/three": "^0.183.1",
     "@vitejs/plugin-react": "^4.4.0",
-    "autoangel": "^0.12.1",
+    "autoangel": "^0.12.2",
     "cross-env": "^7.0.3",
     "jsdom": "^29.0.2",
     "three": "^0.183.2",

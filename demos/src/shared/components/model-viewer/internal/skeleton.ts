@@ -118,73 +118,89 @@ export function buildSkeleton(wasm: AutoangelModule, bonData: Uint8Array): {
   bones: any[];
   boneNames: string[];
   tmpRoot: any;
+  hooksByName: Map<string, any>;
 } {
   const { THREE } = getThree();
-  using skel = wasm.Skeleton.parse(bonData);
-  {
-    const boneCount = skel.boneCount;
-    const bones: any[] = [];
-    const boneNames: string[] = [];
+  const skel = wasm.parseSkeleton(bonData);
+  const boneCount = skel.bones.length;
+  const bones: any[] = [];
+  const boneNames: string[] = [];
 
-    for (let i = 0; i < boneCount; i++) {
-      const bone = new THREE.Bone();
-      bone.name = skel.boneName(i) || `bone_${i}`;
-      bones.push(bone);
-      boneNames.push(bone.name);
-    }
-
-    for (let i = 0; i < boneCount; i++) {
-      const parentIdx = skel.boneParent(i);
-      if (parentIdx >= 0 && parentIdx < boneCount) {
-        bones[parentIdx].add(bones[i]);
-      }
-    }
-
-    // Derive bind-pose local transforms from mat_bone_init (inverse bind matrices).
-    // The BON file's mat_relative represents the runtime/animation state, not the
-    // bind pose where vertices were authored. We compute bind-pose locals as:
-    //   bind_world[i] = inverse(mat_bone_init[i])
-    //   bind_local[i] = inverse(bind_world[parent]) × bind_world[i]
-    const boneInverses: any[] = [];
-    for (let i = 0; i < boneCount; i++) {
-      const initFlat = skel.boneInitTransform(i);
-      const initMat = initFlat ? new THREE.Matrix4().fromArray(initFlat) : new THREE.Matrix4();
-      boneInverses.push(initMat);
-
-      const bindWorld = initMat.clone().invert();
-      const parentIdx = skel.boneParent(i);
-      let bindLocal;
-      if (parentIdx >= 0 && parentIdx < boneCount) {
-        // bind_local = inverse(bind_world[parent]) × bind_world[i]
-        //            = mat_bone_init[parent] × bind_world[i]
-        bindLocal = boneInverses[parentIdx].clone().multiply(bindWorld);
-      } else {
-        bindLocal = bindWorld;
-      }
-      bindLocal.decompose(bones[i].position, bones[i].quaternion, bones[i].scale);
-
-      if (skel.boneIsFlipped(i)) {
-        bones[i].scale.x *= -1;
-      }
-    }
-
-    // Update world matrices
-    const tmpRoot = new THREE.Object3D();
-    for (const b of bones) {
-      if (!b.parent || b.parent.type !== 'Bone') tmpRoot.add(b);
-    }
-    tmpRoot.updateWorldMatrix(false, true);
-
-    // Extra bone slot at index == boneCount
-    const extraBone = new THREE.Bone();
-    extraBone.name = '__root_world__';
-    tmpRoot.add(extraBone);
-    bones.push(extraBone);
-    boneNames.push(extraBone.name);
-    boneInverses.push(new THREE.Matrix4());
-    tmpRoot.updateWorldMatrix(false, true);
-
-    const skeleton = new THREE.Skeleton(bones, boneInverses);
-    return { skeleton, bones, boneNames, tmpRoot };
+  for (let i = 0; i < boneCount; i++) {
+    const bone = new THREE.Bone();
+    bone.name = skel.bones[i].name || `bone_${i}`;
+    bones.push(bone);
+    boneNames.push(bone.name);
   }
+
+  for (let i = 0; i < boneCount; i++) {
+    const parentIdx = skel.bones[i].parent;
+    if (parentIdx >= 0 && parentIdx < boneCount) {
+      bones[parentIdx].add(bones[i]);
+    }
+  }
+
+  // Derive bind-pose local transforms from mat_bone_init (inverse bind matrices).
+  // The BON file's mat_relative represents the runtime/animation state, not the
+  // bind pose where vertices were authored. We compute bind-pose locals as:
+  //   bind_world[i] = inverse(mat_bone_init[i])
+  //   bind_local[i] = inverse(bind_world[parent]) × bind_world[i]
+  const boneInverses: any[] = [];
+  for (let i = 0; i < boneCount; i++) {
+    const bone = skel.bones[i];
+    const initMat = new THREE.Matrix4().fromArray(bone.mat_bone_init);
+    boneInverses.push(initMat);
+
+    const bindWorld = initMat.clone().invert();
+    const parentIdx = bone.parent;
+    let bindLocal;
+    if (parentIdx >= 0 && parentIdx < boneCount) {
+      // bind_local = inverse(bind_world[parent]) × bind_world[i]
+      //            = mat_bone_init[parent] × bind_world[i]
+      bindLocal = boneInverses[parentIdx].clone().multiply(bindWorld);
+    } else {
+      bindLocal = bindWorld;
+    }
+    bindLocal.decompose(bones[i].position, bones[i].quaternion, bones[i].scale);
+
+    if (bone.is_flipped) {
+      bones[i].scale.x *= -1;
+    }
+  }
+
+  // Materialize hooks (HH_*, CC_*, etc.) as Object3D children of their
+  // owning bone. ECM GFX events target these by name, so they need to
+  // participate in the three.js scene graph just like bones do.
+  const hooksByName = new Map<string, any>();
+  for (const h of skel.hooks) {
+    const parent = bones[h.bone_index];
+    if (!parent) continue;
+    const hookObj = new THREE.Group();
+    hookObj.name = h.name;
+    // Hook transform is 16 floats, column-major local-to-bone — matches
+    // three.js Matrix4.fromArray convention used for boneInitTransform.
+    const mat = new THREE.Matrix4().fromArray(h.transform);
+    mat.decompose(hookObj.position, hookObj.quaternion, hookObj.scale);
+    parent.add(hookObj);
+    hooksByName.set(h.name, hookObj);
+  }
+
+  // Update world matrices
+  const tmpRoot = new THREE.Object3D();
+  for (const b of bones) {
+    if (!b.parent || b.parent.type !== 'Bone') tmpRoot.add(b);
+  }
+  tmpRoot.updateWorldMatrix(false, true);
+
+  // Extra bone slot at index == boneCount
+  const extraBone = new THREE.Bone();
+  extraBone.name = '__root_world__';
+  tmpRoot.add(extraBone);
+  bones.push(extraBone);
+  boneNames.push(extraBone.name);
+  boneInverses.push(new THREE.Matrix4());
+  tmpRoot.updateWorldMatrix(false, true);
+
+  const skeleton = new THREE.Skeleton(bones, boneInverses);
+  return { skeleton, bones, boneNames, tmpRoot, hooksByName };
 }

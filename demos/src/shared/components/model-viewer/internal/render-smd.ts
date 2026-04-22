@@ -49,7 +49,7 @@ export async function renderFromSmd(
 ): Promise<void> {
   let smdSkinPaths: string[] = [];
   let smdTcksDir: string | undefined;
-  let skelData: { skeleton: any; bones: any[]; boneNames: string[]; tmpRoot: any; footOffset: number } | null = null;
+  let skelData: { skeleton: any; bones: any[]; boneNames: string[]; tmpRoot: any; hooksByName: Map<string, any>; footOffset: number } | null = null;
   {
     using smd = wasm.SmdModel.parse(smdData);
     smdSkinPaths = smd.skinPaths || [];
@@ -237,6 +237,16 @@ export async function renderFromSmd(
               listFiles,
               element: el,
             });
+            // ECM events usually target hooks (HH_*); prefer hooks then fall
+            // back to bones, then to scene root if neither matches.
+            const hooks = skelData?.hooksByName;
+            const bones = skelData?.bones;
+            const findAttachPoint = (name: string) => {
+              if (!name) return undefined;
+              const hook = hooks?.get(name);
+              if (hook) return hook;
+              return bones?.find((b) => b.name === name);
+            };
             attachToHook(rt.root, {
               hookName: ev.hookName,
               hookOffset: ev.hookOffset,
@@ -244,7 +254,7 @@ export async function renderFromSmd(
               hookPitch: ev.hookPitch,
               hookRot: ev.hookRot,
               bindParent: ev.bindParent,
-            }, skelData?.bones ?? [], group);
+            }, findAttachPoint, group);
             localScheduler.attachRuntime(rt);
           }
         })().catch((e) => console.warn('[gfx-runtime] spawn failed:', e));

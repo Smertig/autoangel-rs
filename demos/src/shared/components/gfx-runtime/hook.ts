@@ -8,6 +8,15 @@ export interface HookSpec {
 }
 
 /**
+ * Resolves an ECM event's `hookName` to the attachment point Object3D. The
+ * caller is responsible for preferring hooks (HH_zui, HH_lefthandweapon, …)
+ * over bones of the same name — hooks are what ECM events actually target.
+ * Returns `undefined` if the name doesn't match anything, in which case
+ * `attachToHook` falls back to the scene root.
+ */
+export type AttachPointResolver = (name: string) => any | undefined;
+
+/**
  * Parent `root` to the appropriate node based on `spec`. Mutates `root`'s
  * parent + local transform.
  *
@@ -18,27 +27,27 @@ export interface HookSpec {
 export function attachToHook(
   root: any, // THREE.Object3D
   spec: HookSpec,
-  bones: any[],
+  findAttachPoint: AttachPointResolver,
   sceneRoot: any,
 ): void {
-  const bone = spec.hookName ? bones.find((b) => b.name === spec.hookName) : undefined;
+  const attachPoint = spec.hookName ? findAttachPoint(spec.hookName) : undefined;
 
-  if (spec.bindParent && bone) {
+  if (spec.bindParent && attachPoint) {
     root.position.set(spec.hookOffset[0], spec.hookOffset[1], spec.hookOffset[2]);
     root.rotation.set(spec.hookPitch, spec.hookYaw, spec.hookRot, 'YXZ');
-    bone.add(root);
+    attachPoint.add(root);
     return;
   }
 
-  if (!bone) {
+  if (!attachPoint) {
     sceneRoot.add(root);
     return;
   }
 
-  // Freeze at spawn location — bake the bone's current world transform onto
-  // root so subsequent bone motion doesn't drag the effect.
-  bone.updateMatrixWorld(true);
-  root.matrix.copy(bone.matrixWorld);
+  // Freeze at spawn location — bake the attachment point's current world
+  // transform onto root so subsequent bone motion doesn't drag the effect.
+  attachPoint.updateMatrixWorld(true);
+  root.matrix.copy(attachPoint.matrixWorld);
   root.matrix.decompose(root.position, root.quaternion, root.scale);
   // TODO: hookOffset is in bone-local space; the correct transform applies
   // bone's rotation before adding to world position. Current naive add is
