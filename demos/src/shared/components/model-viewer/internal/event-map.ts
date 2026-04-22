@@ -5,7 +5,16 @@ export interface AnimEvent {
   type: typeof EVENT_GFX | typeof EVENT_SOUND;
   filePath: string; // basename only
   startTime: number; // ms, 0 if not set
+  timeSpan: number; // ms, -1 = infinite
+  once: boolean;
   hookName: string; // empty if not set
+  hookOffset: [number, number, number];
+  hookYaw: number;
+  hookPitch: number;
+  hookRot: number;
+  bindParent: boolean;
+  gfxScale: number; // 1.0 default when EcmEvent.gfx_scale is null
+  gfxSpeed: number; // 1.0 default when EcmEvent.gfx_speed is null
 }
 
 /** Build a map from STCK animation name stem → events from ECM combined actions. */
@@ -28,10 +37,19 @@ export function buildAnimEventMap(ecm: any, animNames: string[]): Map<string, An
         if (ev.event_type !== EVENT_GFX && ev.event_type !== EVENT_SOUND) continue;
         const basePath = ev.fx_file_path.replace(/\\/g, '/').split('/').pop() ?? ev.fx_file_path;
         events.push({
-          type: ev.event_type as 100 | 101,
+          type: ev.event_type as typeof EVENT_GFX | typeof EVENT_SOUND,
           filePath: basePath,
           startTime: ev.start_time,
+          timeSpan: ev.time_span,
+          once: ev.once,
           hookName: ev.hook_name,
+          hookOffset: ev.hook_offset,
+          hookYaw: ev.hook_yaw,
+          hookPitch: ev.hook_pitch,
+          hookRot: ev.hook_rot,
+          bindParent: ev.bind_parent,
+          gfxScale: ev.gfx_scale ?? 1,
+          gfxSpeed: ev.gfx_speed ?? 1,
         });
       }
       if (events.length === 0) continue;

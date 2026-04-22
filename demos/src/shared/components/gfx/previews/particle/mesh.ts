@@ -22,6 +22,13 @@ export interface ParticleMeshInputs {
 export interface ParticleMesh {
   readonly object3D: any; // THREE.Object3D (specifically THREE.InstancedMesh)
   writeState(state: SimState): void;
+  /**
+   * Replace the texture uniform. Caller owns disposal of the OLD texture
+   * (we don't dispose it here — preview's white placeholder shouldn't be
+   * conflated with a loaded texture, and async load may want to keep the
+   * old one around briefly). The new texture is disposed by `dispose()`.
+   */
+  setTexture(texture: any): void;
   dispose(): void;
 }
 
@@ -32,7 +39,7 @@ export function createParticleMesh(
 ): ParticleMesh {
   const THREE = three;
   const quota = cfg.quota;
-  const texture = inputs?.texture ?? null;
+  let texture: any = inputs?.texture ?? null;
   const srcFactor = inputs?.srcBlend ?? null;
   const dstFactor = inputs?.dstBlend ?? null;
 
@@ -121,6 +128,12 @@ export function createParticleMesh(
     }
   }
 
+  function setTexture(tex: any): void {
+    texture = tex ?? null;
+    material.uniforms.uTex.value = texture;
+    material.uniforms.uHasTex.value = texture ? 1 : 0;
+  }
+
   function dispose(): void {
     geom.dispose();
     material.dispose();
@@ -129,7 +142,7 @@ export function createParticleMesh(
     }
   }
 
-  return { object3D: mesh, writeState, dispose };
+  return { object3D: mesh, writeState, setTexture, dispose };
 }
 
 // --- Shaders --------------------------------------------------------------

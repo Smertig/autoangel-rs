@@ -1,0 +1,95 @@
+import { describe, it, expect, vi } from 'vitest';
+import * as THREE from 'three';
+import { createGfxEventScheduler } from '../scheduler';
+import type { AnimEvent } from '../../model-viewer/internal/event-map';
+
+function fakeEvent(overrides: Partial<AnimEvent> = {}): AnimEvent {
+  return {
+    type: 100, filePath: 'a.gfx', startTime: 500, timeSpan: 1000,
+    once: false, hookName: '', hookOffset: [0, 0, 0],
+    hookYaw: 0, hookPitch: 0, hookRot: 0,
+    bindParent: true, gfxScale: 1, gfxSpeed: 1,
+    ...overrides,
+  };
+}
+
+describe('createGfxEventScheduler', () => {
+  it('fires event when time crosses startTime', () => {
+    const spawn = vi.fn(() => ({ root: new THREE.Group(), tick() {}, dispose() {} }));
+    const s = createGfxEventScheduler({
+      events: [fakeEvent({ startTime: 100 })],
+      spawn,
+      bones: [], sceneRoot: new THREE.Group(),
+    });
+    s.tickToClipTime(0.05);  // 50 ms — not yet
+    expect(spawn).not.toHaveBeenCalled();
+    s.tickToClipTime(0.15);  // 150 ms — crosses 100
+    expect(spawn).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not refire same once event on loop', () => {
+    const spawn = vi.fn(() => ({ root: new THREE.Group(), tick() {}, dispose() {} }));
+    const s = createGfxEventScheduler({
+      events: [fakeEvent({ startTime: 100, once: true })],
+      spawn,
+      bones: [], sceneRoot: new THREE.Group(),
+    });
+    s.tickToClipTime(0.2);
+    s.onLoop();
+    s.tickToClipTime(0.2);
+    expect(spawn).toHaveBeenCalledTimes(1);
+  });
+
+  it('refires non-once event after onLoop', () => {
+    const spawn = vi.fn(() => ({ root: new THREE.Group(), tick() {}, dispose() {} }));
+    const s = createGfxEventScheduler({
+      events: [fakeEvent({ startTime: 100, once: false })],
+      spawn,
+      bones: [], sceneRoot: new THREE.Group(),
+    });
+    s.tickToClipTime(0.2);
+    s.onLoop();
+    s.tickToClipTime(0.2);
+    expect(spawn).toHaveBeenCalledTimes(2);
+  });
+
+  it('disposeAll tears down every spawned runtime', () => {
+    const dispose = vi.fn();
+    const spawn = () => ({ root: new THREE.Group(), tick() {}, dispose, finished: () => false });
+    const s = createGfxEventScheduler({
+      events: [fakeEvent({ startTime: 50 })],
+      spawn,
+      bones: [], sceneRoot: new THREE.Group(),
+    });
+    s.tickToClipTime(0.1);
+    s.disposeAll();
+    expect(dispose).toHaveBeenCalled();
+  });
+
+  it('tickRuntimes ticks active runtimes and removes finished ones', () => {
+    const tick = vi.fn();
+    const dispose = vi.fn();
+    let finishedFlag = false;
+    const spawn = () => ({
+      root: new THREE.Group(),
+      tick,
+      dispose,
+      finished: () => finishedFlag,
+    });
+    const s = createGfxEventScheduler({
+      events: [fakeEvent({ startTime: 50 })],
+      spawn,
+      bones: [], sceneRoot: new THREE.Group(),
+    });
+    s.tickToClipTime(0.1);
+    s.tickRuntimes(0.016);
+    expect(tick).toHaveBeenCalledWith(0.016);
+    expect(dispose).not.toHaveBeenCalled();
+    finishedFlag = true;
+    s.tickRuntimes(0.016);
+    expect(dispose).toHaveBeenCalled();
+    // A second tickRuntimes after disposal must not re-tick the removed runtime.
+    s.tickRuntimes(0.016);
+    expect(tick).toHaveBeenCalledTimes(2);
+  });
+});
