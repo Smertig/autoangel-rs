@@ -113,6 +113,7 @@ export function sampleTrack(track: Track, tMs: number): Sample {
           lerp(track.positions[i][2], track.positions[i + 1][2], localT),
         ],
         rad2d: lerp(track.rad2ds[i], track.rad2ds[i + 1], localT),
+        axisOff: [0, 0, 0],
       };
       for (const ctrl of track.controllers[i + 1]) {
         // dtMs=0 — sampling a single instant; motion controllers no-op via calcDist(0).

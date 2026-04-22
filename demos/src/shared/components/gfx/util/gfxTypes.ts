@@ -13,4 +13,5 @@ export type KpCtrlKind = KpCtrlBody['kind'];
 /** Subset of `KpCtrlKind` for which `applyController` has an implementation. */
 export type HandledCtrlKind =
   | 'color' | 'scale' | 'cl_trans' | 'scale_trans'
-  | 'move' | 'rot' | 'centri_move';
+  | 'move' | 'rot' | 'centri_move'
+  | 'rot_axis' | 'revol';

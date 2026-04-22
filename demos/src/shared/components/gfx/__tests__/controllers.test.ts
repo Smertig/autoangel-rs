@@ -1,9 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { applyController, type CtrlState } from '../util/controllers';
 
-const baseState: CtrlState = { color: 0xFF808080, scale: 1, position: [0, 0, 0], rad2d: 0 };
+const baseState: CtrlState = { color: 0xFF808080, scale: 1, position: [0, 0, 0], rad2d: 0, axisOff: [0, 0, 0] };
 
-function fresh(): CtrlState { return { ...baseState, position: [...baseState.position] as [number, number, number] }; }
+function fresh(): CtrlState {
+  return {
+    ...baseState,
+    position: [...baseState.position] as [number, number, number],
+    axisOff: [...baseState.axisOff] as [number, number, number],
+  };
+}
 
 const wrap = (kind: any, body: any) => ({ start_time: 0, end_time: -1, body: { kind, ...body } });
 
