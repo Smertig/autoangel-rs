@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useDeferredValue, useEffect, memo } from 'react';
+import React, { useState, useCallback, useMemo, useDeferredValue, useEffect, useRef, memo } from 'react';
 import { useStateSyncedWith } from '@shared/hooks/useStateSyncedWith';
 import styles from './FileTree.module.css';
 import {
@@ -101,6 +101,23 @@ export function collectSingleChildPaths(
   }
   walk(root, '');
   return out;
+}
+
+/**
+ * Walk up the DOM looking for the nearest ancestor with a real vertical
+ * scroll (`overflow-y: auto | scroll` AND content that exceeds its box).
+ * Used to check whether a row is already in view before centering it.
+ */
+function findScrollableAncestor(el: HTMLElement): HTMLElement | null {
+  let parent: HTMLElement | null = el.parentElement;
+  while (parent) {
+    const overflowY = getComputedStyle(parent).overflowY;
+    if ((overflowY === 'auto' || overflowY === 'scroll') && parent.scrollHeight > parent.clientHeight) {
+      return parent;
+    }
+    parent = parent.parentElement;
+  }
+  return null;
 }
 
 // --- Default file icon ---
@@ -410,6 +427,7 @@ const FileRow = memo(function FileRow({
       className={rowClass}
       style={{ paddingLeft: `${8 + depth * 16}px`, ...rowStyle }}
       onClick={handleClick}
+      data-file-path={file.fullPath}
     >
       <span className={`${styles.treeArrow} ${styles.leaf}`} />
       <span className={styles.treeIcon}>{fileIconFn(file.name)}</span>
@@ -492,26 +510,107 @@ export function FileTree({
     return computeVisibleSets(root, filterLower);
   }, [root, filterLower]);
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  // Tracks which `selectedPath` we last performed a scroll for, so the
+  // reveal-scroll effect fires exactly once per selection — not every time
+  // `expandedPaths` changes (e.g. the user manually toggles a folder
+  // unrelated to the selection).
+  const lastScrolledPathRef = useRef<string | null>(null);
+
+  // Compute the ancestor folder paths of the current selection. Shared by
+  // the expand effect and the scroll effect's "are we ready yet?" guard.
+  const selectionAncestors = useMemo<string[]>(() => {
+    if (!selectedPath) return [];
+    const out: string[] = [];
+    let idx = selectedPath.indexOf('\\');
+    while (idx >= 0) {
+      out.push(selectedPath.slice(0, idx));
+      idx = selectedPath.indexOf('\\', idx + 1);
+    }
+    return out;
+  }, [selectedPath]);
+
+  // Reveal the selection in two steps so DOM commits interleave correctly:
+  //   1. Expand every ancestor so the row mounts in the tree.
+  //   2. Once `expandedPaths` reflects that, schedule a rAF + scroll-center.
+  // Doing both in one effect would race: `setExpandedPaths` schedules a
+  // re-render, but `requestAnimationFrame` fires before React commits it,
+  // so `querySelector` runs against the pre-expansion DOM and silently
+  // misses the row.
+  useEffect(() => {
+    if (selectionAncestors.length === 0) return;
+    setExpandedPaths((prev) => {
+      let changed = false;
+      const next = new Set(prev);
+      for (const p of selectionAncestors) {
+        if (!next.has(p)) {
+          next.add(p);
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [selectionAncestors]);
+
+  useEffect(() => {
+    if (!selectedPath) {
+      lastScrolledPathRef.current = null;
+      return;
+    }
+    // Bail out before scheduling rAF: unrelated `expandedPaths` churn (user
+    // toggling folders) re-fires this effect, and we don't want to allocate
+    // a closure + rAF slot just to find out we've already scrolled.
+    if (lastScrolledPathRef.current === selectedPath) return;
+    const ancestorsReady =
+      autoExpand || selectionAncestors.every((p) => expandedPaths.has(p));
+    if (!ancestorsReady) return;
+
+    const raf = requestAnimationFrame(() => {
+      const el = containerRef.current?.querySelector<HTMLElement>(
+        `[data-file-path="${CSS.escape(selectedPath)}"]`,
+      );
+      if (!el) return;
+      lastScrolledPathRef.current = selectedPath;
+      const scrollable = findScrollableAncestor(el);
+      if (!scrollable) {
+        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        return;
+      }
+      const rowRect = el.getBoundingClientRect();
+      const boxRect = scrollable.getBoundingClientRect();
+      // One row of breathing room above/below: the first or last fully
+      // visible entry still triggers a re-center since those positions give
+      // no surrounding context.
+      const margin = rowRect.height;
+      const hasBreathingRoom =
+        rowRect.top >= boxRect.top + margin && rowRect.bottom <= boxRect.bottom - margin;
+      if (!hasBreathingRoom) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [selectedPath, expandedPaths, selectionAncestors, autoExpand]);
+
   if (!root) return null;
 
   return (
-    <TreeNodeContents
-      node={root}
-      depth={0}
-      folderPath=""
-      filterLower={filterLower}
-      autoExpand={autoExpand}
-      expandedPaths={expandedPaths}
-      onToggleExpand={handleToggleExpand}
-      focusedPath={focusedPath}
-      onFocusPath={setFocusedPath}
-      onSelectFile={onSelectFile}
-      visibleSet={visibleSet}
-      visibleFolderPaths={visibleFolderPaths}
-      renderFileBadge={renderFileBadge}
-      renderFolderBadge={renderFolderBadge}
-      fileIconFn={fileIconFn}
-      fileRowStyle={fileRowStyle}
-    />
+    <div ref={containerRef}>
+      <TreeNodeContents
+        node={root}
+        depth={0}
+        folderPath=""
+        filterLower={filterLower}
+        autoExpand={autoExpand}
+        expandedPaths={expandedPaths}
+        onToggleExpand={handleToggleExpand}
+        focusedPath={focusedPath}
+        onFocusPath={setFocusedPath}
+        onSelectFile={onSelectFile}
+        visibleSet={visibleSet}
+        visibleFolderPaths={visibleFolderPaths}
+        renderFileBadge={renderFileBadge}
+        renderFolderBadge={renderFolderBadge}
+        fileIconFn={fileIconFn}
+        fileRowStyle={fileRowStyle}
+      />
+    </div>
   );
 }

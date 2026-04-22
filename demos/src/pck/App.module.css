@@ -45,6 +45,37 @@
   background: var(--tree-hover);
 }
 
+/* Local flex-column layout inside the shared ResizableSidebar: fills the
+ * sidebar's full height so the tree section and the recents footer each get
+ * their own scroll region instead of all riding the sidebar's outer scroll. */
+.sidebarInner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+/* Wraps the FileTree so it claims the remaining vertical space and scrolls
+ * on its own. Recents docks below it at a fixed height. */
+.treeScroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.treeScroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.treeScroll::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+
+.treeScroll::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
 /* Sidebar controls (filter input) */
 .sidebarControls {
   padding: 8px 12px;

@@ -15,10 +15,17 @@ import { Breadcrumb } from './components/Breadcrumb';
 import { FilePreview } from './components/FilePreview';
 import { PackageChipRow } from './components/PackageChipRow';
 import { EmptyState } from './components/EmptyState';
+import { RecentEntries } from './components/RecentEntries';
 import { mergePackageTrees, type TaggedTreeFile } from './merge-tree';
 import { PackageRemovedError, usePackageSlots } from './usePackageSlots';
 import { useSessions } from './history/useSessions';
-import { fileFingerprint, sessionIdFromFileIds, type Session, type SessionFile } from './history/types';
+import {
+  fileFingerprint,
+  sessionIdFromFileIds,
+  type RecentEntry,
+  type Session,
+  type SessionFile,
+} from './history/types';
 import styles from './App.module.css';
 
 const cdn = resolveCDN();
@@ -39,6 +46,8 @@ export function App() {
   const [filterText, setFilterText] = useState('');
   const [customKeys, setCustomKeys] = useState<KeyConfig | null>(null);
   const [keysOpen, setKeysOpen] = useState(false);
+  // Entry to auto-select after a session reopen settles.
+  const [pendingSelection, setPendingSelection] = useState<RecentEntry | null>(null);
 
   // Multi-package slot state
   const { slots, loadingEntries, loadPackages, removeSlot, replaceSlot, getFile } = usePackageSlots(cdn);
@@ -221,11 +230,22 @@ export function App() {
     [currentSessionFiles],
   );
 
+  // Recent entries for the currently-loaded set (empty until the session
+  // upsert settles after first load).
+  const currentRecentEntries = useMemo<RecentEntry[]>(() => {
+    if (!currentSessionId) return [];
+    const current = sessionsApi.sessions.find((s) => s.id === currentSessionId);
+    return current?.recentEntries ?? [];
+  }, [sessionsApi.sessions, currentSessionId]);
+
   // Open every file in a session via stored handles. Failures (missing
   // handle, denied permission) are surfaced; the partial set still loads.
   const handleOpenSession = useCallback(
     async (session: Session) => {
-      const { items, failed } = await sessionsApi.openSession(session);
+      const { items, failed, pendingSelection } = await sessionsApi.openSession(session);
+      // Arm the auto-jump before loading — the effect below fires once the
+      // packages settle and the target path resolves in the merged tree.
+      setPendingSelection(pendingSelection);
       if (items.length > 0) await handleDrop(items);
       if (failed.length > 0) {
         const verb = items.length > 0 ? 'restored partially' : 'couldn\u2019t auto-restore';
@@ -236,6 +256,21 @@ export function App() {
     },
     [sessionsApi, handleDrop],
   );
+
+  // Auto-jump: once loading settles, resolve the pending entry against the
+  // merged tree and select it. A missing path silently drops the intent
+  // (package changed, file renamed, etc.). `isStable` is defined above.
+  useEffect(() => {
+    if (!pendingSelection || !isStable || slots.length === 0) return;
+    const bucket = pathIndex.get(pendingSelection.path.toLowerCase());
+    const slotForPck = slots.find(
+      (s) => `${s.stem}.pck`.toLowerCase() === pendingSelection.pckName.toLowerCase(),
+    );
+    const hit =
+      (slotForPck && bucket?.find((e) => e.pkgId === slotForPck.pkgId)) ?? bucket?.[0] ?? null;
+    if (hit) setSelectedFile({ pkgId: hit.pkgId, path: hit.orig });
+    setPendingSelection(null);
+  }, [pendingSelection, isStable, slots, pathIndex]);
 
   const deferredFilter = useDeferredValue(filterText);
   const isFiltering = filterText !== deferredFilter;
@@ -266,15 +301,42 @@ export function App() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [mergedTree]);
 
-  // Selecting a file from the merged tree: the clicked leaf carries its
-  // `pkgIndex` via the `TaggedTreeFile` tag, so duplicate siblings are
-  // disambiguated automatically.
+  // Tree-click handler: fresh exploration — bump to head of the ring. Tree
+  // leaves carry their `pkgIndex` via the `TaggedTreeFile` tag, so duplicate
+  // siblings are disambiguated automatically.
   const handleSelectFile = useCallback(
     (file: TreeFile) => {
-      setSelectedFile({ pkgId: (file as TaggedTreeFile).pkgIndex, path: file.fullPath });
-      sessionsApi.incrementExplored(currentSessionId);
+      const pkgId = (file as TaggedTreeFile).pkgIndex;
+      setSelectedFile({ pkgId, path: file.fullPath });
+      const slot = slotLookup.get(pkgId);
+      if (slot) {
+        sessionsApi.recordExplored(currentSessionId, {
+          pckName: `${slot.stem}.pck`,
+          path: file.fullPath,
+          at: Date.now(),
+        });
+      }
     },
-    [sessionsApi, currentSessionId],
+    [sessionsApi, currentSessionId, slotLookup],
+  );
+
+  // Recent-entry click: revisit — refresh `at` without reordering the list.
+  // Auto-jump on reopen picks the max-`at` entry, so this still anchors the
+  // "return to last active" target without reshuffling the ring under the
+  // user's cursor.
+  const handleSelectRecent = useCallback(
+    (target: { pkgId: number; path: string }) => {
+      setSelectedFile(target);
+      const slot = slotLookup.get(target.pkgId);
+      if (slot) {
+        sessionsApi.recordTouched(currentSessionId, {
+          pckName: `${slot.stem}.pck`,
+          path: target.path,
+          at: Date.now(),
+        });
+      }
+    },
+    [sessionsApi, currentSessionId, slotLookup],
   );
 
   const handleReset = useCallback(() => {
@@ -368,7 +430,7 @@ export function App() {
           initialWidth={300}
           minWidth={180}
           sidebar={
-            <>
+            <div className={styles.sidebarInner}>
               <div className={styles.sidebarControls} data-filtering={isFiltering || undefined}>
                 <input
                   ref={filterInputRef}
@@ -385,16 +447,25 @@ export function App() {
                   }}
                 />
               </div>
-              <FileTree
-                root={mergedTree}
+              <div className={styles.treeScroll}>
+                <FileTree
+                  root={mergedTree}
+                  selectedPath={selectedFile?.path ?? null}
+                  filterText={filterText}
+                  onSelectFile={handleSelectFile}
+                  renderFileBadge={renderFileBadge}
+                  fileRowStyle={fileRowStyle}
+                  suppressRootAutoExpand={slots.length + loadingEntries.length > 1}
+                />
+              </div>
+              <RecentEntries
+                entries={currentRecentEntries}
+                slots={slots}
                 selectedPath={selectedFile?.path ?? null}
-                filterText={filterText}
-                onSelectFile={handleSelectFile}
-                renderFileBadge={renderFileBadge}
-                fileRowStyle={fileRowStyle}
-                suppressRootAutoExpand={slots.length + loadingEntries.length > 1}
+                selectedPkgId={selectedPkgId}
+                onSelect={handleSelectRecent}
               />
-            </>
+            </div>
           }
         >
           <Breadcrumb

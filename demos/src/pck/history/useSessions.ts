@@ -10,7 +10,15 @@ import {
   putHandles,
   putSession,
 } from './idb';
-import { sessionIdFromFileIds, type Session, type SessionFile } from './types';
+import {
+  mostRecentByAt,
+  pushRecent,
+  sessionIdFromFileIds,
+  touchRecent,
+  type RecentEntry,
+  type Session,
+  type SessionFile,
+} from './types';
 
 const SAVE_DEBOUNCE_MS = 500;
 const EXPLORED_FLUSH_MS = 500;
@@ -20,6 +28,8 @@ export interface OpenedSession {
   items: PickedItem[];
   /** SessionFiles for which we couldn't get a usable handle. */
   failed: SessionFile[];
+  /** Entry to auto-select once the session finishes loading (head of recent ring). */
+  pendingSelection: RecentEntry | null;
 }
 
 export interface SessionsApi {
@@ -27,7 +37,10 @@ export interface SessionsApi {
   loading: boolean;
   upsertCurrent: (files: SessionFile[]) => void;
   saveHandles: (fileId: string, handles: FileSystemFileHandle[]) => Promise<void>;
-  incrementExplored: (sessionId: string) => void;
+  /** Fresh exploration (tree click): bump to head + refresh `at`. */
+  recordExplored: (sessionId: string, entry: RecentEntry) => void;
+  /** Revisit via recents UI: refresh `at` only, keep list order. */
+  recordTouched: (sessionId: string, entry: RecentEntry) => void;
   openSession: (session: Session) => Promise<OpenedSession>;
   removeOne: (id: string) => Promise<void>;
   clearAll: () => Promise<void>;
@@ -99,6 +112,7 @@ export function useSessions(): SessionsApi {
             lastUsedAt: now,
             openCount: 1,
             exploredCount: 0,
+            recentEntries: [],
           };
       const next =
         idx >= 0 ? prev.map((s, i) => (i === idx ? merged : s)) : [...prev, merged];
@@ -116,25 +130,52 @@ export function useSessions(): SessionsApi {
     }
   }, []);
 
-  const incrementExplored = useCallback((sessionId: string) => {
-    const target = sessionsRef.current.find((s) => s.id === sessionId);
-    if (!target) return;
-    // Optimistic in-memory bump; IDB write is debounced per-session below.
-    setSessions((prev) =>
-      prev.map((s) => (s.id === sessionId ? { ...s, exploredCount: s.exploredCount + 1 } : s)),
-    );
-    const flushes = exploredFlushRef.current;
-    const existing = flushes.get(sessionId);
-    if (existing) clearTimeout(existing);
-    flushes.set(
-      sessionId,
-      setTimeout(() => {
-        flushes.delete(sessionId);
-        const latest = sessionsRef.current.find((s) => s.id === sessionId);
-        if (latest) void putSession(latest);
-      }, EXPLORED_FLUSH_MS),
-    );
-  }, []);
+  // Shared debounced write: takes a transform that returns the new ring, or
+  // the same reference for a no-op. `exploredCount` stays in lockstep with
+  // `recentEntries.length` so old pre-migration rows that only read the
+  // counter still show a sane number.
+  const applyRecentTransform = useCallback(
+    (
+      sessionId: string,
+      transform: (buf: readonly RecentEntry[] | undefined) => RecentEntry[],
+    ) => {
+      const target = sessionsRef.current.find((s) => s.id === sessionId);
+      if (!target) return;
+      const next = transform(target.recentEntries);
+      if (next === target.recentEntries) return;
+      setSessions((prev) =>
+        prev.map((s) =>
+          s.id === sessionId ? { ...s, recentEntries: next, exploredCount: next.length } : s,
+        ),
+      );
+      const flushes = exploredFlushRef.current;
+      const existing = flushes.get(sessionId);
+      if (existing) clearTimeout(existing);
+      flushes.set(
+        sessionId,
+        setTimeout(() => {
+          flushes.delete(sessionId);
+          const latest = sessionsRef.current.find((s) => s.id === sessionId);
+          if (latest) void putSession(latest);
+        }, EXPLORED_FLUSH_MS),
+      );
+    },
+    [],
+  );
+
+  const recordExplored = useCallback(
+    (sessionId: string, entry: RecentEntry) => {
+      applyRecentTransform(sessionId, (buf) => pushRecent(buf, entry));
+    },
+    [applyRecentTransform],
+  );
+
+  const recordTouched = useCallback(
+    (sessionId: string, entry: RecentEntry) => {
+      applyRecentTransform(sessionId, (buf) => touchRecent(buf, entry));
+    },
+    [applyRecentTransform],
+  );
 
   const openSession = useCallback(async (session: Session): Promise<OpenedSession> => {
     type FileOutcome = { ok: true; items: PickedItem[] } | { ok: false; file: SessionFile };
@@ -175,7 +216,17 @@ export function useSessions(): SessionsApi {
       if (o.ok) items.push(...o.items);
       else failed.push(o.file);
     }
-    return { items, failed };
+    // Auto-jump target: highest-`at` entry whose package actually came back.
+    // Uses `at` (not list order) because recent-entry clicks refresh `at`
+    // without reordering — so "last active" may sit deeper in the list.
+    const openedPckNames = new Set(
+      session.files
+        .filter((f) => !failed.some((x) => x.fileId === f.fileId))
+        .map((f) => f.pckName),
+    );
+    const eligible = session.recentEntries?.filter((e) => openedPckNames.has(e.pckName));
+    const pendingSelection = mostRecentByAt(eligible);
+    return { items, failed, pendingSelection };
   }, []);
 
   const removeOne = useCallback(async (id: string) => {
@@ -214,11 +265,22 @@ export function useSessions(): SessionsApi {
       loading,
       upsertCurrent,
       saveHandles,
-      incrementExplored,
+      recordExplored,
+      recordTouched,
       openSession,
       removeOne,
       clearAll,
     }),
-    [sessions, loading, upsertCurrent, saveHandles, incrementExplored, openSession, removeOne, clearAll],
+    [
+      sessions,
+      loading,
+      upsertCurrent,
+      saveHandles,
+      recordExplored,
+      recordTouched,
+      openSession,
+      removeOne,
+      clearAll,
+    ],
   );
 }

@@ -1,0 +1,162 @@
+.container {
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--surface);
+}
+
+/* Expanded: pin a predictable footprint at the bottom of the sidebar so the
+ * tree above always flexes into the remaining space. Collapsed, only the
+ * header is visible and the tree reclaims everything below. */
+.container[data-open] {
+  height: 200px;
+}
+
+.header {
+  appearance: none;
+  background: transparent;
+  border: none;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: left;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.header:hover {
+  color: var(--text);
+  background: var(--tree-hover);
+}
+
+.header:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.caret {
+  display: inline-block;
+  width: 10px;
+  font-size: 10px;
+  line-height: 1;
+  color: var(--text-muted);
+}
+
+.headerLabel {
+  font-weight: 600;
+}
+
+.count {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.list {
+  margin: 0;
+  padding: 2px 0 4px;
+  list-style: none;
+  overflow-y: auto;
+  /* Fills the remaining space in the fixed-height container. */
+  flex: 1;
+  min-height: 0;
+}
+
+.empty {
+  padding: 12px 14px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  opacity: 0.8;
+  font-style: italic;
+}
+
+.list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.list::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+
+.list::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 3px 12px 3px 10px;
+  border-left: 2px solid transparent;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--text);
+  cursor: pointer;
+  min-width: 0;
+  transition: background 100ms;
+}
+
+.row:hover {
+  background: var(--tree-hover);
+}
+
+.row:focus-visible {
+  outline: none;
+  background: var(--tree-hover);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.row[data-selected] {
+  background: var(--tree-selected, var(--tree-hover));
+  color: var(--text);
+}
+
+.row[data-disabled] {
+  cursor: not-allowed;
+  opacity: 0.45;
+  border-left-color: transparent !important;
+}
+
+.row[data-disabled]:hover {
+  background: transparent;
+}
+
+.name {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+  max-width: 60%;
+}
+
+.dir {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-muted);
+  font-size: 10px;
+  opacity: 0.75;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  direction: rtl;
+  text-align: left;
+}
+
+.pkgTag {
+  flex-shrink: 0;
+  font-size: 10px;
+  opacity: 0.85;
+  white-space: nowrap;
+}

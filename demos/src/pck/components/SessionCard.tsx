@@ -29,12 +29,21 @@ function totalSize(session: Session): number {
   return n;
 }
 
+function exploredCount(session: Session): number {
+  // `recentEntries` is the source of truth when present; fall back to the
+  // legacy counter for sessions recorded before the ring buffer existed.
+  return session.recentEntries?.length ?? session.exploredCount;
+}
+
 function exploredHint(session: Session): string {
   const opens = session.openCount;
-  const explored = session.exploredCount;
+  const explored = exploredCount(session);
   const opensWord = opens === 1 ? 'open' : 'opens';
   if (explored === 0) return `${opens} ${opensWord}, no entries explored yet`;
-  return `${explored} entries explored across ${opens} ${opensWord}`;
+  const base = `${explored} entries explored across ${opens} ${opensWord}`;
+  const top = session.recentEntries?.slice(0, 5) ?? [];
+  if (top.length === 0) return base;
+  return `${base}\n\nRecent:\n${top.map((e) => `\u2022 ${e.path}`).join('\n')}`;
 }
 
 export const SessionCard = memo(function SessionCard({ session, onOpen, onRemove }: SessionCardProps) {
@@ -93,7 +102,7 @@ export const SessionCard = memo(function SessionCard({ session, onOpen, onRemove
               d="M5 3h7v7h-2V6.41L4.7 11.71 3.29 10.3 8.59 5H5z"
             />
           </svg>
-          <span>{session.exploredCount}</span>
+          <span>{exploredCount(session)}</span>
         </span>
       </div>
     </div>
