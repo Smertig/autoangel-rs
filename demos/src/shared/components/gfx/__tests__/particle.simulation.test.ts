@@ -1,12 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import {
   createSimState,
+  hasMotionAffector,
   tickSim,
   type SimConfig,
 } from '../previews/particle/simulation';
 import type { KpController } from '../util/gfxTypes';
 
 function makeCfg(overrides: Partial<SimConfig> = {}): SimConfig {
+  const affectors = overrides.affectors ?? [];
   return {
     quota: 100,
     emissionRate: 10,
@@ -31,8 +33,9 @@ function makeCfg(overrides: Partial<SimConfig> = {}): SimConfig {
     particleWidth: 1,
     particleHeight: 1,
     shape: { kind: 'point' },
-    affectors: [],
     ...overrides,
+    affectors,
+    hasMotionAffector: hasMotionAffector(affectors),
   };
 }
 
@@ -193,5 +196,60 @@ describe('tickSim affectors', () => {
     // Second tick: no births, but affector present → all alive re-flagged dirty.
     tickSim(0.01, state, { ...cfg, emissionRate: 0 }, rng);
     expect(state.dirtyIndices.slice().sort()).toEqual([0, 1, 2, 3]);
+  });
+
+  it('applies Move affector (translation along dir with vel+acc)', () => {
+    const affector: KpController = {
+      start_time: undefined, end_time: undefined,
+      body: { kind: 'move', dir: [1, 0, 0], vel: 2, acc: 0 },
+    } as KpController;
+    const cfg = makeCfg({
+      emissionRate: 0, quota: 1, ttl: 5,
+      speed: 0, // no self-velocity from emitter — isolate affector contribution
+      affectors: [affector],
+    });
+    const state = spawnOne(cfg);
+    const p0 = state.alive[0];
+    const startX = p0.px;
+    // Constant vel=2 u/s over 0.5s total (plus spawnOne's 0.0001 seed tick).
+    tickSim(0.5, state, cfg, rng);
+    // Trapezoidal CalcDist(vel=2, acc=0, age, dt=0.5) = 2 * 0.5 = 1.
+    expect(state.alive[0].px - startX).toBeCloseTo(1, 3);
+  });
+
+  it('applies Rot affector (rad2d integration)', () => {
+    const affector: KpController = {
+      start_time: undefined, end_time: undefined,
+      body: { kind: 'rot', vel: Math.PI, acc: 0 }, // π rad/s
+    } as KpController;
+    const cfg = makeCfg({
+      emissionRate: 0, quota: 1, ttl: 5,
+      rotMin: 0, rotMax: 0,
+      affectors: [affector],
+    });
+    const state = spawnOne(cfg);
+    tickSim(0.5, state, cfg, rng);
+    // 0.5s at π rad/s = π/2 rad.
+    expect(state.alive[0].rot).toBeCloseTo(Math.PI / 2, 3);
+  });
+
+  it('applies CentriMove affector (radial translation from center)', () => {
+    const affector: KpController = {
+      start_time: undefined, end_time: undefined,
+      body: { kind: 'centri_move', center: [0, 0, 0], vel: 1, acc: 0 },
+    } as KpController;
+    const cfg = makeCfg({
+      emissionRate: 0, quota: 1, ttl: 5,
+      speed: 0,
+      affectors: [affector],
+    });
+    const state = spawnOne(cfg);
+    // Place particle at (3, 0, 0) so the radial direction is +X.
+    state.alive[0].px = 3;
+    state.alive[0].py = 0;
+    state.alive[0].pz = 0;
+    tickSim(0.5, state, cfg, rng);
+    // CentriMove with vel=1 pushes outward by 0.5 units over 0.5s.
+    expect(state.alive[0].px).toBeCloseTo(3.5, 3);
   });
 });

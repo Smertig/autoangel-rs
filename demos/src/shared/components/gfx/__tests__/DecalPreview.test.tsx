@@ -135,7 +135,7 @@ describe('DecalPreview', () => {
             {
               start_time: 0,
               end_time: -1,
-              body: { kind: 'move', dir: [0, 0, 0], vel: 0, acc: 0 },
+              body: { kind: 'rot_axis', pos: [0, 0, 0], axis: [0, 1, 0], vel: 0, acc: 0 },
             },
           ],
         },
@@ -160,7 +160,7 @@ describe('DecalPreview', () => {
       />,
     );
     expect(screen.getByText('unhandled_ctrls')).toBeTruthy();
-    expect(screen.getByText(/move/)).toBeTruthy();
+    expect(screen.getByText(/rot_axis/)).toBeTruthy();
   });
 
   it('returns thumbnail when not expanded', () => {

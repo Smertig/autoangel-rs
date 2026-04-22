@@ -1,6 +1,6 @@
 import type { ElementBody } from '../types';
 import type { KpController } from '../../util/gfxTypes';
-import { resolvePoolSize, type ShapeCfg, type SimConfig } from './simulation';
+import { hasMotionAffector, resolvePoolSize, type ShapeCfg, type SimConfig } from './simulation';
 
 type ParticleBody = Extract<ElementBody, { kind: 'particle' }>;
 
@@ -66,5 +66,6 @@ export function buildSimConfig(
     particleHeight: body.particle_height,
     shape: buildShapeCfg(e),
     affectors,
+    hasMotionAffector: hasMotionAffector(affectors),
   };
 }
