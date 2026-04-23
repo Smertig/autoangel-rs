@@ -1,4 +1,4 @@
-import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { resolveCDN } from '../cdn';
 import { initWasm } from '../wasm';
@@ -12,10 +12,13 @@ import { FileTree, type TreeFile } from '@shared/components/FileTree';
 import { KeysPanel, type KeyConfig } from '@shared/components/KeysPanel';
 import { SourceLink } from '@shared/components/SourceLink';
 import { Breadcrumb } from './components/Breadcrumb';
-import { FilePreview } from './components/FilePreview';
 import { PackageChipRow } from './components/PackageChipRow';
 import { EmptyState } from './components/EmptyState';
 import { RecentEntries } from './components/RecentEntries';
+
+const FilePreview = lazy(() =>
+  import('./components/FilePreview').then((m) => ({ default: m.FilePreview })),
+);
 import { mergePackageTrees, type TaggedTreeFile } from './merge-tree';
 import { PackageRemovedError, usePackageSlots } from './usePackageSlots';
 import { useSessions } from './history/useSessions';
@@ -477,13 +480,15 @@ export function App() {
 
           <div className={styles.previewArea}>
             {selectedFile && wasmRef.current ? (
-              <FilePreview
-                path={selectedFile.path}
-                getData={getFileData}
-                wasm={wasmRef.current}
-                listFiles={listFiles}
-                findFile={findFile}
-              />
+              <Suspense fallback={<div className={styles.placeholder}>Loading preview&hellip;</div>}>
+                <FilePreview
+                  path={selectedFile.path}
+                  getData={getFileData}
+                  wasm={wasmRef.current}
+                  listFiles={listFiles}
+                  findFile={findFile}
+                />
+              </Suspense>
             ) : (
               <div className={styles.placeholder}>Select a file to preview</div>
             )}

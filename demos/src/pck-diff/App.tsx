@@ -1,4 +1,6 @@
 import React, {
+  Suspense,
+  lazy,
   useCallback,
   useDeferredValue,
   useEffect,
@@ -32,8 +34,12 @@ import {
 } from './components/DiffTree';
 import { ChooserPanel } from './components/ChooserPanel';
 import { ProgressPanel } from './components/ProgressPanel';
-import { DiffPreview, ContentHeader } from './components/DiffPreview';
+import { ContentHeader } from './components/ContentHeader';
 import styles from './App.module.css';
+
+const DiffPreview = lazy(() =>
+  import('./components/DiffPreview').then((m) => ({ default: m.DiffPreview })),
+);
 
 const CDN = resolveCDN();
 const SCAN_DELAY = Number(new URLSearchParams(location.search).get('scanDelay')) || 0;
@@ -831,14 +837,16 @@ export function App() {
               />
               <div className={styles.previewArea}>
                 {wasm && (
-                  <DiffPreview
-                    path={selectedPath}
-                    status={selectedStatus}
-                    getLeftData={getLeftData}
-                    getRightData={getRightData}
-                    wasm={wasm}
-                    onResolveStatus={handleResolveStatus}
-                  />
+                  <Suspense fallback={<div className={styles.placeholder}>Loading&hellip;</div>}>
+                    <DiffPreview
+                      path={selectedPath}
+                      status={selectedStatus}
+                      getLeftData={getLeftData}
+                      getRightData={getRightData}
+                      wasm={wasm}
+                      onResolveStatus={handleResolveStatus}
+                    />
+                  </Suspense>
                 )}
               </div>
             </section>

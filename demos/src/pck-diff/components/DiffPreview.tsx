@@ -5,13 +5,12 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { getExtension, isLikelyText, formatSize } from '@shared/util/files';
+import { getExtension, isLikelyText } from '@shared/util/files';
 import { detectEncoding } from '@shared/util/encoding';
 import { bytesEqual } from '@shared/util/bytes';
 import type { AutoangelModule } from '@shared/../types/autoangel';
 import { DiffStatus, DiffStatusValue } from '../types';
 import { findFormat, lazyFormatComponent } from '@shared/formats/registry';
-import { CopyButton } from '@shared/components/CopyButton';
 import { noListFiles, noFindFile } from '@shared/formats/helpers';
 import styles from '../App.module.css';
 
@@ -38,50 +37,6 @@ function DiffBanner({ status }: { status: DiffStatusValue }) {
     : status === DiffStatus.DELETED ? 'Removed file (not in right package)'
     : 'Unchanged';
   return <div className={bannerClass}>{text}</div>;
-}
-
-// --- Content Header ---
-
-export function ContentHeader({
-  path,
-  status,
-  leftSize,
-  rightSize,
-  leftEnc,
-  rightEnc,
-}: {
-  path: string | null;
-  status: DiffStatusValue;
-  leftSize?: number;
-  rightSize?: number;
-  leftEnc?: string;
-  rightEnc?: string;
-}) {
-  if (!path) return null;
-
-  return (
-    <div className={styles.contentHeader}>
-      <span className={styles.contentPath}>{path}</span>
-      <CopyButton text={path.replaceAll('\\', '/')} />
-      {leftSize != null && rightSize != null && (
-        <span className={styles.contentSize}>
-          {formatSize(leftSize)} &rarr; {formatSize(rightSize)}
-        </span>
-      )}
-      {leftSize != null && rightSize == null && (
-        <span className={styles.contentSize}>{formatSize(leftSize)}</span>
-      )}
-      {leftEnc && rightEnc && leftEnc !== rightEnc && (
-        <span className={styles.contentSize}>({leftEnc} &rarr; {rightEnc})</span>
-      )}
-      {leftEnc && rightEnc && leftEnc === rightEnc && leftEnc !== 'gbk' && (
-        <span className={styles.contentSize}>({leftEnc})</span>
-      )}
-      <span className={`${styles.diffBadge} ${styles[`diffBadge_${status}`] ?? ''}`}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </span>
-    </div>
-  );
 }
 
 // --- DiffPreview ---
