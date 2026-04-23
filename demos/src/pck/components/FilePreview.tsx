@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { Suspense, useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import type { AutoangelModule } from '../../types/autoangel';
-import { findFormat } from '@shared/formats/registry';
+import { findFormat, lazyFormatComponent } from '@shared/formats/registry';
 import { getExtension } from '@shared/util/files';
 import { downloadFile } from '@shared/util/download';
 import type { DownloadAction } from '@shared/formats/types';
@@ -89,12 +89,30 @@ function DownloadButton({ actions }: DownloadButtonProps) {
 
 export function FilePreview({ path, getData, wasm, listFiles, findFile }: FilePreviewProps) {
   const ext = getExtension(path);
-  const format = findFormat(ext);
+  const loader = findFormat(ext);
 
-  const ctx = { path, ext, getData, wasm, listFiles, findFile };
-  const actions: DownloadAction[] = format.downloadActions?.(ctx) ?? [
-    { label: '⬇ Download', onClick: () => downloadFile(path, getData) },
-  ];
+  const Viewer = useMemo(() => lazyFormatComponent(loader, 'Viewer'), [loader]);
+
+  const defaultActions = useMemo<DownloadAction[]>(
+    () => [{ label: '⬇ Download', onClick: () => downloadFile(path, getData) }],
+    [path, getData],
+  );
+  const [customActions, setCustomActions] = useState<DownloadAction[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setCustomActions(null);
+    void loader.load().then((format) => {
+      if (cancelled) return;
+      const custom = format.downloadActions?.({
+        path, ext, getData, wasm, listFiles, findFile,
+      });
+      setCustomActions(custom ?? null);
+    });
+    return () => { cancelled = true; };
+  }, [loader, path, ext, getData, wasm, listFiles, findFile]);
+
+  const actions = customActions ?? defaultActions;
 
   return (
     <div className={styles.filePreviewWrapper}>
@@ -102,14 +120,16 @@ export function FilePreview({ path, getData, wasm, listFiles, findFile }: FilePr
         <DownloadButton actions={actions} />
       </div>
       <div className={styles.previewContent}>
-        <format.Viewer
-          path={path}
-          ext={ext}
-          getData={getData}
-          wasm={wasm}
-          listFiles={listFiles}
-          findFile={findFile}
-        />
+        <Suspense fallback={<div>Loading…</div>}>
+          <Viewer
+            path={path}
+            ext={ext}
+            getData={getData}
+            wasm={wasm}
+            listFiles={listFiles}
+            findFile={findFile}
+          />
+        </Suspense>
       </div>
     </div>
   );

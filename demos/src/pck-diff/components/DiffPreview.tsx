@@ -1,10 +1,16 @@
-import { useCallback, useEffect, useState } from 'react';
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { getExtension, isLikelyText, formatSize } from '@shared/util/files';
 import { detectEncoding } from '@shared/util/encoding';
 import { bytesEqual } from '@shared/util/bytes';
 import type { AutoangelModule } from '@shared/../types/autoangel';
 import { DiffStatus, DiffStatusValue } from '../types';
-import { findFormat } from '@shared/formats/registry';
+import { findFormat, lazyFormatComponent } from '@shared/formats/registry';
 import { CopyButton } from '@shared/components/CopyButton';
 import { noListFiles, noFindFile } from '@shared/formats/helpers';
 import styles from '../App.module.css';
@@ -95,6 +101,11 @@ export function DiffPreview({
   const singleData = previewState.kind === 'single' ? previewState.data : null;
   const singleGetData = useCallback(async (_p: string) => singleData!, [singleData]);
 
+  const ext = path ? getExtension(path) : '';
+  const loader = findFormat(ext);
+  const Viewer = useMemo(() => lazyFormatComponent(loader, 'Viewer'), [loader]);
+  const Differ = useMemo(() => lazyFormatComponent(loader, 'Differ'), [loader]);
+
   useEffect(() => {
     if (!path) {
       setPreviewState({ kind: 'idle' });
@@ -159,19 +170,18 @@ export function DiffPreview({
     return <div className={styles.placeholder}>{previewState.message}</div>;
   }
 
-  const ext = getExtension(path);
-  const format = findFormat(ext);
-
   if (previewState.kind === 'modified') {
     const { leftData, rightData } = previewState;
     return (
-      <format.Differ
-        path={path}
-        ext={ext}
-        leftData={leftData}
-        rightData={rightData}
-        wasm={wasm}
-      />
+      <Suspense fallback={<div className={styles.placeholder}>Loading&hellip;</div>}>
+        <Differ
+          path={path}
+          ext={ext}
+          leftData={leftData}
+          rightData={rightData}
+          wasm={wasm}
+        />
+      </Suspense>
     );
   }
 
@@ -179,14 +189,16 @@ export function DiffPreview({
   return (
     <>
       <DiffBanner status={previewState.status} />
-      <format.Viewer
-        path={path}
-        ext={ext}
-        getData={singleGetData}
-        wasm={wasm}
-        listFiles={noListFiles}
-        findFile={noFindFile}
-      />
+      <Suspense fallback={<div className={styles.placeholder}>Loading&hellip;</div>}>
+        <Viewer
+          path={path}
+          ext={ext}
+          getData={singleGetData}
+          wasm={wasm}
+          listFiles={noListFiles}
+          findFile={noFindFile}
+        />
+      </Suspense>
     </>
   );
 }

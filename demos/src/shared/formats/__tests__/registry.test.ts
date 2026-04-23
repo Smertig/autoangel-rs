@@ -45,8 +45,8 @@ describe('downloadActions', () => {
     findFile: () => null,
   });
 
-  it('ecm format returns download actions for .ecm', () => {
-    const format = findFormat('.ecm');
+  it('ecm format returns download actions for .ecm', async () => {
+    const format = await findFormat('.ecm').load();
     const actions = format.downloadActions?.(mockCtx('.ecm'));
     expect(actions).toBeDefined();
     expect(actions!.length).toBe(3);
@@ -55,18 +55,18 @@ describe('downloadActions', () => {
     expect(actions![2].label).toContain('PCK');
   });
 
-  it('ski format has no downloadActions', () => {
-    const format = findFormat('.ski');
+  it('ski format has no downloadActions', async () => {
+    const format = await findFormat('.ski').load();
     expect(format.downloadActions).toBeUndefined();
   });
 
-  it('stck format has no downloadActions', () => {
-    const format = findFormat('.stck');
+  it('stck format has no downloadActions', async () => {
+    const format = await findFormat('.stck').load();
     expect(format.downloadActions).toBeUndefined();
   });
 
-  it('text format has no downloadActions', () => {
-    const format = findFormat('.txt');
+  it('text format has no downloadActions', async () => {
+    const format = await findFormat('.txt').load();
     expect(format.downloadActions).toBeUndefined();
   });
 });
