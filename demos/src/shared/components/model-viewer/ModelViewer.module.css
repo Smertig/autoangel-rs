@@ -555,6 +555,20 @@
   color: rgba(212, 160, 74, 0.6);
 }
 
+.modelInfoWarn {
+  color: rgba(210, 150, 50, 0.95);
+  pointer-events: auto;
+  cursor: help;
+  text-decoration: underline dotted rgba(210, 150, 50, 0.5);
+  text-underline-offset: 3px;
+}
+
+.modelInfoWarn::before {
+  content: '\26A0';
+  margin-right: 4px;
+  font-size: 11px;
+}
+
 .clipToast {
   position: absolute;
   top: 6px;

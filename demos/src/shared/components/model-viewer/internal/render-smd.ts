@@ -1,5 +1,5 @@
 import type { AutoangelModule, GfxEffect } from '../../../../types/autoangel';
-import { resolvePath, collectSkinPaths, tryLoadSki, discoverStckPaths } from '@shared/util/model-dependencies';
+import { resolvePath, collectSkinPaths, tryLoadSki, tryFallbackSkiPath, discoverStckPaths } from '@shared/util/model-dependencies';
 import { ensureThree, getThree } from './three';
 import { type GetFile, withWarnOnThrow } from './paths';
 import { type SkinStats, loadSkinFile } from './mesh';
@@ -88,8 +88,14 @@ export async function renderFromSmd(
     opts?.additionalSkins?.basePath ?? smdPath,
     opts?.additionalSkins?.paths ?? [],
   );
+  let skinFallbackWarning: string | undefined;
   if (allSkinPaths.length === 0) {
-    throw new Error('No skin files referenced by SMD');
+    const fallback = await tryFallbackSkiPath(smdPath, getFile);
+    if (!fallback) throw new Error('No skin files referenced by SMD');
+    allSkinPaths.push(fallback);
+    const basename = fallback.split('\\').pop()!;
+    skinFallbackWarning = `No skin declared by SMD/ECM. Showing ${basename} as a guess — the game picks one of the *.ski variants in this folder at runtime.`;
+    console.warn(`[model] ${skinFallbackWarning}`);
   }
 
   // Discover animation file paths (no parsing yet — clips are loaded lazily on click)
@@ -355,6 +361,7 @@ export async function renderFromSmd(
           }
         },
       } : undefined,
+      warning: skinFallbackWarning,
     },
   );
 }

@@ -37,6 +37,8 @@ export interface MountSceneExtras {
    * rechecking rebuilds against the current clip.
    */
   gfxToggle?: { enabled: boolean; onChange: (next: boolean) => void };
+  /** Non-fatal notice shown as a chip appended to the bottom-left stats row. */
+  warning?: string;
 }
 
 export function mountScene(
@@ -616,6 +618,14 @@ export function mountScene(
     `<span>${totalStats.verts.toLocaleString()} verts</span>` +
     `<span>${Math.round(totalStats.tris).toLocaleString()} tris</span>` +
     `<span>${totalStats.textures} tex</span>`;
+
+  if (extras?.warning) {
+    const warnChip = document.createElement('span');
+    warnChip.className = styles.modelInfoWarn;
+    warnChip.textContent = 'guessed skin';
+    warnChip.title = extras.warning;
+    info.appendChild(warnChip);
+  }
 
   // Source view (lazy-built)
   let sourceEl: HTMLElement | null = null;

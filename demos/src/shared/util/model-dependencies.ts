@@ -71,6 +71,21 @@ export async function tryLoadSki(
 }
 
 /**
+ * Fallback used when an SMD declares no skins: player-character body models
+ * are "headless" because the engine binds them at runtime via Lua
+ * (`ECM_ReplaceSkinFile`) based on character composition. The most common
+ * naming convention places a default SKI next to the SMD — probe for it.
+ */
+export async function tryFallbackSkiPath(
+  smdPath: string,
+  getFile: (path: string) => Promise<Uint8Array | null>,
+): Promise<string | null> {
+  const guess = smdPath.replace(/\.smd$/i, '.ski');
+  const result = await tryLoadSki(guess, getFile);
+  return result?.archivePath ?? null;
+}
+
+/**
  * Discover STCK animation file paths for a model.
  * Uses SMD's tcksDir if available, otherwise constructs `tcks_<modelname>`.
  */
@@ -169,6 +184,10 @@ export async function collectEcmDependencies(
     const allSkinPaths = collectSkinPaths(
       smdPath, smdSkinPaths, normalizedEcm, ecm.additionalSkins || [],
     );
+    if (allSkinPaths.length === 0) {
+      const fallback = await tryFallbackSkiPath(smdPath, getFile);
+      if (fallback) allSkinPaths.push(fallback);
+    }
 
     for (const skiPath of allSkinPaths) {
       if (files.has(skiPath)) continue;
