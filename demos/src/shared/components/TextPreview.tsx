@@ -1,9 +1,8 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { detectEncoding, decodeText } from '@shared/util/encoding';
 import { ENCODINGS, HLJS_LANG } from '@shared/util/files';
+import { ensureHljs } from '@shared/util/hljs';
 import styles from './TextPreview.module.css';
-
-declare const hljs: { highlightElement(el: HTMLElement): void } | undefined;
 
 interface TextPreviewProps {
   data: Uint8Array;
@@ -30,14 +29,16 @@ export function TextPreview({
   const lang = HLJS_LANG[ext];
 
   useEffect(() => {
-    const el = codeRef.current;
-    if (!el || !lang || typeof hljs === 'undefined') return;
-    // Defer highlighting so unhighlighted text paints immediately
-    const id = requestAnimationFrame(() => {
+    if (!codeRef.current || !lang) return;
+    let cancelled = false;
+    void ensureHljs().then((hljs) => {
+      if (cancelled) return;
+      const el = codeRef.current;
+      if (!el) return;
       el.removeAttribute('data-highlighted');
       hljs.highlightElement(el);
     });
-    return () => cancelAnimationFrame(id);
+    return () => { cancelled = true; };
   }, [text, lang]);
 
   return (
