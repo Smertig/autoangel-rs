@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   RECENT_ENTRIES_CAP,
   fileFingerprint,
+  isStrictSubset,
   mostRecentByAt,
   pushRecent,
   sessionIdFromFileIds,
@@ -137,6 +138,31 @@ describe('touchRecent', () => {
     const result = touchRecent(buf, mk('ui.pck', 'shared', 50));
     expect(result[0].at).toBe(1);
     expect(result[1].at).toBe(50);
+  });
+});
+
+describe('isStrictSubset', () => {
+  it('is true when prev is strictly smaller and every id is in next', () => {
+    expect(isStrictSubset(['a'], ['a', 'b'])).toBe(true);
+    expect(isStrictSubset(['a', 'b'], ['a', 'b', 'c'])).toBe(true);
+  });
+
+  it('is false when the sets are equal', () => {
+    expect(isStrictSubset(['a', 'b'], ['b', 'a'])).toBe(false);
+  });
+
+  it('is false when prev has an id not in next (swap / disjoint)', () => {
+    expect(isStrictSubset(['a'], ['b'])).toBe(false);
+    expect(isStrictSubset(['a', 'b'], ['a', 'c'])).toBe(false);
+  });
+
+  it('is false when prev is empty (nothing to carry forward)', () => {
+    expect(isStrictSubset([], ['a'])).toBe(false);
+    expect(isStrictSubset([], [])).toBe(false);
+  });
+
+  it('is false when prev is larger than next (removal, not addition)', () => {
+    expect(isStrictSubset(['a', 'b'], ['a'])).toBe(false);
   });
 });
 

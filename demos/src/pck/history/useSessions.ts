@@ -11,6 +11,7 @@ import {
   putSession,
 } from './idb';
 import {
+  isStrictSubset,
   mostRecentByAt,
   pushRecent,
   sessionIdFromFileIds,
@@ -98,11 +99,29 @@ export function useSessions(): SessionsApi {
     if (upsertDebounceRef.current) clearTimeout(upsertDebounceRef.current);
     upsertDebounceRef.current = setTimeout(() => {
       upsertDebounceRef.current = null;
+      const prevId = lastUpsertedRef.current;
       lastUpsertedRef.current = id;
       const now = Date.now();
       const prev = sessionsRef.current;
       const idx = prev.findIndex((s) => s.id === id);
       const existing = idx >= 0 ? prev[idx] : null;
+
+      // Carry recents forward when the user adds a package to an open set.
+      // Subset invariant means every inherited pckName is still loaded — no filter.
+      let seedRecents: RecentEntry[] = [];
+      if (!existing && prevId && prevId !== id) {
+        const prevSession = prev.find((s) => s.id === prevId);
+        if (
+          prevSession &&
+          isStrictSubset(
+            prevSession.files.map((f) => f.fileId),
+            files.map((f) => f.fileId),
+          )
+        ) {
+          seedRecents = prevSession.recentEntries ?? [];
+        }
+      }
+
       const merged: Session = existing
         ? { ...existing, files, lastUsedAt: now, openCount: existing.openCount + 1 }
         : {
@@ -111,8 +130,8 @@ export function useSessions(): SessionsApi {
             firstOpenedAt: now,
             lastUsedAt: now,
             openCount: 1,
-            exploredCount: 0,
-            recentEntries: [],
+            exploredCount: seedRecents.length,
+            recentEntries: seedRecents,
           };
       const next =
         idx >= 0 ? prev.map((s, i) => (i === idx ? merged : s)) : [...prev, merged];

@@ -55,6 +55,18 @@ export function sessionIdFromFileIds(fileIds: readonly string[]): string {
 }
 
 /**
+ * True when every id in `prev` also appears in `next` and `next` has strictly
+ * more ids — i.e. the user added one or more packages to the previous set.
+ * Used to decide whether to carry a session's `recentEntries` forward when
+ * the loaded-set fingerprint changes.
+ */
+export function isStrictSubset(prev: readonly string[], next: readonly string[]): boolean {
+  if (prev.length === 0 || prev.length >= next.length) return false;
+  const nextSet = new Set(next);
+  return prev.every((id) => nextSet.has(id));
+}
+
+/**
  * Returns a new ring buffer with `entry` moved (or inserted) at the head.
  * Dedup key is `(pckName, path)` — re-clicking an existing entry promotes it
  * without duplicating. Tail is trimmed to `RECENT_ENTRIES_CAP`.
