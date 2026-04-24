@@ -320,6 +320,28 @@
   margin-top: 1px;
 }
 
+/* GFX loaded but some elements won't render in this viewer. Distinct from
+   `eventTooltipUnresolved` (lookup failure): here the file is fine, just a
+   subset of its pieces are unsupported. Amber glyph anchors the row so the
+   eye lands on it without reading the prefix verb. */
+.eventTooltipSkipped {
+  color: rgba(212, 160, 74, 0.8);
+  font-size: 9px;
+  white-space: normal;
+  word-break: break-word;
+  margin-top: 2px;
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.eventTooltipSkipped::before {
+  content: '\26A0';
+  flex-shrink: 0;
+  font-size: 8px;
+  opacity: 0.85;
+}
+
 /* Per-event row inside a cluster tooltip. Breathable vertical padding keeps
    rows distinct without adding boxy chrome. */
 .eventTooltipRow {

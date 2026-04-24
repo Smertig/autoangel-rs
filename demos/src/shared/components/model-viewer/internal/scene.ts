@@ -6,6 +6,7 @@ import { getViewer } from './viewer';
 import { type AnimEvent, type EventCluster, EVENT_GFX, EVENT_SOUND, clusterEvents } from './event-map';
 import type { SkinStats } from './mesh';
 import type { GfxEffect } from '../../../../types/autoangel';
+import { elementSkipReason } from '../../gfx-runtime/registry';
 
 export function showClipToast(container: HTMLElement, message: string): void {
   const existing = container.querySelector('[data-clip-toast]');
@@ -385,9 +386,12 @@ export function mountScene(
           }
           const elements = gfx.elements ?? [];
           const kindCounts = new Map<string, number>();
+          const skipCounts = new Map<string, number>();
           for (const el of elements) {
             const k = el.body?.kind ?? 'unknown';
             kindCounts.set(k, (kindCounts.get(k) ?? 0) + 1);
+            const skip = elementSkipReason(el);
+            if (skip) skipCounts.set(skip, (skipCounts.get(skip) ?? 0) + 1);
           }
           const kindStr = [...kindCounts.entries()]
             .map(([k, n]) => `${n} ${k}`)
@@ -399,6 +403,16 @@ export function mountScene(
             ? '0 elements'
             : `${elements.length} element${elements.length === 1 ? '' : 's'}: ${kindStr}`;
           row.appendChild(meta);
+
+          if (skipCounts.size > 0) {
+            const skipStr = [...skipCounts.entries()]
+              .map(([k, n]) => `${n} ${k}`)
+              .join(' · ');
+            const skip = document.createElement('div');
+            skip.className = styles.eventTooltipSkipped;
+            skip.textContent = `skipped: ${skipStr}`;
+            row.appendChild(skip);
+          }
 
           const ver = document.createElement('div');
           ver.className = styles.eventTooltipDetail;
