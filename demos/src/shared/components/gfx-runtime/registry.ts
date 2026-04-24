@@ -28,6 +28,6 @@ export function spawnElementRuntime(
 export function elementSkipReason(element: GfxElement): string | null {
   const kind = element.body?.kind ?? 'unknown';
   if (kind !== 'particle' && kind !== 'container') return kind;
-  if (kind === 'particle' && !element.tex_file) return 'untextured particle';
+  // if (kind === 'particle' && !element.tex_file) return 'untextured particle';
   return null;
 }
