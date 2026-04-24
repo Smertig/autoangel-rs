@@ -6,6 +6,7 @@ import { useDecalTexture } from './useDecalTexture';
 import { readBgColor } from '../../util/bg';
 import { sampleAtlasFrame } from '../../util/atlas';
 import { sampleTrack, trackSignature, type Track } from '../../util/keypointTrack';
+import { applyKeypointTransform } from '../../util/keypointApply';
 import type { ElementBody, GfxElement, ViewerCtx } from '../types';
 
 type DecalBody = Extract<ElementBody, { kind: 'decal' }>;
@@ -128,8 +129,7 @@ export function useDecal3DCanvas(
         const localMs = track.loopable ? (now - startMs) % track.loopDurationMs : 0;
         const sample = sampleTrack(track, localMs);
 
-        mesh.position.fromArray(sample.position);
-        mesh.scale.setScalar(sample.scale);
+        applyKeypointTransform(sample, mesh);
 
         const r = ((sample.color >>> 16) & 0xff) / 255;
         const g = ((sample.color >>> 8) & 0xff) / 255;
@@ -152,12 +152,8 @@ export function useDecal3DCanvas(
         if (isBillboard) {
           mesh.quaternion.copy(camera.quaternion);
         } else {
-          mesh.quaternion.set(
-            sample.direction[0],
-            sample.direction[1],
-            sample.direction[2],
-            sample.direction[3],
-          );
+          // Non-billboard: direction quaternion already applied by
+          // applyKeypointTransform; layer the 2D roll on top.
           mesh.rotateZ(sample.rad2d);
         }
 
