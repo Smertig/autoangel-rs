@@ -3,6 +3,7 @@ import { buildSimConfig } from '../gfx/previews/particle/config';
 import { createParticleMesh } from '../gfx/previews/particle/mesh';
 import { createSimState, tickSim } from '../gfx/previews/particle/simulation';
 import { loadParticleTexture, resolveTexturePath } from '../gfx/previews/particle/texture';
+import { createNoopRuntime } from './noop';
 import type { ElementBody } from '../gfx/previews/types';
 import type { GfxElementRuntime, SpawnOpts } from './types';
 
@@ -20,6 +21,13 @@ export function spawnParticleRuntime(
   body: ParticleBody,
   opts: SpawnOpts,
 ): GfxElementRuntime {
+  // Engine drops textureless particles: A3DGFXRenderSlot binds NULL + a
+  // PS_NO_TEX shader that this game's shaders.pck doesn't ship. Such
+  // elements are editor leftovers — render nothing instead of opaque
+  // white quads. The standalone particle preview keeps the colored-quad
+  // fallback for explicit inspection.
+  if (!opts.element.tex_file) return createNoopRuntime(opts.three);
+
   const THREE = opts.three;
   const group = new THREE.Group();
   group.scale.setScalar(opts.gfxScale);

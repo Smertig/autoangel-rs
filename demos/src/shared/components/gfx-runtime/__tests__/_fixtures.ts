@@ -30,7 +30,7 @@ export function minimalParticleElement() {
     name: 'T',
     src_blend: 5, dest_blend: 6,
     repeat_count: 0, repeat_delay: 0,
-    tex_file: '', tex_row: 1, tex_col: 1, tex_interval: 0,
+    tex_file: 'test.dds', tex_row: 1, tex_col: 1, tex_interval: 0,
     tile_mode: 0, z_enable: 0, is_dummy: 0, priority: 0,
     body: minimalParticleBody(),
     affectors: [],
@@ -45,9 +45,10 @@ export function findFileFrom(paths: string[]): (p: string) => string | null {
   return (p: string) => lower.get(p.toLowerCase()) ?? null;
 }
 
-/** Minimal SpawnOpts the particle/registry tests need. Texture loading is
- *  skipped when tex_file is empty (the default), so wasm/findFile can be
- *  stubbed harmlessly. */
+/** Minimal SpawnOpts the particle/registry tests need. The async texture
+ *  load fails silently (findFile returns null → no fetch), so wasm can be
+ *  stubbed harmlessly. tex_file is non-empty so spawnParticleRuntime takes
+ *  the active path rather than the textureless no-op. */
 export function minimalSpawnOpts(three: any, overrides: Record<string, any> = {}) {
   return {
     three,
