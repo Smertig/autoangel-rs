@@ -1,12 +1,10 @@
 import { useEffect, useRef, type RefObject } from 'react';
 import { ensureThree, getThree } from '@shared/components/model-viewer/internal/three';
 import { loadParticleTexture } from '../particle/texture';
-import { decalBlendingProps } from './blend';
+import { createDecalMesh } from './mesh';
 import { useDecalTexture } from './useDecalTexture';
 import { readBgColor } from '../../util/bg';
-import { sampleAtlasFrame } from '../../util/atlas';
 import { sampleTrack, trackSignature, type Track } from '../../util/keypointTrack';
-import { applyKeypointTransform } from '../../util/keypointApply';
 import type { ElementBody, GfxElement, ViewerCtx } from '../types';
 
 type DecalBody = Extract<ElementBody, { kind: 'decal' }>;
@@ -15,7 +13,9 @@ type DecalBody = Extract<ElementBody, { kind: 'decal' }>;
  * three.js scene for Decal3D (100) / DecalBillboard (102).
  *
  * - 100: KPS direction quat + local-Z roll from `rad_2d`.
- * - 102: always camera-facing via `mesh.quaternion.copy(camera.quaternion)`.
+ * - 102: engine-correct cross of two intersecting quads (XY + YZ planes)
+ *   per `A3DDecalEx::Update_Billboard` — mesh geometry is already built
+ *   inside `createDecalMesh`; no per-frame camera-facing hack needed.
  */
 export function useDecal3DCanvas(
   body: DecalBody,
@@ -89,74 +89,33 @@ export function useDecal3DCanvas(
       const grid = new THREE.GridHelper(4, 8, 0x666666, 0x333333);
       scene.add(grid);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let texture: any = null;
+      const decalMesh = createDecalMesh(body, element, THREE);
+      scene.add(decalMesh.object3D);
+
       if (texData && texData.byteLength > 0) {
         try {
-          texture = await loadParticleTexture(context.wasm, texData, element.tex_file);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const tex: any = await loadParticleTexture(context.wasm, texData, element.tex_file);
           if (disposed) {
-            texture?.dispose?.();
+            tex?.dispose?.();
+            decalMesh.dispose();
             renderer.dispose();
             renderer.domElement.parentNode?.removeChild(renderer.domElement);
             return;
           }
+          decalMesh.setTexture(tex);
         } catch {
-          texture = null;
+          /* leave untextured */
         }
       }
 
-      const material = new THREE.MeshBasicMaterial({
-        map: texture,
-        transparent: true,
-        side: THREE.DoubleSide,
-        depthWrite: false,
-        ...decalBlendingProps(element.src_blend, element.dest_blend, THREE),
-      });
-
-      const quadW = Math.max(0.01, body.width);
-      const quadH = Math.max(0.01, body.height);
-      const geom = new THREE.PlaneGeometry(quadW, quadH);
-      geom.translate((0.5 - orgPtX) * quadW, (0.5 - orgPtY) * quadH, 0);
-
-      const mesh = new THREE.Mesh(geom, material);
-      scene.add(mesh);
-
-      const isBillboard = element.type_id === 102;
       const startMs = performance.now();
 
       const tick = () => {
         const now = performance.now();
         const localMs = track.loopable ? (now - startMs) % track.loopDurationMs : 0;
         const sample = sampleTrack(track, localMs);
-
-        applyKeypointTransform(sample, mesh);
-
-        const r = ((sample.color >>> 16) & 0xff) / 255;
-        const g = ((sample.color >>> 8) & 0xff) / 255;
-        const b = (sample.color & 0xff) / 255;
-        const a = ((sample.color >>> 24) & 0xff) / 255;
-        material.color.setRGB(r, g, b);
-        material.opacity = a;
-
-        if (texture) {
-          const atlas = sampleAtlasFrame(
-            Math.max(1, element.tex_row),
-            Math.max(1, element.tex_col),
-            element.tex_interval,
-            localMs,
-          );
-          texture.offset.fromArray(atlas.offset);
-          texture.repeat.fromArray(atlas.repeat);
-        }
-
-        if (isBillboard) {
-          mesh.quaternion.copy(camera.quaternion);
-        } else {
-          // Non-billboard: direction quaternion already applied by
-          // applyKeypointTransform; layer the 2D roll on top.
-          mesh.rotateZ(sample.rad2d);
-        }
-
+        decalMesh.writeFrame(sample, localMs);
         controls.update();
         renderer.render(scene, camera);
         raf = requestAnimationFrame(tick);
@@ -167,9 +126,7 @@ export function useDecal3DCanvas(
         if (raf) cancelAnimationFrame(raf);
         resizeObs.disconnect();
         controls.dispose();
-        geom.dispose();
-        material.dispose();
-        texture?.dispose?.();
+        decalMesh.dispose();
         renderer.dispose();
         renderer.domElement.parentNode?.removeChild(renderer.domElement);
       };
