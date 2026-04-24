@@ -13,6 +13,9 @@ export interface ViewerCtx {
   listFiles: (prefix: string) => string[];
   findFile: FindFile;
   wasm: AutoangelModule;
+  /** Mirrors `ViewerContext.onNavigateToFile` — undefined when the host
+   *  can't host navigation. */
+  onNavigateToFile?: (path: string) => void;
 }
 
 export interface PreviewProps<K extends ElementBodyKind = ElementBodyKind> {

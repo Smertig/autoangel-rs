@@ -1,3 +1,4 @@
+import type { MouseEvent, KeyboardEvent } from 'react';
 import { argbToCss, argbToHex } from './util/argb';
 import type { FindFile } from './util/resolveEnginePath';
 import styles from './formatters.module.css';
@@ -53,13 +54,42 @@ export function BoolDot({ on }: { on: boolean }) {
 interface PathOrTextProps {
   value: string;
   findFile: FindFile;
+  /** If provided and `value` resolves, render a ↗ button that opens the
+   *  resolved file. Receives the canonical-cased path. */
+  onNavigate?: (resolvedPath: string) => void;
 }
-export function PathOrText({ value, findFile }: PathOrTextProps) {
-  const exists = findFile(value) !== null;
+export function PathOrText({ value, findFile, onNavigate }: PathOrTextProps) {
+  const resolved = findFile(value);
+  if (resolved !== null && onNavigate !== undefined) {
+    const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
+      e.stopPropagation();
+      onNavigate(resolved);
+    };
+    const handleKey = (e: KeyboardEvent<HTMLButtonElement>) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        e.stopPropagation();
+        onNavigate(resolved);
+      }
+    };
+    return (
+      <span className={`${styles.path} ${styles.pathClickable}`}>
+        <span className={styles.pathValue}>{value}</span>
+        <button
+          type="button"
+          className={styles.pathOpenBtn}
+          onClick={handleClick}
+          onKeyDown={handleKey}
+          aria-label={`Open ${resolved}`}
+        >
+          ↗
+        </button>
+      </span>
+    );
+  }
   return (
     <span className={styles.path}>
-      <span>{value}</span>
-      {exists && <span className={styles.pathArrow} aria-hidden="true">→</span>}
+      <span className={styles.pathValue}>{value}</span>
     </span>
   );
 }

@@ -40,6 +40,15 @@ export interface MountSceneExtras {
   gfxToggle?: { enabled: boolean; onChange: (next: boolean) => void };
   /** Non-fatal notice shown as a chip appended to the bottom-left stats row. */
   warning?: string;
+  /**
+   * Synchronous resolver: given an animation event, return the canonical
+   * in-package path or null when unresolvable. Keeps engine-prefix routing
+   * (GFX → `gfx\`, sound → `sound\`) inside the renderer, so the tooltip
+   * doesn't need to know about prefix tuples.
+   */
+  resolveFilePath?: (ev: AnimEvent) => string | null;
+  /** Navigate the host shell to the canonical-cased resolved path. */
+  onNavigateToFile?: (path: string) => void;
 }
 
 export function mountScene(
@@ -426,10 +435,57 @@ export function mountScene(
       const row = document.createElement('div');
       row.className = styles.eventTooltipRow;
 
+      // Resolver is delegated to the caller — scene.ts shouldn't know about
+      // engine-prefix routing. Unresolvable paths stay plain text.
+      const resolvedPath = extras?.resolveFilePath?.(ev) ?? null;
+      const navigable = resolvedPath !== null && !!extras?.onNavigateToFile;
+
       const file = document.createElement('div');
-      file.className = styles.eventTooltipFile;
-      file.textContent = ev.filePath;
+      file.className = navigable
+        ? `${styles.eventTooltipFile} ${styles.eventTooltipFileNav}`
+        : styles.eventTooltipFile;
+
+      const pathSpan = document.createElement('span');
+      pathSpan.className = styles.eventTooltipFilePath;
+      pathSpan.textContent = ev.filePath;
+      file.appendChild(pathSpan);
+
+      if (navigable) {
+        const openBtn = document.createElement('button');
+        openBtn.type = 'button';
+        openBtn.className = styles.eventTooltipOpenBtn;
+        openBtn.title = `Open ${resolvedPath}`;
+        openBtn.setAttribute('aria-label', `Open ${resolvedPath}`);
+        openBtn.textContent = '↗';
+        const go = (e: Event) => {
+          e.stopPropagation();
+          e.preventDefault();
+          extras!.onNavigateToFile!(resolvedPath!);
+        };
+        openBtn.addEventListener('click', go);
+        openBtn.addEventListener('keydown', (e: KeyboardEvent) => {
+          if (e.key === 'Enter' || e.key === ' ') go(e);
+        });
+        file.appendChild(openBtn);
+      }
+
       row.appendChild(file);
+
+      // Resolved path — only shown when the mapping is non-obvious. If
+      // the resolved path is just the raw one with a known prefix (the
+      // common case: `gfx\` + raw), the user can already infer it, and
+      // repeating it per-row bloats cluster tooltips with duplicated noise.
+      // Surfaced only when case differs or the tail diverged.
+      const resolvedTail =
+        resolvedPath !== null &&
+        resolvedPath.length > ev.filePath.length &&
+        resolvedPath.toLowerCase().endsWith(ev.filePath.toLowerCase());
+      if (resolvedPath !== null && !resolvedTail) {
+        const resolved = document.createElement('div');
+        resolved.className = styles.eventTooltipResolved;
+        resolved.textContent = `↪ ${resolvedPath}`;
+        row.appendChild(resolved);
+      }
 
       if (ev.hookName) {
         const hook = document.createElement('div');

@@ -12,13 +12,14 @@ interface EcmViewerProps {
   listFiles: (prefix: string) => string[];
   findFile: FindFile;
   initialClipName?: string;
+  onNavigateToFile?: (path: string) => void;
 }
 
-export function EcmViewer({ path, wasm, getData, listFiles, findFile, initialClipName }: EcmViewerProps) {
+export function EcmViewer({ path, wasm, getData, listFiles, findFile, initialClipName, onNavigateToFile }: EcmViewerProps) {
   const { containerRef, error } = useRenderEffect(
     path,
     [path, wasm, getData],
-    (container) => renderEcm(container, wasm, getData, path, { listFiles, findFile, initialClipName }),
+    (container) => renderEcm(container, wasm, getData, path, { listFiles, findFile, initialClipName, onNavigateToFile }),
   );
   return <ModelSurface containerRef={containerRef} error={error} />;
 }

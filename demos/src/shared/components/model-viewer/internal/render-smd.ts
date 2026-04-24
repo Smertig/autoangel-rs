@@ -12,7 +12,7 @@ import {
   buildSkeleton,
 } from './skeleton';
 import { ClipCache, buildAnimationClip } from './clip';
-import { type AnimEvent, buildAnimEventMap, EVENT_GFX } from './event-map';
+import { type AnimEvent, buildAnimEventMap, EVENT_GFX, EVENT_SOUND } from './event-map';
 import { getViewer } from './viewer';
 import { mountScene } from './scene';
 import { createGfxEventScheduler, type GfxEventScheduler } from '../../gfx-runtime/scheduler';
@@ -46,6 +46,7 @@ export async function renderFromSmd(
     eventMapFromAnimNames?: (animNames: string[]) => Map<string, AnimEvent[]> | undefined;
     source?: { data: Uint8Array; ext: string };
     initialClipName?: string;
+    onNavigateToFile?: (path: string) => void;
   },
 ): Promise<void> {
   let smdSkinPaths: string[] = [];
@@ -362,6 +363,19 @@ export async function renderFromSmd(
         },
       } : undefined,
       warning: skinFallbackWarning,
+      // Engine-prefix routing stays here, not in the tooltip: GFX events live
+      // under `gfx\`, sound events under `sound\`. Adding event types later
+      // (e.g. camera shakes) means extending this switch, not scene.ts.
+      resolveFilePath: (ev: AnimEvent) => {
+        const prefixes = ev.type === EVENT_GFX
+          ? ENGINE_PATH_PREFIXES.gfx
+          : ev.type === EVENT_SOUND
+            ? ENGINE_PATH_PREFIXES.sound
+            : null;
+        if (!prefixes) return null;
+        return resolveEnginePath(ev.filePath, prefixes, findFile);
+      },
+      onNavigateToFile: opts?.onNavigateToFile,
     },
   );
 }
@@ -370,6 +384,9 @@ export interface RenderOptions {
   listFiles: (prefix: string) => string[];
   findFile: FindFile;
   initialClipName?: string;
+  /** Host-provided navigation; undefined when the host can't navigate
+   *  (diff view, single-file preview). */
+  onNavigateToFile?: (path: string) => void;
 }
 
 export async function renderEcm(
@@ -399,6 +416,7 @@ export async function renderEcm(
     eventMapFromAnimNames: (animNames) => buildAnimEventMap(ecm, animNames),
     source: { data: ecmData, ext: '.ecm' },
     initialClipName: opts.initialClipName,
+    onNavigateToFile: opts.onNavigateToFile,
   });
 }
 

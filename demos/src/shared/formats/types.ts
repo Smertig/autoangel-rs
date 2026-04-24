@@ -9,6 +9,10 @@ export interface ViewerContext {
   wasm: AutoangelModule;
   listFiles: (prefix: string) => string[];
   findFile: FindFile;
+  /** Navigate the shell to another file already resolvable via `findFile`.
+   *  Undefined when the host can't host navigation (diff view, single-file
+   *  preview) — consumers gate affordances on this. */
+  onNavigateToFile?: (path: string) => void;
 }
 
 // Currently pre-loads both sides because we can't compute hashes of

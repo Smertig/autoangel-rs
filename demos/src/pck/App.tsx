@@ -342,6 +342,29 @@ export function App() {
     [sessionsApi, currentSessionId, slotLookup],
   );
 
+  // Cross-file navigation from inside a viewer (e.g. clicking a GFX path in
+  // the ECM event tooltip or a nested `PathOrText` field). Path comes from
+  // `findFile` — canonical-cased — so a direct pathIndex hit is expected.
+  // Prefer the currently-selected pkg on cross-package collision, matching
+  // `getFileData` so the file opens from the same slot the viewer is using.
+  const handleNavigateToFile = useCallback(
+    (path: string) => {
+      const bucket = pathIndex.get(path.toLowerCase());
+      if (!bucket) return;
+      const hit = bucket.find((e) => e.pkgId === selectedPkgId) ?? bucket[0];
+      setSelectedFile({ pkgId: hit.pkgId, path: hit.orig });
+      const slot = slotLookup.get(hit.pkgId);
+      if (slot) {
+        sessionsApi.recordExplored(currentSessionId, {
+          pckName: `${slot.stem}.pck`,
+          path: hit.orig,
+          at: Date.now(),
+        });
+      }
+    },
+    [pathIndex, selectedPkgId, slotLookup, sessionsApi, currentSessionId],
+  );
+
   const handleReset = useCallback(() => {
     setSelectedFile(null);
   }, []);
@@ -487,6 +510,7 @@ export function App() {
                   wasm={wasmRef.current}
                   listFiles={listFiles}
                   findFile={findFile}
+                  onNavigateToFile={handleNavigateToFile}
                 />
               </Suspense>
             ) : (

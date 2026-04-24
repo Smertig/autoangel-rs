@@ -13,6 +13,7 @@ interface FilePreviewProps {
   wasm: AutoangelModule;
   listFiles: (prefix: string) => string[];
   findFile: FindFile;
+  onNavigateToFile?: (path: string) => void;
 }
 
 interface DownloadButtonProps {
@@ -87,7 +88,7 @@ function DownloadButton({ actions }: DownloadButtonProps) {
   );
 }
 
-export function FilePreview({ path, getData, wasm, listFiles, findFile }: FilePreviewProps) {
+export function FilePreview({ path, getData, wasm, listFiles, findFile, onNavigateToFile }: FilePreviewProps) {
   const ext = getExtension(path);
   const loader = findFormat(ext);
 
@@ -105,12 +106,12 @@ export function FilePreview({ path, getData, wasm, listFiles, findFile }: FilePr
     void loader.load().then((format) => {
       if (cancelled) return;
       const custom = format.downloadActions?.({
-        path, ext, getData, wasm, listFiles, findFile,
+        path, ext, getData, wasm, listFiles, findFile, onNavigateToFile,
       });
       setCustomActions(custom ?? null);
     });
     return () => { cancelled = true; };
-  }, [loader, path, ext, getData, wasm, listFiles, findFile]);
+  }, [loader, path, ext, getData, wasm, listFiles, findFile, onNavigateToFile]);
 
   const actions = customActions ?? defaultActions;
 
@@ -128,6 +129,7 @@ export function FilePreview({ path, getData, wasm, listFiles, findFile }: FilePr
             wasm={wasm}
             listFiles={listFiles}
             findFile={findFile}
+            onNavigateToFile={onNavigateToFile}
           />
         </Suspense>
       </div>

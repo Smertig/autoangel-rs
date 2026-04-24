@@ -274,12 +274,16 @@
   transform: translateY(0);
 }
 
+/* Variant accents — `--tooltip-accent` flows into header color, chip color,
+   and hover backgrounds, so adding a new event type means one hex, not four. */
 .eventTooltipGfx {
-  border-color: rgba(212, 160, 74, 0.3);
+  --tooltip-accent: 212, 160, 74;
+  border-color: rgba(var(--tooltip-accent), 0.3);
 }
 
 .eventTooltipSound {
-  border-color: rgba(91, 155, 213, 0.3);
+  --tooltip-accent: 91, 155, 213;
+  border-color: rgba(var(--tooltip-accent), 0.3);
 }
 
 .eventTooltipHeader {
@@ -290,12 +294,9 @@
   margin-bottom: 2px;
 }
 
-.eventTooltipGfx .eventTooltipHeader {
-  color: #d4a04a;
-}
-
+.eventTooltipGfx .eventTooltipHeader,
 .eventTooltipSound .eventTooltipHeader {
-  color: #5b9bd5;
+  color: rgb(var(--tooltip-accent));
 }
 
 .eventTooltipFile {
@@ -305,11 +306,82 @@
   white-space: normal;
 }
 
+/* Clickable variant — path + right-aligned ↗ chip. Transparent at rest,
+   reveals a soft accent background on row hover to signal interactivity.
+   Fixed geometry so width doesn't change mid-hover (would reflow the
+   tooltip and dislodge the tick anchor). */
+.eventTooltipFileNav {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  border-radius: 3px;
+  transition: background-color 120ms ease;
+}
+.eventTooltipFileNav:hover,
+.eventTooltipFileNav:focus-within {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.eventTooltipFilePath {
+  min-width: 0;
+  flex: 1 1 auto;
+  word-break: break-all;
+}
+
+/* Fixed geometry — hover must not change the chip's width, or the tooltip
+   reflows and the tick→tooltip anchor shifts mid-hover. Icon-only; the
+   resolved-path line above tells the user where the click will go. */
+.eventTooltipOpenBtn {
+  flex-shrink: 0;
+  appearance: none;
+  background: transparent;
+  border: 1px solid transparent;
+  color: rgb(var(--tooltip-accent));
+  font: inherit;
+  font-size: 12px;
+  line-height: 1;
+  /* Slightly larger hit target than the old 1px 4px — still tooltip-narrow
+     but no longer hostile to imprecise clicks. */
+  padding: 3px 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 2px;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+.eventTooltipFileNav:hover .eventTooltipOpenBtn,
+.eventTooltipFileNav:focus-within .eventTooltipOpenBtn {
+  background: rgba(var(--tooltip-accent), 0.16);
+  border-color: rgba(var(--tooltip-accent), 0.4);
+}
+.eventTooltipOpenBtn:active {
+  transform: translateY(0.5px);
+}
+.eventTooltipOpenBtn:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: 1px;
+}
+
 .eventTooltipDetail {
   color: rgba(255, 255, 255, 0.45);
   font-size: 9px;
   white-space: normal;
   word-break: break-word;
+}
+
+/* Canonical-cased resolved path, shown as a second line under the raw
+   reference whenever the two differ. Replaces a `title`-attribute disclosure
+   — the user can see the click destination without waiting on a native OS
+   tooltip. Colored with the variant accent so it reads as "→ this target". */
+.eventTooltipResolved {
+  color: rgba(var(--tooltip-accent), 0.72);
+  font: 400 9px/1.4 "JetBrains Mono", "Fira Code", Consolas, monospace;
+  white-space: normal;
+  word-break: break-all;
+  margin-top: 2px;
+  padding-left: 1px;
 }
 
 /* Lookup failed (path unresolved or parse failed). Keep the message soft —
@@ -362,12 +434,9 @@
   margin: 0;
 }
 
-.eventTooltipGfx .eventTooltipRowSeparator {
-  background: rgba(212, 160, 74, 0.15);
-}
-
+.eventTooltipGfx .eventTooltipRowSeparator,
 .eventTooltipSound .eventTooltipRowSeparator {
-  background: rgba(91, 155, 213, 0.15);
+  background: rgba(var(--tooltip-accent), 0.15);
 }
 
 /* "...and N more" footer row when cluster size exceeds the visible cap. */

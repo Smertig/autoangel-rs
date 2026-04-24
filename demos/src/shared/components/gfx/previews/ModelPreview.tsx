@@ -11,7 +11,7 @@ export function ModelPreview({ body, context, expanded }: PreviewProps<'model'>)
   if (!expanded) return <span className={styles.thumb}>M</span>;
 
   const rows: FieldRow[] = [
-    { label: 'model_path', value: <PathOrText value={body.model_path} findFile={context.findFile} /> },
+    { label: 'model_path', value: <PathOrText value={body.model_path} findFile={context.findFile} onNavigate={context.onNavigateToFile} /> },
     ...(body.model_act_name ? [{ label: 'model_act_name', value: <span>{body.model_act_name}</span> }] : []),
     ...(body.loops !== undefined ? [{ label: 'loops', value: <MonoNum value={body.loops} /> }] : []),
     { divider: true },

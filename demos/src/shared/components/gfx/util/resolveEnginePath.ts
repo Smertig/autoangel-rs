@@ -27,7 +27,8 @@ export function resolveEnginePath(
  * ContainerPreview (gfx), ModelPreview (models), ParticlePreview (textures).
  */
 export const ENGINE_PATH_PREFIXES = {
-  gfx:      ['gfx\\',          'GFX\\']          as const,
+  gfx:      ['gfx\\',           'GFX\\']           as const,
   models:   ['gfx\\models\\',   'gfx\\Models\\']   as const,
   textures: ['gfx\\textures\\', 'gfx\\Textures\\'] as const,
+  sound:    ['sound\\',         'Sound\\']         as const,
 };

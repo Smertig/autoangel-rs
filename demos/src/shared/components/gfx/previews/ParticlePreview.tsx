@@ -117,7 +117,7 @@ function buildFieldRows(
   }
   rows.push({
     label: 'tex_file',
-    value: <PathOrText value={element.tex_file} findFile={context.findFile} />,
+    value: <PathOrText value={element.tex_file} findFile={context.findFile} onNavigate={context.onNavigateToFile} />,
   });
   rows.push({
     label: 'tex_grid',
