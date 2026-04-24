@@ -1,4 +1,5 @@
 import { spawnParticleRuntime } from './particle';
+import { spawnContainerRuntime } from './container';
 import { createNoopRuntime } from './noop';
 import type { ElementBody } from '../gfx/previews/types';
 import type { GfxElement } from '../../../types/autoangel';
@@ -11,6 +12,8 @@ export function spawnElementRuntime(
   switch (body.kind) {
     case 'particle':
       return spawnParticleRuntime(body, opts);
+    case 'container':
+      return spawnContainerRuntime(body, opts);
     default:
       return createNoopRuntime(opts.three);
   }
@@ -24,7 +27,7 @@ export function spawnElementRuntime(
  */
 export function elementSkipReason(element: GfxElement): string | null {
   const kind = element.body?.kind ?? 'unknown';
-  if (kind !== 'particle') return kind;
-  if (!element.tex_file) return 'untextured particle';
+  if (kind !== 'particle' && kind !== 'container') return kind;
+  if (kind === 'particle' && !element.tex_file) return 'untextured particle';
   return null;
 }

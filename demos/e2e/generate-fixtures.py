@@ -75,10 +75,14 @@ print(f"  right.pck: {(FIXTURES_DIR / 'right.pck').stat().st_size} bytes, {len(r
 # anim-hint default clip) and rewrites its ECM so that clip carries an
 # EventType=100 GFX event at StartTime=50 ms. Bundles a real particle GFX
 # file under the engine-expected gfx\\ prefix so resolveEnginePath finds it.
-def build_ecm_gfx_fixture() -> None:
+def build_ecm_gfx_fixture(
+    out_name: str = "ecm_with_gfx_event.pck",
+    src_gfx_rel: str = "particle_point.gfx",
+    bundled_gfx_name: str = "particle_point.gfx",
+) -> None:
     src_pck = REPO / "test_data" / "packages" / "models_npc_animated.pck"
-    src_gfx = REPO / "test_data" / "gfx" / "particle_point.gfx"
-    out = FIXTURES_DIR / "models" / "ecm_with_gfx_event.pck"
+    src_gfx = REPO / "test_data" / "gfx" / src_gfx_rel
+    out = FIXTURES_DIR / "models" / out_name
     out.parent.mkdir(parents=True, exist_ok=True)
 
     # GFX event fields in ECM v66 order — see autoangel-core/src/model/ecm.rs
@@ -89,7 +93,7 @@ def build_ecm_gfx_fixture() -> None:
         "TimeSpan: -1",        # no auto-dispose
         "Once: 0",
         "FxFileNum: 1",
-        "FxFilePath: particle_point.gfx",
+        f"FxFilePath: {bundled_gfx_name}",
         "HookName: ",
         "HookOffset: 0.000000, 0.000000, 0.000000",
         "HookYaw: 0.000000",
@@ -126,16 +130,29 @@ def build_ecm_gfx_fixture() -> None:
     parsed = autoangel.read_ecm(modified_bytes)
     ev = parsed.get_event(0, 0)
     assert ev.event_type == 100
-    assert ev.fx_file_path == "particle_point.gfx"
+    assert ev.fx_file_path == bundled_gfx_name
 
     builder = autoangel.PackageBuilder()
     for f in files:
         data = modified_bytes if f == ecm_path else pkg.get_file(f)
         if data is not None:
             builder.add_file(f, data)
-    builder.add_file("gfx\\particle_point.gfx", src_gfx.read_bytes())
+    builder.add_file(f"gfx\\{bundled_gfx_name}", src_gfx.read_bytes())
     builder.save(str(out))
     print(f"  {out.name}: {out.stat().st_size} bytes")
 
 
 build_ecm_gfx_fixture()
+
+# --- ECM + GFX container event fixture (ecm-gfx-container.spec.ts) ---
+# Same shape as the particle fixture, but the event's target .gfx is a real
+# container_v58.gfx that holds a GfxContainer element (type_id 200) whose
+# gfx_path references an asset we intentionally do NOT bundle. The container
+# runtime still spawns (sync part of spawnContainerRuntime), proving the
+# registry routes type 200 through our new dispatch — the async nested load
+# harmlessly no-ops when findFile returns null.
+build_ecm_gfx_fixture(
+    out_name="ecm_with_gfx_container_event.pck",
+    src_gfx_rel="container_v58.gfx",
+    bundled_gfx_name="container_v58.gfx",
+)

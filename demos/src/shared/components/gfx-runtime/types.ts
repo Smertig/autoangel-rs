@@ -1,6 +1,7 @@
 import type { AutoangelModule } from '../../../types/autoangel';
 import type { ElementBody, GfxElement } from '../gfx/previews/types';
 import type { FindFile } from '../gfx/util/resolveEnginePath';
+import type { GfxLoader } from './loader';
 
 export interface GfxElementRuntime {
   readonly root: any; // THREE.Object3D
@@ -24,6 +25,11 @@ export interface SpawnOpts {
   findFile: FindFile;
   /** Parent element — spawners need it for tex_file, src_blend, dest_blend. */
   element: GfxElement;
+  /** Lazy loader for GFX referenced by `Container` elements. */
+  loader: GfxLoader;
+  /** Cycle guard — set of already-visited resolved paths; threaded through
+   *  recursive container spawns. Undefined at top-level (fresh recursion). */
+  visiting?: Set<string>;
 }
 
 export type GfxElementSpawner<K extends ElementBody['kind']> = (

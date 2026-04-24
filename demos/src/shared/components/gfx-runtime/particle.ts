@@ -3,6 +3,7 @@ import { buildSimConfig } from '../gfx/previews/particle/config';
 import { createParticleMesh } from '../gfx/previews/particle/mesh';
 import { createSimState, tickSim } from '../gfx/previews/particle/simulation';
 import { loadParticleTexture, resolveTexturePath } from '../gfx/previews/particle/texture';
+import { createAnimatedGroupPair } from './animated-group';
 import { createNoopRuntime } from './noop';
 import type { ElementBody } from '../gfx/previews/types';
 import type { GfxElementRuntime, SpawnOpts } from './types';
@@ -29,8 +30,10 @@ export function spawnParticleRuntime(
   if (!opts.element.tex_file) return createNoopRuntime(opts.three);
 
   const THREE = opts.three;
-  const group = new THREE.Group();
-  group.scale.setScalar(opts.gfxScale);
+  const { outer, animated, animator } = createAnimatedGroupPair(
+    THREE, opts.element, opts.gfxScale,
+  );
+  let elapsedMs = 0;
 
   const cfg = buildSimConfig(body, 1, 1, opts.element.affectors);
   // puffCount=0 — engine A3DParticleEmitter starts empty (m_fRemainder=0)
@@ -47,7 +50,7 @@ export function spawnParticleRuntime(
     srcBlend: d3dBlendToThreeFactor(element.src_blend, THREE),
     dstBlend: d3dBlendToThreeFactor(element.dest_blend, THREE),
   } as any, THREE);
-  group.add(mesh.object3D);
+  animated.add(mesh.object3D);
 
   let elapsed = 0;
   let finished = false;
@@ -76,10 +79,12 @@ export function spawnParticleRuntime(
   }
 
   return {
-    root: group,
+    root: outer,
     tick(dt) {
       const scaled = dt * opts.gfxSpeed;
       elapsed += dt;
+      elapsedMs += scaled * 1000;
+      animator?.tickTo(elapsedMs, animated);
       tickSim(scaled, state, cfg, rng);
       mesh.writeState(state);
       if (opts.timeSpanSec !== undefined && elapsed >= opts.timeSpanSec) {
@@ -89,7 +94,7 @@ export function spawnParticleRuntime(
     dispose() {
       disposed = true;
       mesh.dispose();
-      group.removeFromParent?.();
+      outer.removeFromParent?.();
     },
     finished: () => finished,
   };

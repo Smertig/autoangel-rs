@@ -229,13 +229,19 @@ export async function renderFromSmd(
         // runtime(s) asynchronously. If the GFX is already cached this
         // usually completes in the same tick.
         (async () => {
+          const loader = gfxLoader;
           const resolved = resolveEnginePath(ev.filePath, ENGINE_PATH_PREFIXES.gfx, findFile);
           if (!resolved) return;
-          const gfx = await gfxLoader.load(resolved);
+          const gfx = await loader.load(resolved);
           const elements = (gfx as any)?.elements;
           if (!elements?.length) return;
           // Guard: scheduler may have been disposed during the await.
           if (scheduler !== localScheduler) return;
+          // Pre-populate the cycle-guard set with this event's own resolved
+          // path so a self-referential Container(gfx_path=self) is caught at
+          // depth 1 instead of looping once before the guard engages. Each
+          // top-level spawn starts its own recursion frame.
+          const visiting = new Set<string>([resolved]);
           for (const el of elements) {
             const rt = spawnElementRuntime(el.body, {
               three: THREE,
@@ -246,6 +252,8 @@ export async function renderFromSmd(
               wasm,
               findFile,
               element: el,
+              loader,
+              visiting,
             });
             // ECM events usually target hooks (HH_*); prefer hooks then fall
             // back to bones, then to scene root if neither matches.

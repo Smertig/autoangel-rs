@@ -59,6 +59,7 @@ export function minimalSpawnOpts(three: any, overrides: Record<string, any> = {}
     wasm: {} as any,
     findFile: () => null,
     element: minimalParticleElement(),
+    loader: { load: async () => null },
     ...overrides,
   };
 }
