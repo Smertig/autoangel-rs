@@ -21,6 +21,8 @@ import { createGfxLoader } from '../../gfx-runtime/loader';
 import { createNoopRuntime } from '../../gfx-runtime/noop';
 import { attachToHook } from '../../gfx-runtime/hook';
 import { resolveEnginePath, ENGINE_PATH_PREFIXES, type FindFile } from '../../gfx/util/resolveEnginePath';
+import { ALL_ELEMENT_BODY_KINDS } from '../../gfx/util/kindLabel';
+import type { ElementBodyKind } from '../../gfx/previews/types';
 
 // "站立" (standing) — preferred default animation clip
 const PREFERRED_ANIM_HINT = '\u7AD9\u7ACB';
@@ -208,13 +210,13 @@ export async function renderFromSmd(
     ? createGfxLoader(wasm, (p) => getFile(p))
     : null;
 
-  let gfxEnabled = true;
+  let gfxKinds: Set<ElementBodyKind> = new Set(ALL_ELEMENT_BODY_KINDS);
   let currentClipName: string | null = initialClip?.name ?? null;
 
   const rebuildSchedulerForClip = (clipName: string) => {
     scheduler?.disposeAll();
     scheduler = null;
-    if (!gfxEnabled) return;
+    if (gfxKinds.size === 0) return;
     if (!gfxLoader) return;
     const events = animEventMap?.get(clipName) ?? [];
     // Milestone B: only GFX (type 100). Sound events (101) stay timeline-only.
@@ -254,6 +256,7 @@ export async function renderFromSmd(
               element: el,
               loader,
               visiting,
+              kindFilter: (kind) => gfxKinds.has(kind),
             });
             // ECM events usually target hooks (HH_*); prefer hooks then fall
             // back to bones, then to scene root if neither matches.
@@ -359,15 +362,20 @@ export async function renderFromSmd(
     {
       lookupGfx,
       gfxToggle: gfxLoader ? {
-        enabled: gfxEnabled,
+        kinds: gfxKinds,
+        allKinds: ALL_ELEMENT_BODY_KINDS,
         onChange: (next) => {
-          gfxEnabled = next;
-          if (!next) {
-            scheduler?.disposeAll();
-            scheduler = null;
-          } else if (currentClipName) {
-            rebuildSchedulerForClip(currentClipName);
-          }
+          // Skip the dispose+rebuild churn when the set is identical
+          // (clicking "All" while already All, etc.).
+          if (
+            next.size === gfxKinds.size
+            && [...next].every((k) => gfxKinds.has(k))
+          ) return;
+          gfxKinds = next;
+          // Rebuild the scheduler so currently-spawned runtimes for newly-
+          // disabled kinds disappear, and newly-enabled kinds re-fire on the
+          // next clip iteration.
+          if (currentClipName) rebuildSchedulerForClip(currentClipName);
         },
       } : undefined,
       warning: skinFallbackWarning,

@@ -30,6 +30,10 @@ export interface SpawnOpts {
   /** Cycle guard — set of already-visited resolved paths; threaded through
    *  recursive container spawns. Undefined at top-level (fresh recursion). */
   visiting?: Set<string>;
+  /** Per-kind enable filter for the model-viewer "Render GFX" picker.
+   *  Returning false noops the spawn (top-level AND nested recursions, so
+   *  disabling 'container' also skips its children). Undefined = no filter. */
+  kindFilter?: (kind: ElementBody['kind']) => boolean;
 }
 
 export type GfxElementSpawner<K extends ElementBody['kind']> = (

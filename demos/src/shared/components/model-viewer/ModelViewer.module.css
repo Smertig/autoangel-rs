@@ -511,24 +511,99 @@
 }
 
 .gfxToggle {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.6);
-  cursor: pointer;
-  user-select: none;
   flex-shrink: 0;
-  padding: 0 4px;
-  transition: color 0.12s;
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
 }
 
-.gfxToggle:hover {
+.gfxFilterButton {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 3px;
+  transition: color 0.12s, background 0.12s;
+}
+
+.gfxFilterButton:hover {
   color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.05);
 }
 
-.gfxToggle input[type="checkbox"] {
+.gfxFilterPopover {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  right: 0;
+  min-width: 160px;
+  padding: 6px;
+  background: rgba(20, 20, 24, 0.96);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  z-index: 20;
+}
+
+.gfxFilterHeader {
+  display: flex;
+  gap: 4px;
+  padding-bottom: 6px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.gfxFilterHeader button {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.06);
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: inherit;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 6px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.gfxFilterHeader button:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.gfxFilterList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 220px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.gfxFilterItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 4px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.78);
+  cursor: pointer;
+  border-radius: 3px;
+  user-select: none;
+}
+
+.gfxFilterItem:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.gfxFilterItem input[type="checkbox"] {
   width: 12px;
   height: 12px;
   margin: 0;

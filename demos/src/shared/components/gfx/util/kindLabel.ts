@@ -1,6 +1,6 @@
 import type { GfxElement, ElementBodyKind } from '../previews/types';
 
-const BASE_LABELS: Record<ElementBodyKind, string> = {
+export const BASE_LABELS: Record<ElementBodyKind, string> = {
   particle: 'PARTICLE',
   decal: 'DECAL',
   trail: 'TRAIL',
@@ -15,6 +15,11 @@ const BASE_LABELS: Record<ElementBodyKind, string> = {
   sound: 'SOUND',
   unknown: 'UNKNOWN',
 };
+
+/** Exhaustive list of every ElementBody kind, derived from BASE_LABELS so a
+ *  new parser kind makes the typed Record (and therefore this list) update
+ *  in one place. */
+export const ALL_ELEMENT_BODY_KINDS = Object.keys(BASE_LABELS) as ElementBodyKind[];
 
 /** Subtype-aware badge label; falls back to the kind tag for single-subtype kinds. */
 export function formatKindBadge(element: GfxElement): string {

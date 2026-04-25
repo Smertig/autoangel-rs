@@ -10,6 +10,9 @@ export function spawnElementRuntime(
   body: ElementBody,
   opts: SpawnOpts,
 ): GfxElementRuntime {
+  if (opts.kindFilter && !opts.kindFilter(body.kind)) {
+    return createNoopRuntime(opts.three);
+  }
   switch (body.kind) {
     case 'particle':
       return spawnParticleRuntime(body, opts);

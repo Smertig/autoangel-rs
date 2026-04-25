@@ -7,6 +7,7 @@ import { type AnimEvent, type EventCluster, EVENT_GFX, EVENT_SOUND, clusterEvent
 import type { SkinStats } from './mesh';
 import type { GfxEffect } from '../../../../types/autoangel';
 import { elementSkipReason } from '../../gfx-runtime/registry';
+import type { ElementBodyKind } from '../../gfx/previews/types';
 
 export function showClipToast(container: HTMLElement, message: string): void {
   const existing = container.querySelector('[data-clip-toast]');
@@ -37,7 +38,11 @@ export interface MountSceneExtras {
    * the caller disposes all active runtimes + stops scheduler rebuilds;
    * rechecking rebuilds against the current clip.
    */
-  gfxToggle?: { enabled: boolean; onChange: (next: boolean) => void };
+  gfxToggle?: {
+    kinds: Set<ElementBodyKind>;
+    allKinds: readonly ElementBodyKind[];
+    onChange: (next: Set<ElementBodyKind>) => void;
+  };
   /** Non-fatal notice shown as a chip appended to the bottom-left stats row. */
   warning?: string;
   /**
@@ -682,19 +687,101 @@ export function mountScene(
     };
     transport.appendChild(loopBtn);
 
-    // GFX render toggle — A/B compare clips with effects on vs. off
+    // GFX render filter — popover lets the user enable/disable spawning per
+    // ElementBody kind (e.g. "decals only" while debugging the runtime).
     if (extras?.gfxToggle) {
       addSep();
-      const toggleLabel = document.createElement('label');
-      toggleLabel.className = styles.gfxToggle;
-      toggleLabel.title = 'Render GFX effects referenced by animation events';
-      const cb = document.createElement('input');
-      cb.type = 'checkbox';
-      cb.checked = extras.gfxToggle.enabled;
-      cb.onchange = () => extras.gfxToggle!.onChange(cb.checked);
-      toggleLabel.appendChild(cb);
-      toggleLabel.appendChild(document.createTextNode(' Render GFX'));
-      transport.appendChild(toggleLabel);
+      const toggle = extras.gfxToggle;
+      const allKinds = toggle.allKinds;
+      let enabled: Set<ElementBodyKind> = new Set(toggle.kinds);
+
+      const wrap = document.createElement('div');
+      wrap.className = styles.gfxToggle;
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = styles.gfxFilterButton;
+      button.title = 'Filter which GFX element kinds render';
+      const updateLabel = () => {
+        const n = enabled.size;
+        const total = allKinds.length;
+        const status = n === 0 ? 'off' : n === total ? 'all' : `${n}/${total}`;
+        button.textContent = `Render GFX (${status}) ▾`;
+      };
+      updateLabel();
+      wrap.appendChild(button);
+
+      const popover = document.createElement('div');
+      popover.className = styles.gfxFilterPopover;
+      popover.hidden = true;
+
+      const headerRow = document.createElement('div');
+      headerRow.className = styles.gfxFilterHeader;
+      const allBtn = document.createElement('button');
+      allBtn.type = 'button';
+      allBtn.textContent = 'All';
+      const noneBtn = document.createElement('button');
+      noneBtn.type = 'button';
+      noneBtn.textContent = 'None';
+      headerRow.appendChild(allBtn);
+      headerRow.appendChild(noneBtn);
+      popover.appendChild(headerRow);
+
+      const itemByKind = new Map<ElementBodyKind, HTMLInputElement>();
+      const list = document.createElement('div');
+      list.className = styles.gfxFilterList;
+      for (const kind of allKinds) {
+        const row = document.createElement('label');
+        row.className = styles.gfxFilterItem;
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = enabled.has(kind);
+        cb.addEventListener('change', () => {
+          if (cb.checked) enabled.add(kind);
+          else enabled.delete(kind);
+          updateLabel();
+          toggle.onChange(new Set(enabled));
+        });
+        row.appendChild(cb);
+        row.appendChild(document.createTextNode(' ' + kind));
+        list.appendChild(row);
+        itemByKind.set(kind, cb);
+      }
+      popover.appendChild(list);
+
+      const setAll = (on: boolean) => {
+        enabled = new Set(on ? allKinds : []);
+        for (const [kind, cb] of itemByKind) cb.checked = enabled.has(kind);
+        updateLabel();
+        toggle.onChange(new Set(enabled));
+      };
+      allBtn.addEventListener('click', () => setAll(true));
+      noneBtn.addEventListener('click', () => setAll(false));
+
+      const closeOnOutside = (ev: MouseEvent) => {
+        // Self-clean if the popover got torn down (viewer dispose, container
+        // emptied) — without this, switching models with the popover open
+        // leaks the listener (and its closure) on `document`.
+        if (!wrap.isConnected) {
+          document.removeEventListener('mousedown', closeOnOutside);
+          return;
+        }
+        if (!wrap.contains(ev.target as Node)) {
+          popover.hidden = true;
+          document.removeEventListener('mousedown', closeOnOutside);
+        }
+      };
+      button.addEventListener('click', () => {
+        popover.hidden = !popover.hidden;
+        if (!popover.hidden) {
+          document.addEventListener('mousedown', closeOnOutside);
+        } else {
+          document.removeEventListener('mousedown', closeOnOutside);
+        }
+      });
+
+      wrap.appendChild(popover);
+      transport.appendChild(wrap);
     }
 
     // Per-frame update with change guard to avoid no-op DOM writes
