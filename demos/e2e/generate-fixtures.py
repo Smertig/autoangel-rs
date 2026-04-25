@@ -156,3 +156,15 @@ build_ecm_gfx_fixture(
     src_gfx_rel="container_v58.gfx",
     bundled_gfx_name="container_v58.gfx",
 )
+
+# --- ECM + GFX decal event fixture (ecm-gfx-decal.spec.ts) ---
+# Real decal_v58.gfx referenced as the event's target. Decal runtime spawns
+# synchronously and animates via the cross/quad mesh. Texture load may or
+# may not succeed depending on whether the bundled .gfx references a texture
+# we've packaged — either way the spawn proves the registry routes 'decal'
+# through spawnDecalRuntime.
+build_ecm_gfx_fixture(
+    out_name="ecm_with_gfx_decal_event.pck",
+    src_gfx_rel="decal_v58.gfx",
+    bundled_gfx_name="decal_v58.gfx",
+)

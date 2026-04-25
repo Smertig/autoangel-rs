@@ -1,5 +1,6 @@
 import { spawnParticleRuntime } from './particle';
 import { spawnContainerRuntime } from './container';
+import { spawnDecalRuntime } from './decal';
 import { createNoopRuntime } from './noop';
 import type { ElementBody } from '../gfx/previews/types';
 import type { GfxElement } from '../../../types/autoangel';
@@ -14,6 +15,8 @@ export function spawnElementRuntime(
       return spawnParticleRuntime(body, opts);
     case 'container':
       return spawnContainerRuntime(body, opts);
+    case 'decal':
+      return spawnDecalRuntime(body, opts);
     default:
       return createNoopRuntime(opts.three);
   }
@@ -26,8 +29,17 @@ export function spawnElementRuntime(
  * per-spawner skip rules.
  */
 export function elementSkipReason(element: GfxElement): string | null {
-  const kind = element.body?.kind ?? 'unknown';
-  if (kind !== 'particle' && kind !== 'container') return kind;
-  // if (kind === 'particle' && !element.tex_file) return 'untextured particle';
-  return null;
+  const body = element.body;
+  if (!body) return 'unknown';
+  switch (body.kind) {
+    case 'particle':
+    case 'container':
+      return null;
+    case 'decal':
+      // Type 101 (screen-space) parses but has no runtime — needs an
+      // orthographic/HUD pass not in MVP.
+      return element.type_id === 101 ? 'decal (screen-space)' : null;
+    default:
+      return body.kind;
+  }
 }
