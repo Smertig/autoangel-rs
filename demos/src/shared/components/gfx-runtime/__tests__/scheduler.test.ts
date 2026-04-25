@@ -14,6 +14,35 @@ function fakeEvent(overrides: Partial<AnimEvent> = {}): AnimEvent {
 }
 
 describe('createGfxEventScheduler', () => {
+  it('fires event with startTime=0 on the first tick', () => {
+    // Regression: production ECM skill events frequently sit at startTime=0.
+    // With a strict-less-than `last < startSec` and `last` initialized to 0,
+    // those events never fire. Sentinel `last = -Infinity` fixes it.
+    const spawn = vi.fn(() => ({ root: new THREE.Group(), tick() {}, dispose() {} }));
+    const s = createGfxEventScheduler({
+      events: [fakeEvent({ startTime: 0 })],
+      spawn,
+      bones: [], sceneRoot: new THREE.Group(),
+    });
+    s.tickToClipTime(0.016);
+    expect(spawn).toHaveBeenCalledTimes(1);
+  });
+
+  it('refires startTime=0 event after onLoop', () => {
+    // onLoop resets `last` to the -Infinity sentinel, not 0; otherwise the
+    // next iteration's first tick would skip startTime=0 events the same way.
+    const spawn = vi.fn(() => ({ root: new THREE.Group(), tick() {}, dispose() {} }));
+    const s = createGfxEventScheduler({
+      events: [fakeEvent({ startTime: 0, once: false })],
+      spawn,
+      bones: [], sceneRoot: new THREE.Group(),
+    });
+    s.tickToClipTime(0.1);
+    s.onLoop();
+    s.tickToClipTime(0.1);
+    expect(spawn).toHaveBeenCalledTimes(2);
+  });
+
   it('fires event when time crosses startTime', () => {
     const spawn = vi.fn(() => ({ root: new THREE.Group(), tick() {}, dispose() {} }));
     const s = createGfxEventScheduler({

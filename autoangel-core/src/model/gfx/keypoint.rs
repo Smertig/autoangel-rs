@@ -992,7 +992,7 @@ mod tests {
 
     #[test]
     fn parse_affector_list_two_mixed_ctrls() {
-        // Real sample shape from the Mayhem archive: SCALE + CL_TRANS
+        // Real sample shape from a production archive: SCALE + CL_TRANS
         // affector pair on a particle element.
         let input = concat!(
             "AffectorCount: 2\r\n",

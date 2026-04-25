@@ -31,7 +31,10 @@ export interface GfxEventScheduler {
 }
 
 export function createGfxEventScheduler(args: SchedulerArgs): GfxEventScheduler {
-  let last = 0;
+  // Sentinel "before any possible startTime" so events at startTime=0 fire
+  // on the first tick. Many ECMs place skill effects at t=0; without this,
+  // `last < startSec` is `0 < 0` and the event silently never fires.
+  let last = -Infinity;
   const firedOnce = new Set<AnimEvent>();
   const active: GfxElementRuntime[] = [];
 
@@ -58,7 +61,9 @@ export function createGfxEventScheduler(args: SchedulerArgs): GfxEventScheduler 
       }
     },
     onLoop() {
-      last = 0;
+      // Reset to the same "before any possible startTime" sentinel as init
+      // so events at startTime=0 re-fire on the next iteration's first tick.
+      last = -Infinity;
       // Non-once events auto-eligible — firedOnce only retains once=true.
     },
     attachRuntime(rt) {
