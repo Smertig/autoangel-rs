@@ -317,6 +317,43 @@ export async function renderFromSmd(
   // test-only: read via window.__gfxRuntimeCount in Playwright specs
   if (typeof window !== 'undefined') {
     (window as any).__gfxRuntimeCount = () => scheduler?._activeCount() ?? 0;
+    // diagnostic: dump every active runtime's mesh tree to console.table
+    // (world position/scale, material color/opacity, texture present, etc.)
+    (window as any).__gfxRuntimeDump = () => {
+      const rts = scheduler?._activeRuntimes() ?? [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rows: any[] = [];
+      const tmpVec = new THREE.Vector3();
+      const tmpScale = new THREE.Vector3();
+      rts.forEach((rt, rtIdx) => {
+        const root = rt.root;
+        if (!root) return;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        root.traverse((obj: any) => {
+          const mat = obj.material;
+          const geom = obj.geometry;
+          if (!mat || !geom) return;
+          obj.getWorldPosition(tmpVec);
+          obj.getWorldScale(tmpScale);
+          rows.push({
+            rt: rtIdx,
+            type: obj.type,
+            geom: geom.parameters?.width
+              ? `${geom.parameters.width.toFixed(2)}x${geom.parameters.height.toFixed(2)}`
+              : (geom.attributes?.position?.count ?? '?') + 'v',
+            visible: obj.visible,
+            wPos: `${tmpVec.x.toFixed(2)},${tmpVec.y.toFixed(2)},${tmpVec.z.toFixed(2)}`,
+            wScale: `${tmpScale.x.toFixed(2)},${tmpScale.y.toFixed(2)},${tmpScale.z.toFixed(2)}`,
+            color: mat.color ? '#' + mat.color.getHexString() : '?',
+            opacity: mat.opacity?.toFixed(2),
+            map: mat.map ? 'yes' : 'no',
+          });
+        });
+      });
+      // eslint-disable-next-line no-console
+      console.table(rows);
+      return rows.length;
+    };
   }
 
   // Tear down GFX scheduler + mixer loop listener on viewer disposal.
@@ -330,9 +367,10 @@ export async function renderFromSmd(
       try { v.mixer.removeEventListener('loop', mixerLoopListener); } catch { /* mixer already gone */ }
     }
     mixerLoopListener = null;
-    // test-only: drop the hook so a later viewer doesn't report stale counts
+    // test-only: drop the hooks so a later viewer doesn't report stale counts
     if (typeof window !== 'undefined') {
       delete (window as any).__gfxRuntimeCount;
+      delete (window as any).__gfxRuntimeDump;
     }
     prevDispose();
   };

@@ -26,6 +26,8 @@ export interface GfxEventScheduler {
   disposeAll(): void;
   /** Test-only: number of currently-active runtimes. */
   _activeCount(): number;
+  /** Diagnostics: snapshot of currently-active runtimes (read-only). */
+  _activeRuntimes(): readonly GfxElementRuntime[];
 }
 
 export function createGfxEventScheduler(args: SchedulerArgs): GfxEventScheduler {
@@ -67,6 +69,11 @@ export function createGfxEventScheduler(args: SchedulerArgs): GfxEventScheduler 
     },
     _activeCount() {
       return active.length;
+    },
+    _activeRuntimes() {
+      // Snapshot — caller mutating the array (or iterating during a tick
+      // that itself mutates `active`) must not corrupt scheduler state.
+      return [...active];
     },
   };
 }
