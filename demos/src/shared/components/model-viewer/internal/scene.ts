@@ -233,12 +233,45 @@ export function mountScene(
 
     const animHeader = document.createElement('div');
     animHeader.className = styles.animListHeader;
-    animHeader.textContent = `Animations (${animNames.length})`;
+    const headerLabel = document.createElement('span');
+    animHeader.appendChild(headerLabel);
+    const updateHeader = (visible: number) => {
+      headerLabel.textContent = visible === animNames.length
+        ? `Animations (${animNames.length})`
+        : `Animations (${visible} / ${animNames.length})`;
+    };
+    updateHeader(animNames.length);
     animPanel.appendChild(animHeader);
+
+    const animFilter = document.createElement('input');
+    animFilter.type = 'text';
+    animFilter.placeholder = 'Filter…';
+    animFilter.className = styles.animListFilter;
+    animPanel.appendChild(animFilter);
 
     const animScroll = document.createElement('div');
     animScroll.className = styles.animListScroll;
     animPanel.appendChild(animScroll);
+
+    const allItems: Array<{ item: HTMLDivElement; nameLower: string }> = [];
+    const applyFilter = () => {
+      const q = animFilter.value.trim().toLowerCase();
+      let visible = 0;
+      for (const { item, nameLower } of allItems) {
+        const match = !q || nameLower.includes(q);
+        item.style.display = match ? '' : 'none';
+        if (match) visible++;
+      }
+      updateHeader(visible);
+    };
+    animFilter.addEventListener('input', applyFilter);
+    animFilter.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        animFilter.value = '';
+        applyFilter();
+        animFilter.blur();
+      }
+    });
 
     let activeItemEl: HTMLDivElement | undefined;
     let loadGeneration = 0;
@@ -246,6 +279,7 @@ export function mountScene(
       const item = document.createElement('div');
       item.className = styles.animListItem;
       item.title = clipName;
+      allItems.push({ item, nameLower: clipName.toLowerCase() });
 
       // Clip name label
       const nameEl = document.createElement('span');
