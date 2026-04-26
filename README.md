@@ -7,14 +7,16 @@ A library for parsing and manipulating Angelica Engine game files, with Python a
 ## Live Demo
 
 - [PCK Viewer](https://smertig.github.io/autoangel-rs/master/demo/pck/) — browse and extract files from one or more `.pck`/`.pkx` packages in the browser with a merged, color-coded file tree
+- [PCK Diff](https://smertig.github.io/autoangel-rs/master/demo/pck-diff/) — compare two `.pck` archives side-by-side and see what was added, removed, or modified
 - [Elements Viewer](https://smertig.github.io/autoangel-rs/master/demo/elements/) — inspect `elements.data` structures in the browser
 
-Both demos use the autoangel WASM package.
+All demos use the autoangel WASM package.
 
 ## Features
 
 - Parse and manipulate `elements.data` files (list structures, typed fields, roundtrip serialization)
 - Read, create, and modify `*.pck`/`*.pkx` compressed packages (keyed encryption, zlib decompression)
+- Parse Angelica model formats: `.bon` (skeletons), `.ski` (skins), `.smd` (meshes), `.ecm` (composite character models), `.stck` (animation track sets), `.gfx` (effects/particles)
 - Bundled configs for known game versions (auto-detected from data version header)
 
 ## Packages
