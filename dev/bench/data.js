@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1777218438488,
+  "lastUpdate": 1777218439137,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -10093,6 +10093,156 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Smertig/autoangel-rs/commit/9ed5aa2c40142bbdc6c2c7641503cad57ee1f893"
         },
         "date": 1777199773361,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 71639,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 64,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 236,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 501280,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 36,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [just parsed]/allocated",
+            "value": 71639,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [just parsed]/retained",
+            "value": 58279,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [parsed + iterated]/allocated",
+            "value": 2038239,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [parsed + iterated]/retained",
+            "value": 774647,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [parsed + 3 searches]/allocated",
+            "value": 75723,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "Data [parsed + 3 searches]/retained",
+            "value": 62103,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 865807,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 10808,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo::get_all_files",
+            "value": 7444164,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo::save_to",
+            "value": 21570066,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo [just parsed]/allocated",
+            "value": 865807,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo [just parsed]/retained",
+            "value": 11268,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo [parsed + all files]/allocated",
+            "value": 8311819,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo [parsed + all files]/retained",
+            "value": 6651260,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo [parsed + 3 files]/allocated",
+            "value": 906369,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          },
+          {
+            "name": "PackageInfo [parsed + 3 files]/retained",
+            "value": 20070,
+            "range": "± 0",
+            "unit": "bytes/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "abdc5fd2bb478979ca95300f98759f96103efb0d",
+          "message": "feat [demos]: log-scale playback speed slider (0.25× – 4×)\n\nReplaces the three preset buttons with a compact slider:\n\n* Logarithmic mapping centres 1× and gives equal visual room to\n  slowing down and speeding up; tick dots mark 0.25 / 0.5 / 1 / 2 / 4\n  with the centre dot brighter so 1× is easy to find at a glance.\n\n* Snap-to-preset within 2% so the user can land exactly on a common\n  speed without pixel-perfect aim. Double-click resets to 1×.\n  Mouse-wheel nudges by half an octave per notch.\n\n* Numeric label (`1.00×`) uses tabular numerals; the accent colour\n  drops back to neutral grey at the default speed so deviations are\n  visible at a glance.",
+          "timestamp": "2026-04-26T18:44:10+03:00",
+          "tree_id": "dccf1a4b412ec5e1f0733508dda1d6d1d85d43b0",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/abdc5fd2bb478979ca95300f98759f96103efb0d"
+        },
+        "date": 1777218438853,
         "tool": "cargo",
         "benches": [
           {
