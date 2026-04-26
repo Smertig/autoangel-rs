@@ -28,7 +28,7 @@ test('decal GFX spawns in ECM viewer when event fires', async ({ page }) => {
   await expect(page.locator('[class*="transportBar"]')).toBeVisible({ timeout: 30000 });
 
   await expect.poll(
-    () => page.evaluate(() => typeof (window as any).__gfxRuntimeCount === 'function'),
+    () => page.evaluate(() => typeof (window as any).__gfxEventsFired === 'function'),
     { timeout: 5000 },
   ).toBe(true);
 
@@ -37,20 +37,20 @@ test('decal GFX spawns in ECM viewer when event fires', async ({ page }) => {
 
   await animPanel.locator('[class*="animListItem"]').filter({ hasText: '跪下' }).first().click();
   await expect.poll(
-    () => page.evaluate(() => (window as any).__gfxRuntimeCount()),
+    () => page.evaluate(() => (window as any).__gfxEventsFired()),
     { timeout: 5000 },
   ).toBe(0);
-  const before = await page.evaluate(() => (window as any).__gfxRuntimeCount());
+  const before = await page.evaluate(() => (window as any).__gfxEventsFired());
   expect(before).toBe(0);
 
   await animPanel.locator('[class*="animListItem"]').filter({ hasText: '站立' }).first().click();
   await expect.poll(
-    () => page.evaluate(() => (window as any).__gfxRuntimeCount()),
+    () => page.evaluate(() => (window as any).__gfxEventsFired()),
     { timeout: 10000, intervals: [50, 100, 200, 500] },
   ).toBeGreaterThanOrEqual(1);
 
-  const after = await page.evaluate(() => (window as any).__gfxRuntimeCount());
-  console.log(`[e2e] __gfxRuntimeCount before=${before} after=${after}`);
+  const after = await page.evaluate(() => (window as any).__gfxEventsFired());
+  console.log(`[e2e] __gfxEventsFired before=${before} after=${after}`);
   for (const l of consoleLogs.filter((l) => l.includes('[gfx-runtime]') || l.includes('[model]'))) {
     console.log(l);
   }

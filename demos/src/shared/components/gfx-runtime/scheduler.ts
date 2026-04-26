@@ -26,6 +26,9 @@ export interface GfxEventScheduler {
   disposeAll(): void;
   /** Test-only: number of currently-active runtimes. */
   _activeCount(): number;
+  /** Test-only: cumulative spawn-callback invocations. Survives noops that
+   *  finish on the same frame they spawn (`_activeCount` doesn't). */
+  _eventsFired(): number;
   /** Diagnostics: snapshot of currently-active runtimes (read-only). */
   _activeRuntimes(): readonly GfxElementRuntime[];
 }
@@ -37,6 +40,7 @@ export function createGfxEventScheduler(args: SchedulerArgs): GfxEventScheduler 
   let last = -Infinity;
   const firedOnce = new Set<AnimEvent>();
   const active: GfxElementRuntime[] = [];
+  let firedCount = 0;
 
   return {
     tickToClipTime(t) {
@@ -45,6 +49,7 @@ export function createGfxEventScheduler(args: SchedulerArgs): GfxEventScheduler 
         const startSec = ev.startTime / 1000;
         if (last < startSec && startSec <= t) {
           active.push(args.spawn(ev));
+          firedCount++;
           if (ev.once) firedOnce.add(ev);
         }
       }
@@ -74,6 +79,9 @@ export function createGfxEventScheduler(args: SchedulerArgs): GfxEventScheduler 
     },
     _activeCount() {
       return active.length;
+    },
+    _eventsFired() {
+      return firedCount;
     },
     _activeRuntimes() {
       // Snapshot — caller mutating the array (or iterating during a tick

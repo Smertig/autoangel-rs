@@ -586,6 +586,7 @@ export async function renderFromSmd(
   // test-only: read via window.__gfxRuntimeCount in Playwright specs
   if (typeof window !== 'undefined') {
     (window as any).__gfxRuntimeCount = () => scheduler?._activeCount() ?? 0;
+    (window as any).__gfxEventsFired = () => scheduler?._eventsFired() ?? 0;
     // diagnostic: dump every active runtime's mesh tree to console.table
     // (world position/scale, material color/opacity, texture present, etc.)
     (window as any).__gfxRuntimeDump = () => {
@@ -641,6 +642,7 @@ export async function renderFromSmd(
     // test-only: drop the hooks so a later viewer doesn't report stale counts
     if (typeof window !== 'undefined') {
       delete (window as any).__gfxRuntimeCount;
+      delete (window as any).__gfxEventsFired;
       delete (window as any).__gfxRuntimeDump;
     }
     prevDispose();
