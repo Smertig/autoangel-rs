@@ -728,25 +728,68 @@ export function mountScene(
     transport.appendChild(timeEl);
     addSep();
 
-    // Speed buttons
-    const speeds: [string, number][] = [['0.5x', 0.5], ['1x', 1], ['2x', 2]];
-    const speedBtns: HTMLButtonElement[] = [];
-    for (const [label, spd] of speeds) {
-      const btn = document.createElement('button');
-      btn.className = styles.speedBtn;
-      btn.textContent = label;
-      btn.onclick = () => {
-        currentSpeed = spd;
-        if (v.mixer && playing) {
-          v.mixer.timeScale = spd;
-          v.requestRender();
+    const SPEED_MIN = 0.25;
+    const SPEED_MAX = 4;
+    const SPEED_PRESETS = [0.25, 0.5, 1, 2, 4];
+    const SNAP_TOLERANCE_PCT = 0.02;
+    const SPEED_LOG_MIN = Math.log(SPEED_MIN);
+    const SPEED_LOG_RANGE = Math.log(SPEED_MAX) - SPEED_LOG_MIN;
+    const speedToFraction = (s: number) => (Math.log(s) - SPEED_LOG_MIN) / SPEED_LOG_RANGE;
+    const fractionToSpeed = (f: number) => Math.exp(f * SPEED_LOG_RANGE + SPEED_LOG_MIN);
+    const SPEED_PRESET_FRACTIONS = SPEED_PRESETS.map(speedToFraction);
+
+    const speedWrap = document.createElement('div');
+    speedWrap.className = `${styles.speedWrap} ${styles.speedAtDefault}`;
+    const speedSlider = document.createElement('input');
+    speedSlider.type = 'range';
+    speedSlider.className = styles.speedSlider;
+    speedSlider.min = '0';
+    speedSlider.max = '1';
+    speedSlider.step = 'any';
+    speedSlider.value = String(speedToFraction(1));
+    speedSlider.title = 'Playback speed (double-click to reset)';
+
+    const speedLabel = document.createElement('span');
+    speedLabel.className = styles.speedLabel;
+    speedLabel.textContent = '1.0×';
+
+    function applySpeed(spd: number) {
+      let next = Math.max(SPEED_MIN, Math.min(SPEED_MAX, spd));
+      // Snap to a preset when the user lands within tolerance — keeps "1×"
+      // selectable without needing to be pixel-perfect. Reset/wheel/init
+      // paths already pass exact preset values, so snapping is a no-op for
+      // them.
+      const f = speedToFraction(next);
+      for (let i = 0; i < SPEED_PRESETS.length; i++) {
+        if (Math.abs(SPEED_PRESET_FRACTIONS[i] - f) < SNAP_TOLERANCE_PCT) {
+          next = SPEED_PRESETS[i];
+          break;
         }
-        speedBtns.forEach((b, i) => b.classList.toggle(styles.transportBtnActive, speeds[i][1] === spd));
-      };
-      speedBtns.push(btn);
-      transport.appendChild(btn);
+      }
+      if (next === currentSpeed) return;
+      currentSpeed = next;
+      speedSlider.value = String(speedToFraction(currentSpeed));
+      speedLabel.textContent = `${currentSpeed >= 1 ? currentSpeed.toFixed(1) : currentSpeed.toFixed(2)}×`;
+      speedSlider.style.setProperty('--speed-fill', `${speedToFraction(currentSpeed) * 100}%`);
+      speedWrap.classList.toggle(styles.speedAtDefault, currentSpeed === 1);
+      if (v.mixer && playing) {
+        v.mixer.timeScale = currentSpeed;
+        v.requestRender();
+      }
     }
-    speedBtns[1]?.classList.add(styles.transportBtnActive);
+
+    speedSlider.oninput = () => applySpeed(fractionToSpeed(Number(speedSlider.value)));
+    speedSlider.ondblclick = () => applySpeed(1);
+    speedSlider.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      // One wheel notch = half an octave (multiply / divide by sqrt(2)).
+      const dir = e.deltaY > 0 ? -1 : 1;
+      applySpeed(currentSpeed * Math.pow(2, dir * 0.5));
+    }, { passive: false });
+
+    speedWrap.appendChild(speedSlider);
+    speedWrap.appendChild(speedLabel);
+    transport.appendChild(speedWrap);
     addSep();
 
     // Loop mode
