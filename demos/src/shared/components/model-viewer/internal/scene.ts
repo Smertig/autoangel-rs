@@ -476,7 +476,6 @@ export function mountScene(
     scrubber.oninput = () => {
       if (!v.mixer) return;
       const t = (Number(scrubber.value) / 1000) * getDuration();
-      if (playing) pause();
       seekTo(t);
     };
     scrubWrap.appendChild(scrubber);
