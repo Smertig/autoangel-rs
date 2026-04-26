@@ -553,16 +553,18 @@ export async function renderFromSmd(
     const animBones = skelData?.bones;
     v.onBeforeRender = () => {
       if (needsBoneScale && animBones) applyBoneScalesToHierarchy(animBones);
+      // Tail counter + GFX runtimes follow the mixer's timeScale so the speed
+      // slider scales the whole pipeline (clip + particles + tail) together.
+      // timeScale === 0 (paused) zeroes the dt and freezes everything.
+      const dt = v.lastDt * (v.mixer?.timeScale ?? 1);
       if (scheduler) {
         if (currentAction && isFinite(currentAction.time)) {
           scheduler.tickToClipTime(currentAction.time);
         }
-        scheduler.tickRuntimes(v.lastDt);
+        scheduler.tickRuntimes(dt);
       }
-      // Pause (timeScale=0) freezes the tail counter alongside the mixer.
-      if ((phase === 'TAIL' || phase === 'IDLE_LOOPING')
-          && v.mixer && v.mixer.timeScale > 0) {
-        tailElapsedSec += v.lastDt;
+      if (phase === 'TAIL' || phase === 'IDLE_LOOPING') {
+        tailElapsedSec += dt;
       }
       if (phase === 'TAIL' && tailElapsedSec >= tailDurSec) {
         onTailComplete();
