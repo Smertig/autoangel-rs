@@ -168,6 +168,14 @@
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+  --tail-fraction: 0;
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0) calc((1 - var(--tail-fraction)) * 100%),
+    rgba(255, 200, 100, 0.18) calc((1 - var(--tail-fraction)) * 100%),
+    rgba(255, 200, 100, 0.18) 100%
+  );
 }
 
 .eventLane {

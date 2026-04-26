@@ -2,10 +2,18 @@ import { createAnimatedGroupPair } from './animated-group';
 import { createNoopRuntime } from './noop';
 import { createDecalMesh } from '../gfx/previews/decal/mesh';
 import { loadParticleTexture, resolveTexturePath } from '../gfx/previews/particle/texture';
+import { type DurationContext, type DurationElement, keyPointSetDurationSec } from './duration';
 import type { ElementBody } from '../gfx/previews/types';
 import type { GfxElementRuntime, SpawnOpts } from './types';
 
 type DecalBody = Extract<ElementBody, { kind: 'decal' }>;
+
+export function computeDecalDurationSec(
+  el: DurationElement,
+  _ctx: DurationContext,
+): number {
+  return keyPointSetDurationSec(el.key_point_set);
+}
 
 /**
  * Runtime for decal elements (types 100 + 102). Type 101 (screen-space)

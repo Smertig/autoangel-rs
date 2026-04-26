@@ -9,6 +9,9 @@ import type { GfxEffect } from '../../../../types/autoangel';
 import { elementSkipReason } from '../../gfx-runtime/registry';
 import type { ElementBodyKind } from '../../gfx/previews/types';
 
+/** Toolbar loop-mode toggle states. */
+export type LoopMode = 'loop' | 'once' | 'pingpong';
+
 export function showClipToast(container: HTMLElement, message: string): void {
   const existing = container.querySelector('[data-clip-toast]');
   if (existing) existing.remove();
@@ -54,6 +57,40 @@ export interface MountSceneExtras {
   resolveFilePath?: (ev: AnimEvent) => string | null;
   /** Navigate the host shell to the canonical-cased resolved path. */
   onNavigateToFile?: (path: string) => void;
+  /**
+   * Notifies the caller (render-smd state machine) when the user toggles the
+   * loop-mode button. Selected actions always play `LoopOnce`; render-smd
+   * uses this preference to decide whether to restart the clip after the
+   * GFX tail completes (Loop) or stay in the idle/clamp pose (Once).
+   * Ping-pong is currently treated like Once.
+   */
+  onLoopModeChange?: (mode: LoopMode) => void;
+  /**
+   * Override the scrubber's read/write of the playback cursor with a
+   * "virtual time" abstraction owned by render-smd. The selected action
+   * clamps at clipDuration under LoopOnce, so it can't drive the cursor
+   * across the GFX tail; render-smd keeps a tail-elapsed counter that
+   * lets the cursor traverse the full extended timeline. `seekVirtual`
+   * also routes scrub-back through render-smd's state machine so the
+   * idle action is stopped and `currentAction` is re-enabled instead of
+   * leaving playback stuck in a half-faded state.
+   */
+  timeOps?: {
+    getVirtualTime: () => number;
+    seekVirtual: (t: number) => void;
+  };
+}
+
+export interface MountSceneApi {
+  /**
+   * Override the duration mapped by the scrubber. Render-smd calls this once
+   * per clip switch, after pre-loading all referenced GFX, so the scrubber
+   * range covers `max(clipDuration, longestEventEnd)` — the extended timeline
+   * that includes the GFX tail. Always clamped to at least the natural clip
+   * duration to guard against ordering races (a stale `setTotalDuration` from
+   * a previous clip arriving after the new clip is active).
+   */
+  setTotalDuration: (t: number) => void;
 }
 
 export function mountScene(
@@ -69,7 +106,7 @@ export function mountScene(
   animEventMap?: Map<string, AnimEvent[]>,
   onClipSwitch?: (clipName: string, action: any) => void,
   extras?: MountSceneExtras,
-): void {
+): MountSceneApi {
   const { THREE, OrbitControls } = getThree();
   const v = getViewer(container);
   v.onFrameUpdate = null;
@@ -171,6 +208,10 @@ export function mountScene(
   let transport: HTMLElement | null = null;
   let animPanel: HTMLElement | null = null;
   let tooltipEl: HTMLElement | null = null;
+  // No-op default: when there is no transport bar (no animations), there is
+  // no scrubber to extend. Reassigned below inside the if-block when the
+  // transport is built.
+  let setTotalDurationExternal: (t: number) => void = () => {};
   if (animNames && animNames.length > 0 && loadClip) {
     transport = document.createElement('div');
     transport.className = styles.transportBar;
@@ -187,15 +228,40 @@ export function mountScene(
     let activeClip = initialClip ?? { name: animNames[0], clip: null as any };
     const fps = 30;
 
+    // Defaults to the clip's own duration; render-smd extends past clipDur
+    // once GFX preload finishes so the user can scrub through the tail.
+    let totalDuration = activeClip.clip?.duration ?? 0;
+    setTotalDurationExternal = (t: number) => {
+      const next = Math.max(t, activeClip.clip?.duration ?? 0);
+      if (next === totalDuration) return;
+      totalDuration = next;
+      redrawScrubberShading();
+      // Event tick percentages divide by totalDuration; rebuild so they don't
+      // overflow into the (now visible) shaded tail zone.
+      rebuildEventLane(activeClip.name);
+    };
+
+    function redrawScrubberShading() {
+      const clipDur = activeClip.clip?.duration ?? 0;
+      const tailFraction = totalDuration > 0
+        ? Math.max(0, (totalDuration - clipDur) / totalDuration)
+        : 0;
+      scrubWrap.style.setProperty('--tail-fraction', tailFraction.toFixed(4));
+    }
+
     function getAction() {
       return v.mixer?.existingAction(activeClip.clip) ?? null;
     }
     function getTime(): number {
+      // Render-smd's virtual time covers the post-clip GFX tail
+      // (action.time clamps at clipDuration under LoopOnce).
+      const fromOps = extras?.timeOps?.getVirtualTime?.();
+      if (fromOps !== undefined) return fromOps;
       const action = getAction();
       return action && isFinite(action.time) ? action.time : 0;
     }
     function getDuration(): number {
-      return activeClip.clip?.duration ?? 0;
+      return totalDuration;
     }
     function addSep() {
       const s = document.createElement('div');
@@ -218,6 +284,13 @@ export function mountScene(
       v.requestRender();
     }
     function seekTo(t: number) {
+      // Bare `action.time = t` leaves a clamped LoopOnce action stuck;
+      // render-smd's seekVirtual handles the state-machine reset.
+      if (extras?.timeOps?.seekVirtual) {
+        extras.timeOps.seekVirtual(t);
+        v.requestRender();
+        return;
+      }
       const action = getAction();
       if (action) action.time = t;
       if (v.mixer) v.mixer.update(0);
@@ -321,9 +394,15 @@ export function mountScene(
           if (gen !== loadGeneration) return;
           v.mixer.stopAllAction();
           activeClip = { name: clipName, clip };
+          // Reset scrubber range to the new clip's natural duration; render-
+          // smd will extend it via setTotalDurationExternal once preload
+          // finishes (the Math.max in the setter guards ordering).
+          totalDuration = activeClip.clip?.duration ?? 0;
+          redrawScrubberShading();
           const action = v.mixer.clipAction(clip);
-          action.loop = loopModes[loopMode].three;
-          action.clampWhenFinished = loopModes[loopMode].three === THREE.LoopOnce;
+          // Render-smd drives looping itself so it can interleave a GFX tail.
+          action.loop = THREE.LoopOnce;
+          action.clampWhenFinished = true;
           action.play();
           if (!playing) v.mixer.timeScale = 0;
           v.requestRender();
@@ -402,6 +481,7 @@ export function mountScene(
     };
     scrubWrap.appendChild(scrubber);
     transport.appendChild(scrubWrap);
+    redrawScrubberShading();
 
     // Shared tooltip element — added to container via replaceChildren to survive mode switches
     const tooltip = document.createElement('div');
@@ -681,9 +761,12 @@ export function mountScene(
       loopBtn.title = loopModes[loopMode].title;
       const action = getAction();
       if (action) {
-        action.loop = loopModes[loopMode].three;
-        action.clampWhenFinished = loopModes[loopMode].three === THREE.LoopOnce;
+        // render-smd drives looping itself; the loop_modes labels are display-only.
+        action.loop = THREE.LoopOnce;
+        action.clampWhenFinished = true;
       }
+      const modeName: LoopMode = (['loop', 'once', 'pingpong'] as const)[loopMode];
+      extras?.onLoopModeChange?.(modeName);
     };
     transport.appendChild(loopBtn);
 
@@ -862,6 +945,8 @@ export function mountScene(
   if (animPanel) children.push(animPanel);
   if (tooltipEl) children.push(tooltipEl);
   container.replaceChildren(...children);
+
+  return { setTotalDuration: (t: number) => setTotalDurationExternal(t) };
 }
 
 export function makeToolbarBtn(label: string, onclick: (() => void) | null): HTMLButtonElement {

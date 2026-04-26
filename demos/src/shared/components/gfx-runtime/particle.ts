@@ -5,10 +5,21 @@ import { createSimState, tickSim } from '../gfx/previews/particle/simulation';
 import { loadParticleTexture, resolveTexturePath } from '../gfx/previews/particle/texture';
 import { createAnimatedGroupPair } from './animated-group';
 import { createNoopRuntime } from './noop';
+import { type DurationContext, type DurationElement, keyPointSetDurationSec } from './duration';
 import type { ElementBody } from '../gfx/previews/types';
 import type { GfxElementRuntime, SpawnOpts } from './types';
 
 type ParticleBody = Extract<ElementBody, { kind: 'particle' }>;
+
+// Emitter `ttl` and `emission_rate` are NOT factored in yet — a particle whose
+// KPS ends well before its emitter winds down may be cut short. Acceptable for
+// one-shot ECM events; revisit if persistent buff-style GFX truncate.
+export function computeParticleDurationSec(
+  el: DurationElement,
+  _ctx: DurationContext,
+): number {
+  return keyPointSetDurationSec(el.key_point_set);
+}
 
 /**
  * Adapter that wraps the standalone particle simulation as a GfxElementRuntime

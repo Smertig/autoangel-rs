@@ -1,10 +1,21 @@
-import { spawnParticleRuntime } from './particle';
-import { spawnContainerRuntime } from './container';
-import { spawnDecalRuntime } from './decal';
+import { spawnParticleRuntime, computeParticleDurationSec } from './particle';
+import { spawnContainerRuntime, computeContainerDurationSec } from './container';
+import { spawnDecalRuntime, computeDecalDurationSec } from './decal';
 import { createNoopRuntime } from './noop';
-import type { ElementBody } from '../gfx/previews/types';
+import type { DurationContext, DurationElement, GfxLike } from './duration';
+import type { ElementBody, ElementBodyKind } from '../gfx/previews/types';
 import type { GfxElement } from '../../../types/autoangel';
 import type { GfxElementRuntime, SpawnOpts } from './types';
+
+/** Kinds that produce a real (non-noop) runtime. Keep in sync with the switch
+ *  in `spawnElementRuntime`. */
+export const RENDERABLE_KINDS: ReadonlySet<ElementBodyKind> = new Set([
+  'particle', 'container', 'decal',
+]);
+
+export function isRenderableKind(kind: ElementBodyKind): boolean {
+  return RENDERABLE_KINDS.has(kind);
+}
 
 export function spawnElementRuntime(
   body: ElementBody,
@@ -23,6 +34,36 @@ export function spawnElementRuntime(
     default:
       return createNoopRuntime(opts.three);
   }
+}
+
+/** Mirrors the spawn switch — each renderable kind's helper lives next to
+ *  its spawner. Non-renderable kinds return 0 (they spawn as noops). */
+export function computeElementDurationSec(
+  el: DurationElement,
+  ctx: DurationContext,
+): number {
+  const kind = el.body.kind;
+  if (!ctx.isRenderable(kind)) return 0;
+  switch (kind) {
+    case 'particle': return computeParticleDurationSec(el, ctx);
+    case 'container': return computeContainerDurationSec(el, ctx);
+    case 'decal': return computeDecalDurationSec(el, ctx);
+    default: return 0;
+  }
+}
+
+/** Predicted lifetime of a whole GFX file = max over its renderable elements. */
+export function computeGfxDurationSec(
+  gfx: GfxLike | null | undefined,
+  ctx: DurationContext,
+): number {
+  if (!gfx) return 0;
+  let max = 0;
+  for (const el of gfx.elements) {
+    const d = computeElementDurationSec(el, ctx);
+    if (d > max) max = d;
+  }
+  return max;
 }
 
 /**

@@ -12,6 +12,13 @@ export interface Viewer {
   onBeforeRender: (() => void) | null;
   /** Called each frame to update transport bar UI (scrubber, time display). */
   onFrameUpdate: (() => void) | null;
+  /**
+   * Optional secondary "still animating" probe consulted alongside
+   * `isMixerActive()` to keep the render loop alive when the mixer is
+   * idle but other things are still moving (e.g. GFX particle runtimes
+   * during the post-clip tail).
+   */
+  isAuxAnimating: (() => boolean) | null;
   /** Seconds elapsed since last frame; available inside onBeforeRender/onFrameUpdate. */
   lastDt: number;
   /**
@@ -84,7 +91,7 @@ export function getViewer(container: HTMLElement): Viewer {
     // which re-arms the scheduler via the handler installed in setControls.
     if (v.controls) v.controls.update();
     if (v.scene) renderer.render(v.scene, v.camera);
-    if (isMixerActive()) requestRender();
+    if (isMixerActive() || (v.isAuxAnimating && v.isAuxAnimating())) requestRender();
   }
 
   function requestRender() {
@@ -118,6 +125,7 @@ export function getViewer(container: HTMLElement): Viewer {
     mixer: null,
     onBeforeRender: null,
     onFrameUpdate: null,
+    isAuxAnimating: null,
     lastDt: 0,
     requestRender,
     setControls,

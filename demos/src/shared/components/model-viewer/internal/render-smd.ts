@@ -14,10 +14,16 @@ import {
 import { ClipCache, buildAnimationClip } from './clip';
 import { type AnimEvent, buildAnimEventMap, EVENT_GFX, EVENT_SOUND } from './event-map';
 import { getViewer } from './viewer';
-import { mountScene } from './scene';
+import { mountScene, type LoopMode } from './scene';
 import { createGfxEventScheduler, type GfxEventScheduler } from '../../gfx-runtime/scheduler';
-import { spawnElementRuntime } from '../../gfx-runtime/registry';
+import {
+  spawnElementRuntime,
+  isRenderableKind,
+  computeElementDurationSec,
+  computeGfxDurationSec,
+} from '../../gfx-runtime/registry';
 import { createGfxLoader } from '../../gfx-runtime/loader';
+import type { DurationContext, GfxLike, IsRenderable } from '../../gfx-runtime/duration';
 import { createNoopRuntime } from '../../gfx-runtime/noop';
 import { attachToHook } from '../../gfx-runtime/hook';
 import { resolveEnginePath, ENGINE_PATH_PREFIXES, type FindFile } from '../../gfx/util/resolveEnginePath';
@@ -25,7 +31,20 @@ import { ALL_ELEMENT_BODY_KINDS } from '../../gfx/util/kindLabel';
 import type { ElementBodyKind } from '../../gfx/previews/types';
 
 // "站立" (standing) — preferred default animation clip
-const PREFERRED_ANIM_HINT = '\u7AD9\u7ACB';
+export const PREFERRED_ANIM_HINT = '\u7AD9\u7ACB';
+
+/**
+ * Find an "idle" clip the viewer can fall through to after a one-shot clip
+ * ends and its GFX is still playing out. Returns the first non-self match
+ * containing PREFERRED_ANIM_HINT, or null when none qualifies — including
+ * the case where the *only* matching clip is `currentClip` itself.
+ */
+export function findIdleClipName(
+  animNames: ReadonlyArray<string>,
+  currentClip: string,
+): string | null {
+  return animNames.find((n) => n !== currentClip && n.includes(PREFERRED_ANIM_HINT)) ?? null;
+}
 
 /**
  * Shared renderer driven by an already-fetched SMD. Both the ECM path
@@ -174,7 +193,15 @@ export async function renderFromSmd(
   let initialClip: { name: string; clip: any } | null = null;
   let scheduler: GfxEventScheduler | null = null;
   let currentAction: any = null;
-  let mixerLoopListener: ((evt: any) => void) | null = null;
+  let mixerFinishedListener: ((evt: any) => void) | null = null;
+  type Phase = 'PLAY_SELECTED' | 'TAIL' | 'IDLE_LOOPING';
+  let phase: Phase = 'PLAY_SELECTED';
+  let tailIdleAction: any = null;
+  let loopModePref: LoopMode = 'loop';
+  // The selected action's `.time` clamps at clipDuration under LoopOnce, so
+  // we count tail seconds ourselves to drive the cursor across the shaded zone.
+  let tailElapsedSec = 0;
+  let tailDurSec = 0;
   const v = getViewer(container);
   {
     if (v.mixer) { v.mixer.stopAllAction(); v.mixer = null; }
@@ -191,10 +218,10 @@ export async function renderFromSmd(
         const clip = await loadClip(preferredName);
         initialClip = { name: preferredName, clip };
         currentAction = v.mixer.clipAction(clip);
+        currentAction.loop = THREE.LoopOnce;
+        currentAction.clampWhenFinished = true;
         currentAction.play();
-        // Kick the render-on-demand scheduler so playback takes over; the
-        // eager first paint in mount-scene covered the static pose, but the
-        // mixer only starts advancing once we tick it.
+        // Eager first paint covered the static pose; mixer only advances once ticked.
         v.requestRender();
       } catch (e) {
         console.warn('[model] Failed to load initial clip:', preferredName, e);
@@ -202,10 +229,6 @@ export async function renderFromSmd(
     }
   }
 
-  // ── GFX event scheduler ──────────────────────────────────────────────
-  // Built once per `renderFromSmd` call; rebuilt on every clip switch. GFX
-  // file resolution is async, so `spawn` returns a synchronous placeholder
-  // and attaches the resolved runtime(s) via `attachRuntime` once they load.
   const gfxLoader = animNames.length > 0
     ? createGfxLoader(wasm, (p) => getFile(p))
     : null;
@@ -213,86 +236,254 @@ export async function renderFromSmd(
   let gfxKinds: Set<ElementBodyKind> = new Set(ALL_ELEMENT_BODY_KINDS);
   let currentClipName: string | null = initialClip?.name ?? null;
 
-  const rebuildSchedulerForClip = (clipName: string) => {
+  let setTotalDur: (t: number) => void = () => {};
+
+  /** One pre-resolved GFX event for the active clip. */
+  type ScheduledEffect = {
+    ev: AnimEvent;
+    startSec: number;
+    durationSec: number;
+    gfx: GfxLike | null;
+    resolved: string | null;
+  };
+
+  const buildEffectList = async (
+    gfxEvents: AnimEvent[],
+    isRenderable: IsRenderable,
+  ): Promise<{ effects: ScheduledEffect[]; preloaded: Map<string, GfxLike> }> => {
+    const preloaded = new Map<string, GfxLike>();
+    // Resolve once per event, share with preload + effect-list build.
+    const resolvedPaths = gfxEvents.map(
+      (ev) => resolveEnginePath(ev.filePath, ENGINE_PATH_PREFIXES.gfx, findFile),
+    );
+    await Promise.all(resolvedPaths.map(async (resolved) => {
+      if (!resolved || preloaded.has(resolved)) return;
+      const gfx = await gfxLoader!.load(resolved);
+      if (gfx) preloaded.set(resolved, gfx as GfxLike);
+    }));
+    const resolveDur = (p: string) =>
+      preloaded.get(resolveEnginePath(p, ENGINE_PATH_PREFIXES.gfx, findFile) ?? '') ?? null;
+    const effects: ScheduledEffect[] = gfxEvents.map((ev, i) => {
+      const resolved = resolvedPaths[i];
+      const gfx = resolved ? preloaded.get(resolved) ?? null : null;
+      const startSec = ev.startTime / 1000;
+      let durationSec: number;
+      if (ev.timeSpan > 0) {
+        durationSec = ev.timeSpan / 1000;
+      } else if (gfx && resolved) {
+        const ctx: DurationContext = {
+          resolve: resolveDur,
+          visiting: new Set([resolved]),
+          isRenderable,
+        };
+        durationSec = computeGfxDurationSec(gfx, ctx);
+      } else {
+        durationSec = 0;
+      }
+      return { ev, startSec, durationSec, gfx, resolved };
+    });
+    return { effects, preloaded };
+  };
+
+  const rebuildSchedulerForClip = async (clipName: string) => {
     scheduler?.disposeAll();
     scheduler = null;
-    if (gfxKinds.size === 0) return;
-    if (!gfxLoader) return;
+    const clipDur = currentAction?.getClip?.()?.duration ?? 0;
+    // `isRenderable` excludes both unsupported kinds (which would spawn
+    // noop runtimes contributing nothing visible) and kinds the user has
+    // toggled off — so an unrendered lightning sibling can't keep the
+    // cursor waiting for a 3s tail when the actual particle finishes in 1s.
+    const isRenderable = (kind: string) =>
+      gfxKinds.has(kind as ElementBodyKind) && isRenderableKind(kind as ElementBodyKind);
+    const finishWithoutTail = () => { tailDurSec = 0; setTotalDur(clipDur); };
+    if (gfxKinds.size === 0) { finishWithoutTail(); return; }
+    if (!gfxLoader) { finishWithoutTail(); return; }
     const events = animEventMap?.get(clipName) ?? [];
     // Milestone B: only GFX (type 100). Sound events (101) stay timeline-only.
     const gfxEvents = events.filter((e) => e.type === EVENT_GFX);
-    if (gfxEvents.length === 0) return;
+    if (gfxEvents.length === 0) { finishWithoutTail(); return; }
+
+    const { effects, preloaded } = await buildEffectList(gfxEvents, isRenderable);
+
+    // Hold-forever elements yield Infinity from keyPointSetDurationSec; treat
+    // them as a no-loop signal — the engine doesn't restart persistent GFX.
+    // Scrubber range comes from the *finite* events only so the scrubber
+    // stays usable; the loop-wrap predicate becomes unsatisfiable.
+    let longestFiniteEnd = 0;
+    let anyInfinite = false;
+    for (const e of effects) {
+      const tEnd = e.startSec + e.durationSec;
+      if (!isFinite(tEnd)) anyInfinite = true;
+      else if (tEnd > longestFiniteEnd) longestFiniteEnd = tEnd;
+    }
+    const totalDur = Math.max(clipDur, longestFiniteEnd);
+    tailDurSec = anyInfinite ? Infinity : Math.max(0, totalDur - clipDur);
+    setTotalDur(totalDur);
+
+    // Index effects by event identity so the spawn callback finds its entry
+    // in O(1). Same `AnimEvent` reference flows through scheduler events.
+    const effectByEvent = new Map<AnimEvent, ScheduledEffect>();
+    for (const e of effects) effectByEvent.set(e.ev, e);
+
     const localScheduler = createGfxEventScheduler({
       events: gfxEvents,
       bones: skelData?.bones ?? [],
       sceneRoot: group,
       spawn: (ev) => {
-        // Synchronously return a no-op placeholder; resolve + attach the real
-        // runtime(s) asynchronously. If the GFX is already cached this
-        // usually completes in the same tick.
-        (async () => {
-          const loader = gfxLoader;
-          const resolved = resolveEnginePath(ev.filePath, ENGINE_PATH_PREFIXES.gfx, findFile);
-          if (!resolved) return;
-          const gfx = await loader.load(resolved);
-          const elements = (gfx as any)?.elements;
-          if (!elements?.length) return;
-          // Guard: scheduler may have been disposed during the await.
-          if (scheduler !== localScheduler) return;
-          // Pre-populate the cycle-guard set with this event's own resolved
-          // path so a self-referential Container(gfx_path=self) is caught at
-          // depth 1 instead of looping once before the guard engages. Each
-          // top-level spawn starts its own recursion frame.
-          const visiting = new Set<string>([resolved]);
-          for (const el of elements) {
-            const rt = spawnElementRuntime(el.body, {
-              three: THREE,
-              gfxScale: ev.gfxScale,
-              gfxSpeed: ev.gfxSpeed,
-              timeSpanSec: ev.timeSpan > 0 ? ev.timeSpan / 1000 : undefined,
-              getData: async (p: string) => (await getFile(p)) ?? new Uint8Array(0),
-              wasm,
-              findFile,
-              element: el,
-              loader,
-              visiting,
-              kindFilter: (kind) => gfxKinds.has(kind),
-            });
-            // ECM events usually target hooks (HH_*); prefer hooks then fall
-            // back to bones, then to scene root if neither matches.
-            const hooks = skelData?.hooksByName;
-            const bones = skelData?.bones;
-            const findAttachPoint = (name: string) => {
-              if (!name) return undefined;
-              const hook = hooks?.get(name);
-              if (hook) return hook;
-              return bones?.find((b) => b.name === name);
-            };
-            attachToHook(rt.root, {
-              hookName: ev.hookName,
-              hookOffset: ev.hookOffset,
-              hookYaw: ev.hookYaw,
-              hookPitch: ev.hookPitch,
-              hookRot: ev.hookRot,
-              bindParent: ev.bindParent,
-            }, findAttachPoint, group);
-            localScheduler.attachRuntime(rt);
-          }
-        })().catch((e) => console.warn('[gfx-runtime] spawn failed:', e));
+        const effect = effectByEvent.get(ev);
+        if (!effect?.gfx || !effect.resolved) return createNoopRuntime(THREE);
+        // Cycle guard pre-populated with this event's own path so a
+        // self-referential Container(gfx_path=self) is caught at depth 1.
+        const visiting = new Set<string>([effect.resolved]);
+        const durCtx: DurationContext = {
+          // Re-walk into the preloaded map only; no async fetch at spawn
+          // time. Nested gfx_paths NOT in the preloaded set fall back to
+          // the container's own KPS — same approximation `totalDur` used.
+          resolve: (p) =>
+            preloaded.get(resolveEnginePath(p, ENGINE_PATH_PREFIXES.gfx, findFile) ?? '') ?? null,
+          visiting,
+          isRenderable,
+        };
+        for (const el of effect.gfx.elements) {
+          const rt = spawnElementRuntime(el.body, {
+            three: THREE,
+            gfxScale: ev.gfxScale,
+            gfxSpeed: ev.gfxSpeed,
+            timeSpanSec: ev.timeSpan > 0
+              ? ev.timeSpan / 1000
+              : computeElementDurationSec(el, durCtx),
+            getData: async (p: string) => (await getFile(p)) ?? new Uint8Array(0),
+            wasm,
+            findFile,
+            element: el,
+            loader: gfxLoader!,
+            visiting,
+            kindFilter: (kind) => gfxKinds.has(kind),
+          });
+          // ECM events usually target hooks (HH_*); prefer hooks then fall
+          // back to bones, then to scene root if neither matches.
+          const hooks = skelData?.hooksByName;
+          const bones = skelData?.bones;
+          const findAttachPoint = (name: string) => {
+            if (!name) return undefined;
+            const hook = hooks?.get(name);
+            if (hook) return hook;
+            return bones?.find((b) => b.name === name);
+          };
+          attachToHook(rt.root, {
+            hookName: ev.hookName,
+            hookOffset: ev.hookOffset,
+            hookYaw: ev.hookYaw,
+            hookPitch: ev.hookPitch,
+            hookRot: ev.hookRot,
+            bindParent: ev.bindParent,
+          }, findAttachPoint, group);
+          localScheduler.attachRuntime(rt);
+        }
         return createNoopRuntime(THREE);
       },
     });
     scheduler = localScheduler;
   };
 
-  // Mixer 'loop' listener — reset scheduler time cursor at each loop. Only
-  // fires the reset when the firing action matches the currently-tracked
-  // clip, so overlapping actions (e.g. crossfade residue) don't skew time.
+  function stopIdleAction() {
+    if (!tailIdleAction) return;
+    try { tailIdleAction.stop(); } catch { /* mixer already gone */ }
+    tailIdleAction = null;
+  }
+
+  function enterPlaySelected(timeSec: number) {
+    stopIdleAction();
+    if (currentAction) {
+      currentAction.reset();
+      currentAction.time = Math.max(0, timeSec);
+      currentAction.play();
+    }
+    phase = 'PLAY_SELECTED';
+    tailElapsedSec = 0;
+  }
+
+  function startCrossfadeToIdleIfAvailable() {
+    const idleName = currentClipName ? findIdleClipName(animNames, currentClipName) : null;
+    if (!idleName || !loadClip) return;
+    crossfadeToIdle(idleName).catch((e) => {
+      console.warn('[model] crossfade to idle failed; freezing instead:', e);
+    });
+  }
+
+  function onSelectedClipFinished() {
+    if (phase !== 'PLAY_SELECTED') return;
+    phase = 'TAIL';
+    if (tailDurSec <= 0) {
+      onTailComplete();
+      return;
+    }
+    startCrossfadeToIdleIfAvailable();
+  }
+
+  async function crossfadeToIdle(idleName: string) {
+    const clip = await loadClip!(idleName);
+    if (phase !== 'TAIL') return;
+    const action = v.mixer.clipAction(clip);
+    action.loop = THREE.LoopRepeat;
+    action.clampWhenFinished = false;
+    action.reset();
+    action.play();
+    if (currentAction) currentAction.crossFadeTo(action, 0.25, false);
+    tailIdleAction = action;
+  }
+
+  function onTailComplete() {
+    if (phase !== 'TAIL') return;
+    stopIdleAction();
+    // Predicted durations are estimates; force-dispose stragglers so they
+    // don't leak past the visible right edge of the scrubber.
+    scheduler?.disposeAll();
+    if (loopModePref === 'loop') {
+      enterPlaySelected(0);
+      scheduler?.onLoop();
+    } else if (loopModePref === 'once') {
+      phase = 'IDLE_LOOPING';
+    }
+    // pingpong: deferred — no tail extension.
+  }
+
+  function getClipDur(): number {
+    return currentAction?.getClip?.()?.duration ?? 0;
+  }
+
+  function getVirtualTime(): number {
+    if (phase === 'PLAY_SELECTED') {
+      return currentAction && isFinite(currentAction.time) ? currentAction.time : 0;
+    }
+    return getClipDur() + tailElapsedSec;
+  }
+
+  function seekVirtual(virtualT: number) {
+    if (!v.mixer || !currentAction) return;
+    const clipDur = getClipDur();
+    if (virtualT < clipDur) {
+      enterPlaySelected(virtualT);
+    } else {
+      currentAction.time = clipDur;
+      tailElapsedSec = virtualT - clipDur;
+      if (phase === 'PLAY_SELECTED') {
+        phase = 'TAIL';
+        // tickToClipTime is idempotent on already-fired events; this catches
+        // up `last` so subsequent ticks don't replay events the user skipped.
+        if (scheduler) scheduler.tickToClipTime(clipDur);
+        startCrossfadeToIdleIfAvailable();
+      }
+    }
+    v.mixer.update(0);
+  }
+
   if (v.mixer) {
-    mixerLoopListener = (evt: any) => {
-      if (evt.action === currentAction) scheduler?.onLoop();
+    mixerFinishedListener = (evt: any) => {
+      if (evt.action !== currentAction) return;
+      onSelectedClipFinished();
     };
-    v.mixer.addEventListener('loop', mixerLoopListener);
+    v.mixer.addEventListener('finished', mixerFinishedListener);
   }
 
   // Per-frame driver: bone scaling (if needed) + scheduler tick.
@@ -309,10 +500,22 @@ export async function renderFromSmd(
         }
         scheduler.tickRuntimes(v.lastDt);
       }
+      // Pause (timeScale=0) freezes the tail counter alongside the mixer.
+      if ((phase === 'TAIL' || phase === 'IDLE_LOOPING')
+          && v.mixer && v.mixer.timeScale > 0) {
+        tailElapsedSec += v.lastDt;
+      }
+      if (phase === 'TAIL' && tailElapsedSec >= tailDurSec) {
+        onTailComplete();
+      }
     };
   }
 
-  if (initialClip) rebuildSchedulerForClip(initialClip.name);
+  // Keep the render loop alive in TAIL so `tailElapsedSec` advances. Pausing
+  // takes timeScale to 0; gating here lets the loop fully sleep when paused.
+  v.isAuxAnimating = () => phase === 'TAIL' && (v.mixer?.timeScale ?? 0) > 0;
+
+  if (initialClip) void rebuildSchedulerForClip(initialClip.name);
 
   // test-only: read via window.__gfxRuntimeCount in Playwright specs
   if (typeof window !== 'undefined') {
@@ -363,10 +566,11 @@ export async function renderFromSmd(
   v.dispose = () => {
     scheduler?.disposeAll();
     scheduler = null;
-    if (mixerLoopListener && v.mixer) {
-      try { v.mixer.removeEventListener('loop', mixerLoopListener); } catch { /* mixer already gone */ }
+    v.isAuxAnimating = null;
+    if (mixerFinishedListener && v.mixer) {
+      try { v.mixer.removeEventListener('finished', mixerFinishedListener); } catch { /* mixer already gone */ }
     }
-    mixerLoopListener = null;
+    mixerFinishedListener = null;
     // test-only: drop the hooks so a later viewer doesn't report stale counts
     if (typeof window !== 'undefined') {
       delete (window as any).__gfxRuntimeCount;
@@ -387,15 +591,20 @@ export async function renderFromSmd(
       }
     : undefined;
 
-  mountScene(
+  const sceneApi = mountScene(
     container, group, totalStats,
     opts?.source?.data ?? smdData,
     opts?.source?.ext ?? '.smd',
     animNames, loadClip, initialClip, skelData?.skeleton, animEventMap,
-    (clipName, action) => {
+    async (clipName, action) => {
       currentAction = action;
       currentClipName = clipName;
-      rebuildSchedulerForClip(clipName);
+      // scene.ts::stopAllAction already cleared the mixer; just drop the
+      // local reference and rearm PLAY_SELECTED for the new clip.
+      phase = 'PLAY_SELECTED';
+      tailIdleAction = null;
+      tailElapsedSec = 0;
+      await rebuildSchedulerForClip(clipName);
     },
     {
       lookupGfx,
@@ -413,7 +622,7 @@ export async function renderFromSmd(
           // Rebuild the scheduler so currently-spawned runtimes for newly-
           // disabled kinds disappear, and newly-enabled kinds re-fire on the
           // next clip iteration.
-          if (currentClipName) rebuildSchedulerForClip(currentClipName);
+          if (currentClipName) void rebuildSchedulerForClip(currentClipName);
         },
       } : undefined,
       warning: skinFallbackWarning,
@@ -430,8 +639,15 @@ export async function renderFromSmd(
         return resolveEnginePath(ev.filePath, prefixes, findFile);
       },
       onNavigateToFile: opts?.onNavigateToFile,
+      onLoopModeChange: (m) => { loopModePref = m; },
+      timeOps: { getVirtualTime, seekVirtual },
     },
   );
+
+  // Wire scrubber-extended-range plumbing: rebuildSchedulerForClip computes
+  // totalDur after preloading every referenced GFX, then calls setTotalDur,
+  // which forwards to scene.ts so the scrubber maps `0..1000` → [0, totalDur].
+  setTotalDur = (t: number) => { sceneApi.setTotalDuration(t); };
 }
 
 export interface RenderOptions {
