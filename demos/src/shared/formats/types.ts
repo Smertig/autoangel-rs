@@ -2,6 +2,26 @@ import type { ComponentType } from 'react';
 import type { AutoangelModule } from '../../types/autoangel';
 import type { FindFile } from '@shared/components/gfx/util/resolveEnginePath';
 
+/**
+ * Two-scope persisted state ports a viewer can plug into. Both blobs are
+ * format-owned; the host treats them as opaque (defaults to `unknown`).
+ * The model-viewer chain instantiates this with its concrete schemas.
+ *
+ * Any port may be undefined — formats gate emission/restoration on presence
+ * (e.g. diff view and GFX-event-embedded previews pass none, so they don't
+ * pollute the host's persistence).
+ */
+export interface StatePorts<E = unknown, F = unknown> {
+  /** Per-file state from a prior visit (e.g. ECM/SMD: clip, paused, scrub pos). */
+  initialEntryState?: E;
+  /** Per-format session state (e.g. ECM/SMD: speed, loop mode). */
+  initialFormatState?: F;
+  /** Pass the **full** current per-file state — not partials. */
+  onEntryStateChange?: (state: E) => void;
+  /** Pass the **full** current per-format session state. */
+  onFormatStateChange?: (state: F) => void;
+}
+
 export interface ViewerContext {
   path: string;
   ext: string;
@@ -13,6 +33,12 @@ export interface ViewerContext {
    *  Undefined when the host can't host navigation (diff view, single-file
    *  preview) — consumers gate affordances on this. */
   onNavigateToFile?: (path: string) => void;
+  /**
+   * Persisted state ports — bundled because the four fields always travel
+   * together (you opt in or out as a unit). Undefined when the host can't
+   * persist (diff view, GFX-event embed, single-file preview).
+   */
+  state?: StatePorts;
 }
 
 // Currently pre-loads both sides because we can't compute hashes of

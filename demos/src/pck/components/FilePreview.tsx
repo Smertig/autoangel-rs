@@ -3,7 +3,7 @@ import type { AutoangelModule } from '../../types/autoangel';
 import { findFormat, lazyFormatComponent } from '@shared/formats/registry';
 import { getExtension } from '@shared/util/files';
 import { downloadFile } from '@shared/util/download';
-import type { DownloadAction } from '@shared/formats/types';
+import type { DownloadAction, StatePorts } from '@shared/formats/types';
 import type { FindFile } from '@shared/components/gfx/util/resolveEnginePath';
 import styles from './FilePreview.module.css';
 
@@ -14,6 +14,8 @@ interface FilePreviewProps {
   listFiles: (prefix: string) => string[];
   findFile: FindFile;
   onNavigateToFile?: (path: string) => void;
+  /** Persisted-state ports already routed to the correct session/format/entry. */
+  state?: StatePorts;
 }
 
 interface DownloadButtonProps {
@@ -88,7 +90,9 @@ function DownloadButton({ actions }: DownloadButtonProps) {
   );
 }
 
-export function FilePreview({ path, getData, wasm, listFiles, findFile, onNavigateToFile }: FilePreviewProps) {
+export function FilePreview({
+  path, getData, wasm, listFiles, findFile, onNavigateToFile, state,
+}: FilePreviewProps) {
   const ext = getExtension(path);
   const loader = findFormat(ext);
 
@@ -130,6 +134,7 @@ export function FilePreview({ path, getData, wasm, listFiles, findFile, onNaviga
             listFiles={listFiles}
             findFile={findFile}
             onNavigateToFile={onNavigateToFile}
+            state={state}
           />
         </Suspense>
       </div>

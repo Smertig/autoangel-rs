@@ -15,6 +15,7 @@ import { ClipCache, buildAnimationClip } from './clip';
 import { type AnimEvent, buildAnimEventMap, EVENT_GFX, EVENT_SOUND } from './event-map';
 import { getViewer } from './viewer';
 import { mountScene, type LoopMode } from './scene';
+import type { ModelStatePorts } from '../state';
 import { createGfxEventScheduler, type GfxEventScheduler } from '../../gfx-runtime/scheduler';
 import {
   spawnElementRuntime,
@@ -70,6 +71,7 @@ export async function renderFromSmd(
     source?: { data: Uint8Array; ext: string };
     initialClipName?: string;
     onNavigateToFile?: (path: string) => void;
+    state?: ModelStatePorts;
   },
 ): Promise<void> {
   let smdSkinPaths: string[] = [];
@@ -199,7 +201,7 @@ export async function renderFromSmd(
   type Phase = 'PLAY_SELECTED' | 'TAIL' | 'IDLE_LOOPING';
   let phase: Phase = 'PLAY_SELECTED';
   let tailIdleAction: any = null;
-  let loopModePref: LoopMode = 'loop';
+  let loopModePref: LoopMode = opts?.state?.initialFormatState?.loopMode ?? 'loop';
   // The selected action's `.time` clamps at clipDuration under LoopOnce, so
   // we count tail seconds ourselves to drive the cursor across the shaded zone.
   let tailElapsedSec = 0;
@@ -210,11 +212,14 @@ export async function renderFromSmd(
     v.onBeforeRender = null;
     if (animNames.length > 0 && loadClip) {
       v.mixer = new THREE.AnimationMixer(group);
-      if (opts?.initialClipName && !animNames.includes(opts.initialClipName)) {
-        console.warn(`[model] initialClipName '${opts.initialClipName}' not in track set; falling back to idle heuristic`);
+      // ModelPreview embeds set `initialClipName` directly (no entry state);
+      // PCK shell flow leaves it undefined and routes via `initialEntryState`.
+      const requestedClipName = opts?.initialClipName ?? opts?.state?.initialEntryState?.clip;
+      if (requestedClipName && !animNames.includes(requestedClipName)) {
+        console.warn(`[model] requested clip '${requestedClipName}' not in track set; falling back to idle heuristic`);
       }
-      const preferredName = (opts?.initialClipName && animNames.includes(opts.initialClipName))
-        ? opts.initialClipName
+      const preferredName = (requestedClipName && animNames.includes(requestedClipName))
+        ? requestedClipName
         : animNames.find((n) => n.includes(PREFERRED_ANIM_HINT)) ?? animNames[0];
       try {
         const clip = await loadClip(preferredName);
@@ -703,6 +708,7 @@ export async function renderFromSmd(
       onNavigateToFile: opts?.onNavigateToFile,
       onLoopModeChange: (m) => { loopModePref = m; },
       timeOps: { getVirtualTime, seekVirtual },
+      state: opts?.state,
     },
   );
 
@@ -719,6 +725,7 @@ export interface RenderOptions {
   /** Host-provided navigation; undefined when the host can't navigate
    *  (diff view, single-file preview). */
   onNavigateToFile?: (path: string) => void;
+  state?: ModelStatePorts;
 }
 
 export async function renderEcm(
@@ -749,6 +756,7 @@ export async function renderEcm(
     source: { data: ecmData, ext: '.ecm' },
     initialClipName: opts.initialClipName,
     onNavigateToFile: opts.onNavigateToFile,
+    state: opts.state,
   });
 }
 
@@ -767,5 +775,6 @@ export async function renderSmd(
 
   await renderFromSmd(container, wasm, getFile, smdPath, smdData, opts.listFiles, opts.findFile, {
     initialClipName: opts.initialClipName,
+    state: opts.state,
   });
 }

@@ -1,14 +1,26 @@
 import { zip } from 'fflate';
 import { downloadBlob, downloadFile } from '@shared/util/download';
-import { EcmViewer } from '@shared/components/model-viewer';
+import { EcmViewer, bridgeModelStatePorts } from '@shared/components/model-viewer';
 import { collectEcmDependencies } from '@shared/util/model-dependencies';
 import { sideBySideDiffer } from './helpers';
 import { useNullableGetData } from '@shared/hooks/useNullableGetData';
 import type { DownloadAction, FormatDescriptor, ViewerContext } from './types';
 
-function EcmFormatViewer({ path, getData, wasm, listFiles, findFile, onNavigateToFile }: ViewerContext) {
+function EcmFormatViewer({
+  path, getData, wasm, listFiles, findFile, onNavigateToFile, state,
+}: ViewerContext) {
   const getDataNullable = useNullableGetData(getData);
-  return <EcmViewer path={path} wasm={wasm} getData={getDataNullable} listFiles={listFiles} findFile={findFile} onNavigateToFile={onNavigateToFile} />;
+  return (
+    <EcmViewer
+      path={path}
+      wasm={wasm}
+      getData={getDataNullable}
+      listFiles={listFiles}
+      findFile={findFile}
+      onNavigateToFile={onNavigateToFile}
+      state={bridgeModelStatePorts(state)}
+    />
+  );
 }
 
 async function downloadModelZip(ctx: ViewerContext): Promise<void> {

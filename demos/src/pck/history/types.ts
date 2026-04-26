@@ -1,4 +1,10 @@
-/** Persistent history of PCK package sessions the user has opened locally. */
+/**
+ * Persistent history of PCK package sessions the user has opened locally.
+ *
+ * Per-file `state` and per-format `formatStates` are opaque blobs — the
+ * recents/session layer never reads or interprets them; the format that
+ * wrote a blob owns its schema and any versioning.
+ */
 
 export interface SessionFile {
   /** Stable id derived from `name|size|lastModified` (lowercased name). */
@@ -15,6 +21,8 @@ export interface RecentEntry {
   path: string;
   /** Last-clicked timestamp; head of the ring buffer wins on dedup. */
   at: number;
+  /** Per-file state — e.g. ECM/SMD selected clip, scrub pos. */
+  state?: unknown;
 }
 
 export interface Session {
@@ -40,6 +48,12 @@ export interface Session {
    * on sessions recorded before this field existed — treat as empty.
    */
   recentEntries?: RecentEntry[];
+  /**
+   * Per-format settings keyed by `FormatDescriptor.name` (e.g. `'ecm'`,
+   * `'smd'`) — playback speed, loop mode. Carries settings that should
+   * follow the *kind* of file rather than any one file.
+   */
+  formatStates?: Record<string, unknown>;
 }
 
 /** Hard cap on per-session recent history. Writes trim from the tail. */
@@ -70,7 +84,10 @@ export function isStrictSubset(prev: readonly string[], next: readonly string[])
 /**
  * Returns a new ring buffer with `entry` moved (or inserted) at the head.
  * Dedup key is `(pckName, path)` — re-clicking an existing entry promotes it
- * without duplicating. Tail is trimmed to `RECENT_ENTRIES_CAP`.
+ * without duplicating. Tail is trimmed to `RECENT_ENTRIES_CAP`. When the
+ * caller's `entry` lacks `state` but a same-key entry already in the ring
+ * has one, the existing `state` is carried forward so re-clicking a file
+ * doesn't wipe its persisted viewer state.
  */
 export function pushRecent(buf: readonly RecentEntry[] | undefined, entry: RecentEntry): RecentEntry[] {
   const prev = buf ?? [];
@@ -79,8 +96,13 @@ export function pushRecent(buf: readonly RecentEntry[] | undefined, entry: Recen
   if (prev.length > 0 && prev[0].pckName === entry.pckName && prev[0].path === entry.path) {
     return prev as RecentEntry[];
   }
+  const existing = prev.find((e) => e.pckName === entry.pckName && e.path === entry.path);
   const filtered = prev.filter((e) => !(e.pckName === entry.pckName && e.path === entry.path));
-  filtered.unshift(entry);
+  const merged: RecentEntry =
+    entry.state === undefined && existing?.state !== undefined
+      ? { ...entry, state: existing.state }
+      : entry;
+  filtered.unshift(merged);
   if (filtered.length > RECENT_ENTRIES_CAP) filtered.length = RECENT_ENTRIES_CAP;
   return filtered;
 }
@@ -99,6 +121,25 @@ export function touchRecent(buf: readonly RecentEntry[] | undefined, entry: Rece
   if (prev[idx].at === entry.at) return prev as RecentEntry[];
   const next = prev.slice();
   next[idx] = { ...next[idx], at: entry.at };
+  return next;
+}
+
+/**
+ * Replace `state` on the matching entry without changing list order or `at`.
+ * Returns the same reference on miss / referential-equal, so callers can
+ * skip the downstream write.
+ */
+export function setRecentEntryState(
+  buf: readonly RecentEntry[] | undefined,
+  key: { pckName: string; path: string },
+  state: unknown,
+): RecentEntry[] {
+  const prev = buf ?? [];
+  const idx = prev.findIndex((e) => e.pckName === key.pckName && e.path === key.path);
+  if (idx < 0) return prev as RecentEntry[];
+  if (prev[idx].state === state) return prev as RecentEntry[];
+  const next = prev.slice();
+  next[idx] = { ...next[idx], state };
   return next;
 }
 

@@ -6,6 +6,7 @@ import {
   mostRecentByAt,
   pushRecent,
   sessionIdFromFileIds,
+  setRecentEntryState,
   touchRecent,
   type RecentEntry,
 } from '../history/types';
@@ -95,6 +96,18 @@ describe('pushRecent', () => {
     expect(buf).toEqual(snapshot);
   });
 
+  it('preserves a pre-existing entry’s `state` when re-promoting', () => {
+    const buf: RecentEntry[] = [
+      mk('gfx.pck', 'b', 2),
+      { pckName: 'gfx.pck', path: 'a', at: 1, state: { v: 1, clip: 'walk' } },
+    ];
+    // Caller passes a fresh entry without `state` (tree click).
+    const result = pushRecent(buf, mk('gfx.pck', 'a', 99));
+    expect(result[0].path).toBe('a');
+    expect(result[0].at).toBe(99);
+    expect(result[0].state).toEqual({ v: 1, clip: 'walk' });
+  });
+
   it('trims to RECENT_ENTRIES_CAP from the tail', () => {
     const buf: RecentEntry[] = Array.from({ length: RECENT_ENTRIES_CAP }, (_, i) =>
       mk('gfx.pck', `p${i}`, i),
@@ -163,6 +176,55 @@ describe('isStrictSubset', () => {
 
   it('is false when prev is larger than next (removal, not addition)', () => {
     expect(isStrictSubset(['a', 'b'], ['a'])).toBe(false);
+  });
+});
+
+describe('setRecentEntryState', () => {
+  const mk = (pckName: string, path: string, at: number, state?: unknown): RecentEntry =>
+    ({ pckName, path, at, ...(state !== undefined ? { state } : {}) });
+
+  it('returns the same reference when the entry is missing', () => {
+    const buf: RecentEntry[] = [mk('gfx.pck', 'a', 1)];
+    const result = setRecentEntryState(buf, { pckName: 'gfx.pck', path: 'missing' }, { foo: 1 });
+    expect(result).toBe(buf);
+  });
+
+  it('returns the same reference when the state ref is unchanged', () => {
+    const stable = { foo: 1 };
+    const buf: RecentEntry[] = [mk('gfx.pck', 'a', 1, stable)];
+    const result = setRecentEntryState(buf, { pckName: 'gfx.pck', path: 'a' }, stable);
+    expect(result).toBe(buf);
+  });
+
+  it('replaces state on the matching entry without changing order or `at`', () => {
+    const buf: RecentEntry[] = [
+      mk('gfx.pck', 'a', 1),
+      mk('gfx.pck', 'b', 2, { v: 0 }),
+      mk('gfx.pck', 'c', 3),
+    ];
+    const result = setRecentEntryState(buf, { pckName: 'gfx.pck', path: 'b' }, { v: 1 });
+    expect(result).not.toBe(buf);
+    expect(result.map((e) => e.path)).toEqual(['a', 'b', 'c']);
+    expect(result[1].state).toEqual({ v: 1 });
+    expect(result[1].at).toBe(2);
+    // Unchanged entries keep their identity for cheap downstream diffing.
+    expect(result[0]).toBe(buf[0]);
+    expect(result[2]).toBe(buf[2]);
+  });
+
+  it('matches by (pckName, path), not by path alone', () => {
+    const buf: RecentEntry[] = [
+      mk('gfx.pck', 'shared', 1, { tag: 'gfx' }),
+      mk('ui.pck', 'shared', 2, { tag: 'ui' }),
+    ];
+    const result = setRecentEntryState(buf, { pckName: 'ui.pck', path: 'shared' }, { tag: 'ui-2' });
+    expect(result[0].state).toEqual({ tag: 'gfx' });
+    expect(result[1].state).toEqual({ tag: 'ui-2' });
+  });
+
+  it('accepts an undefined buffer as empty (no-op)', () => {
+    const result = setRecentEntryState(undefined, { pckName: 'gfx.pck', path: 'a' }, { v: 1 });
+    expect(result).toEqual([]);
   });
 });
 

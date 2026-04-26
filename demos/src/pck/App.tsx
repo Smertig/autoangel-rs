@@ -3,7 +3,9 @@ import type { CSSProperties } from 'react';
 import { resolveCDN } from '../cdn';
 import { initWasm } from '../wasm';
 import type { AutoangelModule } from '../types/autoangel';
-import { classifyMultiPackageDrop, type PackageDrop } from '@shared/util/files';
+import { classifyMultiPackageDrop, getExtension, type PackageDrop } from '@shared/util/files';
+import { findFormat } from '@shared/formats/registry';
+import type { StatePorts } from '@shared/formats/types';
 import type { PickedItem } from '@shared/hooks/useFileDrop';
 import { NavBar } from '@shared/components/NavBar';
 import { ErrorBanner } from '@shared/components/ErrorBanner';
@@ -380,6 +382,38 @@ export function App() {
     [slotLookup, selectedPkgId],
   );
 
+  const selectedPckName = selectedSlot ? `${selectedSlot.stem}.pck` : null;
+  const selectedFormatName = useMemo(
+    () => (selectedFile ? findFormat(getExtension(selectedFile.path)).name : null),
+    [selectedFile],
+  );
+
+  const currentSession = useMemo(
+    () => (currentSessionId ? sessionsApi.sessions.find((s) => s.id === currentSessionId) ?? null : null),
+    [sessionsApi.sessions, currentSessionId],
+  );
+
+  const viewerStatePorts = useMemo<StatePorts | undefined>(() => {
+    if (!selectedFile || !selectedPckName || !selectedFormatName || !currentSessionId) return undefined;
+    return {
+      initialEntryState: currentRecentEntries.find(
+        (e) => e.pckName === selectedPckName && e.path === selectedFile.path,
+      )?.state,
+      initialFormatState: currentSession?.formatStates?.[selectedFormatName],
+      onEntryStateChange: (state) =>
+        sessionsApi.recordEntryState(
+          currentSessionId,
+          { pckName: selectedPckName, path: selectedFile.path },
+          state,
+        ),
+      onFormatStateChange: (state) =>
+        sessionsApi.recordFormatState(currentSessionId, selectedFormatName, state),
+    };
+  }, [
+    sessionsApi, currentSessionId, currentSession, currentRecentEntries,
+    selectedFile, selectedPckName, selectedFormatName,
+  ]);
+
   // Per-row color stripe: only show when multiple packages are loaded
   const fileRowStyle = useCallback(
     (file: TreeFile): CSSProperties | undefined => {
@@ -511,6 +545,7 @@ export function App() {
                   listFiles={listFiles}
                   findFile={findFile}
                   onNavigateToFile={handleNavigateToFile}
+                  state={viewerStatePorts}
                 />
               </Suspense>
             ) : (

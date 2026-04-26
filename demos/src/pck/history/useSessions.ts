@@ -15,6 +15,7 @@ import {
   mostRecentByAt,
   pushRecent,
   sessionIdFromFileIds,
+  setRecentEntryState,
   touchRecent,
   type RecentEntry,
   type Session,
@@ -42,6 +43,21 @@ export interface SessionsApi {
   recordExplored: (sessionId: string, entry: RecentEntry) => void;
   /** Revisit via recents UI: refresh `at` only, keep list order. */
   recordTouched: (sessionId: string, entry: RecentEntry) => void;
+  /**
+   * Replace the format-owned `state` blob on a recent entry. Doesn't change
+   * list order, `at`, or `exploredCount` — purely a state write. No-op when
+   * the entry is missing from the ring.
+   */
+  recordEntryState: (
+    sessionId: string,
+    key: { pckName: string; path: string },
+    state: unknown,
+  ) => void;
+  /**
+   * Replace the format-owned per-format state for this session, keyed by
+   * `formatName` (typically `FormatDescriptor.name`).
+   */
+  recordFormatState: (sessionId: string, formatName: string, state: unknown) => void;
   openSession: (session: Session) => Promise<OpenedSession>;
   removeOne: (id: string) => Promise<void>;
   clearAll: () => Promise<void>;
@@ -109,6 +125,7 @@ export function useSessions(): SessionsApi {
       // Carry recents forward when the user adds a package to an open set.
       // Subset invariant means every inherited pckName is still loaded — no filter.
       let seedRecents: RecentEntry[] = [];
+      let seedFormatStates: Record<string, unknown> | undefined;
       if (!existing && prevId && prevId !== id) {
         const prevSession = prev.find((s) => s.id === prevId);
         if (
@@ -119,6 +136,7 @@ export function useSessions(): SessionsApi {
           )
         ) {
           seedRecents = prevSession.recentEntries ?? [];
+          seedFormatStates = prevSession.formatStates;
         }
       }
 
@@ -136,6 +154,7 @@ export function useSessions(): SessionsApi {
             openCount: 1,
             exploredCount: seedExplored,
             recentEntries: seedRecents,
+            ...(seedFormatStates ? { formatStates: seedFormatStates } : {}),
           };
       const next =
         idx >= 0 ? prev.map((s, i) => (i === idx ? merged : s)) : [...prev, merged];
@@ -153,10 +172,26 @@ export function useSessions(): SessionsApi {
     }
   }, []);
 
-  // Shared debounced write: takes a transform that returns the new ring, or
-  // the same reference when nothing changed (e.g. re-click of the head). Each
-  // call still represents one click, so `exploredCount` is always incremented
-  // — it's a total-clicks counter, not a unique-paths counter.
+  // Per-session debounced IDB flush. Shared by every state-mutation path so
+  // a stream of clicks + state writes for the same session coalesce into one
+  // write.
+  const scheduleSessionFlush = useCallback((sessionId: string) => {
+    const flushes = exploredFlushRef.current;
+    const existing = flushes.get(sessionId);
+    if (existing) clearTimeout(existing);
+    flushes.set(
+      sessionId,
+      setTimeout(() => {
+        flushes.delete(sessionId);
+        const latest = sessionsRef.current.find((s) => s.id === sessionId);
+        if (latest) void putSession(latest);
+      }, EXPLORED_FLUSH_MS),
+    );
+  }, []);
+
+  // `exploredCount` is a total-clicks counter — incremented on every call,
+  // even when the transform returns the same buffer ref (e.g. re-clicking
+  // the head entry).
   const applyRecentTransform = useCallback(
     (
       sessionId: string,
@@ -172,19 +207,9 @@ export function useSessions(): SessionsApi {
             : s,
         ),
       );
-      const flushes = exploredFlushRef.current;
-      const existing = flushes.get(sessionId);
-      if (existing) clearTimeout(existing);
-      flushes.set(
-        sessionId,
-        setTimeout(() => {
-          flushes.delete(sessionId);
-          const latest = sessionsRef.current.find((s) => s.id === sessionId);
-          if (latest) void putSession(latest);
-        }, EXPLORED_FLUSH_MS),
-      );
+      scheduleSessionFlush(sessionId);
     },
-    [],
+    [scheduleSessionFlush],
   );
 
   const recordExplored = useCallback(
@@ -199,6 +224,41 @@ export function useSessions(): SessionsApi {
       applyRecentTransform(sessionId, (buf) => touchRecent(buf, entry));
     },
     [applyRecentTransform],
+  );
+
+  const recordEntryState = useCallback(
+    (
+      sessionId: string,
+      key: { pckName: string; path: string },
+      state: unknown,
+    ) => {
+      const target = sessionsRef.current.find((s) => s.id === sessionId);
+      if (!target) return;
+      const next = setRecentEntryState(target.recentEntries, key, state);
+      if (next === target.recentEntries) return;
+      setSessions((prev) =>
+        prev.map((s) => (s.id === sessionId ? { ...s, recentEntries: next } : s)),
+      );
+      scheduleSessionFlush(sessionId);
+    },
+    [scheduleSessionFlush],
+  );
+
+  const recordFormatState = useCallback(
+    (sessionId: string, formatName: string, state: unknown) => {
+      const target = sessionsRef.current.find((s) => s.id === sessionId);
+      if (!target) return;
+      if (target.formatStates?.[formatName] === state) return;
+      setSessions((prev) =>
+        prev.map((s) => {
+          if (s.id !== sessionId) return s;
+          const nextStates = { ...(s.formatStates ?? {}), [formatName]: state };
+          return { ...s, formatStates: nextStates };
+        }),
+      );
+      scheduleSessionFlush(sessionId);
+    },
+    [scheduleSessionFlush],
   );
 
   const openSession = useCallback(async (session: Session): Promise<OpenedSession> => {
@@ -291,6 +351,8 @@ export function useSessions(): SessionsApi {
       saveHandles,
       recordExplored,
       recordTouched,
+      recordEntryState,
+      recordFormatState,
       openSession,
       removeOne,
       clearAll,
@@ -302,6 +364,8 @@ export function useSessions(): SessionsApi {
       saveHandles,
       recordExplored,
       recordTouched,
+      recordEntryState,
+      recordFormatState,
       openSession,
       removeOne,
       clearAll,

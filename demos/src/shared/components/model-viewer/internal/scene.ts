@@ -8,9 +8,11 @@ import type { SkinStats } from './mesh';
 import type { GfxEffect } from '../../../../types/autoangel';
 import { elementSkipReason } from '../../gfx-runtime/registry';
 import type { ElementBodyKind } from '../../gfx/previews/types';
+import type { ModelEntryState, ModelStatePorts } from '../state';
 
 /** Toolbar loop-mode toggle states. */
 export type LoopMode = 'loop' | 'once' | 'pingpong';
+export const LOOP_MODES = ['loop', 'once', 'pingpong'] as const satisfies readonly LoopMode[];
 
 export function showClipToast(container: HTMLElement, message: string): void {
   const existing = container.querySelector('[data-clip-toast]');
@@ -29,6 +31,7 @@ export function showClipToast(container: HTMLElement, message: string): void {
 }
 
 export interface MountSceneExtras {
+  state?: ModelStatePorts;
   /**
    * Async resolver used by the timeline event tooltip to enrich GFX ticks.
    * Returns the parsed `GfxEffect` when the path resolves + loads, or `null`
@@ -303,6 +306,24 @@ export function mountScene(
         ? Math.min(getDuration(), getTime() + 1 / fps)
         : Math.max(0, getTime() - 1 / fps);
       seekTo(t);
+      emitEntryState();
+    }
+
+    let applyingInitial = true;
+    function emitEntryState() {
+      const cb = extras?.state?.onEntryStateChange;
+      if (applyingInitial || !cb) return;
+      const isPaused = !playing;
+      const s: ModelEntryState = { clip: activeClip.name, paused: isPaused };
+      // posInClip only meaningful while paused — otherwise playback would
+      // emit on every scrubber tick.
+      if (isPaused) s.posInClip = getTime();
+      cb(s);
+    }
+    function emitFormatState() {
+      const cb = extras?.state?.onFormatStateChange;
+      if (applyingInitial || !cb) return;
+      cb({ speed: currentSpeed, loopMode: LOOP_MODES[loopMode] });
     }
 
     // Animation list panel
@@ -411,6 +432,7 @@ export function mountScene(
           activeItemEl = item;
           rebuildEventLane(clipName);
           onClipSwitch?.(clipName, action);
+          emitEntryState();
         } catch (e) {
           if (gen !== loadGeneration) return;
           console.warn('[model] Failed to load clip:', clipName, e);
@@ -443,6 +465,7 @@ export function mountScene(
       // Kick the render loop: playing → it self-sustains via isMixerActive;
       // pausing → one trailing frame renders the halted pose, then idle.
       v.requestRender();
+      emitEntryState();
     };
     transport.appendChild(playBtn);
 
@@ -477,6 +500,11 @@ export function mountScene(
       if (!v.mixer) return;
       const t = (Number(scrubber.value) / 1000) * getDuration();
       seekTo(t);
+    };
+    // Persist on release (or single-click) while paused — `oninput` would
+    // emit per drag tick and swamp the host with re-renders.
+    scrubber.onchange = () => {
+      if (!playing) emitEntryState();
     };
     scrubWrap.appendChild(scrubber);
     transport.appendChild(scrubWrap);
@@ -776,6 +804,7 @@ export function mountScene(
         v.mixer.timeScale = currentSpeed;
         v.requestRender();
       }
+      emitFormatState();
     }
 
     speedSlider.oninput = () => applySpeed(fractionToSpeed(Number(speedSlider.value)));
@@ -807,8 +836,9 @@ export function mountScene(
         action.loop = THREE.LoopOnce;
         action.clampWhenFinished = true;
       }
-      const modeName: LoopMode = (['loop', 'once', 'pingpong'] as const)[loopMode];
+      const modeName: LoopMode = LOOP_MODES[loopMode];
       extras?.onLoopModeChange?.(modeName);
+      emitFormatState();
     };
     transport.appendChild(loopBtn);
 
@@ -923,6 +953,27 @@ export function mountScene(
       scrubber.style.background = `linear-gradient(to right, rgba(123,164,232,0.5) ${pct}%, rgba(255,255,255,0.12) ${pct}%)`;
       timeEl.textContent = `${t.toFixed(2)}s / ${dur.toFixed(2)}s`;
     };
+
+    const initialFmt = extras?.state?.initialFormatState;
+    if (initialFmt?.speed !== undefined) applySpeed(initialFmt.speed);
+    if (initialFmt?.loopMode) {
+      const idx = LOOP_MODES.indexOf(initialFmt.loopMode);
+      if (idx >= 0 && idx !== loopMode) {
+        loopMode = idx;
+        loopBtn.textContent = loopModes[loopMode].symbol;
+        loopBtn.title = loopModes[loopMode].title;
+      }
+    }
+    const initialEntry = extras?.state?.initialEntryState;
+    if (initialEntry?.paused === true) {
+      pause();
+      // Only seek when the persisted clip matches what's actually loaded —
+      // posInClip is meaningless against a different animation.
+      if (initialEntry.posInClip !== undefined && initialEntry.clip === activeClip.name) {
+        seekTo(initialEntry.posInClip);
+      }
+    }
+    applyingInitial = false;
   }
 
   const info = document.createElement('div');
