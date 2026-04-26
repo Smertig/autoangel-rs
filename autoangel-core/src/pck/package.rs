@@ -42,10 +42,7 @@ impl KeyHeader {
         if self.wide { 16 } else { 12 }
     }
 
-    async fn probe_version_at<R: DataReader>(
-        data: &DataSource<R>,
-        offset: u64,
-    ) -> VersionProbe {
+    async fn probe_version_at<R: DataReader>(data: &DataSource<R>, offset: u64) -> VersionProbe {
         if offset < 4 {
             return VersionProbe::TooSmall;
         }
@@ -96,8 +93,8 @@ impl KeyHeader {
         // only provided the .pck part. Surface this explicitly — the raw
         // "unknown version" path is usually misread as corruption.
         let data_size = data.size();
-        let split_hint = matches!(narrow, VersionProbe::PastEof)
-            || matches!(wide, VersionProbe::PastEof);
+        let split_hint =
+            matches!(narrow, VersionProbe::PastEof) || matches!(wide, VersionProbe::PastEof);
         let hint = if split_hint {
             "\n  Hint: at least one header offset points past end of data, which usually means \
              the archive is split across multiple files. Provide the .pkx/.pkx1/.pkx2/... \
