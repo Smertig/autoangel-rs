@@ -28,6 +28,21 @@ describe('decodeModelEntryState', () => {
     expect(decodeModelEntryState({ posInClip: NaN })?.posInClip).toBeUndefined();
     expect(decodeModelEntryState({ posInClip: Infinity })?.posInClip).toBeUndefined();
   });
+
+  it('preserves a well-formed camera', () => {
+    expect(
+      decodeModelEntryState({ camera: { position: [1, 2, 3], target: [4, 5, 6] } })?.camera,
+    ).toEqual({ position: [1, 2, 3], target: [4, 5, 6] });
+  });
+
+  it('drops a malformed camera (wrong arity, non-numeric, NaN)', () => {
+    expect(decodeModelEntryState({ camera: 'hi' })?.camera).toBeUndefined();
+    expect(decodeModelEntryState({ camera: { position: [1, 2], target: [3, 4, 5] } })?.camera).toBeUndefined();
+    expect(decodeModelEntryState({ camera: { position: [1, 'x', 3], target: [4, 5, 6] } })?.camera).toBeUndefined();
+    expect(decodeModelEntryState({ camera: { position: [NaN, 2, 3], target: [4, 5, 6] } })?.camera).toBeUndefined();
+    // partial match: missing target ⇒ whole camera dropped
+    expect(decodeModelEntryState({ camera: { position: [1, 2, 3] } })?.camera).toBeUndefined();
+  });
 });
 
 describe('decodeModelFormatState', () => {

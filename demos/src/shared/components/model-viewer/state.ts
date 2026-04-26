@@ -1,11 +1,15 @@
 import type { LoopMode } from './internal/scene';
 import type { StatePorts } from '@shared/formats/types';
 
+export type Vec3 = [number, number, number];
+
 export interface ModelEntryState {
   clip?: string;
   paused?: boolean;
   /** Virtual-time position in seconds. Only meaningful when `paused === true`. */
   posInClip?: number;
+  /** Camera position + orbit target in world space. */
+  camera?: { position: Vec3; target: Vec3 };
 }
 
 export interface ModelFormatState {
@@ -16,6 +20,12 @@ export interface ModelFormatState {
 /** Shared parameterization of `StatePorts` for the model-viewer chain. */
 export type ModelStatePorts = StatePorts<ModelEntryState, ModelFormatState>;
 
+function decodeVec3(raw: unknown): Vec3 | undefined {
+  if (!Array.isArray(raw) || raw.length !== 3) return undefined;
+  if (!raw.every((n) => typeof n === 'number' && Number.isFinite(n))) return undefined;
+  return [raw[0], raw[1], raw[2]];
+}
+
 export function decodeModelEntryState(raw: unknown): ModelEntryState | undefined {
   if (!raw || typeof raw !== 'object') return undefined;
   const r = raw as Record<string, unknown>;
@@ -23,6 +33,12 @@ export function decodeModelEntryState(raw: unknown): ModelEntryState | undefined
   if (typeof r.clip === 'string') out.clip = r.clip;
   if (typeof r.paused === 'boolean') out.paused = r.paused;
   if (typeof r.posInClip === 'number' && Number.isFinite(r.posInClip)) out.posInClip = r.posInClip;
+  if (r.camera && typeof r.camera === 'object') {
+    const c = r.camera as Record<string, unknown>;
+    const position = decodeVec3(c.position);
+    const target = decodeVec3(c.target);
+    if (position && target) out.camera = { position, target };
+  }
   return out;
 }
 

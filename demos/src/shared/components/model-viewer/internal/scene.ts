@@ -8,7 +8,7 @@ import type { SkinStats } from './mesh';
 import type { GfxEffect } from '../../../../types/autoangel';
 import { elementSkipReason } from '../../gfx-runtime/registry';
 import type { ElementBodyKind } from '../../gfx/previews/types';
-import type { ModelEntryState, ModelStatePorts } from '../state';
+import type { ModelEntryState, ModelStatePorts, Vec3 } from '../state';
 
 /** Toolbar loop-mode toggle states. */
 export type LoopMode = 'loop' | 'once' | 'pingpong';
@@ -318,6 +318,10 @@ export function mountScene(
       // posInClip only meaningful while paused — otherwise playback would
       // emit on every scrubber tick.
       if (isPaused) s.posInClip = getTime();
+      s.camera = {
+        position: v.camera.position.toArray() as Vec3,
+        target: v.controls.target.toArray() as Vec3,
+      };
       cb(s);
     }
     function emitFormatState() {
@@ -973,6 +977,15 @@ export function mountScene(
         seekTo(initialEntry.posInClip);
       }
     }
+    if (initialEntry?.camera) {
+      v.camera.position.fromArray(initialEntry.camera.position);
+      v.controls.target.fromArray(initialEntry.camera.target);
+      v.controls.update();
+      v.requestRender();
+    }
+    // Persist on user-driven orbit/pan/zoom release. `change` fires per drag
+    // tick; `end` fires once on pointer release — same idiom as the scrubber.
+    v.controls.addEventListener('end', emitEntryState);
     applyingInitial = false;
   }
 
