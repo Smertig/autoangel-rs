@@ -86,6 +86,8 @@
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
+  min-height: 44px;
+  box-sizing: border-box;
 }
 
 .sidebarControls[data-filtering]::after {
