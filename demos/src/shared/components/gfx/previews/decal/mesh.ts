@@ -10,12 +10,8 @@ type DecalBody = Extract<ElementBody, { kind: 'decal' }>;
 export interface DecalMesh {
   /** Mesh for type 100; Group of two meshes for type 102. */
   readonly object3D: Object3D;
-  /**
-   * Replace the texture uniform. Caller owns disposal of the OLD texture
-   * (we don't dispose it here — async load may want to swap without
-   * tearing down the previous one mid-frame). The new texture is disposed
-   * by `dispose()`.
-   */
+  /** Replace the texture uniform. Caller owns the texture lifecycle —
+   *  `dispose()` does not touch it. */
   setTexture(tex: Texture | null): void;
   /** Apply KPS sample + atlas frame. `localMs` feeds atlas advance. */
   writeFrame(sample: Sample, localMs: number): void;
@@ -105,7 +101,7 @@ export function createDecalMesh(
     dispose() {
       material.dispose();
       for (const g of geometries) g.dispose();
-      texture?.dispose?.();
+      // Texture is owned by the caller (preload cache or standalone preview).
       if (object3D.parent) object3D.removeFromParent?.();
     },
   };

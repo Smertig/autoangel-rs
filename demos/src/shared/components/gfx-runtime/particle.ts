@@ -2,7 +2,7 @@ import { d3dBlendToThreeFactor } from '../gfx/util/blendModes';
 import { buildSimConfig } from '../gfx/previews/particle/config';
 import { createParticleMesh } from '../gfx/previews/particle/mesh';
 import { createSimState, tickSim } from '../gfx/previews/particle/simulation';
-import { loadParticleTexture, resolveTexturePath } from '../gfx/previews/particle/texture';
+import { resolvePreloadedTexture } from '../gfx/previews/particle/texture';
 import { createAnimatedGroupPair } from './animated-group';
 import { createNoopRuntime } from './noop';
 import { type DurationContext, type DurationElement, keyPointSetDurationSec } from './duration';
@@ -56,8 +56,10 @@ export function spawnParticleRuntime(
   const rng = Math.random;
 
   const element = opts.element;
+  const preTex = resolvePreloadedTexture(element.tex_file, opts.findFile, opts.preloadedTextures, 'particle');
+  if (!preTex) return createNoopRuntime(THREE);
   const mesh = createParticleMesh(cfg, {
-    texture: null,
+    texture: preTex,
     srcBlend: d3dBlendToThreeFactor(element.src_blend, THREE),
     dstBlend: d3dBlendToThreeFactor(element.dest_blend, THREE),
   } as any, THREE);
@@ -66,28 +68,6 @@ export function spawnParticleRuntime(
   let elapsed = 0;
   let finished = false;
   let disposed = false;
-
-  // Async texture load — once resolved, swap into the mesh. Failures degrade
-  // silently to colored quads (same fallback as the standalone preview).
-  if (element.tex_file) {
-    (async () => {
-      const texPath = resolveTexturePath(element.tex_file, opts.findFile);
-      if (!texPath) return;
-      const texData = await opts.getData(texPath).catch(() => null);
-      if (!texData || texData.byteLength === 0) return;
-      try {
-        const tex = await loadParticleTexture(opts.wasm, texData, element.tex_file);
-        if (disposed) {
-          // Runtime torn down during the await — drop the orphan texture.
-          if (tex && typeof (tex as any).dispose === 'function') (tex as any).dispose();
-          return;
-        }
-        mesh.setTexture(tex);
-      } catch (e) {
-        console.warn('[gfx-runtime] particle texture load failed:', element.tex_file, e);
-      }
-    })();
-  }
 
   return {
     root: outer,

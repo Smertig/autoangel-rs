@@ -130,7 +130,7 @@ describe('DecalMesh.setTexture + dispose', () => {
     m.dispose();
   });
 
-  it('dispose releases material + geometries + texture', () => {
+  it('dispose releases material + geometries; texture is caller-owned', () => {
     const m = createDecalMesh(decalBody(), decalElement(102), THREE);
     const group = m.object3D as any;
     const material = group.children[0].material;
@@ -145,6 +145,6 @@ describe('DecalMesh.setTexture + dispose', () => {
     m.dispose();
     expect(matSpy).toHaveBeenCalled();
     geomSpies.forEach((s: any) => expect(s).toHaveBeenCalled());
-    expect(texSpy).toHaveBeenCalled();
+    expect(texSpy).not.toHaveBeenCalled();
   });
 });

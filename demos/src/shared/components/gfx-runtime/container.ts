@@ -29,13 +29,10 @@ export function computeContainerDurationSec(
 }
 
 /**
- * Runtime for GfxContainer elements (type 200). Lazily loads the referenced
- * nested .gfx, spawns one runtime per child element into the container's
- * group, and animates the group via the element's own KeyPointSet if any.
- *
- * Mirrors `A3DGFXContainer::TickAnimation` engine semantics for the common
- * case. Skipped for this milestone: loop_flag nested-restart, out_color
- * tint, dummy_use_g_scale.
+ * Runtime for GfxContainer elements (type 200). Mounts one child runtime per
+ * element of the preloaded nested GFX synchronously. Mirrors
+ * `A3DGFXContainer::TickAnimation` for the common case; skipped for this
+ * milestone: loop_flag nested-restart, out_color tint, dummy_use_g_scale.
  */
 export function spawnContainerRuntime(
   body: ContainerBody,
@@ -47,46 +44,28 @@ export function spawnContainerRuntime(
   const children: GfxElementRuntime[] = [];
   let elapsedMs = 0;
   let elapsedSec = 0;
-  let disposed = false;
-  // Until the async load settles, `finished` stays false so the scheduler
-  // can't decide the container is done before its children even mount.
-  let loadResolved = false;
 
-  (async () => {
-    try {
-      const resolved = resolveEnginePath(
-        body.gfx_path,
-        ENGINE_PATH_PREFIXES.gfx,
-        opts.findFile,
-      );
-      if (!resolved || disposed) return;
-      if (opts.visiting?.has(resolved)) {
-        console.warn('[gfx-runtime] container cycle skipped:', resolved);
-        return;
-      }
-      const visiting = new Set(opts.visiting ?? []);
-      visiting.add(resolved);
-
-      const gfx = await opts.loader.load(resolved);
-      if (disposed) return;
-      const elements: any[] = (gfx as any)?.elements ?? [];
-      for (const el of elements) {
-        if (disposed) break;
-        const rt = spawnElementRuntime(el.body, {
-          ...opts,
-          element: el,
-          gfxSpeed: opts.gfxSpeed * (body.play_speed ?? 1),
-          visiting,
-        });
-        animated.add(rt.root);
-        children.push(rt);
-      }
-    } catch (e) {
-      console.warn('[gfx-runtime] container load failed:', e);
-    } finally {
-      loadResolved = true;
+  const resolved = resolveEnginePath(body.gfx_path, ENGINE_PATH_PREFIXES.gfx, opts.findFile);
+  const preloaded = resolved ? opts.preloadedGfx?.get(resolved) : null;
+  const cycle = resolved != null && (opts.visiting?.has(resolved) ?? false);
+  if (cycle) {
+    console.warn('[gfx-runtime] container cycle skipped:', resolved);
+  } else if (resolved && !preloaded) {
+    console.warn('[gfx-runtime] container nested gfx not preloaded:', resolved);
+  } else if (preloaded && resolved) {
+    const visiting = new Set(opts.visiting ?? []);
+    visiting.add(resolved);
+    for (const el of (preloaded as any).elements ?? []) {
+      const rt = spawnElementRuntime(el.body, {
+        ...opts,
+        element: el,
+        gfxSpeed: opts.gfxSpeed * (body.play_speed ?? 1),
+        visiting,
+      });
+      animated.add(rt.root);
+      children.push(rt);
     }
-  })();
+  }
 
   return {
     root: outer,
@@ -97,7 +76,6 @@ export function spawnContainerRuntime(
       for (const c of children) c.tick(dt);
     },
     dispose() {
-      disposed = true;
       for (const c of children) c.dispose();
       outer.removeFromParent?.();
     },
@@ -106,7 +84,6 @@ export function spawnContainerRuntime(
       if (opts.timeSpanSec !== undefined && elapsedSec >= opts.timeSpanSec) {
         return true;
       }
-      if (!loadResolved) return false;
       for (const c of children) {
         if (!c.finished?.()) return false;
       }

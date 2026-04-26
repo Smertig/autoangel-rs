@@ -22,12 +22,8 @@ export interface ParticleMeshInputs {
 export interface ParticleMesh {
   readonly object3D: any; // THREE.Object3D (specifically THREE.InstancedMesh)
   writeState(state: SimState): void;
-  /**
-   * Replace the texture uniform. Caller owns disposal of the OLD texture
-   * (we don't dispose it here — preview's white placeholder shouldn't be
-   * conflated with a loaded texture, and async load may want to keep the
-   * old one around briefly). The new texture is disposed by `dispose()`.
-   */
+  /** Replace the texture uniform. Caller owns the texture lifecycle —
+   *  `dispose()` does not touch it. */
   setTexture(texture: any): void;
   dispose(): void;
 }
@@ -137,9 +133,7 @@ export function createParticleMesh(
   function dispose(): void {
     geom.dispose();
     material.dispose();
-    if (texture && typeof texture.dispose === 'function') {
-      texture.dispose();
-    }
+    // Texture is owned by the caller (preload cache or standalone preview).
   }
 
   return { object3D: mesh, writeState, setTexture, dispose };

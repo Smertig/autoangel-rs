@@ -45,21 +45,30 @@ export function findFileFrom(paths: string[]): (p: string) => string | null {
   return (p: string) => lower.get(p.toLowerCase()) ?? null;
 }
 
-/** Minimal SpawnOpts the particle/registry tests need. The async texture
- *  load fails silently (findFile returns null → no fetch), so wasm can be
- *  stubbed harmlessly. tex_file is non-empty so spawnParticleRuntime takes
- *  the active path rather than the textureless no-op. */
+/** Minimal SpawnOpts the particle/registry tests need. Pre-populates the
+ *  texture cache for any `*.dds` referenced by minimalParticleElement /
+ *  decal-test elements so the strict-loader path resolves without a fetch. */
 export function minimalSpawnOpts(three: any, overrides: Record<string, any> = {}) {
+  const fakeTex: { dispose?: () => void } = { dispose: () => {} };
+  const preloadedTextures = new Map<string, { dispose?: () => void }>([
+    ['gfx\\textures\\test.dds', fakeTex],
+    ['gfx\\textures\\d.dds', fakeTex],
+  ]);
   return {
     three,
     gfxScale: 1,
     gfxSpeed: 1,
     timeSpanSec: undefined as number | undefined,
-    getData: async () => new Uint8Array(0),
-    wasm: {} as any,
-    findFile: () => null,
+    findFile: (p: string) => {
+      const lower = p.toLowerCase();
+      for (const stored of preloadedTextures.keys()) {
+        if (stored.toLowerCase() === lower) return stored;
+      }
+      return null;
+    },
     element: minimalParticleElement(),
-    loader: { load: async () => null },
+    preloadedGfx: new Map<string, unknown>(),
+    preloadedTextures,
     ...overrides,
   };
 }

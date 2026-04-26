@@ -254,6 +254,8 @@ export function useParticleCanvas(
       cleanupFns.push(() => {
         controls.dispose();
         particleMesh.dispose();
+        // Mesh dispose no longer touches the texture; this preview owns it.
+        if (texture?.dispose) texture.dispose();
         if (coneMat) coneMat.dispose();
         if (coneGeo) coneGeo.dispose();
         if (ellipsoidWireMat) ellipsoidWireMat.dispose();

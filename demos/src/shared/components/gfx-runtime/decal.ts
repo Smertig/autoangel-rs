@@ -1,7 +1,7 @@
 import { createAnimatedGroupPair } from './animated-group';
 import { createNoopRuntime } from './noop';
 import { createDecalMesh } from '../gfx/previews/decal/mesh';
-import { loadParticleTexture, resolveTexturePath } from '../gfx/previews/particle/texture';
+import { resolvePreloadedTexture } from '../gfx/previews/particle/texture';
 import { type DurationContext, type DurationElement, keyPointSetDurationSec } from './duration';
 import type { ElementBody } from '../gfx/previews/types';
 import type { GfxElementRuntime, SpawnOpts } from './types';
@@ -31,36 +31,20 @@ export function spawnDecalRuntime(
   // Type 101 has no runtime — surfaced by elementSkipReason with a label.
   if (opts.element.type_id === 101) return createNoopRuntime(opts.three);
 
+  const preTex = resolvePreloadedTexture(opts.element.tex_file, opts.findFile, opts.preloadedTextures, 'decal');
+  if (!preTex) return createNoopRuntime(opts.three);
   const { outer, animated, animator } = createAnimatedGroupPair(
     opts.three, opts.element, opts.gfxScale,
   );
   const decal = createDecalMesh(body, opts.element, opts.three);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  decal.setTexture(preTex as any);
   animated.add(decal.object3D);
 
   let elapsed = 0;
   let elapsedMs = 0;
   let finished = false;
   let disposed = false;
-
-  // Async texture load — same shape as particle runtime.
-  (async () => {
-    const texPath = resolveTexturePath(opts.element.tex_file, opts.findFile);
-    if (!texPath) return;
-    const texData = await opts.getData(texPath).catch(() => null);
-    if (!texData || texData.byteLength === 0) return;
-    try {
-      const tex = await loadParticleTexture(opts.wasm, texData, opts.element.tex_file);
-      if (disposed) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (tex as any)?.dispose?.();
-        return;
-      }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      decal.setTexture(tex as any);
-    } catch (e) {
-      console.warn('[gfx-runtime] decal texture load failed:', opts.element.tex_file, e);
-    }
-  })();
 
   return {
     root: outer,

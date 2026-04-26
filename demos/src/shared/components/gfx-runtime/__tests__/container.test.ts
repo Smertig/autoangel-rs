@@ -74,30 +74,28 @@ describe('spawnContainerRuntime', () => {
     rt.dispose();
   });
 
-  it('skips recursion with a console.warn when path is already in visiting set', async () => {
+  it('skips recursion with a console.warn when path is already in visiting set', () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const visiting = new Set(['gfx\\effects\\nested.gfx']);
-    const loader = { load: vi.fn(async () => ({ elements: [] })) };
-    const rt = spawnContainerRuntime(containerBody(), containerOpts({ visiting, loader }));
-
-    await new Promise((r) => setTimeout(r, 0));
+    const preloadedGfx = new Map<string, unknown>([['gfx\\effects\\nested.gfx', { elements: [] }]]);
+    const rt = spawnContainerRuntime(containerBody(), containerOpts({ visiting, preloadedGfx }));
 
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('cycle'), expect.any(String));
-    expect(loader.load).not.toHaveBeenCalled();
+    expect(spawnChildMock).not.toHaveBeenCalled();
     rt.dispose();
     warnSpy.mockRestore();
   });
 
-  it('multiplies play_speed into child gfxSpeed', async () => {
+  it('multiplies play_speed into child gfxSpeed', () => {
     const childEl = { type_id: 120, body: { kind: 'particle' } };
-    const loader = { load: vi.fn(async () => ({ elements: [childEl] })) };
+    const preloadedGfx = new Map<string, unknown>([
+      ['gfx\\effects\\nested.gfx', { elements: [childEl] }],
+    ]);
     const rt = spawnContainerRuntime(
       containerBody({ play_speed: 2.0 }),
-      containerOpts({ loader, gfxSpeed: 3.0 }),
+      containerOpts({ preloadedGfx, gfxSpeed: 3.0 }),
     );
-    await new Promise((r) => setTimeout(r, 0));
 
-    expect(loader.load).toHaveBeenCalledWith('gfx\\effects\\nested.gfx');
     expect(spawnChildMock).toHaveBeenCalledTimes(1);
     const childOpts = spawnChildMock.mock.calls[0]![1];
     // opts.gfxSpeed * (body.play_speed ?? 1) = 3.0 * 2.0
@@ -108,18 +106,14 @@ describe('spawnContainerRuntime', () => {
     rt.dispose();
   });
 
-  it('dispose before async resolves leaves no orphan runtimes', async () => {
-    const childEl = { type_id: 120, body: { kind: 'particle' } };
-    let resolveLoad: (v: any) => void = () => {};
-    const loader = { load: vi.fn(() => new Promise((res) => { resolveLoad = res; })) };
-    const rt = spawnContainerRuntime(containerBody(), containerOpts({ loader }));
+  it('warns and mounts nothing when nested gfx is not preloaded', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const rt = spawnContainerRuntime(containerBody(), containerOpts());
 
-    rt.dispose();
-    resolveLoad({ elements: [childEl] });
-    await new Promise((r) => setTimeout(r, 0));
-
-    // Outer group always contains the animated group; children of the
-    // nested gfx would populate the animated group, not the outer.
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('not preloaded'), expect.any(String));
+    expect(spawnChildMock).not.toHaveBeenCalled();
     expect(rt.root.children[0].children.length).toBe(0);
+    rt.dispose();
+    warnSpy.mockRestore();
   });
 });

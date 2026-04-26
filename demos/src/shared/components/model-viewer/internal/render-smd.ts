@@ -23,12 +23,14 @@ import {
   computeGfxDurationSec,
 } from '../../gfx-runtime/registry';
 import { createGfxLoader } from '../../gfx-runtime/loader';
+import { loadParticleTexture, resolveTexturePath } from '../../gfx/previews/particle/texture';
 import type { DurationContext, GfxLike, IsRenderable } from '../../gfx-runtime/duration';
 import { createNoopRuntime } from '../../gfx-runtime/noop';
 import { attachToHook } from '../../gfx-runtime/hook';
 import { resolveEnginePath, ENGINE_PATH_PREFIXES, type FindFile } from '../../gfx/util/resolveEnginePath';
 import { ALL_ELEMENT_BODY_KINDS } from '../../gfx/util/kindLabel';
 import type { ElementBodyKind } from '../../gfx/previews/types';
+import type { PreloadedTexture } from '../../gfx-runtime/types';
 
 // "站立" (standing) — preferred default animation clip
 export const PREFERRED_ANIM_HINT = '\u7AD9\u7ACB';
@@ -238,6 +240,15 @@ export async function renderFromSmd(
 
   let setTotalDur: (t: number) => void = () => {};
 
+  // Owner of every decoded texture preloaded for the active clip; disposed
+  // before each rebuild and on viewer teardown.
+  let currentTextures: Map<string, PreloadedTexture> | null = null;
+  function disposeCurrentTextures() {
+    if (!currentTextures) return;
+    for (const tex of currentTextures.values()) tex.dispose?.();
+    currentTextures = null;
+  }
+
   /** One pre-resolved GFX event for the active clip. */
   type ScheduledEffect = {
     ev: AnimEvent;
@@ -250,22 +261,69 @@ export async function renderFromSmd(
   const buildEffectList = async (
     gfxEvents: AnimEvent[],
     isRenderable: IsRenderable,
-  ): Promise<{ effects: ScheduledEffect[]; preloaded: Map<string, GfxLike> }> => {
-    const preloaded = new Map<string, GfxLike>();
-    // Resolve once per event, share with preload + effect-list build.
-    const resolvedPaths = gfxEvents.map(
-      (ev) => resolveEnginePath(ev.filePath, ENGINE_PATH_PREFIXES.gfx, findFile),
-    );
-    await Promise.all(resolvedPaths.map(async (resolved) => {
-      if (!resolved || preloaded.has(resolved)) return;
-      const gfx = await gfxLoader!.load(resolved);
-      if (gfx) preloaded.set(resolved, gfx as GfxLike);
+  ): Promise<{
+    effects: ScheduledEffect[];
+    preloadedGfx: Map<string, GfxLike>;
+    preloadedTextures: Map<string, PreloadedTexture>;
+  }> => {
+    const resolveGfxPath = (p: string) =>
+      resolveEnginePath(p, ENGINE_PATH_PREFIXES.gfx, findFile);
+    const preloadedGfx = new Map<string, GfxLike>();
+    const resolvedPaths = gfxEvents.map((ev) => resolveGfxPath(ev.filePath));
+
+    // BFS-load every referenced GFX file (events + every nested
+    // `Container.gfx_path`) so the spawn flow stays fully synchronous.
+    const seen = new Set<string>();
+    let pending: string[] = [];
+    const enqueue = (p: string | null) => {
+      if (p && !seen.has(p)) { seen.add(p); pending.push(p); }
+    };
+    for (const r of resolvedPaths) enqueue(r);
+    while (pending.length > 0) {
+      const batch = pending;
+      pending = [];
+      const loaded = await Promise.all(batch.map(async (path) => {
+        const gfx = await gfxLoader!.load(path);
+        return { path, gfx: gfx ? (gfx as GfxLike) : null };
+      }));
+      for (const { path, gfx } of loaded) {
+        if (!gfx) continue;
+        preloadedGfx.set(path, gfx);
+        for (const el of gfx.elements) {
+          if (el.body.kind === 'container' && el.body.gfx_path) {
+            enqueue(resolveGfxPath(el.body.gfx_path));
+          }
+        }
+      }
+    }
+
+    // Walk every preloaded element for tex_files; preload + decode in parallel
+    // so particle/decal runtimes can attach the texture at construction.
+    const texPaths = new Set<string>();
+    for (const gfx of preloadedGfx.values()) {
+      for (const el of gfx.elements) {
+        if (el.tex_file) {
+          const tp = resolveTexturePath(el.tex_file, findFile);
+          if (tp) texPaths.add(tp);
+        }
+      }
+    }
+    const preloadedTextures = new Map<string, PreloadedTexture>();
+    await Promise.all([...texPaths].map(async (texPath) => {
+      const data = await getFile(texPath).catch(() => null);
+      if (!data || data.byteLength === 0) return;
+      try {
+        const tex = await loadParticleTexture(wasm, data, texPath);
+        if (tex) preloadedTextures.set(texPath, tex as PreloadedTexture);
+      } catch (e) {
+        console.warn('[gfx-runtime] texture preload failed:', texPath, e);
+      }
     }));
-    const resolveDur = (p: string) =>
-      preloaded.get(resolveEnginePath(p, ENGINE_PATH_PREFIXES.gfx, findFile) ?? '') ?? null;
+
+    const resolveDur = (p: string) => preloadedGfx.get(resolveGfxPath(p) ?? '') ?? null;
     const effects: ScheduledEffect[] = gfxEvents.map((ev, i) => {
       const resolved = resolvedPaths[i];
-      const gfx = resolved ? preloaded.get(resolved) ?? null : null;
+      const gfx = resolved ? preloadedGfx.get(resolved) ?? null : null;
       const startSec = ev.startTime / 1000;
       let durationSec: number;
       if (ev.timeSpan > 0) {
@@ -282,7 +340,7 @@ export async function renderFromSmd(
       }
       return { ev, startSec, durationSec, gfx, resolved };
     });
-    return { effects, preloaded };
+    return { effects, preloadedGfx, preloadedTextures };
   };
 
   const rebuildSchedulerForClip = async (clipName: string) => {
@@ -303,7 +361,11 @@ export async function renderFromSmd(
     const gfxEvents = events.filter((e) => e.type === EVENT_GFX);
     if (gfxEvents.length === 0) { finishWithoutTail(); return; }
 
-    const { effects, preloaded } = await buildEffectList(gfxEvents, isRenderable);
+    const { effects, preloadedGfx, preloadedTextures } = await buildEffectList(gfxEvents, isRenderable);
+    // Hand texture-cache ownership to the new scheduler scope; the previous
+    // scope's textures (if any) get freed below before the new map takes over.
+    disposeCurrentTextures();
+    currentTextures = preloadedTextures;
 
     // Hold-forever elements yield Infinity from keyPointSetDurationSec; treat
     // them as a no-loop signal — the engine doesn't restart persistent GFX.
@@ -335,12 +397,10 @@ export async function renderFromSmd(
         // Cycle guard pre-populated with this event's own path so a
         // self-referential Container(gfx_path=self) is caught at depth 1.
         const visiting = new Set<string>([effect.resolved]);
+        const resolveGfxPath = (p: string) =>
+          resolveEnginePath(p, ENGINE_PATH_PREFIXES.gfx, findFile);
         const durCtx: DurationContext = {
-          // Re-walk into the preloaded map only; no async fetch at spawn
-          // time. Nested gfx_paths NOT in the preloaded set fall back to
-          // the container's own KPS — same approximation `totalDur` used.
-          resolve: (p) =>
-            preloaded.get(resolveEnginePath(p, ENGINE_PATH_PREFIXES.gfx, findFile) ?? '') ?? null,
+          resolve: (p) => preloadedGfx.get(resolveGfxPath(p) ?? '') ?? null,
           visiting,
           isRenderable,
         };
@@ -352,13 +412,12 @@ export async function renderFromSmd(
             timeSpanSec: ev.timeSpan > 0
               ? ev.timeSpan / 1000
               : computeElementDurationSec(el, durCtx),
-            getData: async (p: string) => (await getFile(p)) ?? new Uint8Array(0),
-            wasm,
             findFile,
             element: el,
-            loader: gfxLoader!,
             visiting,
             kindFilter: (kind) => gfxKinds.has(kind),
+            preloadedGfx,
+            preloadedTextures,
           });
           // ECM events usually target hooks (HH_*); prefer hooks then fall
           // back to bones, then to scene root if neither matches.
@@ -566,6 +625,7 @@ export async function renderFromSmd(
   v.dispose = () => {
     scheduler?.disposeAll();
     scheduler = null;
+    disposeCurrentTextures();
     v.isAuxAnimating = null;
     if (mixerFinishedListener && v.mixer) {
       try { v.mixer.removeEventListener('finished', mixerFinishedListener); } catch { /* mixer already gone */ }

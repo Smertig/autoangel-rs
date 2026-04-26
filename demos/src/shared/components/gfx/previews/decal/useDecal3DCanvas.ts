@@ -92,18 +92,19 @@ export function useDecal3DCanvas(
       const decalMesh = createDecalMesh(body, element, THREE);
       scene.add(decalMesh.object3D);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let texture: any = null;
       if (texData && texData.byteLength > 0) {
         try {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const tex: any = await loadParticleTexture(context.wasm, texData, element.tex_file);
+          texture = await loadParticleTexture(context.wasm, texData, element.tex_file);
           if (disposed) {
-            tex?.dispose?.();
+            texture?.dispose?.();
             decalMesh.dispose();
             renderer.dispose();
             renderer.domElement.parentNode?.removeChild(renderer.domElement);
             return;
           }
-          decalMesh.setTexture(tex);
+          decalMesh.setTexture(texture);
         } catch {
           /* leave untextured */
         }
@@ -127,6 +128,8 @@ export function useDecal3DCanvas(
         resizeObs.disconnect();
         controls.dispose();
         decalMesh.dispose();
+        // Mesh dispose no longer touches the texture; this preview owns it.
+        texture?.dispose?.();
         renderer.dispose();
         renderer.domElement.parentNode?.removeChild(renderer.domElement);
       };
