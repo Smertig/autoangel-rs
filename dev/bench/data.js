@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1776883657405,
+  "lastUpdate": 1777199772941,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -4127,6 +4127,102 @@ window.BENCHMARK_DATA = {
             "name": "PackageInfo::save_to",
             "value": 895261,
             "range": "± 3793",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "9ed5aa2c40142bbdc6c2c7641503cad57ee1f893",
+          "message": "fix [demos]: gfx-runtime scheduler fires events at startTime=0\n\nThe strict-less-than guard `last < startSec` with `last` initialized to 0\nsilently dropped events whose startTime was exactly 0 — they never crossed\nthe threshold on the first tick. Production ECMs put GFX events at t=0,\nwhich is why no decals/particles appeared in the model viewer for those\nclips even though the scheduler was built and the timeline tooltip listed\nthe events.\n\nInitialize `last` to -1 (sentinel `< 0`) at construction and on `onLoop`.\nTwo regression tests added.",
+          "timestamp": "2026-04-26T10:42:44+03:00",
+          "tree_id": "f2adcf82b00bdb6cc3c3a876a87766869b34afa0",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/9ed5aa2c40142bbdc6c2c7641503cad57ee1f893"
+        },
+        "date": 1777199772139,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 31456,
+            "range": "± 644",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 122,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::access_fields",
+            "value": 60,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 163,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 17226,
+            "range": "± 18",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::iterate_lists",
+            "value": 12894,
+            "range": "± 65",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 43,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 314911,
+            "range": "± 284",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::find_prefix",
+            "value": 282,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 3674,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_all_files",
+            "value": 10933486,
+            "range": "± 16756",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::save_to",
+            "value": 1537327,
+            "range": "± 3391",
             "unit": "ns/iter"
           }
         ]
