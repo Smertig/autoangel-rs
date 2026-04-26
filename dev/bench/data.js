@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1777199773672,
+  "lastUpdate": 1777218438488,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -4223,6 +4223,102 @@ window.BENCHMARK_DATA = {
             "name": "PackageInfo::save_to",
             "value": 1537327,
             "range": "± 3391",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "abdc5fd2bb478979ca95300f98759f96103efb0d",
+          "message": "feat [demos]: log-scale playback speed slider (0.25× – 4×)\n\nReplaces the three preset buttons with a compact slider:\n\n* Logarithmic mapping centres 1× and gives equal visual room to\n  slowing down and speeding up; tick dots mark 0.25 / 0.5 / 1 / 2 / 4\n  with the centre dot brighter so 1× is easy to find at a glance.\n\n* Snap-to-preset within 2% so the user can land exactly on a common\n  speed without pixel-perfect aim. Double-click resets to 1×.\n  Mouse-wheel nudges by half an octave per notch.\n\n* Numeric label (`1.00×`) uses tabular numerals; the accent colour\n  drops back to neutral grey at the default speed so deviations are\n  visible at a glance.",
+          "timestamp": "2026-04-26T18:44:10+03:00",
+          "tree_id": "dccf1a4b412ec5e1f0733508dda1d6d1d85d43b0",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/abdc5fd2bb478979ca95300f98759f96103efb0d"
+        },
+        "date": 1777218436784,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 31900,
+            "range": "± 289",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 147,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::access_fields",
+            "value": 105,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 222,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 16389,
+            "range": "± 26",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::iterate_lists",
+            "value": 28636,
+            "range": "± 17",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 67,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 283822,
+            "range": "± 476",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::find_prefix",
+            "value": 6064,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 3374,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_all_files",
+            "value": 10605448,
+            "range": "± 4936",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::save_to",
+            "value": 857784,
+            "range": "± 2058",
             "unit": "ns/iter"
           }
         ]
