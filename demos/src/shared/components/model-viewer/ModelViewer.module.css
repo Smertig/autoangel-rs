@@ -616,7 +616,10 @@
   top: 6px;
   left: 6px;
   max-height: min(50%, 300px);
-  width: 150px;
+  width: 225px;
+  min-width: 150px;
+  max-width: 50vw;
+  resize: horizontal;
   display: flex;
   flex-direction: column;
   background: rgba(0, 0, 0, 0.55);
