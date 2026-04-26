@@ -107,8 +107,9 @@ test('renders animated NPC model with animation controls', async ({ page }) => {
   await expect(animPanel).toBeVisible({ timeout: 10000 });
   await expect(animPanel.locator('[class*="animListItem"]')).not.toHaveCount(0);
 
-  // Scrubber should be present
-  await expect(transport.locator('input[type="range"]')).toBeVisible();
+  // Scrubber should be present (the speed slider is also an input[type=range],
+  // so disambiguate via the `_scrubber_<hash>` class CSS Modules emits).
+  await expect(transport.locator('input[class*="_scrubber_"]')).toBeVisible();
 
   // Time display should show duration
   await expect(transport.locator('[class*="timeDisplay"]')).toContainText(/\d+\.\d+s/);
