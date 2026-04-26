@@ -26,11 +26,12 @@ export interface Session {
   /** Number of times this exact set has been loaded. */
   openCount: number;
   /**
-   * Legacy click counter. Preserved for backwards compatibility with sessions
-   * recorded before `recentEntries` existed — on those rows it's the only
-   * source of truth for "how many entries explored". New writes keep it in
-   * sync with `recentEntries.length`, and the UI prefers `recentEntries`
-   * whenever it's present.
+   * Total file-click counter for this session — increments on every tree
+   * click, recent-entry revisit, and cross-file navigation, regardless of
+   * whether the click introduced a new path or revisited an existing one.
+   * On legacy sessions recorded before this redefinition, the stored value
+   * happens to equal the unique-paths count and is treated as the starting
+   * point for the new counter.
    */
   exploredCount: number;
   /**

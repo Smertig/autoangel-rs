@@ -122,6 +122,10 @@ export function useSessions(): SessionsApi {
         }
       }
 
+      const seedExplored =
+        seedRecents.length > 0
+          ? prev.find((s) => s.id === prevId)?.exploredCount ?? seedRecents.length
+          : 0;
       const merged: Session = existing
         ? { ...existing, files, lastUsedAt: now, openCount: existing.openCount + 1 }
         : {
@@ -130,7 +134,7 @@ export function useSessions(): SessionsApi {
             firstOpenedAt: now,
             lastUsedAt: now,
             openCount: 1,
-            exploredCount: seedRecents.length,
+            exploredCount: seedExplored,
             recentEntries: seedRecents,
           };
       const next =
@@ -150,9 +154,9 @@ export function useSessions(): SessionsApi {
   }, []);
 
   // Shared debounced write: takes a transform that returns the new ring, or
-  // the same reference for a no-op. `exploredCount` stays in lockstep with
-  // `recentEntries.length` so old pre-migration rows that only read the
-  // counter still show a sane number.
+  // the same reference when nothing changed (e.g. re-click of the head). Each
+  // call still represents one click, so `exploredCount` is always incremented
+  // — it's a total-clicks counter, not a unique-paths counter.
   const applyRecentTransform = useCallback(
     (
       sessionId: string,
@@ -161,10 +165,11 @@ export function useSessions(): SessionsApi {
       const target = sessionsRef.current.find((s) => s.id === sessionId);
       if (!target) return;
       const next = transform(target.recentEntries);
-      if (next === target.recentEntries) return;
       setSessions((prev) =>
         prev.map((s) =>
-          s.id === sessionId ? { ...s, recentEntries: next, exploredCount: next.length } : s,
+          s.id === sessionId
+            ? { ...s, recentEntries: next, exploredCount: s.exploredCount + 1 }
+            : s,
         ),
       );
       const flushes = exploredFlushRef.current;
