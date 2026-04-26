@@ -46,13 +46,16 @@ Rebuild docs after any change to the public API: type stubs (`.pyi`), PyO3 bindi
 
 ## Architecture
 
-Cargo workspace with two crates:
+Cargo workspace with three crates: `autoangel-core` (Rust library) + two binding crates (`autoangel-py`, `autoangel-wasm`).
 
 ### autoangel-core
 Core Rust library for parsing Angelica Engine game files:
 - **`elements/`** — parsing and manipulation of `elements.data` files (config structures, typed field values, game-specific dialect definitions bundled via `include_dir`)
 - **`pck/`** — reading `*.pck`/`*.pkx` compressed game asset packages (keyed encryption, zlib decompression via `miniz_oxide`)
+- **`model/`** — Angelica model formats: `bon` (skeleton), `ski` (skin), `smd` (mesh), `ecm` (composite character model), `stck` (animation track sets), `gfx` (effects/particles). Shared `text_reader` and `common` helpers; the `bindable!` macro in `model/mod.rs` conditionally derives PyO3 / tsify bindings on every type that crosses the language boundary.
 - **`util/`** — `DataSource`/`DataReader` for backend-agnostic byte access (supports mmap, OPFS), `LineReader` for config parsing
+
+Cargo features gate the binding-side derives: `fs` (default, enables `memmap2`), `python` (PyO3 derives, consumed by `autoangel-py`), `wasm` (`tsify-next` + `wasm-bindgen` derives, consumed by `autoangel-wasm`).
 
 Key patterns: `memmap::Mmap` for zero-copy file I/O, `Arc<T>` shared ownership of parsed data, `parking_lot::RwLock` for mutable entry fields.
 
@@ -61,6 +64,7 @@ PyO3 bindings exposing `autoangel-core` as the `autoangel` Python module. Uses `
 
 - **`elements/`** — `py_config`, `py_data`, `py_value`, `py_util` wrapping core elements types
 - **`pck/`** — `py_package`, `py_package_config` wrapping core pck types
+- **`model/`** — `py_ecm`, `py_gfx`, `py_skeleton`, `py_skin`, `py_smd`, `py_track_set` wrapping core model types
 - **`lib.rs`** — PyO3 module initialization, top-level `read_elements`/`read_pck` functions
 
 Python type stubs: `autoangel-py/autoangel.pyi`.
@@ -70,6 +74,9 @@ wasm-bindgen bindings exposing `autoangel-core` as an npm package. Uses `default
 
 - **`elements.rs`** — `ElementsConfig`, `ElementsData`, `ElementsDataList`, `ElementsDataEntry`
 - **`pck.rs`** — `PackageConfig`, `PckPackage`, `PckBuilder`
+- **`model.rs`** — model loaders (ecm/gfx/ski/smd/bon/stck) returning the tsify-derived JS types from `autoangel-core::model`
+- **`image.rs`** — DDS / TGA decode helpers (used by demos for texture preview)
+- **`file_reader.rs`** — JS `File`/`Blob`-backed `DataSource` for browser uploads
 - **`tests/test.ts`** — TypeScript tests (requires `wasm-pack build --target nodejs --out-dir pkg-node --out-name autoangel` and `npm ci` first)
 
 Build: `cd autoangel-wasm && wasm-pack build --target web --out-name autoangel`
@@ -115,11 +122,11 @@ All crates share the same version. When bumping, update **all** of these:
 
 ### Commit ordering when both API and demos change
 
-Demos load WASM from the published npm CDN, so they must never reference an unpublished API. When a change touches both the library API and demos that use the new API, split commits into three batches pushed separately:
+Demos load WASM from the published npm CDN (`demos/src/cdn.ts` reads the version from the `autoangel` npm package's `package.json`), so they must never reference an unpublished API. When a change touches both the library API and demos that use the new API, split commits into three batches pushed separately:
 
 1. **API commits** — one or more commits changing core/py/wasm code
-2. **Version bump commit** — bump version in all crates + README, but do **NOT** update `cdn.js` (demos still reference the old published version)
-3. **Demo commits** — update `cdn.js` to the new version + demo code using the new API
+2. **Version bump commit** — bump version in all crates + `autoangel-wasm/README.md`, but do **NOT** bump `demos/package.json`'s `autoangel` devDependency (demos still resolve the old published version via the CDN)
+3. **Demo commits** — bump `demos/package.json`'s `autoangel` to the new version + demo code using the new API
 
 The owner pushes each batch manually after verifying CI passes on the previous one.
 
