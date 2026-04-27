@@ -15,6 +15,7 @@ import {
   Skin,
   decodeDds,
   decodeTga,
+  parseBmd,
   parseGfx,
   parseSkeleton,
   type FileEntry,
@@ -806,6 +807,31 @@ describe("Skeleton", () => {
   it("rejects bad magic", () => {
     assert.throws(() => parseSkeleton(new Uint8Array(100)));
   });
+});
+
+// --- BMD ---
+
+const BMD_V4 = readFileSync(resolve(root, "test_data/models/bmd/v4_litmodel_268.bmd"));
+const BMD_V5 = readFileSync(resolve(root, "test_data/models/bmd/v5_litmodel_5647.bmd"));
+const BMD_V6 = readFileSync(resolve(root, "test_data/models/bmd/v6_litmodel_669.bmd"));
+
+describe("parseBmd", () => {
+  for (const [label, bytes, meshVersion] of [
+    ["V4", BMD_V4, 0x10000004],
+    ["V5", BMD_V5, 0x10000005],
+    ["V6", BMD_V6, 0x10000006],
+  ] as const) {
+    it(`parses ${label} fixture`, () => {
+      const m = parseBmd(new Uint8Array(bytes));
+      assert.equal(m.version, 0x10000002);
+      assert.equal(m.meshes.length, 1);
+      const mesh = m.meshes[0];
+      assert.equal(mesh.version, meshVersion);
+      assert.ok(mesh.texture_map.length > 0, "texture path non-empty");
+      assert.ok(mesh.positions.length > 0, "non-empty positions");
+      assert.equal(mesh.indices.length % 3, 0);
+    });
+  }
 });
 
 // --- Skin (SKI) ---
