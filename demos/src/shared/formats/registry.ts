@@ -12,6 +12,7 @@ const loaders: FormatLoader[] = [
   { name: 'ecm',   matches: (ext) => ext === '.ecm',   load: () => import('./ecm').then(m => m.ecmFormat) },
   { name: 'smd',   matches: (ext) => ext === '.smd',   load: () => import('./smd').then(m => m.smdFormat) },
   { name: 'ski',   matches: (ext) => ext === '.ski',   load: () => import('./ski').then(m => m.skiFormat) },
+  { name: 'bmd',   matches: (ext) => ext === '.bmd',   load: () => import('./bmd').then(m => m.bmdFormat) },
   { name: 'stck',  matches: (ext) => ext === '.stck',  load: () => import('./stck').then(m => m.stckFormat) },
   { name: 'image', matches: (ext) => IMAGE_EXTENSIONS.has(ext) || CANVAS_IMAGE_EXTENSIONS.has(ext), load: () => import('./image').then(m => m.imageFormat) },
   { name: 'gfx',   matches: (ext) => ext === '.gfx',   load: () => import('./gfx').then(m => m.gfxFormat) },

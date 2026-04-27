@@ -23,6 +23,12 @@ export const LAST_SEEN_KEY = 'demos:changelogLastSeen';
  */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    id: '2026-04-27-bmd-rendering',
+    date: '2026-04-27',
+    scope: 'pck',
+    title: 'Render BMD building models',
+  },
+  {
     id: '2026-04-27-changelog',
     date: '2026-04-27',
     scope: 'shared',
