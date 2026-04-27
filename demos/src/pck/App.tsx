@@ -35,6 +35,13 @@ import styles from './App.module.css';
 
 const cdn = resolveCDN();
 
+/** Canonical lookup key for the path index: case-insensitive, separator-
+ *  agnostic, leading-separator-tolerant. Handles PW pcks (backslash) and
+ *  rare forward-slash pcks under the same key. */
+function normalizePathKey(p: string): string {
+  return p.toLowerCase().replace(/\\/g, '/').replace(/^\/+/, '');
+}
+
 interface SelectedFile {
   pkgId: number;
   path: string;
@@ -94,17 +101,17 @@ export function App() {
   );
 
   const pathIndex = useMemo(() => {
-    const byLower = new Map<string, Array<{ orig: string; pkgId: number }>>();
+    const byKey = new Map<string, Array<{ orig: string; pkgId: number }>>();
     for (const slot of slots) {
       for (const f of slot.fileList) {
-        const lower = f.toLowerCase();
+        const key = normalizePathKey(f);
         const entry = { orig: f, pkgId: slot.pkgId };
-        const bucket = byLower.get(lower);
+        const bucket = byKey.get(key);
         if (bucket) bucket.push(entry);
-        else byLower.set(lower, [entry]);
+        else byKey.set(key, [entry]);
       }
     }
-    return byLower;
+    return byKey;
   }, [slots]);
 
   const selectedPkgId = selectedFile?.pkgId ?? null;
@@ -112,26 +119,26 @@ export function App() {
   const getFileData = useCallback(
     (path: string): Promise<Uint8Array> => {
       if (selectedPkgId === null) return Promise.reject(new PackageRemovedError());
-      const bucket = pathIndex.get(path.toLowerCase());
+      const bucket = pathIndex.get(normalizePathKey(path));
       if (!bucket) return Promise.reject(new PackageRemovedError());
       // Selected slot wins on cross-package collision (rare).
       const hit = bucket.find((e) => e.pkgId === selectedPkgId) ?? bucket[0];
-      return getFile(hit.pkgId, path);
+      return getFile(hit.pkgId, hit.orig);
     },
     [selectedPkgId, pathIndex, getFile],
   );
 
   const findFile = useCallback(
-    (path: string): string | null => pathIndex.get(path.toLowerCase())?.[0].orig ?? null,
+    (path: string): string | null => pathIndex.get(normalizePathKey(path))?.[0].orig ?? null,
     [pathIndex],
   );
 
   const listFiles = useCallback(
     (prefix: string): string[] => {
-      const lower = prefix.toLowerCase();
+      const key = normalizePathKey(prefix);
       const out: string[] = [];
-      for (const [l, bucket] of pathIndex) {
-        if (l.startsWith(lower)) {
+      for (const [k, bucket] of pathIndex) {
+        if (k.startsWith(key)) {
           for (const e of bucket) out.push(e.orig);
         }
       }
@@ -267,7 +274,7 @@ export function App() {
   // (package changed, file renamed, etc.). `isStable` is defined above.
   useEffect(() => {
     if (!pendingSelection || !isStable || slots.length === 0) return;
-    const bucket = pathIndex.get(pendingSelection.path.toLowerCase());
+    const bucket = pathIndex.get(normalizePathKey(pendingSelection.path));
     const slotForPck = slots.find(
       (s) => `${s.stem}.pck`.toLowerCase() === pendingSelection.pckName.toLowerCase(),
     );
@@ -351,7 +358,7 @@ export function App() {
   // `getFileData` so the file opens from the same slot the viewer is using.
   const handleNavigateToFile = useCallback(
     (path: string) => {
-      const bucket = pathIndex.get(path.toLowerCase());
+      const bucket = pathIndex.get(normalizePathKey(path));
       if (!bucket) return;
       const hit = bucket.find((e) => e.pkgId === selectedPkgId) ?? bucket[0];
       setSelectedFile({ pkgId: hit.pkgId, path: hit.orig });
