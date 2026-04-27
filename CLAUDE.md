@@ -94,6 +94,28 @@ The `?local` parameter still works for loading WASM from the local build.
 
 Demo source is in `demos/src/` (TypeScript + React). Run `cd demos && npx vitest` for unit tests.
 
+### Demo changelog
+
+User-visible changes surface inside each demo via the sparkle button in `NavBar`, backed by `demos/src/shared/changelog.ts`. The `CHANGELOG` array is hand-edited; first-time visitors get a silent localStorage init so they don't see a dot for historical entries.
+
+**When to add an entry.** Whenever a commit changes something a user opening the demo would *notice*: new feature, new supported file format, changed UX behavior, perceptible perf win, fix for a visibly wrong thing. Add the entry in the same commit as the change when convenient, otherwise as a follow-up. Don't add entries for changes that aren't user-visible (see "What to skip" below).
+
+When adding a new entry:
+
+- **`id`** — stable slug, unique forever. Convention: `YYYY-MM-DD-short-slug`. Don't reuse or rewrite ids; they're the seen-marker keys.
+- **`scope`** — one of `'elements' | 'pck' | 'pck-diff' | 'shared'`. Use a demo's scope when the change only affects that demo. Use `'shared'` only when the change touches more than one demo (NavBar, theme, FOUC fix, cross-cutting perf). Model viewer / GFX runtime / particle previews live inside the pck demo → scope `'pck'`.
+- **`title`** — sentence case, no terminal period, ≤60 chars. Pick **one** of these grammatical shapes per entry and don't mix:
+  - **Noun phrase** announcing the feature: *"Persistent PCK session history"*, *"3D particle simulation"*.
+  - **What the user can now do** (active voice, no subject): *"Click GFX/sound paths to jump to the file"*.
+  - No `New:` / `Added:` / `Improved:` prefixes — the changelog is the prefix.
+- **`body`** (optional) — one short sentence ending with a period. Describes the user-visible effect, not the implementation. Don't restate the title. Skip entirely if the title is self-sufficient.
+
+**Voice & tone:** terse, factual, no marketing words ("amazing", "blazing", "now powerful"). Plain English over abstractions: prefer concrete verbs like "render", "open", "remember" over abstractions like "polish", "overhaul", "first-class", "native". Numbers beat adjectives. Domain jargon (ECM, GFX, PCK, decal, ski, smd) is fine — the audience is technical.
+
+**Grouping:** bundle same-day related work into one entry. *"Animation list polish"* covering resize + filter + slider + scrubber beats four fragmented bullets. Split only when the work hits genuinely different surfaces.
+
+**What to skip:** refactors, dependency bumps, test infra, CI, doc-only changes, single-line cosmetic fixes, internal helper extractions. The changelog is for users, not commit-log archaeology.
+
 ### Demo E2E modes
 
 Demos have two E2E test modes that differ in which wasm they exercise:

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ChangelogButton } from './ChangelogButton';
 import styles from './NavBar.module.css';
 
 interface NavBarProps {
@@ -46,6 +47,7 @@ export function NavBar({ active }: NavBarProps) {
         >
           Diff
         </a>
+        <ChangelogButton scope={active} />
         <button
           className={styles.themeToggle}
           onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')}
