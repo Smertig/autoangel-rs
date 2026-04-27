@@ -1,6 +1,6 @@
 [package]
 name = "autoangel-wasm"
-version = "0.12.2"
+version = "0.13.0"
 authors = ["Smertig <akaraevz@mail.ru>"]
 edition = "2024"
 description = "WASM bindings for Angelica Engine game file parsing"
