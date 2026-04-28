@@ -23,6 +23,13 @@ export const LAST_SEEN_KEY = 'demos:changelogLastSeen';
  */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    id: '2026-04-28-pck-refs-panel',
+    date: '2026-04-28',
+    scope: 'pck',
+    title: 'Cross-reference index between files',
+    body: 'Enable indexing in the footer to see outgoing and incoming references for the selected file in a side panel.',
+  },
+  {
     id: '2026-04-27-bmd-rendering',
     date: '2026-04-27',
     scope: 'pck',
