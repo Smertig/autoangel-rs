@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, fireEvent } from '@testing-library/react';
+import { act, cleanup, render, screen, fireEvent } from '@testing-library/react';
 
 afterEach(cleanup);
 import { RefsPanel } from '../components/RefsPanel';
@@ -105,5 +105,46 @@ describe('RefsPanel', () => {
     // counts render together: ↗ 2 · ↙ 1
     expect(screen.getByText(/2/)).toBeDefined();
     expect(screen.getByText(/1/)).toBeDefined();
+  });
+
+  it('wraps resolved outgoing rows so hover triggers a popover', () => {
+    vi.useFakeTimers();
+    const getData = vi.fn().mockResolvedValue(new Uint8Array());
+    render(
+      <RefsPanel
+        outgoing={[e({ resolved: 'foo.dds', raw: 'foo.dds', kind: 'texture' })]}
+        incoming={[]}
+        onNavigate={() => {}}
+        selectedPath="x"
+        getData={getData}
+        wasm={{} as never}
+      />,
+    );
+    const btn = screen.getByText('foo.dds');
+    fireEvent.mouseEnter(btn);
+    act(() => { vi.advanceTimersByTime(160); });
+    expect(screen.getByRole('tooltip')).toBeDefined();
+    vi.useRealTimers();
+  });
+
+  it('does not wrap unresolved rows (no popover, no fetch)', () => {
+    vi.useFakeTimers();
+    const getData = vi.fn();
+    render(
+      <RefsPanel
+        outgoing={[e({ resolved: null, raw: 'broken.dds', kind: 'texture' })]}
+        incoming={[]}
+        onNavigate={() => {}}
+        selectedPath="x"
+        getData={getData}
+        wasm={{} as never}
+      />,
+    );
+    const span = screen.getByText('broken.dds');
+    fireEvent.mouseEnter(span);
+    act(() => { vi.advanceTimersByTime(500); });
+    expect(screen.queryByRole('tooltip')).toBeNull();
+    expect(getData).not.toHaveBeenCalled();
+    vi.useRealTimers();
   });
 });

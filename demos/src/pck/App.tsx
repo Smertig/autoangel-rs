@@ -13,6 +13,7 @@ import { ResizableSplit } from '@shared/components/ResizableSplit';
 import { FileTree, type TreeFile } from '@shared/components/FileTree';
 import { KeysPanel, type KeyConfig } from '@shared/components/KeysPanel';
 import { SourceLink } from '@shared/components/SourceLink';
+import { clearHoverCache } from '@shared/components/hover-preview/hoverState';
 import { Breadcrumb } from './components/Breadcrumb';
 import { PackageChipRow } from './components/PackageChipRow';
 import { EmptyState } from './components/EmptyState';
@@ -119,6 +120,10 @@ export function App() {
   }, [slots]);
 
   const selectedPkgId = selectedFile?.pkgId ?? null;
+
+  useEffect(() => {
+    clearHoverCache();
+  }, [selectedPkgId]);
 
   const getFileData = useCallback(
     (path: string): Promise<Uint8Array> => {
@@ -649,6 +654,8 @@ export function App() {
                     incoming={incomingRefs}
                     onNavigate={handleNavigateToFile}
                     selectedPath={selectedFile?.path ?? null}
+                    getData={getFileData}
+                    wasm={wasmRef.current ?? undefined}
                   />
                 }
               >

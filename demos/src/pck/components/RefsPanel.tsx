@@ -1,8 +1,21 @@
 import type { ReactNode } from 'react';
 import type { Edge } from '../index/types';
+import type { AutoangelModule } from '../../types/autoangel';
+import { FileHoverTarget } from '@shared/components/hover-preview/FileHoverTarget';
 import styles from './RefsPanel.module.css';
 
-export interface RefsPanelProps {
+interface HoverDeps {
+  getData?: (path: string) => Promise<Uint8Array>;
+  wasm?: AutoangelModule;
+}
+
+type ResolvedHoverDeps = Required<HoverDeps>;
+
+function isHoverable(h: HoverDeps): h is ResolvedHoverDeps {
+  return h.getData != null && h.wasm != null;
+}
+
+export interface RefsPanelProps extends HoverDeps {
   outgoing: Edge[];
   incoming: Edge[];
   onNavigate: (canonicalPath: string) => void;
@@ -57,11 +70,28 @@ function groupByDir<T>(
   return out;
 }
 
+function MaybeHoverWrapped({
+  hover, path, children,
+}: {
+  hover: HoverDeps;
+  path: string;
+  children: ReactNode;
+}) {
+  if (!isHoverable(hover)) return <>{children}</>;
+  return (
+    <FileHoverTarget path={path} getData={hover.getData} wasm={hover.wasm}>
+      {children}
+    </FileHoverTarget>
+  );
+}
+
 export function RefsPanel({
   outgoing,
   incoming,
   onNavigate,
   selectedPath,
+  getData,
+  wasm,
 }: RefsPanelProps) {
   if (selectedPath == null) {
     return (
@@ -73,6 +103,7 @@ export function RefsPanel({
       </aside>
     );
   }
+  const hover: HoverDeps = { getData, wasm };
   const grouped = groupByKind(outgoing);
   return (
     <aside className={styles.panel}>
@@ -85,6 +116,7 @@ export function RefsPanel({
                 kind={kind}
                 edges={edges}
                 onNavigate={onNavigate}
+                hover={hover}
               />
             ))
           : null}
@@ -98,6 +130,7 @@ export function RefsPanel({
             // Incoming rows show the source's kind (this slot is `kind`
             // referenced by `e.fromPath`).
             kindLabel={(e) => e.kind}
+            hover={hover}
           />
         ) : null}
       </Section>
@@ -146,10 +179,12 @@ function KindGroup({
   kind,
   edges,
   onNavigate,
+  hover,
 }: {
   kind: string;
   edges: Edge[];
   onNavigate: (p: string) => void;
+  hover: HoverDeps;
 }) {
   // Within a kind, group by parent dir as well — keeps the layout
   // consistent with "Used by" and trims repeated path prefixes.
@@ -162,25 +197,31 @@ function KindGroup({
         onClick={(e) => {
           if (e.resolved !== null) onNavigate(e.resolved);
         }}
-        renderRow={(e, name) =>
-          e.resolved !== null ? (
-            <button
-              className={styles.link}
-              onClick={() => onNavigate(e.resolved!)}
-              title={e.resolved}
-            >
-              {name}
-            </button>
-          ) : (
-            <span
-              data-resolved="false"
-              className={styles.broken}
-              title={`Unresolved: ${e.raw}`}
-            >
-              {name}
-            </span>
-          )
-        }
+        hover={hover}
+        renderRow={(e, name) => {
+          if (e.resolved === null) {
+            return (
+              <span
+                data-resolved="false"
+                className={styles.broken}
+                title={`Unresolved: ${e.raw}`}
+              >
+                {name}
+              </span>
+            );
+          }
+          return (
+            <MaybeHoverWrapped hover={hover} path={e.resolved}>
+              <button
+                className={styles.link}
+                onClick={() => onNavigate(e.resolved!)}
+                title={e.resolved}
+              >
+                {name}
+              </button>
+            </MaybeHoverWrapped>
+          );
+        }}
       />
     </div>
   );
@@ -192,6 +233,7 @@ function DirGroupedList({
   onClick,
   kindLabel,
   renderRow,
+  hover,
 }: {
   edges: Edge[];
   getPath: (e: Edge) => string;
@@ -199,6 +241,7 @@ function DirGroupedList({
   kindLabel?: (e: Edge) => string;
   /** Override row rendering (for outgoing's resolved/dangling split). */
   renderRow?: (e: Edge, name: string) => ReactNode;
+  hover: HoverDeps;
 }) {
   const groups = groupByDir(edges, getPath);
   return (
@@ -211,28 +254,36 @@ function DirGroupedList({
             </div>
           )}
           <ul className={styles.list}>
-            {rows.map(({ name, item: e }, i) => (
-              <li key={i} className={styles.dirRow}>
-                {renderRow ? (
-                  renderRow(e, name)
-                ) : (
-                  <button
-                    className={styles.link}
-                    onClick={() => onClick(e)}
-                    title={getPath(e)}
-                  >
-                    {name}
-                  </button>
-                )}
-                {kindLabel && (
-                  <span className={styles.kindLabel}>{kindLabel(e)}</span>
-                )}
-              </li>
-            ))}
+            {rows.map(({ name, item: e }, i) => {
+              let row: ReactNode;
+              if (renderRow) {
+                row = renderRow(e, name);
+              } else {
+                const path = getPath(e);
+                row = (
+                  <MaybeHoverWrapped hover={hover} path={path}>
+                    <button
+                      className={styles.link}
+                      onClick={() => onClick(e)}
+                      title={path}
+                    >
+                      {name}
+                    </button>
+                  </MaybeHoverWrapped>
+                );
+              }
+              return (
+                <li key={i} className={styles.dirRow}>
+                  {row}
+                  {kindLabel && (
+                    <span className={styles.kindLabel}>{kindLabel(e)}</span>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </div>
       ))}
     </div>
   );
 }
-
