@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1777370398684,
+  "lastUpdate": 1777377570877,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -4511,6 +4511,102 @@ window.BENCHMARK_DATA = {
             "name": "PackageInfo::save_to",
             "value": 969588,
             "range": "± 4153",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "d94e3d2b529108f5e9ac304998e64d9118aaf95f",
+          "message": "feat [demos]: render BMD models in pck viewer\n\nAdds BmdViewer + render-bmd renderer + format descriptor. Loads V4/V5/V6\nA3DLitModel meshes (texture-only; day-color tint deferred), resolves\ntextures via the engine path index, applies the model's scale/dir/up/pos\ntransform. mountScene gracefully degrades to static mode when no\nanimation args are passed.",
+          "timestamp": "2026-04-27T22:29:06+03:00",
+          "tree_id": "990fe8c9049259ffb52c92d3ea55c6cd8b9b1515",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/d94e3d2b529108f5e9ac304998e64d9118aaf95f"
+        },
+        "date": 1777377569797,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 31941,
+            "range": "± 208",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 120,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::access_fields",
+            "value": 72,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 163,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 18415,
+            "range": "± 244",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::iterate_lists",
+            "value": 12806,
+            "range": "± 11",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 45,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 284626,
+            "range": "± 11652",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::find_prefix",
+            "value": 282,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 3291,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_all_files",
+            "value": 10852846,
+            "range": "± 4384",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::save_to",
+            "value": 1543255,
+            "range": "± 6102",
             "unit": "ns/iter"
           }
         ]
