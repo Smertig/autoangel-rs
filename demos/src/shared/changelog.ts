@@ -23,6 +23,13 @@ export const LAST_SEEN_KEY = 'demos:changelogLastSeen';
  */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    id: '2026-04-28-pck-hover-preview',
+    date: '2026-04-28',
+    scope: 'pck',
+    title: 'Hover a referenced path to preview the file',
+    body: 'Textures render inline.',
+  },
+  {
     id: '2026-04-28-pck-refs-panel',
     date: '2026-04-28',
     scope: 'pck',
