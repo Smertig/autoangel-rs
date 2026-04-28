@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1777367369679,
+  "lastUpdate": 1777370397956,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -4415,6 +4415,102 @@ window.BENCHMARK_DATA = {
             "name": "PackageInfo::save_to",
             "value": 927901,
             "range": "± 1853",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "0d4e39868283c9ca3bdcfdb3c5abeba7d0ea55c9",
+          "message": "chore: bump version to 0.13.0\n\nNew public API: BmdModel parser exposed via wasm bindings.",
+          "timestamp": "2026-04-28T12:05:21+03:00",
+          "tree_id": "e2e5c41b72c34efd76385e2a834952790a9db94a",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/0d4e39868283c9ca3bdcfdb3c5abeba7d0ea55c9"
+        },
+        "date": 1777370397159,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 31611,
+            "range": "± 145",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 113,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::access_fields",
+            "value": 64,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 163,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 23096,
+            "range": "± 76",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::iterate_lists",
+            "value": 13405,
+            "range": "± 13",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 52,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 304943,
+            "range": "± 997",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::find_prefix",
+            "value": 310,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 3508,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_all_files",
+            "value": 10458465,
+            "range": "± 52738",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::save_to",
+            "value": 969588,
+            "range": "± 4153",
             "unit": "ns/iter"
           }
         ]
