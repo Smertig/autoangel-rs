@@ -166,11 +166,14 @@
 
 /* Status bar */
 .statusBar {
+  position: relative; /* anchor for IndexerProgressStrip */
   padding: 4px 16px;
   background: var(--surface);
   border-top: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
   font-size: 12px;
   color: var(--text-muted);
   flex-shrink: 0;

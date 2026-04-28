@@ -54,6 +54,14 @@ export interface Session {
    * follow the *kind* of file rather than any one file.
    */
   formatStates?: Record<string, unknown>;
+  /**
+   * Cross-reference indexing toggle for this exact package set.
+   * Defaults `false` (off) — indexing is opt-in per-session because
+   * decompressing every parseable file in a large package costs CPU
+   * and main-thread time. Persisted so a user who opted in once
+   * doesn't have to re-enable on reopen.
+   */
+  indexingEnabled?: boolean;
 }
 
 /** Hard cap on per-session recent history. Writes trim from the tail. */

@@ -58,6 +58,12 @@ export interface SessionsApi {
    * `formatName` (typically `FormatDescriptor.name`).
    */
   recordFormatState: (sessionId: string, formatName: string, state: unknown) => void;
+  /**
+   * Toggle cross-reference indexing for this exact package set. The
+   * preference persists with the session record so reopening doesn't
+   * lose the choice.
+   */
+  setIndexingEnabled: (sessionId: string, enabled: boolean) => void;
   openSession: (session: Session) => Promise<OpenedSession>;
   removeOne: (id: string) => Promise<void>;
   clearAll: () => Promise<void>;
@@ -261,6 +267,21 @@ export function useSessions(): SessionsApi {
     [scheduleSessionFlush],
   );
 
+  const setIndexingEnabled = useCallback(
+    (sessionId: string, enabled: boolean) => {
+      const target = sessionsRef.current.find((s) => s.id === sessionId);
+      if (!target) return;
+      if ((target.indexingEnabled ?? false) === enabled) return;
+      setSessions((prev) =>
+        prev.map((s) =>
+          s.id === sessionId ? { ...s, indexingEnabled: enabled } : s,
+        ),
+      );
+      scheduleSessionFlush(sessionId);
+    },
+    [scheduleSessionFlush],
+  );
+
   const openSession = useCallback(async (session: Session): Promise<OpenedSession> => {
     type FileOutcome = { ok: true; items: PickedItem[] } | { ok: false; file: SessionFile };
     const outcomes = await Promise.all(
@@ -353,6 +374,7 @@ export function useSessions(): SessionsApi {
       recordTouched,
       recordEntryState,
       recordFormatState,
+      setIndexingEnabled,
       openSession,
       removeOne,
       clearAll,
@@ -366,6 +388,7 @@ export function useSessions(): SessionsApi {
       recordTouched,
       recordEntryState,
       recordFormatState,
+      setIndexingEnabled,
       openSession,
       removeOne,
       clearAll,

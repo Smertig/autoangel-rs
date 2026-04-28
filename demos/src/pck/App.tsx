@@ -10,6 +10,7 @@ import type { PickedItem } from '@shared/hooks/useFileDrop';
 import { NavBar } from '@shared/components/NavBar';
 import { ErrorBanner } from '@shared/components/ErrorBanner';
 import { ResizableSidebar } from '@shared/components/ResizableSidebar';
+import { ResizableRightRail } from '@shared/components/ResizableRightRail';
 import { FileTree, type TreeFile } from '@shared/components/FileTree';
 import { KeysPanel, type KeyConfig } from '@shared/components/KeysPanel';
 import { SourceLink } from '@shared/components/SourceLink';
@@ -23,6 +24,14 @@ const FilePreview = lazy(() =>
 );
 import { mergePackageTrees, type TaggedTreeFile } from './merge-tree';
 import { PackageRemovedError, usePackageSlots } from './usePackageSlots';
+import { useFileIndex, type IndexedSlot } from './index/useFileIndex';
+import { clearAllCachedSlotIndexes } from './index/idb';
+import { RefsPanel } from './components/RefsPanel';
+import {
+  IndexerProgressStrip,
+  IndexerStatus,
+} from './components/IndexerStatus';
+import { normalizePathKey } from './index/pathKey';
 import { useSessions } from './history/useSessions';
 import {
   fileFingerprint,
@@ -34,13 +43,6 @@ import {
 import styles from './App.module.css';
 
 const cdn = resolveCDN();
-
-/** Canonical lookup key for the path index: case-insensitive, separator-
- *  agnostic, leading-separator-tolerant. Handles PW pcks (backslash) and
- *  rare forward-slash pcks under the same key. */
-function normalizePathKey(p: string): string {
-  return p.toLowerCase().replace(/\\/g, '/').replace(/^\/+/, '');
-}
 
 interface SelectedFile {
   pkgId: number;
@@ -62,7 +64,10 @@ export function App() {
   const [pendingSelection, setPendingSelection] = useState<RecentEntry | null>(null);
 
   // Multi-package slot state
-  const { slots, loadingEntries, loadPackages, removeSlot, replaceSlot, getFile } = usePackageSlots(cdn);
+  const {
+    slots, loadingEntries, loadPackages, removeSlot, replaceSlot, getFile,
+    getSlotInputs,
+  } = usePackageSlots(cdn);
 
   const sessionsApi = useSessions();
 
@@ -400,6 +405,75 @@ export function App() {
     [sessionsApi.sessions, currentSessionId],
   );
 
+  // Cross-reference indexer. Skips slots whose pck/pkx handles are
+  // unavailable (shouldn't happen in practice — the slot map always
+  // owns them while the slot exists).
+  const indexedSlots = useMemo<IndexedSlot[]>(() => {
+    const out: IndexedSlot[] = [];
+    for (const s of slots) {
+      const inputs = getSlotInputs(s.pkgId);
+      if (!inputs) continue;
+      out.push({
+        pkgId: s.pkgId,
+        fileId: s.fileId,
+        pckFile: inputs.pckFile,
+        pkxFiles: inputs.pkxFiles,
+        fileList: s.fileList,
+      });
+    }
+    return out;
+  }, [slots, getSlotInputs]);
+
+  // Flatten the multi-bucket pathIndex to a key → canonical-path map
+  // for the indexer. On cross-package collision, first slot wins —
+  // matches the existing convention in `findFile`.
+  const indexerPathMap = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const [k, bucket] of pathIndex) m.set(k, bucket[0].orig);
+    return m;
+  }, [pathIndex]);
+
+  const indexingEnabled = currentSession?.indexingEnabled ?? false;
+
+  const fileIndex = useFileIndex({
+    cdn,
+    slots: indexedSlots,
+    loading: loadingEntries.length,
+    mergedPathIndex: indexerPathMap,
+    enabled: indexingEnabled,
+  });
+
+  const handleEnableIndexing = useCallback(() => {
+    if (!currentSessionId) return;
+    sessionsApi.setIndexingEnabled(currentSessionId, true);
+  }, [sessionsApi, currentSessionId]);
+
+  const handleDisableIndexing = useCallback(() => {
+    if (!currentSessionId) return;
+    sessionsApi.setIndexingEnabled(currentSessionId, false);
+  }, [sessionsApi, currentSessionId]);
+
+  // Disable indexing for the current session AND wipe every cached
+  // slot record from IDB. We disable first so the worker doesn't
+  // race a fresh checkpoint write against the clear, then drop the
+  // store. Re-enabling rebuilds from scratch.
+  const handleClearIndexCache = useCallback(() => {
+    if (currentSessionId) {
+      sessionsApi.setIndexingEnabled(currentSessionId, false);
+    }
+    void clearAllCachedSlotIndexes();
+  }, [sessionsApi, currentSessionId]);
+
+  const selectedKey = selectedFile ? normalizePathKey(selectedFile.path) : null;
+  const outgoingRefs = useMemo(
+    () => (selectedKey ? fileIndex.getOutgoing(selectedKey) : []),
+    [fileIndex, selectedKey],
+  );
+  const incomingRefs = useMemo(
+    () => (selectedKey ? fileIndex.getIncoming(selectedKey) : []),
+    [fileIndex, selectedKey],
+  );
+
   const viewerStatePorts = useMemo<StatePorts | undefined>(() => {
     if (!selectedFile || !selectedPckName || !selectedFormatName || !currentSessionId) return undefined;
     return {
@@ -463,6 +537,7 @@ export function App() {
           loadingEntries={loadingEntries}
           onRemove={removeSlot}
           onDrop={handleDrop}
+          getIndexDetails={fileIndex.getSlotDetails}
         />
 
         {status !== null && <span className={styles.status}>{status}</span>}
@@ -535,39 +610,72 @@ export function App() {
             </div>
           }
         >
-          <Breadcrumb
-            parts={selectedParts}
-            onReset={handleReset}
-            packageLabel={selectedSlot ? `${selectedSlot.stem}.pck` : undefined}
-            packageColor={selectedSlot?.color}
-          />
-
-          <div className={styles.previewArea}>
-            {selectedFile && wasmRef.current ? (
-              <Suspense fallback={<div className={styles.placeholder}>Loading preview&hellip;</div>}>
-                <FilePreview
-                  path={selectedFile.path}
-                  getData={getFileData}
-                  wasm={wasmRef.current}
-                  listFiles={listFiles}
-                  findFile={findFile}
-                  onNavigateToFile={handleNavigateToFile}
-                  state={viewerStatePorts}
+          {(() => {
+            const previewPane = (
+              <>
+                <Breadcrumb
+                  parts={selectedParts}
+                  onReset={handleReset}
+                  packageLabel={selectedSlot ? `${selectedSlot.stem}.pck` : undefined}
+                  packageColor={selectedSlot?.color}
                 />
-              </Suspense>
+                <div className={styles.previewArea}>
+                  {selectedFile && wasmRef.current ? (
+                    <Suspense fallback={<div className={styles.placeholder}>Loading preview&hellip;</div>}>
+                      <FilePreview
+                        path={selectedFile.path}
+                        getData={getFileData}
+                        wasm={wasmRef.current}
+                        listFiles={listFiles}
+                        findFile={findFile}
+                        onNavigateToFile={handleNavigateToFile}
+                        state={viewerStatePorts}
+                      />
+                    </Suspense>
+                  ) : (
+                    <div className={styles.placeholder}>Select a file to preview</div>
+                  )}
+                </div>
+              </>
+            );
+            return indexingEnabled ? (
+              <ResizableRightRail
+                initialWidth={320}
+                minWidth={220}
+                rail={
+                  <RefsPanel
+                    outgoing={outgoingRefs}
+                    incoming={incomingRefs}
+                    onNavigate={handleNavigateToFile}
+                    selectedPath={selectedFile?.path ?? null}
+                  />
+                }
+              >
+                {previewPane}
+              </ResizableRightRail>
             ) : (
-              <div className={styles.placeholder}>Select a file to preview</div>
-            )}
-          </div>
+              previewPane
+            );
+          })()}
         </ResizableSidebar>
       )}
 
       {mergedTree && (
         <footer className={styles.statusBar}>
+          <IndexerProgressStrip status={fileIndex.status} />
           <span>
             {slots.length} {slots.length === 1 ? 'package' : 'packages'} · {totalFiles} files
             {commonVersion !== null && ` · v0x${commonVersion.toString(16).toUpperCase()}`}
           </span>
+          <IndexerStatus
+            status={fileIndex.status}
+            totalEdges={fileIndex.totalEdges}
+            indexBytes={fileIndex.indexBytes}
+            currentPath={fileIndex.currentPath}
+            onEnable={handleEnableIndexing}
+            onDisable={handleDisableIndexing}
+            onClear={handleClearIndexCache}
+          />
         </footer>
       )}
     </div>

@@ -1,0 +1,62 @@
+.row {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.label {
+  color: var(--text-muted);
+}
+
+.sep {
+  color: var(--border);
+}
+
+.pct {
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.checkmark {
+  color: var(--accent);
+}
+
+.linkBtn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 0;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.linkBtn:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.linkBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Thin progress strip layered on the top edge of the footer. Sits
+ * at the very top so it doesn't push footer text around. */
+.strip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--border);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.stripFill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 120ms linear;
+}

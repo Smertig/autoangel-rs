@@ -1,0 +1,238 @@
+import type { ReactNode } from 'react';
+import type { Edge } from '../index/types';
+import styles from './RefsPanel.module.css';
+
+export interface RefsPanelProps {
+  outgoing: Edge[];
+  incoming: Edge[];
+  onNavigate: (canonicalPath: string) => void;
+  /** When undefined, the rail renders a "Select a file" placeholder
+   *  instead of the empty Outgoing/Used by sections. */
+  selectedPath?: string | null;
+}
+
+function groupByKind(edges: Edge[]): Map<string, Edge[]> {
+  const m = new Map<string, Edge[]>();
+  for (const e of edges) {
+    const arr = m.get(e.kind);
+    if (arr) arr.push(e);
+    else m.set(e.kind, [e]);
+  }
+  return m;
+}
+
+/** Split a normalized path (`gfx/foo/bar.ski`) into its parent dir
+ *  and basename. Root-level paths return `dir=''`. */
+function splitPath(path: string): { dir: string; name: string } {
+  const i = path.lastIndexOf('/');
+  if (i < 0) return { dir: '', name: path };
+  return { dir: path.slice(0, i), name: path.slice(i + 1) };
+}
+
+interface DirGroup<T> {
+  dir: string;
+  rows: Array<{ name: string; item: T }>;
+}
+
+/** Group items by parent directory (alphabetical), filenames sorted
+ *  ascending within each dir. */
+function groupByDir<T>(
+  items: T[],
+  getPath: (t: T) => string,
+): Array<DirGroup<T>> {
+  const buckets = new Map<string, Array<{ name: string; item: T }>>();
+  for (const item of items) {
+    const { dir, name } = splitPath(getPath(item));
+    const arr = buckets.get(dir);
+    const row = { name, item };
+    if (arr) arr.push(row);
+    else buckets.set(dir, [row]);
+  }
+  const out: Array<DirGroup<T>> = [];
+  for (const [dir, rows] of buckets) {
+    rows.sort((a, b) => a.name.localeCompare(b.name));
+    out.push({ dir, rows });
+  }
+  out.sort((a, b) => a.dir.localeCompare(b.dir));
+  return out;
+}
+
+export function RefsPanel({
+  outgoing,
+  incoming,
+  onNavigate,
+  selectedPath,
+}: RefsPanelProps) {
+  if (selectedPath == null) {
+    return (
+      <aside className={styles.panel}>
+        <RailHeader outgoingCount={0} incomingCount={0} />
+        <div className={styles.placeholder}>
+          Select a file to see its references.
+        </div>
+      </aside>
+    );
+  }
+  const grouped = groupByKind(outgoing);
+  return (
+    <aside className={styles.panel}>
+      <RailHeader outgoingCount={outgoing.length} incomingCount={incoming.length} />
+      <Section title="Outgoing" empty="No outgoing references.">
+        {grouped.size > 0
+          ? [...grouped.entries()].map(([kind, edges]) => (
+              <KindGroup
+                key={kind}
+                kind={kind}
+                edges={edges}
+                onNavigate={onNavigate}
+              />
+            ))
+          : null}
+      </Section>
+      <Section title="Used by" empty="No incoming references.">
+        {incoming.length > 0 ? (
+          <DirGroupedList
+            edges={incoming}
+            getPath={(e) => e.fromPath}
+            onClick={(e) => onNavigate(e.fromPath)}
+            // Incoming rows show the source's kind (this slot is `kind`
+            // referenced by `e.fromPath`).
+            kindLabel={(e) => e.kind}
+          />
+        ) : null}
+      </Section>
+    </aside>
+  );
+}
+
+function RailHeader({
+  outgoingCount,
+  incomingCount,
+}: {
+  outgoingCount: number;
+  incomingCount: number;
+}) {
+  return (
+    <div className={styles.railHeader}>
+      <h3 className={styles.railTitle}>References</h3>
+      <span className={styles.railCounts}>
+        ↗ {outgoingCount.toLocaleString()} · ↙ {incomingCount.toLocaleString()}
+      </span>
+    </div>
+  );
+}
+
+function Section({
+  title,
+  empty,
+  children,
+}: {
+  title: string;
+  empty: string;
+  children: ReactNode;
+}) {
+  const isEmpty =
+    children == null ||
+    (Array.isArray(children) && children.length === 0);
+  return (
+    <div className={styles.section}>
+      <h4 className={styles.sectionTitle}>{title}</h4>
+      {isEmpty ? <div className={styles.empty}>{empty}</div> : children}
+    </div>
+  );
+}
+
+function KindGroup({
+  kind,
+  edges,
+  onNavigate,
+}: {
+  kind: string;
+  edges: Edge[];
+  onNavigate: (p: string) => void;
+}) {
+  // Within a kind, group by parent dir as well — keeps the layout
+  // consistent with "Used by" and trims repeated path prefixes.
+  return (
+    <div className={styles.group}>
+      <h5 className={styles.kind}>{kind}</h5>
+      <DirGroupedList
+        edges={edges}
+        getPath={(e) => e.resolved ?? e.raw}
+        onClick={(e) => {
+          if (e.resolved !== null) onNavigate(e.resolved);
+        }}
+        renderRow={(e, name) =>
+          e.resolved !== null ? (
+            <button
+              className={styles.link}
+              onClick={() => onNavigate(e.resolved!)}
+              title={e.resolved}
+            >
+              {name}
+            </button>
+          ) : (
+            <span
+              data-resolved="false"
+              className={styles.broken}
+              title={`Unresolved: ${e.raw}`}
+            >
+              {name}
+            </span>
+          )
+        }
+      />
+    </div>
+  );
+}
+
+function DirGroupedList({
+  edges,
+  getPath,
+  onClick,
+  kindLabel,
+  renderRow,
+}: {
+  edges: Edge[];
+  getPath: (e: Edge) => string;
+  onClick: (e: Edge) => void;
+  kindLabel?: (e: Edge) => string;
+  /** Override row rendering (for outgoing's resolved/dangling split). */
+  renderRow?: (e: Edge, name: string) => ReactNode;
+}) {
+  const groups = groupByDir(edges, getPath);
+  return (
+    <div className={styles.dirGroups}>
+      {groups.map(({ dir, rows }) => (
+        <div key={dir} className={styles.dirGroup}>
+          {dir && (
+            <div className={styles.dirHeader} title={dir}>
+              {dir}/
+            </div>
+          )}
+          <ul className={styles.list}>
+            {rows.map(({ name, item: e }, i) => (
+              <li key={i} className={styles.dirRow}>
+                {renderRow ? (
+                  renderRow(e, name)
+                ) : (
+                  <button
+                    className={styles.link}
+                    onClick={() => onClick(e)}
+                    title={getPath(e)}
+                  >
+                    {name}
+                  </button>
+                )}
+                {kindLabel && (
+                  <span className={styles.kindLabel}>{kindLabel(e)}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
+}
+

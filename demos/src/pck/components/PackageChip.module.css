@@ -1,6 +1,12 @@
-.chip {
+.chipWrap {
   position: relative;
   flex: 0 0 180px;
+  display: flex;
+}
+
+.chip {
+  position: relative;
+  flex: 1 1 auto;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -47,6 +53,160 @@
   height: 2px;
   width: 0;
   transition: width 120ms linear;
+}
+
+/* Indexer progress strip (loaded chips, only visible while the
+ * cross-reference indexer hasn't finished this slot). Sits just
+ * above the bottom edge so it doesn't collide with the parse-time
+ * bar. */
+.indexBar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 0;
+  opacity: 0.6;
+  transition: width 120ms linear;
+}
+
+/* Tiny ✓ that fades in next to the meta line when this slot's
+ * indexer has finished. */
+.indexDone {
+  display: inline-block;
+  margin-left: 6px;
+  color: var(--accent);
+  font-size: 11px;
+  animation: indexDoneIn 220ms ease-out;
+}
+
+@keyframes indexDoneIn {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Hover popover with per-extractor breakdown. Rendered via React
+ * portal at <body>-level so the chip-row's overflow:auto scroll
+ * container doesn't clip it. Coordinates are set inline on the
+ * element from the chip's getBoundingClientRect. */
+.popover {
+  position: fixed;
+  z-index: 1000;
+  width: 280px; /* fixed so the popover doesn't reflow as currentPath
+                   strings change length each batch */
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  font-size: 11px;
+  color: var(--text);
+  pointer-events: none; /* the popover itself doesn't block hovering — chipWrap owns hover */
+  animation: popIn 120ms ease-out;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.popHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.popDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.popStem {
+  flex: 1 1 auto;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.popState {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.popList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.popRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 1px 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.popName {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.popCount {
+  color: var(--text);
+}
+
+.popFoot {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.popFootRow {
+  display: flex;
+  justify-content: space-between;
+  font-variant-numeric: tabular-nums;
+}
+
+.popEmpty {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.popPath {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--border);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  direction: rtl;
+  text-align: left;
 }
 
 .stem {

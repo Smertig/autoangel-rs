@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { LoadingEntry, PackageSlot } from '../usePackageSlots';
 import { useFileDrop, type PickedItem } from '@shared/hooks/useFileDrop';
-import { PackageChip, type PackageChipProps } from './PackageChip';
+import { PackageChip, type IndexDetails, type PackageChipProps } from './PackageChip';
 import styles from './PackageChipRow.module.css';
 
 interface PackageChipRowProps {
@@ -9,9 +9,18 @@ interface PackageChipRowProps {
   loadingEntries: LoadingEntry[];
   onRemove: (pkgId: number) => void;
   onDrop: (items: PickedItem[]) => void;
+  /** Resolves a slot's indexer details for chip display + popover.
+   *  Returns null when the indexer hasn't seen this pkgId yet. */
+  getIndexDetails?: (pkgId: number) => IndexDetails | null;
 }
 
-export function PackageChipRow({ slots, loadingEntries, onRemove, onDrop }: PackageChipRowProps) {
+export function PackageChipRow({
+  slots,
+  loadingEntries,
+  onRemove,
+  onDrop,
+  getIndexDetails,
+}: PackageChipRowProps) {
   const { over, dragProps, inputProps, triggerPicker } = useFileDrop({ onFiles: onDrop, multiple: true });
 
   // Merge loaded slots and loading entries into a single list sorted by stem,
@@ -29,6 +38,7 @@ export function PackageChipRow({ slots, loadingEntries, onRemove, onDrop }: Pack
           fileCount: slot.fileCount,
           version: slot.version,
           onRemove: () => onRemove(slot.pkgId),
+          indexDetails: getIndexDetails?.(slot.pkgId) ?? null,
         },
       });
     }
@@ -45,7 +55,7 @@ export function PackageChipRow({ slots, loadingEntries, onRemove, onDrop }: Pack
     }
     items.sort((a, b) => a.key.localeCompare(b.key));
     return items;
-  }, [slots, loadingEntries, onRemove]);
+  }, [slots, loadingEntries, onRemove, getIndexDetails]);
 
   return (
     <div className={styles.row}>

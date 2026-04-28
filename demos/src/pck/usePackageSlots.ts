@@ -65,6 +65,12 @@ export interface UsePackageSlotsResult {
    * mid-call.
    */
   getFile: (pkgId: number, path: string) => Promise<Uint8Array>;
+  /**
+   * Returns the underlying `pck`/`pkx` File handles for `pkgId`, or
+   * `null` if the slot is unknown. Used by the cross-reference indexer
+   * to read the package independently of the rendering worker.
+   */
+  getSlotInputs: (pkgId: number) => { pckFile: File; pkxFiles: File[] } | null;
 }
 
 /**
@@ -384,6 +390,15 @@ export function usePackageSlots(cdn: string): UsePackageSlotsResult {
     return new Uint8Array(result.data, result.byteOffset, result.byteLength);
   }, []);
 
+  const getSlotInputs = useCallback(
+    (pkgId: number): { pckFile: File; pkxFiles: File[] } | null => {
+      const slot = slotsRef.current.get(pkgId);
+      if (!slot) return null;
+      return { pckFile: slot.pckFile, pkxFiles: slot.pkxFiles };
+    },
+    [],
+  );
+
   const slots = useMemo<PackageSlot[]>(() => {
     const arr = [...slotsRef.current.values()];
     arr.sort((a, b) => a.public.pkgId - b.public.pkgId);
@@ -398,5 +413,5 @@ export function usePackageSlots(cdn: string): UsePackageSlotsResult {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingVersion]);
 
-  return { slots, loadingEntries, loadPackages, removeSlot, replaceSlot, getFile };
+  return { slots, loadingEntries, loadPackages, removeSlot, replaceSlot, getFile, getSlotInputs };
 }
