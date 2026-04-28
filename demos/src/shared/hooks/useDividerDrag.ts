@@ -3,10 +3,14 @@ import { type RefObject, useEffect } from 'react';
 export function useDividerDrag(
   dividerRef: RefObject<HTMLDivElement | null>,
   panelRef: RefObject<HTMLElement | null>,
-  options?: { min?: number; max?: number },
+  options?: { min?: number; max?: number; side?: 'left' | 'right' },
 ): void {
   const min = options?.min ?? 140;
   const max = options?.max;
+  // For a right-anchored panel, dragging the divider leftward
+  // increases its width — invert the delta so callers can use the
+  // same hook for either side.
+  const side = options?.side ?? 'left';
 
   useEffect(() => {
     const divider = dividerRef.current;
@@ -20,7 +24,8 @@ export function useDividerDrag(
       divider.classList.add('dragging');
 
       const onMouseMove = (e: MouseEvent) => {
-        const delta = e.clientX - startX;
+        const rawDelta = e.clientX - startX;
+        const delta = side === 'right' ? -rawDelta : rawDelta;
         const maxWidth = max ?? window.innerWidth * 0.5;
         const newWidth = Math.max(min, Math.min(startWidth + delta, maxWidth));
         panel.style.width = `${newWidth}px`;
@@ -40,5 +45,5 @@ export function useDividerDrag(
     return () => {
       divider.removeEventListener('mousedown', onMouseDown);
     };
-  }, [dividerRef, panelRef, min, max]);
+  }, [dividerRef, panelRef, min, max, side]);
 }
