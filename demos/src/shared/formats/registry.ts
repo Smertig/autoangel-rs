@@ -29,11 +29,12 @@ export function findFormat(ext: string): FormatLoader {
   return loaders.find(f => f.matches(ext)) ?? fallbackLoader;
 }
 
-type LazyPart<K extends 'Viewer' | 'Differ'> = LazyExoticComponent<FormatDescriptor[K]>;
+type ComponentKey = 'Viewer' | 'Differ' | 'HoverPreview';
+type LazyPart<K extends ComponentKey> = LazyExoticComponent<NonNullable<FormatDescriptor[K]>>;
 
-const lazyCache = new WeakMap<FormatLoader, { Viewer?: LazyPart<'Viewer'>; Differ?: LazyPart<'Differ'> }>();
+const lazyCache = new WeakMap<FormatLoader, Partial<Record<ComponentKey, LazyPart<ComponentKey>>>>();
 
-export function lazyFormatComponent<K extends 'Viewer' | 'Differ'>(
+export function lazyFormatComponent<K extends ComponentKey>(
   loader: FormatLoader,
   key: K,
 ): LazyPart<K> {
@@ -44,7 +45,13 @@ export function lazyFormatComponent<K extends 'Viewer' | 'Differ'>(
   }
   const cached = entry[key] as LazyPart<K> | undefined;
   if (cached) return cached;
-  const Component: LazyPart<K> = lazy(() => loader.load().then((f) => ({ default: f[key] })));
-  entry[key] = Component as LazyPart<'Viewer'> & LazyPart<'Differ'>;
+  const Component: LazyPart<K> = lazy(() =>
+    loader.load().then((f) => {
+      const C = f[key];
+      if (!C) throw new Error(`Format ${f.name} has no ${key}`);
+      return { default: C };
+    }),
+  );
+  entry[key] = Component as LazyPart<ComponentKey>;
   return Component;
 }

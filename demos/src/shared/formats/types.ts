@@ -57,10 +57,21 @@ export interface DownloadAction {
   onClick: () => Promise<void>;
 }
 
+/** Slimmer than ViewerContext: hover previews are read-only, single-file,
+ *  no navigation, no persisted state. The wrapper owns fetch + cancellation,
+ *  so the format receives bytes already loaded. */
+export interface HoverContext {
+  path: string;
+  ext: string;
+  data: Uint8Array;
+  wasm: AutoangelModule;
+}
+
 export interface FormatDescriptor {
   name: string;
   matches(ext: string): boolean;
   Viewer: ComponentType<ViewerContext>;
   Differ: ComponentType<DifferContext>;
+  HoverPreview?: ComponentType<HoverContext>;
   downloadActions?: (ctx: ViewerContext) => DownloadAction[] | undefined;
 }
