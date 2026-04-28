@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1777218439137,
+  "lastUpdate": 1777367368986,
   "repoUrl": "https://github.com/Smertig/autoangel-rs",
   "entries": {
     "Rust Benchmark (Time)": [
@@ -4319,6 +4319,102 @@ window.BENCHMARK_DATA = {
             "name": "PackageInfo::save_to",
             "value": 857784,
             "range": "± 2058",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "committer": {
+            "email": "akaraevz@mail.ru",
+            "name": "Smertig",
+            "username": "Smertig"
+          },
+          "distinct": true,
+          "id": "937f259ecb11f73063498684f0d9677780e4b2ee",
+          "message": "feat: wasm BmdModel bindings\n\nMirrors Skin's flat-array shape (positions/normals/uvs/indices) so the\ndemo can reuse the existing buildMesh helper. Day-colour and material\naccessors deliberately omitted in v1 — renderer doesn't consume them.",
+          "timestamp": "2026-04-28T12:05:21+03:00",
+          "tree_id": "c33ecebe58e4e982d7de2c2c0d2d0a79949a5a3c",
+          "url": "https://github.com/Smertig/autoangel-rs/commit/937f259ecb11f73063498684f0d9677780e4b2ee"
+        },
+        "date": 1777367366998,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "DataView::parse",
+            "value": 31677,
+            "range": "± 172",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::find_entry",
+            "value": 113,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::access_fields",
+            "value": 62,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::deep_clone",
+            "value": 162,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::write",
+            "value": 22693,
+            "range": "± 110",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "Data::iterate_lists",
+            "value": 13237,
+            "range": "± 254",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "DataEntry::modify_field",
+            "value": 47,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::parse",
+            "value": 325328,
+            "range": "± 861",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::find_prefix",
+            "value": 310,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_file",
+            "value": 3821,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::get_all_files",
+            "value": 10521329,
+            "range": "± 112235",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "PackageInfo::save_to",
+            "value": 927901,
+            "range": "± 1853",
             "unit": "ns/iter"
           }
         ]
