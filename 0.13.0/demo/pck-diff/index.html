@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PCK Diff</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css" id="hljs-light" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github-dark.min.css" id="hljs-dark" media="print" onload="this.media='all'" disabled>
+  <script>!function(){var d=document.documentElement,t=localStorage.getItem('theme');if(!t)t=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';function a(v){var k=v==='dark';document.getElementById('hljs-light').disabled=k;document.getElementById('hljs-dark').disabled=!k}if(t==='dark')d.setAttribute('data-theme','dark');a(t);new MutationObserver(function(){a(d.getAttribute('data-theme')||'light')}).observe(d,{attributes:true,attributeFilter:['data-theme']})}()</script>
+  <style>
+    html { background: #f8f9fa; }
+    html[data-theme="dark"] { background: #1a1b1e; }
+    #boot-progress { position: fixed; top: 0; left: 0; right: 0; height: 2px; overflow: hidden; z-index: 9999; pointer-events: none; }
+    #boot-progress::after { content: ''; position: absolute; top: 0; bottom: 0; width: 60%; left: -60%; background: linear-gradient(90deg, transparent, #228be6, transparent); animation: boot-slide 1.1s linear infinite; }
+    html[data-theme="dark"] #boot-progress::after { background: linear-gradient(90deg, transparent, #4dabf7, transparent); }
+    @keyframes boot-slide { to { left: 100%; } }
+  </style>
+  <script type="module" crossorigin src="../assets/pck-diff-DrB0gGV9.js"></script>
+  <link rel="modulepreload" crossorigin href="../assets/useDividerDrag-RDEyvR25.js">
+  <link rel="modulepreload" crossorigin href="../assets/CopyButton-s1B_kYHm.js">
+  <link rel="modulepreload" crossorigin href="../assets/App.module-OdXVPBku.js">
+  <link rel="modulepreload" crossorigin href="../assets/DropZone-BoC7s1A_.js">
+  <link rel="stylesheet" crossorigin href="../assets/useDividerDrag-swJ0LW0D.css">
+  <link rel="stylesheet" crossorigin href="../assets/CopyButton-Dr4YaPqc.css">
+  <link rel="stylesheet" crossorigin href="../assets/App-DPAR8TFH.css">
+  <link rel="stylesheet" crossorigin href="../assets/DropZone-kRpt1mT0.css">
+  <link rel="stylesheet" crossorigin href="../assets/pck-diff-C1MWDvbL.css">
+</head>
+<body>
+  <div id="app"><div id="boot-progress"></div></div>
+  <script src="https://cdn.jsdelivr.net/npm/diff@7/dist/diff.min.js"></script>
+</body>
+</html>
