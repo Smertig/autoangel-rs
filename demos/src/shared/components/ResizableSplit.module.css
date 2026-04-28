@@ -2,13 +2,13 @@
   display: flex;
   flex: 1;
   min-height: 0;
+  min-width: 0;
 }
 
-.sidebar {
+.panel {
   min-width: 140px;
   max-width: 50vw;
   background: var(--surface);
-  border-right: 1px solid var(--border);
   overflow-y: auto;
   overflow-x: hidden;
   flex-shrink: 0;
@@ -16,16 +16,24 @@
   flex-direction: column;
 }
 
-.sidebar::-webkit-scrollbar {
+.panel[data-side='left'] {
+  border-right: 1px solid var(--border);
+}
+
+.panel[data-side='right'] {
+  border-left: 1px solid var(--border);
+}
+
+.panel::-webkit-scrollbar {
   width: 8px;
 }
 
-.sidebar::-webkit-scrollbar-thumb {
+.panel::-webkit-scrollbar-thumb {
   background: var(--scrollbar-thumb);
   border-radius: 4px;
 }
 
-.sidebar::-webkit-scrollbar-thumb:hover {
+.panel::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbar-thumb-hover);
 }
 

@@ -1,3 +1,9 @@
+import {
+  closeAndForgetIDB,
+  openIDB,
+  reqAwait,
+  txAwait,
+} from '@shared/util/idb';
 import type { CachedSlotIndex } from './types';
 import { SCHEMA_VERSION } from './types';
 
@@ -5,39 +11,16 @@ const DB_NAME = 'autoangel-pck-index';
 const DB_VERSION = 1;
 const STORE = 'slot-index';
 
-let dbPromise: Promise<IDBDatabase> | null = null;
-
-function openDb(): Promise<IDBDatabase> {
-  if (dbPromise) return dbPromise;
-  dbPromise = new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = () => {
-      const db = req.result;
+const openDb = () =>
+  openIDB({
+    name: DB_NAME,
+    version: DB_VERSION,
+    upgrade(db) {
       if (!db.objectStoreNames.contains(STORE)) {
         db.createObjectStore(STORE, { keyPath: 'fileId' });
       }
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-    req.onblocked = () => reject(new Error('IndexedDB open blocked'));
+    },
   });
-  return dbPromise;
-}
-
-function reqAwait<T>(req: IDBRequest<T>): Promise<T> {
-  return new Promise((resolve, reject) => {
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-function txAwait(tx: IDBTransaction): Promise<void> {
-  return new Promise((resolve, reject) => {
-    tx.oncomplete = () => resolve();
-    tx.onabort = () => reject(tx.error);
-    tx.onerror = () => reject(tx.error);
-  });
-}
 
 export async function loadCachedSlotIndex(
   fileId: string,
@@ -135,14 +118,4 @@ export async function clearAllCachedSlotIndexes(): Promise<void> {
 
 /** Test-only: close and forget the cached connection so a new openDb
  *  reopens (and `indexedDB.deleteDatabase` won't block on it). */
-export async function _resetForTests(): Promise<void> {
-  if (dbPromise) {
-    try {
-      const db = await dbPromise;
-      db.close();
-    } catch {
-      // ignore
-    }
-  }
-  dbPromise = null;
-}
+export const _resetForTests = (): Promise<void> => closeAndForgetIDB(DB_NAME);

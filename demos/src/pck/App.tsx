@@ -9,8 +9,7 @@ import type { StatePorts } from '@shared/formats/types';
 import type { PickedItem } from '@shared/hooks/useFileDrop';
 import { NavBar } from '@shared/components/NavBar';
 import { ErrorBanner } from '@shared/components/ErrorBanner';
-import { ResizableSidebar } from '@shared/components/ResizableSidebar';
-import { ResizableRightRail } from '@shared/components/ResizableRightRail';
+import { ResizableSplit } from '@shared/components/ResizableSplit';
 import { FileTree, type TreeFile } from '@shared/components/FileTree';
 import { KeysPanel, type KeyConfig } from '@shared/components/KeysPanel';
 import { SourceLink } from '@shared/components/SourceLink';
@@ -568,10 +567,11 @@ export function App() {
       )}
 
       {mergedTree && (
-        <ResizableSidebar
+        <ResizableSplit
+          side="left"
           initialWidth={300}
           minWidth={180}
-          sidebar={
+          panel={
             <div className={styles.sidebarInner}>
               <div className={styles.sidebarControls} data-filtering={isFiltering || undefined}>
                 <input
@@ -639,10 +639,11 @@ export function App() {
               </>
             );
             return indexingEnabled ? (
-              <ResizableRightRail
+              <ResizableSplit
+                side="right"
                 initialWidth={320}
                 minWidth={220}
-                rail={
+                panel={
                   <RefsPanel
                     outgoing={outgoingRefs}
                     incoming={incomingRefs}
@@ -652,12 +653,12 @@ export function App() {
                 }
               >
                 {previewPane}
-              </ResizableRightRail>
+              </ResizableSplit>
             ) : (
               previewPane
             );
           })()}
-        </ResizableSidebar>
+        </ResizableSplit>
       )}
 
       {mergedTree && (

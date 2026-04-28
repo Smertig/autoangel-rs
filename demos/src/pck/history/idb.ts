@@ -4,6 +4,12 @@
  *   - `handles`   — `FileSystemFileHandle[]` keyed by SessionFile.fileId.
  */
 
+import {
+  closeAndForgetIDB,
+  openIDB,
+  reqAwait,
+  txAwait,
+} from '@shared/util/idb';
 import type { Session } from './types';
 
 const DB_NAME = 'autoangel-pck-history';
@@ -11,14 +17,11 @@ const DB_VERSION = 5;
 const SESSIONS_STORE = 'sessions';
 const HANDLES_STORE = 'handles';
 
-let dbPromise: Promise<IDBDatabase> | null = null;
-
-function openDb(): Promise<IDBDatabase> {
-  if (dbPromise) return dbPromise;
-  dbPromise = new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = () => {
-      const db = req.result;
+const openDb = () =>
+  openIDB({
+    name: DB_NAME,
+    version: DB_VERSION,
+    upgrade(db) {
       // Wipe sessions on every upgrade — they're auto-tracked and regenerate
       // on first drop. Handles survive (recreating them costs a user-prompt
       // round-trip and their schema is unchanged).
@@ -29,28 +32,8 @@ function openDb(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(HANDLES_STORE)) {
         db.createObjectStore(HANDLES_STORE);
       }
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-    req.onblocked = () => reject(new Error('IndexedDB open blocked'));
+    },
   });
-  return dbPromise;
-}
-
-function txAwait(tx: IDBTransaction): Promise<void> {
-  return new Promise((resolve, reject) => {
-    tx.oncomplete = () => resolve();
-    tx.onabort = () => reject(tx.error ?? new Error('Transaction aborted'));
-    tx.onerror = () => reject(tx.error);
-  });
-}
-
-function reqAwait<T>(req: IDBRequest<T>): Promise<T> {
-  return new Promise((resolve, reject) => {
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
 
 // --- sessions ---
 
@@ -124,6 +107,4 @@ export async function deleteHandles(ids: string[]): Promise<void> {
 }
 
 /** Test-only: drop the cached connection so a new `openDb` reopens the database. */
-export function _resetForTests(): void {
-  dbPromise = null;
-}
+export const _resetForTests = (): Promise<void> => closeAndForgetIDB(DB_NAME);

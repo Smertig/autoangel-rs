@@ -1,3 +1,4 @@
+import { pushTo } from '@shared/util/maps';
 import type { Edge } from './types';
 import { normalizePathKey } from './pathKey';
 import { resolveCandidates } from './resolver';
@@ -61,12 +62,6 @@ function edgeBytes(e: Edge): number {
   for (const c of e.candidates) n += c.length;
   if (e.resolved) n += e.resolved.length;
   return n;
-}
-
-function pushTo<K, V>(m: Map<K, V[]>, k: K, v: V): void {
-  const bucket = m.get(k);
-  if (bucket) bucket.push(v);
-  else m.set(k, [v]);
 }
 
 function bindEdge(s: IndexState, e: Edge): void {
