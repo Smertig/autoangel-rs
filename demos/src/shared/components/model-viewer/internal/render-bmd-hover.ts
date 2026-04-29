@@ -1,22 +1,10 @@
 import type * as ThreeModule from 'three';
-import type { AutoangelModule } from '../../../../types/autoangel';
-import type { GetData } from '@shared/formats/types';
+import type { HoverCanvasRenderArgs } from '@shared/components/hover-preview/types';
 import { ensureThree, getThree } from './three';
 import { loadThreeTexture } from './texture';
 import { buildBmdMeshes, buildBmdRoot } from './bmd-mesh';
 import { fitCameraToObject } from './camera-fit';
 import { addStandardLights } from './scene';
-
-interface RenderBmdHoverArgs {
-  canvas: HTMLCanvasElement;
-  data: Uint8Array;
-  getData: GetData;
-  wasm: AutoangelModule;
-  /** Returns true once the popover has unmounted; lets us discard textures
-   *  decoded after cancellation instead of uploading them to GPU only to
-   *  dispose them immediately. */
-  cancelled?: () => boolean;
-}
 
 /**
  * One-shot render of a parsed BMD into a fixed-size canvas. Returns a
@@ -28,9 +16,9 @@ interface RenderBmdHoverArgs {
  * animation loop; no OrbitControls.
  */
 export async function renderBmdHoverPreview(
-  args: RenderBmdHoverArgs,
+  args: HoverCanvasRenderArgs,
 ): Promise<() => void> {
-  const { canvas, data, getData, wasm, cancelled = () => false } = args;
+  const { canvas, data, getData, wasm, cancelled } = args;
 
   await ensureThree();
   const { THREE } = getThree();

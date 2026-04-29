@@ -13,7 +13,7 @@ function BmdFormatViewer({ path, getData, wasm }: ViewerContext) {
 function BmdHoverPreview(ctx: HoverContext) {
   return (
     <HoverCanvasPreview
-      data={ctx.data} getData={ctx.getData} wasm={ctx.wasm}
+      path={ctx.path} data={ctx.data} getData={ctx.getData} wasm={ctx.wasm}
       render={renderBmdHoverPreview}
       label="BMD" width={280} height={280}
     />

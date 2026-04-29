@@ -9,19 +9,7 @@ import { ENGINE_PATH_PREFIXES, type FindFile } from './util/resolveEnginePath';
 import { loadParticleTexture } from './previews/particle/texture';
 import type { GfxElement } from './previews/types';
 import type { GfxElementRuntime, PreloadedTexture } from '../gfx-runtime/types';
-import type { AutoangelModule } from '../../../types/autoangel';
-import type { GetData } from '@shared/formats/types';
-
-interface RenderArgs {
-  canvas: HTMLCanvasElement;
-  data: Uint8Array;
-  getData: GetData;
-  wasm: AutoangelModule;
-  /** Returns true once the caller has unmounted; checked between async steps
-   *  so textures decoded post-cancel are disposed inline rather than uploaded
-   *  to GPU and immediately thrown away. */
-  cancelled?: () => boolean;
-}
+import type { HoverCanvasRenderArgs } from '../hover-preview/types';
 
 /**
  * Animated GFX preview for the hover popover. Strips the full viewer down
@@ -32,8 +20,8 @@ interface RenderArgs {
  * cancels the rAF loop, disposes runtimes + textures, and disposes the
  * renderer.
  */
-export async function renderGfxHoverPreview(args: RenderArgs): Promise<() => void> {
-  const { canvas, data, getData, wasm, cancelled = () => false } = args;
+export async function renderGfxHoverPreview(args: HoverCanvasRenderArgs): Promise<() => void> {
+  const { canvas, data, getData, wasm, cancelled } = args;
 
   await ensureThree();
   const { THREE } = getThree();

@@ -1,10 +1,12 @@
 import { zip } from 'fflate';
 import { downloadBlob, downloadFile } from '@shared/util/download';
 import { EcmViewer, bridgeModelStatePorts } from '@shared/components/model-viewer';
+import { renderEcmHoverPreview } from '@shared/components/model-viewer/internal/render-ecm-hover';
+import { HoverCanvasPreview } from '@shared/components/hover-preview/HoverCanvasPreview';
 import { collectEcmDependencies } from '@shared/util/model-dependencies';
 import { sideBySideDiffer } from './helpers';
 import { useNullableGetData } from '@shared/hooks/useNullableGetData';
-import type { DownloadAction, FormatDescriptor, ViewerContext } from './types';
+import type { DownloadAction, FormatDescriptor, HoverContext, ViewerContext } from './types';
 
 function EcmFormatViewer({
   path, getData, wasm, listFiles, findFile, onNavigateToFile, state,
@@ -54,11 +56,22 @@ async function downloadModelPck(ctx: ViewerContext): Promise<void> {
   downloadBlob(new Blob([pckBytes.buffer as ArrayBuffer], { type: 'application/octet-stream' }), basename + '.pck');
 }
 
+function EcmHoverPreview(ctx: HoverContext) {
+  return (
+    <HoverCanvasPreview
+      path={ctx.path} data={ctx.data} getData={ctx.getData} wasm={ctx.wasm}
+      render={renderEcmHoverPreview}
+      label="ECM" width={280} height={280}
+    />
+  );
+}
+
 export const ecmFormat: FormatDescriptor = {
   name: 'ecm',
   matches: (ext) => ext === '.ecm',
   Viewer: EcmFormatViewer,
   Differ: sideBySideDiffer(EcmFormatViewer),
+  HoverPreview: EcmHoverPreview,
   downloadActions(ctx: ViewerContext): DownloadAction[] | undefined {
     if (ctx.ext !== '.ecm') return undefined;
     return [

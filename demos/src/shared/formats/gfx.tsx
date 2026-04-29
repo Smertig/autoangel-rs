@@ -15,7 +15,7 @@ function GfxFormatViewer(ctx: ViewerContext) {
 function GfxHoverPreview(ctx: HoverContext) {
   return (
     <HoverCanvasPreview
-      data={ctx.data} getData={ctx.getData} wasm={ctx.wasm}
+      path={ctx.path} data={ctx.data} getData={ctx.getData} wasm={ctx.wasm}
       render={renderGfxHoverPreview}
       label="GFX" width={300} height={296}
     />

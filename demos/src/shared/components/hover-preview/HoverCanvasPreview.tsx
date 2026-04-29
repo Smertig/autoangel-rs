@@ -2,22 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { HOVER_FIT_STYLE } from '@shared/formats/hover-style';
 import type { GetData } from '@shared/formats/types';
 import type { AutoangelModule } from '../../../types/autoangel';
+import type { HoverCanvasRenderer } from './types';
 
-export interface HoverCanvasRenderArgs {
-  canvas: HTMLCanvasElement;
-  data: Uint8Array;
-  getData: GetData;
-  wasm: AutoangelModule;
-  /** Returns true once the popover has unmounted; checked between async
-   *  steps so resources allocated post-cancel are disposed inline rather
-   *  than uploaded to GPU and immediately thrown away. */
-  cancelled: () => boolean;
-}
-
-/** A render fn the popover invokes; returns its own cleanup callback. */
-export type HoverCanvasRenderer = (args: HoverCanvasRenderArgs) => Promise<() => void>;
+export type { HoverCanvasRenderArgs, HoverCanvasRenderer } from './types';
 
 interface HoverCanvasPreviewProps {
+  path: string;
   data: Uint8Array;
   getData: GetData;
   wasm: AutoangelModule;
@@ -28,11 +18,11 @@ interface HoverCanvasPreviewProps {
   height: number;
 }
 
-/** Shared hover-popover shell for canvas-based previews (BMD, GFX). Handles
- *  the mount/disposed-flag/cleanup-on-unmount race; renders the error fallback
- *  when the render helper rejects. */
+/** Shared hover-popover shell for canvas-based previews (BMD, GFX, ECM).
+ *  Handles the mount/disposed-flag/cleanup-on-unmount race; renders the error
+ *  fallback when the render helper rejects. */
 export function HoverCanvasPreview({
-  data, getData, wasm, render, label, width, height,
+  path, data, getData, wasm, render, label, width, height,
 }: HoverCanvasPreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +36,7 @@ export function HoverCanvasPreview({
       if (!canvas) return;
       try {
         const dispose = await render({
-          canvas, data, getData, wasm,
+          canvas, path, data, getData, wasm,
           cancelled: () => disposed,
         });
         if (disposed) {
@@ -65,7 +55,7 @@ export function HoverCanvasPreview({
       disposed = true;
       cleanup?.();
     };
-  }, [data, getData, wasm, render, label]);
+  }, [path, data, getData, wasm, render, label]);
 
   if (error) {
     return <div style={{ color: '#c66', fontSize: 11, padding: 8 }}>{error}</div>;
