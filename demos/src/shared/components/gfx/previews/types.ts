@@ -17,10 +17,3 @@ export interface ViewerCtx {
    *  can't host navigation. */
   onNavigateToFile?: (path: string) => void;
 }
-
-export interface PreviewProps<K extends ElementBodyKind = ElementBodyKind> {
-  body: Extract<ElementBody, { kind: K }>;
-  element: GfxElement;
-  context: ViewerCtx;
-  expanded: boolean;
-}
