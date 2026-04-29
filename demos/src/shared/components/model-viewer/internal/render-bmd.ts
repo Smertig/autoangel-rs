@@ -5,6 +5,7 @@ import type { GetFile } from './paths';
 import { loadThreeTexture } from './texture';
 import { mountScene } from './scene';
 import type { SkinStats } from './mesh';
+import { buildBmdMeshes } from './bmd-mesh';
 
 export async function renderBmd(
   container: HTMLElement,
@@ -27,8 +28,6 @@ export async function renderBmd(
   basis.setPosition(new THREE.Vector3(...bmd.pos));
   root.applyMatrix4(basis);
   root.scale.set(...bmd.scale);
-
-  const stats: SkinStats = { verts: 0, tris: 0, meshes: 0, textures: 0 };
 
   // Serial awaits per mesh would N×-multiply OPFS/network round-trips for
   // buildings with many sub-meshes that share materials.
@@ -53,47 +52,13 @@ export async function renderBmd(
     ),
   );
 
-  for (const mesh of bmd.meshes) {
-    if (mesh.positions.length === 0 || mesh.indices.length === 0) continue;
+  const { meshes, stats: meshStats } = buildBmdMeshes(THREE, bmd, textureByPath);
+  for (const m of meshes) root.add(m);
 
-    const geom = new THREE.BufferGeometry();
-    geom.setAttribute(
-      'position',
-      new THREE.Float32BufferAttribute(new Float32Array(mesh.positions.flat()), 3),
-    );
-    if (mesh.normals.length === mesh.positions.length) {
-      geom.setAttribute(
-        'normal',
-        new THREE.Float32BufferAttribute(new Float32Array(mesh.normals.flat()), 3),
-      );
-    }
-    if (mesh.uvs.length === mesh.positions.length) {
-      geom.setAttribute(
-        'uv',
-        new THREE.Float32BufferAttribute(new Float32Array(mesh.uvs.flat()), 2),
-      );
-    }
-    geom.setIndex(new THREE.Uint16BufferAttribute(new Uint16Array(mesh.indices), 1));
-
-    const map = textureByPath.get(mesh.texture_map) ?? null;
-    const hasAlpha = !!(map && map._hasAlpha);
-    const mat = new THREE.MeshStandardMaterial({
-      map,
-      side: THREE.DoubleSide,
-      color: map ? 0xffffff : 0x888888,
-      transparent: hasAlpha,
-      alphaTest: hasAlpha ? 0.1 : 0,
-    });
-
-    const m = new THREE.Mesh(geom, mat);
-    m.name = mesh.name;
-    root.add(m);
-
-    stats.meshes++;
-    stats.verts += mesh.positions.length;
-    stats.tris += mesh.indices.length / 3;
-  }
-  stats.textures = [...textureByPath.values()].filter(Boolean).length;
+  const stats: SkinStats = {
+    ...meshStats,
+    textures: [...textureByPath.values()].filter(Boolean).length,
+  };
 
   mountScene(container, root, stats, bmdData, '.bmd');
 }

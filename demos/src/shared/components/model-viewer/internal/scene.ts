@@ -1,6 +1,7 @@
 import { detectEncoding, decodeText } from '@shared/util/encoding';
 import { hexDumpRows } from '@shared/util/hex';
 import styles from '../ModelViewer.module.css';
+import { fitCameraToObject } from './camera-fit';
 import { getThree } from './three';
 import { getViewer } from './viewer';
 import { type AnimEvent, type EventCluster, EVENT_GFX, EVENT_SOUND, clusterEvents } from './event-map';
@@ -122,18 +123,14 @@ export function mountScene(
   scene.add(dirLight);
   scene.add(group);
 
-  const box = new THREE.Box3().setFromObject(group);
-  const center = box.getCenter(new THREE.Vector3());
-  const size = box.getSize(new THREE.Vector3()).length();
-  const defaultCamOffset = new THREE.Vector3(size * 0.6, size * 0.5, size * 1.2);
-
   v._disposeScene();
   v.scene = scene;
 
   const w = container.clientWidth || 400;
   const h = container.clientHeight || 400;
-  v.camera = new THREE.PerspectiveCamera(40, w / h, size * 0.001, size * 20);
-  v.camera.position.copy(center).add(defaultCamOffset);
+  const { camera, center, size } = fitCameraToObject(THREE, group, w, h);
+  v.camera = camera;
+  const defaultCamOffset = new THREE.Vector3(size * 0.6, size * 0.5, size * 1.2);
 
   if (v.controls) v.controls.dispose();
   const controls = new OrbitControls(v.camera, v.renderer.domElement);
