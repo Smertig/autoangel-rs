@@ -23,6 +23,13 @@ export const LAST_SEEN_KEY = 'demos:changelogLastSeen';
  */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    id: '2026-04-29-pck-bmd-hover-preview',
+    date: '2026-04-29',
+    scope: 'pck',
+    title: 'BMD models in hover preview',
+    body: 'Building renders with textures applied.',
+  },
+  {
     id: '2026-04-28-pck-hover-preview',
     date: '2026-04-28',
     scope: 'pck',
