@@ -6,7 +6,7 @@ import {
   allActiveFinished,
 } from '../gfx-runtime/registry';
 import { ENGINE_PATH_PREFIXES, type FindFile } from './util/resolveEnginePath';
-import { loadParticleTexture } from './previews/particle/texture';
+import { loadParticleTexture } from '../gfx-runtime/texture';
 import type { GfxElement } from './types';
 import type { GfxElementRuntime, PreloadedTexture } from '../gfx-runtime/types';
 import type { HoverCanvasRenderArgs } from '../hover-preview/types';

@@ -1,5 +1,5 @@
 import { resolveEnginePath, ENGINE_PATH_PREFIXES, type FindFile } from '../gfx/util/resolveEnginePath';
-import { loadParticleTexture, resolveTexturePath } from '../gfx/previews/particle/texture';
+import { loadParticleTexture, resolveTexturePath } from './texture';
 import { createGfxLoader } from './loader';
 import type { PreloadedTexture } from './types';
 import type { AutoangelModule } from '../../../types/autoangel';

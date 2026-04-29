@@ -1,6 +1,6 @@
-import { resolveEnginePath, ENGINE_PATH_PREFIXES, type FindFile } from '../../util/resolveEnginePath';
+import { resolveEnginePath, ENGINE_PATH_PREFIXES, type FindFile } from '../gfx/util/resolveEnginePath';
 import { loadThreeTexture } from '@shared/components/model-viewer/internal/texture';
-import type { AutoangelModule } from '../../../../../types/autoangel';
+import type { AutoangelModule } from '../../../types/autoangel';
 import type { PreloadedTexture } from '@shared/components/gfx-runtime/types';
 
 /**

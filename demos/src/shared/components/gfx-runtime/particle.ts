@@ -2,7 +2,7 @@ import { d3dBlendToThreeFactor } from '../gfx/util/blendModes';
 import { buildSimConfig } from '../gfx/previews/particle/config';
 import { createParticleMesh } from '../gfx/previews/particle/mesh';
 import { createSimState, tickSim } from '../gfx/previews/particle/simulation';
-import { resolvePreloadedTexture } from '../gfx/previews/particle/texture';
+import { resolvePreloadedTexture } from './texture';
 import { createAnimatedGroupPair } from './animated-group';
 import { createNoopRuntime } from './noop';
 import { type DurationContext, type DurationElement, keyPointSetDurationSec } from './duration';
