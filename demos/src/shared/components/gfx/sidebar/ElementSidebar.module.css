@@ -1,0 +1,46 @@
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  border-right: 1px solid var(--gfx-border);
+  font: 400 12px/1.3 var(--gfx-font-body);
+}
+.row {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 8px 4px 0; cursor: pointer; user-select: none;
+  border-left: 2px solid transparent;
+}
+.row:hover { background: var(--gfx-bg-elev); }
+.row.selected { background: var(--gfx-bg-elev); border-left-color: var(--gfx-acc-info); }
+.row.soloed { background: color-mix(in oklab, var(--gfx-acc-info) 14%, transparent); }
+.row[data-supported='false'] { opacity: 0.55; }
+.chevron, .chevronSpacer { width: 14px; height: 14px; flex-shrink: 0; }
+.chevron {
+  background: transparent; border: 0; color: var(--gfx-text-muted);
+  cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center;
+  transition: transform 120ms ease-out;
+}
+.chevron[aria-expanded='true'] { transform: rotate(90deg); }
+.checkbox { width: 13px; height: 13px; flex-shrink: 0; cursor: pointer; }
+.kindBadge {
+  font: 500 9px/1 var(--gfx-font-data); flex-shrink: 0; padding: 1px 4px;
+  display: inline-flex; align-items: center;
+}
+.name {
+  flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  color: var(--gfx-text);
+}
+.name em { color: var(--gfx-text-muted); font-style: italic; }
+.soloBtn {
+  visibility: hidden;
+  width: 18px; height: 18px;
+  font: 500 9px/1 var(--gfx-font-data);
+  background: transparent; border: 1px solid var(--gfx-border);
+  color: var(--gfx-text-muted); cursor: pointer;
+  padding: 0; display: inline-flex; align-items: center; justify-content: center;
+}
+.row:hover .soloBtn { visibility: visible; }
+.row.soloed .soloBtn {
+  visibility: visible;
+  color: var(--gfx-acc-info); border-color: var(--gfx-acc-info);
+}
