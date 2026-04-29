@@ -1,9 +1,9 @@
 import type { Object3D, Texture } from 'three';
-import type { Sample } from '../../util/keypointTrack';
-import { applyKeypointTransform } from '../../util/keypointApply';
+import type { Sample } from '../../gfx/util/keypointTrack';
+import { applyKeypointTransform } from '../../gfx/util/keypointApply';
 import { decalBlendingProps } from './blend';
-import { sampleAtlasFrame } from '../../util/atlas';
-import type { ElementBody, GfxElement } from '../../types';
+import { sampleAtlasFrame } from '../../gfx/util/atlas';
+import type { ElementBody, GfxElement } from '../../gfx/types';
 
 type DecalBody = Extract<ElementBody, { kind: 'decal' }>;
 

@@ -1,5 +1,5 @@
 import type * as ThreeModule from 'three';
-import { blendPresetName, d3dBlendToThreeFactor } from '../../util/blendModes';
+import { blendPresetName, d3dBlendToThreeFactor } from '../../gfx/util/blendModes';
 
 type BlendingProps = Pick<
   ThreeModule.MeshBasicMaterialParameters,

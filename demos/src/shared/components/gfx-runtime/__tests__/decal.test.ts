@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
-import { spawnDecalRuntime } from '../decal';
+import { spawnDecalRuntime } from '../decal/runtime';
 import { minimalSpawnOpts } from './_fixtures';
 
 function decalBody(overrides: Partial<Record<string, unknown>> = {}) {

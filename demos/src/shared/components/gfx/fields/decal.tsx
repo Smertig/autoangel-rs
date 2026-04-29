@@ -3,7 +3,7 @@ import { BoolDot, MonoNum, PathOrText } from '../formatters';
 import { buildTrack } from '../util/keypointTrack';
 import { formatBlendMode } from '../util/blendModes';
 import type { ElementBody, GfxElement, ViewerCtx } from '../types';
-import styles from '../previews/decal/DecalPreview.module.css';
+import styles from './decal.module.css';
 
 type DecalBody = Extract<ElementBody, { kind: 'decal' }>;
 

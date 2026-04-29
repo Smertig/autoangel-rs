@@ -1,10 +1,10 @@
-import { createAnimatedGroupPair } from './animated-group';
-import { createNoopRuntime } from './noop';
-import { createDecalMesh } from '../gfx/previews/decal/mesh';
-import { resolvePreloadedTexture } from './texture';
-import { type DurationContext, type DurationElement, keyPointSetDurationSec } from './duration';
-import type { ElementBody } from '../gfx/types';
-import type { GfxElementRuntime, SpawnOpts } from './types';
+import { createAnimatedGroupPair } from '../animated-group';
+import { createNoopRuntime } from '../noop';
+import { createDecalMesh } from './mesh';
+import { resolvePreloadedTexture } from '../texture';
+import { type DurationContext, type DurationElement, keyPointSetDurationSec } from '../duration';
+import type { ElementBody } from '../../gfx/types';
+import type { GfxElementRuntime, SpawnOpts } from '../types';
 
 type DecalBody = Extract<ElementBody, { kind: 'decal' }>;
 

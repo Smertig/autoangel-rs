@@ -1,6 +1,6 @@
 import { spawnParticleRuntime, computeParticleDurationSec } from './particle/runtime';
 import { spawnContainerRuntime, computeContainerDurationSec } from './container';
-import { spawnDecalRuntime, computeDecalDurationSec } from './decal';
+import { spawnDecalRuntime, computeDecalDurationSec } from './decal/runtime';
 import { createNoopRuntime } from './noop';
 import type { DurationContext, DurationElement, GfxLike } from './duration';
 import type { ElementBody, ElementBodyKind } from '../gfx/types';
