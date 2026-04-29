@@ -97,6 +97,15 @@ export interface MountSceneApi {
   setTotalDuration: (t: number) => void;
 }
 
+/** Standard ambient + directional lighting used by both the full viewer
+ *  and the hover preview. Caller owns the scene background separately. */
+export function addStandardLights(THREE: typeof import('three'), scene: import('three').Scene): void {
+  scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  dirLight.position.set(5, 10, 7);
+  scene.add(dirLight);
+}
+
 export function mountScene(
   container: HTMLElement,
   group: any,
@@ -117,10 +126,7 @@ export function mountScene(
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x2a2a2a);
-  scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-  const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-  dirLight.position.set(5, 10, 7);
-  scene.add(dirLight);
+  addStandardLights(THREE, scene);
   scene.add(group);
 
   v._disposeScene();

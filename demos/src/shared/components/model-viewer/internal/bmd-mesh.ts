@@ -2,6 +2,23 @@ import type * as ThreeModule from 'three';
 import type { BmdModel } from 'autoangel';
 import './texture'; // for `_hasAlpha` augmentation on `THREE.Texture`
 
+/** Build the empty BMD root group with the model's basis (dir/up/right)
+ *  + position + scale applied. Caller adds meshes via `buildBmdMeshes`. */
+export function buildBmdRoot(THREE: typeof ThreeModule, bmd: BmdModel): ThreeModule.Group {
+  const root = new THREE.Group();
+  root.name = 'bmd-root';
+
+  const dir = new THREE.Vector3(...bmd.dir).normalize();
+  const up = new THREE.Vector3(...bmd.up).normalize();
+  const right = new THREE.Vector3().crossVectors(up, dir).normalize();
+  const basis = new THREE.Matrix4().makeBasis(right, up, dir);
+  basis.setPosition(new THREE.Vector3(...bmd.pos));
+  root.applyMatrix4(basis);
+  root.scale.set(...bmd.scale);
+
+  return root;
+}
+
 /** Stats accumulated while building meshes. The full viewer's HUD also
  *  surfaces texture count separately — that's added by the caller. */
 export interface BmdBuildStats {

@@ -3,8 +3,9 @@ import type { AutoangelModule } from '../../../../types/autoangel';
 import type { GetData } from '@shared/formats/types';
 import { ensureThree, getThree } from './three';
 import { loadThreeTexture } from './texture';
-import { buildBmdMeshes } from './bmd-mesh';
+import { buildBmdMeshes, buildBmdRoot } from './bmd-mesh';
 import { fitCameraToObject } from './camera-fit';
+import { addStandardLights } from './scene';
 
 interface RenderBmdHoverArgs {
   canvas: HTMLCanvasElement;
@@ -31,15 +32,7 @@ export async function renderBmdHoverPreview(
   const { THREE } = getThree();
 
   const bmd = wasm.parseBmd(data);
-
-  const root = new THREE.Group();
-  const dir = new THREE.Vector3(...bmd.dir).normalize();
-  const up = new THREE.Vector3(...bmd.up).normalize();
-  const right = new THREE.Vector3().crossVectors(up, dir).normalize();
-  const basis = new THREE.Matrix4().makeBasis(right, up, dir);
-  basis.setPosition(new THREE.Vector3(...bmd.pos));
-  root.applyMatrix4(basis);
-  root.scale.set(...bmd.scale);
+  const root = buildBmdRoot(THREE, bmd);
 
   const uniqueTexPaths = Array.from(
     new Set(bmd.meshes.map((m) => m.texture_map).filter((p): p is string => !!p)),
@@ -76,10 +69,7 @@ export async function renderBmdHoverPreview(
     for (const m of meshes) root.add(m);
 
     const scene = new THREE.Scene();
-    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    dirLight.position.set(5, 10, 7);
-    scene.add(dirLight);
+    addStandardLights(THREE, scene);
     scene.add(root);
 
     const w = canvas.clientWidth || 280;
