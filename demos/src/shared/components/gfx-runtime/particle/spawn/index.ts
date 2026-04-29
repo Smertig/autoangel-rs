@@ -1,4 +1,4 @@
-import { argbChannels } from '../../../util/argb';
+import { argbChannels } from '../../../gfx/util/argb';
 import { lerp, type ParticleInstance, type SimConfig, type SimState } from '../simulation';
 import { spawnCylinder } from './cylinder';
 import { spawnEllipsoid } from './ellipsoid';

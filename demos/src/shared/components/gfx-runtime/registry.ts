@@ -1,4 +1,4 @@
-import { spawnParticleRuntime, computeParticleDurationSec } from './particle';
+import { spawnParticleRuntime, computeParticleDurationSec } from './particle/runtime';
 import { spawnContainerRuntime, computeContainerDurationSec } from './container';
 import { spawnDecalRuntime, computeDecalDurationSec } from './decal';
 import { createNoopRuntime } from './noop';

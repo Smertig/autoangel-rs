@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildSimConfig } from '../previews/particle/config';
+import { buildSimConfig } from '../config';
 
 function pointBody() {
   return {

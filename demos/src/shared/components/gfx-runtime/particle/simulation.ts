@@ -2,9 +2,9 @@
 // three.js-specific writeback into InstancedMesh happens in the hook.
 
 import { spawnParticle } from './spawn';
-import { applyController, type CtrlState } from '../../util/controllers';
-import type { KpController } from '../../util/gfxTypes';
-import { argbChannels } from '../../util/argb';
+import { applyController, type CtrlState } from '../../gfx/util/controllers';
+import type { KpController } from '../../gfx/util/gfxTypes';
+import { argbChannels } from '../../gfx/util/argb';
 
 export type ShapeCfg =
   | { kind: 'point' }

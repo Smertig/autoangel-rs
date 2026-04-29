@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import type { SimConfig, SimState } from '../previews/particle/simulation';
-import { spawnParticle } from '../previews/particle/spawn';
-import { spawnEllipsoid } from '../previews/particle/spawn/ellipsoid';
+import type { SimConfig, SimState } from '../simulation';
+import { spawnParticle } from '../spawn';
+import { spawnEllipsoid } from '../spawn/ellipsoid';
 
 function makeCfg(overrides: Partial<Extract<SimConfig['shape'], { kind: 'ellipsoid' }>> = {}): SimConfig {
   return {

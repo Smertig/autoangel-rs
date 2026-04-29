@@ -1,13 +1,13 @@
-import { d3dBlendToThreeFactor } from '../gfx/util/blendModes';
-import { buildSimConfig } from '../gfx/previews/particle/config';
-import { createParticleMesh } from '../gfx/previews/particle/mesh';
-import { createSimState, tickSim } from '../gfx/previews/particle/simulation';
-import { resolvePreloadedTexture } from './texture';
-import { createAnimatedGroupPair } from './animated-group';
-import { createNoopRuntime } from './noop';
-import { type DurationContext, type DurationElement, keyPointSetDurationSec } from './duration';
-import type { ElementBody } from '../gfx/types';
-import type { GfxElementRuntime, SpawnOpts } from './types';
+import { d3dBlendToThreeFactor } from '../../gfx/util/blendModes';
+import { buildSimConfig } from './config';
+import { createParticleMesh } from './mesh';
+import { createSimState, tickSim } from './simulation';
+import { resolvePreloadedTexture } from '../texture';
+import { createAnimatedGroupPair } from '../animated-group';
+import { createNoopRuntime } from '../noop';
+import { type DurationContext, type DurationElement, keyPointSetDurationSec } from '../duration';
+import type { ElementBody } from '../../gfx/types';
+import type { GfxElementRuntime, SpawnOpts } from '../types';
 
 type ParticleBody = Extract<ElementBody, { kind: 'particle' }>;
 

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import * as THREE from 'three';
-import type { SimConfig, SimState, ParticleInstance } from '../previews/particle/simulation';
-import { createParticleMesh } from '../previews/particle/mesh';
+import type { SimConfig, SimState, ParticleInstance } from '../simulation';
+import { createParticleMesh } from '../mesh';
 
 function minimalCfg(quota: number): SimConfig {
   return {

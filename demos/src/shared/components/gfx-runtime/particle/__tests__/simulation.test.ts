@@ -4,8 +4,8 @@ import {
   hasMotionAffector,
   tickSim,
   type SimConfig,
-} from '../previews/particle/simulation';
-import type { KpController } from '../util/gfxTypes';
+} from '../simulation';
+import type { KpController } from '../../../gfx/util/gfxTypes';
 
 function makeCfg(overrides: Partial<SimConfig> = {}): SimConfig {
   const affectors = overrides.affectors ?? [];

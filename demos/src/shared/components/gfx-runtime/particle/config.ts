@@ -1,5 +1,5 @@
-import type { ElementBody } from '../../types';
-import type { KpController } from '../../util/gfxTypes';
+import type { ElementBody } from '../../gfx/types';
+import type { KpController } from '../../gfx/util/gfxTypes';
 import { hasMotionAffector, resolvePoolSize, type ShapeCfg, type SimConfig } from './simulation';
 
 type ParticleBody = Extract<ElementBody, { kind: 'particle' }>;

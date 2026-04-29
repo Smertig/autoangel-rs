@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolvePoolSize } from '../previews/particle/simulation';
+import { resolvePoolSize } from '../simulation';
 
 // Mirrors A3DParticleSystemEx::Init + SetPoolSize:
 //   pool = int(ttl * rate) + 1
