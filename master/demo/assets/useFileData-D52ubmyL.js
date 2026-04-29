@@ -1,0 +1,1 @@
+import{r as u}from"./useDividerDrag-rl8W3Yrk.js";function i(a,r){const[n,t]=u.useState({status:"loading"});return u.useEffect(()=>{let e=!1;return t({status:"loading"}),r(a).then(s=>{e||t({status:"loaded",data:s})},s=>{e||t({status:"error",message:String(s)})}),()=>{e=!0}},[a,r]),n}export{i as u};
