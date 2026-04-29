@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { findFormat } from '../registry';
+import { EMPTY_PACKAGE_VIEW } from '@shared/package';
 
 describe('findFormat', () => {
   it('returns fallback for unknown extensions', () => {
@@ -39,10 +40,8 @@ describe('downloadActions', () => {
   const mockCtx = (ext: string) => ({
     path: `models\\test${ext}`,
     ext,
-    getData: vi.fn(),
+    pkg: EMPTY_PACKAGE_VIEW,
     wasm: {} as any,
-    listFiles: () => [],
-    findFile: () => null,
   });
 
   it('ecm format returns download actions for .ecm', async () => {

@@ -10,7 +10,7 @@ import {
   computeGfxDurationSec,
   elementSkipReason,
 } from '../gfx-runtime/registry';
-import { resolveEnginePath, ENGINE_PATH_PREFIXES } from './util/resolveEnginePath';
+import { ENGINE_PATH_PREFIXES } from './util/resolveEnginePath';
 import type { ElementBodyKind, GfxElement, ViewerCtx } from './types';
 import styles from './GfxViewer.module.css';
 
@@ -42,12 +42,12 @@ function GfxViewerInner({ parsed, context }: { parsed: any; context: ViewerCtx }
     if (!ready) return [];
     return buildTree(parsed, {
       resolve: (p: string) => {
-        const r = resolveEnginePath(p, ENGINE_PATH_PREFIXES.gfx, context.findFile);
+        const r = context.pkg.resolveEngine(p, ENGINE_PATH_PREFIXES.gfx);
         return r ? ((preloadedGfx.get(r) as { elements: GfxElement[] } | undefined) ?? null) : null;
       },
       visiting: new Set(),
     });
-  }, [parsed, preloadedGfx, ready, context.findFile]);
+  }, [parsed, preloadedGfx, ready, context.pkg]);
 
   const elementByKey = useMemo(() => flattenTree(tree), [tree]);
 
@@ -92,14 +92,14 @@ function GfxViewerInner({ parsed, context }: { parsed: any; context: ViewerCtx }
     if (!ready) return 0;
     const d = computeGfxDurationSec(parsed, {
       resolve: (p: string) => {
-        const r = resolveEnginePath(p, ENGINE_PATH_PREFIXES.gfx, context.findFile);
+        const r = context.pkg.resolveEngine(p, ENGINE_PATH_PREFIXES.gfx);
         return r ? ((preloadedGfx.get(r) as any) ?? null) : null;
       },
       visiting: new Set(),
       isRenderable: (k: ElementBodyKind) => RENDERABLE_KINDS.has(k),
     });
     return d > 0 ? d : Infinity;
-  }, [parsed, preloadedGfx, ready, context.findFile]);
+  }, [parsed, preloadedGfx, ready, context.pkg]);
 
   const isSupported = useCallback((kind: ElementBodyKind) => RENDERABLE_KINDS.has(kind), []);
 
@@ -170,7 +170,7 @@ function GfxViewerInner({ parsed, context }: { parsed: any; context: ViewerCtx }
                 solo={solo}
                 preloadedGfx={preloadedGfx}
                 preloadedTextures={preloadedTextures}
-                findFile={context.findFile}
+                pkg={context.pkg}
                 shouldSpawn={shouldSpawn}
                 onLoop={onLoop}
               />

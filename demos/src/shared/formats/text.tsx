@@ -5,9 +5,9 @@ import { TextDiff } from '@pck-diff/components/TextDiff';
 import { useFileData } from '@shared/hooks/useFileData';
 import type { FormatDescriptor, ViewerContext, DifferContext } from './types';
 
-function TextViewer({ path, ext, getData }: ViewerContext) {
+function TextViewer({ path, ext, pkg }: ViewerContext) {
   const [encoding, setEncoding] = useState('auto');
-  const state = useFileData(path, getData);
+  const state = useFileData(path, pkg);
 
   if (state.status === 'loading') return <div>Loading...</div>;
   if (state.status === 'error') return <div>Error: {state.message}</div>;

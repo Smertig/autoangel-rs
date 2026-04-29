@@ -1,6 +1,6 @@
 import { spawnElementRuntime, computeElementDurationSec } from './registry';
 import { createAnimatedGroupPair } from './animated-group';
-import { resolveEnginePath, ENGINE_PATH_PREFIXES } from '../gfx/util/resolveEnginePath';
+import { ENGINE_PATH_PREFIXES } from '../gfx/util/resolveEnginePath';
 import { type DurationContext, type DurationElement, keyPointSetDurationSec } from './duration';
 import type { ElementBody } from '../gfx/types';
 import type { GfxElementRuntime, SpawnOpts } from './types';
@@ -45,7 +45,7 @@ export function spawnContainerRuntime(
   let elapsedMs = 0;
   let elapsedSec = 0;
 
-  const resolved = resolveEnginePath(body.gfx_path, ENGINE_PATH_PREFIXES.gfx, opts.findFile);
+  const resolved = opts.pkg.resolveEngine(body.gfx_path, ENGINE_PATH_PREFIXES.gfx);
   const preloaded = resolved ? opts.preloadedGfx?.get(resolved) : null;
   const cycle = resolved != null && (opts.visiting?.has(resolved) ?? false);
   if (cycle) {

@@ -47,6 +47,7 @@ vi.mock('../../gfx-runtime/registry', () => ({
 
 import { render, screen, cleanup, waitFor } from '@testing-library/react';
 import { GfxViewer } from '../GfxViewer';
+import { EMPTY_PACKAGE_VIEW } from '@shared/package';
 
 afterEach(cleanup);
 
@@ -63,8 +64,8 @@ describe('GfxViewer integration', () => {
     } as any;
     const ctx: any = {
       path: 'a.gfx', ext: '.gfx',
-      getData: async () => new Uint8Array(),
-      listFiles: () => [], findFile: () => null, wasm: fakeWasm,
+      pkg: EMPTY_PACKAGE_VIEW,
+      wasm: fakeWasm,
     };
     render(<GfxViewer data={new Uint8Array()} context={ctx} />);
     expect(screen.getByText(/GFX v103/)).toBeTruthy();
@@ -79,8 +80,8 @@ describe('GfxViewer integration', () => {
     const fakeWasm = { parseGfx: () => { throw new Error('bad bytes'); } } as any;
     const ctx: any = {
       path: 'a.gfx', ext: '.gfx',
-      getData: async () => new Uint8Array(),
-      listFiles: () => [], findFile: () => null, wasm: fakeWasm,
+      pkg: EMPTY_PACKAGE_VIEW,
+      wasm: fakeWasm,
     };
     render(<GfxViewer data={new Uint8Array()} context={ctx} />);
     expect(screen.getByText(/Parse error: bad bytes/)).toBeTruthy();

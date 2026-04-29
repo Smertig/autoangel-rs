@@ -5,6 +5,7 @@ import { initWasm } from '../wasm';
 import type { AutoangelModule } from '../types/autoangel';
 import { classifyMultiPackageDrop, getExtension, type PackageDrop } from '@shared/util/files';
 import { findFormat } from '@shared/formats/registry';
+import { createPackageView, type PackageView } from '@shared/package';
 import type { StatePorts } from '@shared/formats/types';
 import type { PickedItem } from '@shared/hooks/useFileDrop';
 import { NavBar } from '@shared/components/NavBar';
@@ -125,36 +126,38 @@ export function App() {
     clearHoverCache();
   }, [selectedPkgId]);
 
-  const getFileData = useCallback(
-    (path: string): Promise<Uint8Array> => {
-      if (selectedPkgId === null) return Promise.reject(new PackageRemovedError());
-      const bucket = pathIndex.get(normalizePathKey(path));
-      if (!bucket) return Promise.reject(new PackageRemovedError());
+  // Stable across renders: every callback reads through refs, so switching
+  // the selected slot doesn't churn the `pkg` reference. Without this,
+  // useFileData / useGfxPreload / FilePreview's download-actions effect all
+  // re-fire on every selection because they depend on `pkg`.
+  const pathIndexRef = useRef(pathIndex);
+  pathIndexRef.current = pathIndex;
+  const selectedPkgIdRef = useRef(selectedPkgId);
+  selectedPkgIdRef.current = selectedPkgId;
+  const getFileRef = useRef(getFile);
+  getFileRef.current = getFile;
+  const pkg = useMemo<PackageView>(() => createPackageView({
+    getData: async (canonicalPath) => {
+      const sel = selectedPkgIdRef.current;
+      if (sel === null) throw new PackageRemovedError();
+      // `canonicalPath` came from `resolve`, so the bucket lookup must hit.
+      const bucket = pathIndexRef.current.get(normalizePathKey(canonicalPath))!;
       // Selected slot wins on cross-package collision (rare).
-      const hit = bucket.find((e) => e.pkgId === selectedPkgId) ?? bucket[0];
-      return getFile(hit.pkgId, hit.orig);
+      const hit = bucket.find((e) => e.pkgId === sel) ?? bucket[0];
+      return getFileRef.current(hit.pkgId, hit.orig);
     },
-    [selectedPkgId, pathIndex, getFile],
-  );
-
-  const findFile = useCallback(
-    (path: string): string | null => pathIndex.get(normalizePathKey(path))?.[0].orig ?? null,
-    [pathIndex],
-  );
-
-  const listFiles = useCallback(
-    (prefix: string): string[] => {
+    resolve: (path) => pathIndexRef.current.get(normalizePathKey(path))?.[0].orig ?? null,
+    list: (prefix) => {
       const key = normalizePathKey(prefix);
       const out: string[] = [];
-      for (const [k, bucket] of pathIndex) {
+      for (const [k, bucket] of pathIndexRef.current) {
         if (k.startsWith(key)) {
           for (const e of bucket) out.push(e.orig);
         }
       }
       return out;
     },
-    [pathIndex],
-  );
+  }), []);
 
   // Handle file drop / picker: classify and load. Drops whose stem matches an
   // already-loaded slot are routed to `replaceSlot` (preserves color). The
@@ -629,10 +632,8 @@ export function App() {
                     <Suspense fallback={<div className={styles.placeholder}>Loading preview&hellip;</div>}>
                       <FilePreview
                         path={selectedFile.path}
-                        getData={getFileData}
+                        pkg={pkg}
                         wasm={wasmRef.current}
-                        listFiles={listFiles}
-                        findFile={findFile}
                         onNavigateToFile={handleNavigateToFile}
                         state={viewerStatePorts}
                       />
@@ -654,7 +655,7 @@ export function App() {
                     incoming={incomingRefs}
                     onNavigate={handleNavigateToFile}
                     selectedPath={selectedFile?.path ?? null}
-                    getData={getFileData}
+                    pkg={pkg}
                     wasm={wasmRef.current ?? undefined}
                   />
                 }

@@ -5,7 +5,6 @@ import { resolvePath, collectSkinPaths, tryLoadSki, tryFallbackSkiPath } from '@
 import { loadSkinFile } from './mesh';
 import { fitCameraToObject } from './camera-fit';
 import { addStandardLights } from './scene';
-import { type GetFile } from './paths';
 
 /**
  * One-shot static render of an ECM into a fixed-size canvas. Loads the
@@ -16,14 +15,10 @@ import { type GetFile } from './paths';
 export async function renderEcmHoverPreview(
   args: HoverCanvasRenderArgs,
 ): Promise<() => void> {
-  const { canvas, path, data, getData, wasm, cancelled } = args;
+  const { canvas, path, data, pkg, wasm, cancelled } = args;
 
   await ensureThree();
   const { THREE } = getThree();
-
-  const getFile: GetFile = async (p) => {
-    try { return await getData(p); } catch { return null; }
-  };
 
   // Each `using` block is scoped tightly so the wasm-owned ECM/SMD object
   // is released before the next async hop — keeps wasm memory bounded if
@@ -37,7 +32,7 @@ export async function renderEcmHoverPreview(
   }
   const smdPath = resolvePath(smdRelPath, path);
 
-  const smdData = await getFile(smdPath);
+  const smdData = await pkg.read(smdPath);
   if (!smdData) throw new Error(`SMD not found: ${smdPath}`);
   if (cancelled()) return () => {};
 
@@ -50,7 +45,7 @@ export async function renderEcmHoverPreview(
 
   const allSkinPaths = collectSkinPaths(smdPath, smdSkinPaths, path, additionalSkinPaths);
   if (allSkinPaths.length === 0) {
-    const fallback = await tryFallbackSkiPath(smdPath, getFile);
+    const fallback = await tryFallbackSkiPath(smdPath, pkg);
     if (!fallback) throw new Error('No skin files referenced by SMD');
     allSkinPaths.push(fallback);
   }
@@ -80,9 +75,9 @@ export async function renderEcmHoverPreview(
     // + decode latencies; characters with multiple `additionalSkins` were
     // visibly slow.
     const perSkin = await Promise.all(allSkinPaths.map(async (skiPath) => {
-      const ski = await tryLoadSki(skiPath, getFile);
+      const ski = await tryLoadSki(skiPath, pkg);
       if (!ski) return [] as ThreeModule.Mesh[];
-      const { meshes } = await loadSkinFile(wasm, getFile, ski.archivePath, ski.data);
+      const { meshes } = await loadSkinFile(wasm, pkg, ski.archivePath, ski.data);
       return meshes as ThreeModule.Mesh[];
     }));
 

@@ -1,6 +1,5 @@
 import {
   Suspense,
-  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -11,7 +10,7 @@ import { bytesEqual } from '@shared/util/bytes';
 import type { AutoangelModule } from '@shared/../types/autoangel';
 import { DiffStatus, DiffStatusValue } from '../types';
 import { findFormat, lazyFormatComponent } from '@shared/formats/registry';
-import { noListFiles, noFindFile } from '@shared/formats/helpers';
+import { EMPTY_PACKAGE_VIEW, singleFileView } from '@shared/package';
 import styles from '../App.module.css';
 
 interface DiffPreviewProps {
@@ -51,10 +50,13 @@ export function DiffPreview({
 }: DiffPreviewProps) {
   const [previewState, setPreviewState] = useState<PreviewState>({ kind: 'idle' });
 
-  // Must be before early returns to satisfy rules of hooks.
-  // For 'single' state, wraps pre-loaded data as a getData callback for format.Viewer.
+  // Must be before early returns to satisfy rules of hooks. format.Viewer
+  // wants a PackageView; in diff view we only have the bytes for `path`.
   const singleData = previewState.kind === 'single' ? previewState.data : null;
-  const singleGetData = useCallback(async (_p: string) => singleData!, [singleData]);
+  const singlePkg = useMemo(
+    () => (singleData && path ? singleFileView(path, singleData) : EMPTY_PACKAGE_VIEW),
+    [singleData, path],
+  );
 
   const ext = path ? getExtension(path) : '';
   const loader = findFormat(ext);
@@ -148,10 +150,8 @@ export function DiffPreview({
         <Viewer
           path={path}
           ext={ext}
-          getData={singleGetData}
+          pkg={singlePkg}
           wasm={wasm}
-          listFiles={noListFiles}
-          findFile={noFindFile}
         />
       </Suspense>
     </>

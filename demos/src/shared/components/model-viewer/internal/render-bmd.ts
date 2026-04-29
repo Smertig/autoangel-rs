@@ -1,7 +1,7 @@
 import type * as ThreeModule from 'three';
 import type { AutoangelModule } from '../../../../types/autoangel';
+import type { PackageView } from '@shared/package';
 import { ensureThree, getThree } from './three';
-import type { GetFile } from './paths';
 import { loadThreeTexture } from './texture';
 import { mountScene } from './scene';
 import type { SkinStats } from './mesh';
@@ -10,7 +10,7 @@ import { buildBmdMeshes, buildBmdRoot } from './bmd-mesh';
 export async function renderBmd(
   container: HTMLElement,
   wasm: AutoangelModule,
-  getFile: GetFile,
+  pkg: PackageView,
   bmdData: Uint8Array,
 ): Promise<void> {
   await ensureThree();
@@ -28,7 +28,7 @@ export async function renderBmd(
     await Promise.all(
       uniqueTexPaths.map(async (p): Promise<[string, ThreeModule.Texture | null]> => {
         try {
-          const data = await getFile(p);
+          const data = await pkg.read(p);
           if (!data) {
             console.warn('[bmd] Texture not found:', p);
             return [p, null];

@@ -1,15 +1,17 @@
-const fetchCache = new Map<string, Promise<Uint8Array>>();
+const fetchCache = new Map<string, Promise<Uint8Array | null>>();
 
 export function getCachedFetch(
   path: string,
-  fetcher: () => Promise<Uint8Array>,
-): Promise<Uint8Array> {
+  fetcher: () => Promise<Uint8Array | null>,
+): Promise<Uint8Array | null> {
   const cached = fetchCache.get(path);
   if (cached) return cached;
   const p = fetcher();
   fetchCache.set(path, p);
-  // Evict on rejection so a transient failure doesn't poison the cache.
-  p.catch(() => fetchCache.delete(path));
+  // Evict on miss or rejection so a later slot load can fill the gap and
+  // a transient failure doesn't poison the cache.
+  p.then((v) => { if (v == null) fetchCache.delete(path); },
+         () => fetchCache.delete(path));
   return p;
 }
 

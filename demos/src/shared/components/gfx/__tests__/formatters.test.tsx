@@ -2,6 +2,15 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MonoNum, Vec3, ColorSwatch, BoolDot, PathOrText, MonoJson } from '../formatters';
+import { createPackageView, type PackageView } from '@shared/package';
+
+function pkgWith(resolve: (p: string) => string | null): PackageView {
+  return createPackageView({
+    getData: async () => { throw new Error('test pkg: no live read'); },
+    resolve,
+    list: () => [],
+  });
+}
 
 describe('MonoNum', () => {
   it('renders integer without decimal', () => {
@@ -49,15 +58,15 @@ describe('BoolDot', () => {
 });
 
 describe('PathOrText', () => {
-  it('renders plain text when findFile returns null', () => {
-    render(<PathOrText value="foo.dds" findFile={() => null} />);
+  it('renders plain text when pkg.resolve returns null', () => {
+    render(<PathOrText value="foo.dds" pkg={pkgWith(() => null)} />);
     expect(screen.getByText('foo.dds')).toBeDefined();
   });
   it('renders plain text when resolvable but no onNavigate is provided', () => {
     // Decorative arrow was dropped — a resolvable path with no navigate
     // handler has nothing to offer the user, so it degrades to plain text.
     const { container } = render(
-      <PathOrText value="foo.dds" findFile={(p) => p === 'foo.dds' ? 'foo.dds' : null} />
+      <PathOrText value="foo.dds" pkg={pkgWith((p) => p === 'foo.dds' ? 'foo.dds' : null)} />
     );
     expect(container.textContent).toBe('foo.dds');
     expect(container.querySelector('button')).toBeNull();
@@ -67,7 +76,7 @@ describe('PathOrText', () => {
     const { container } = render(
       <PathOrText
         value="foo.dds"
-        findFile={(p) => p === 'foo.dds' ? 'Foo.DDS' : null}
+        pkg={pkgWith((p) => p === 'foo.dds' ? 'Foo.DDS' : null)}
         onNavigate={onNavigate}
       />
     );
@@ -79,7 +88,7 @@ describe('PathOrText', () => {
   it('stays non-clickable when onNavigate is provided but the path does not resolve', () => {
     const onNavigate = vi.fn();
     const { container } = render(
-      <PathOrText value="foo.dds" findFile={() => null} onNavigate={onNavigate} />
+      <PathOrText value="foo.dds" pkg={pkgWith(() => null)} onNavigate={onNavigate} />
     );
     expect(container.querySelector('button')).toBeNull();
   });
@@ -90,7 +99,7 @@ describe('PathOrText', () => {
       <div onClick={parentClick}>
         <PathOrText
           value="foo.dds"
-          findFile={() => 'foo.dds'}
+          pkg={pkgWith(() => 'foo.dds')}
           onNavigate={onNavigate}
         />
       </div>

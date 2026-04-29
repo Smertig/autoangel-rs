@@ -1,4 +1,5 @@
 import type { AutoangelModule } from '../../types/autoangel';
+import type { PackageView } from '../package';
 
 // ── Shared path helpers ──
 // These encode Angelica Engine archive path conventions used by both
@@ -58,13 +59,13 @@ export function collectSkinPaths(
  */
 export async function tryLoadSki(
   skiPath: string,
-  getFile: (path: string) => Promise<Uint8Array | null>,
+  pkg: PackageView,
 ): Promise<{ data: Uint8Array; archivePath: string } | null> {
-  let data = await getFile(skiPath);
+  let data = await pkg.read(skiPath);
   if (data) return { data, archivePath: skiPath };
   if (!skiPath.startsWith('models\\')) {
     const withPrefix = 'models\\' + skiPath;
-    data = await getFile(withPrefix);
+    data = await pkg.read(withPrefix);
     if (data) return { data, archivePath: withPrefix };
   }
   return null;
@@ -78,10 +79,10 @@ export async function tryLoadSki(
  */
 export async function tryFallbackSkiPath(
   smdPath: string,
-  getFile: (path: string) => Promise<Uint8Array | null>,
+  pkg: PackageView,
 ): Promise<string | null> {
   const guess = smdPath.replace(/\.smd$/i, '.ski');
-  const result = await tryLoadSki(guess, getFile);
+  const result = await tryLoadSki(guess, pkg);
   return result?.archivePath ?? null;
 }
 
@@ -92,27 +93,19 @@ export async function tryFallbackSkiPath(
 export function discoverStckPaths(
   smdPath: string,
   smdTcksDir: string | undefined,
-  listFiles: (prefix: string) => string[],
+  pkg: PackageView,
 ): string[] {
   const tcksName = smdTcksDir
     || ('tcks_' + smdPath.split('\\').pop()!.replace(/\.[^.]+$/i, ''));
   const smdDir = smdPath.substring(0, smdPath.lastIndexOf('\\'));
   const trackDir = smdDir + '\\' + tcksName;
-  return listFiles(trackDir).filter((p: string) => p.toLowerCase().endsWith('.stck'));
+  return pkg.list(trackDir).filter((p: string) => p.toLowerCase().endsWith('.stck'));
 }
 
 // ── Dependency collector ──
 
-async function tryGet(
-  getData: (path: string) => Promise<Uint8Array>,
-  path: string,
-): Promise<Uint8Array | null> {
-  try { return await getData(path); }
-  catch { return null; }
-}
-
 async function collectSkiTextures(
-  getFile: (path: string) => Promise<Uint8Array | null>,
+  pkg: PackageView,
   wasm: AutoangelModule,
   skiData: Uint8Array,
   skiArchivePath: string,
@@ -126,7 +119,7 @@ async function collectSkiTextures(
   for (const texName of textureNames) {
     for (const tp of textureCandidates(skiArchivePath, texName)) {
       if (files.has(tp)) break;
-      const texData = await getFile(tp);
+      const texData = await pkg.read(tp);
       if (texData) {
         files.set(tp, texData);
         break;
@@ -144,26 +137,24 @@ async function collectSkiTextures(
 export async function collectEcmDependencies(
   wasm: AutoangelModule,
   ecmPath: string,
-  getData: (path: string) => Promise<Uint8Array>,
-  listFiles: (prefix: string) => string[],
+  pkg: PackageView,
 ): Promise<Map<string, Uint8Array>> {
   const files = new Map<string, Uint8Array>();
   const visited = new Set<string>();
-  const getFile = (path: string) => tryGet(getData, path);
 
   async function collect(ecmPath: string): Promise<void> {
     const normalizedEcm = ecmPath.toLowerCase();
     if (visited.has(normalizedEcm)) return;
     visited.add(normalizedEcm);
 
-    const ecmData = await getFile(normalizedEcm);
+    const ecmData = await pkg.read(normalizedEcm);
     if (!ecmData) return;
     files.set(normalizedEcm, ecmData);
 
     using ecm = wasm.EcmModel.parse(ecmData);
 
     const smdPath = resolvePath(ecm.skinModelPath, normalizedEcm);
-    const smdData = await getFile(smdPath);
+    const smdData = await pkg.read(smdPath);
     let smdSkinPaths: string[] = [];
     let smdTcksDir: string | undefined;
 
@@ -176,7 +167,7 @@ export async function collectEcmDependencies(
       const bonRelPath: string = smd.skeletonPath;
       if (bonRelPath) {
         const bonPath = resolvePath(bonRelPath, smdPath);
-        const bonData = await getFile(bonPath);
+        const bonData = await pkg.read(bonPath);
         if (bonData) files.set(bonPath, bonData);
       }
     }
@@ -185,22 +176,22 @@ export async function collectEcmDependencies(
       smdPath, smdSkinPaths, normalizedEcm, ecm.additionalSkins || [],
     );
     if (allSkinPaths.length === 0) {
-      const fallback = await tryFallbackSkiPath(smdPath, getFile);
+      const fallback = await tryFallbackSkiPath(smdPath, pkg);
       if (fallback) allSkinPaths.push(fallback);
     }
 
     for (const skiPath of allSkinPaths) {
       if (files.has(skiPath)) continue;
-      const ski = await tryLoadSki(skiPath, getFile);
+      const ski = await tryLoadSki(skiPath, pkg);
       if (ski) {
-        await collectSkiTextures(getFile, wasm, ski.data, ski.archivePath, files);
+        await collectSkiTextures(pkg, wasm, ski.data, ski.archivePath, files);
       }
     }
 
     if (smdData) {
-      for (const stckPath of discoverStckPaths(smdPath, smdTcksDir, listFiles)) {
+      for (const stckPath of discoverStckPaths(smdPath, smdTcksDir, pkg)) {
         if (files.has(stckPath)) continue;
-        const stckData = await getFile(stckPath);
+        const stckData = await pkg.read(stckPath);
         if (stckData) files.set(stckPath, stckData);
       }
     }

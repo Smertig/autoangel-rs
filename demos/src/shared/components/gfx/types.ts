@@ -1,5 +1,5 @@
 import type { AutoangelModule } from '../../../types/autoangel';
-import type { FindFile } from './util/resolveEnginePath';
+import type { PackageView } from '@shared/package';
 
 type ParseGfxResult = ReturnType<AutoangelModule['parseGfx']>;
 export type GfxElement = ParseGfxResult['elements'][number];
@@ -9,9 +9,7 @@ export type ElementBodyKind = ElementBody['kind'];
 export interface ViewerCtx {
   path: string;
   ext: string;
-  getData: (path: string) => Promise<Uint8Array>;
-  listFiles: (prefix: string) => string[];
-  findFile: FindFile;
+  pkg: PackageView;
   wasm: AutoangelModule;
   /** Mirrors `ViewerContext.onNavigateToFile` — undefined when the host
    *  can't host navigation. */

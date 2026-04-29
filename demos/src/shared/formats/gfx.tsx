@@ -6,7 +6,7 @@ import { useFileData } from '@shared/hooks/useFileData';
 import type { FormatDescriptor, HoverContext, ViewerContext } from './types';
 
 function GfxFormatViewer(ctx: ViewerContext) {
-  const state = useFileData(ctx.path, ctx.getData);
+  const state = useFileData(ctx.path, ctx.pkg);
   if (state.status === 'loading') return <div>Loading...</div>;
   if (state.status === 'error') return <div>Error: {state.message}</div>;
   return <GfxViewer data={state.data} context={ctx} />;
@@ -15,7 +15,7 @@ function GfxFormatViewer(ctx: ViewerContext) {
 function GfxHoverPreview(ctx: HoverContext) {
   return (
     <HoverCanvasPreview
-      path={ctx.path} data={ctx.data} getData={ctx.getData} wasm={ctx.wasm}
+      path={ctx.path} data={ctx.data} pkg={ctx.pkg} wasm={ctx.wasm}
       render={renderGfxHoverPreview}
       label="GFX" width={300} height={296}
     />

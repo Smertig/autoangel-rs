@@ -55,7 +55,7 @@ export function buildParticleRows(
   }
   rows.push({
     label: 'tex_file',
-    value: <PathOrText value={element.tex_file} findFile={ctx.findFile} onNavigate={ctx.onNavigateToFile} />,
+    value: <PathOrText value={element.tex_file} pkg={ctx.pkg} onNavigate={ctx.onNavigateToFile} />,
   });
   rows.push({
     label: 'tex_grid',

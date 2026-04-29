@@ -3,6 +3,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from '@testing-library/react';
 import { imageFormat } from '../image';
 import type { HoverContext } from '../types';
+import { EMPTY_PACKAGE_VIEW } from '@shared/package';
 
 beforeAll(() => {
   // jsdom doesn't implement these; stub them for the native <img> path.
@@ -21,12 +22,13 @@ describe('imageFormat.HoverPreview', () => {
     expect(imageFormat.HoverPreview).toBeDefined();
   });
 
+  const fakePkg = EMPTY_PACKAGE_VIEW;
+
   it('renders a native <img> for .png', () => {
     const HP = imageFormat.HoverPreview!;
     const fakeWasm = {} as HoverContext['wasm'];
     const data = new Uint8Array([0x89, 0x50, 0x4e, 0x47]);
-    const getData = async () => new Uint8Array();
-    const { container } = render(<HP path="a.png" ext=".png" data={data} getData={getData} wasm={fakeWasm} />);
+    const { container } = render(<HP path="a.png" ext=".png" data={data} pkg={fakePkg} wasm={fakeWasm} />);
     expect(container.querySelector('img')).not.toBeNull();
   });
 
@@ -36,8 +38,7 @@ describe('imageFormat.HoverPreview', () => {
     const decodeTga = vi.fn();
     const fakeWasm = { decodeDds, decodeTga } as unknown as HoverContext['wasm'];
     const data = new Uint8Array(128);
-    const getData = async () => new Uint8Array();
-    const { container } = render(<HP path="a.dds" ext=".dds" data={data} getData={getData} wasm={fakeWasm} />);
+    const { container } = render(<HP path="a.dds" ext=".dds" data={data} pkg={fakePkg} wasm={fakeWasm} />);
     expect(container.querySelector('canvas')).not.toBeNull();
     expect(decodeDds).toHaveBeenCalled();
   });

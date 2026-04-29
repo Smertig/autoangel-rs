@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { HOVER_FIT_STYLE } from '@shared/formats/hover-style';
-import type { GetData } from '@shared/formats/types';
+import type { PackageView } from '@shared/package';
 import type { AutoangelModule } from '../../../types/autoangel';
 import type { HoverCanvasRenderer } from './types';
 
@@ -9,7 +9,7 @@ export type { HoverCanvasRenderArgs, HoverCanvasRenderer } from './types';
 interface HoverCanvasPreviewProps {
   path: string;
   data: Uint8Array;
-  getData: GetData;
+  pkg: PackageView;
   wasm: AutoangelModule;
   render: HoverCanvasRenderer;
   /** Inserted into the error message: "Failed to render <label>: …". */
@@ -22,7 +22,7 @@ interface HoverCanvasPreviewProps {
  *  Handles the mount/disposed-flag/cleanup-on-unmount race; renders the error
  *  fallback when the render helper rejects. */
 export function HoverCanvasPreview({
-  path, data, getData, wasm, render, label, width, height,
+  path, data, pkg, wasm, render, label, width, height,
 }: HoverCanvasPreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +36,7 @@ export function HoverCanvasPreview({
       if (!canvas) return;
       try {
         const dispose = await render({
-          canvas, path, data, getData, wasm,
+          canvas, path, data, pkg, wasm,
           cancelled: () => disposed,
         });
         if (disposed) {
@@ -55,7 +55,7 @@ export function HoverCanvasPreview({
       disposed = true;
       cleanup?.();
     };
-  }, [path, data, getData, wasm, render, label]);
+  }, [path, data, pkg, wasm, render, label]);
 
   if (error) {
     return <div style={{ color: '#c66', fontSize: 11, padding: 8 }}>{error}</div>;

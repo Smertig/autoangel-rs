@@ -18,7 +18,7 @@ import { addStandardLights } from './scene';
 export async function renderBmdHoverPreview(
   args: HoverCanvasRenderArgs,
 ): Promise<() => void> {
-  const { canvas, data, getData, wasm, cancelled } = args;
+  const { canvas, data, pkg, wasm, cancelled } = args;
 
   await ensureThree();
   const { THREE } = getThree();
@@ -33,7 +33,8 @@ export async function renderBmdHoverPreview(
     await Promise.all(
       uniqueTexPaths.map(async (p): Promise<[string, ThreeModule.Texture | null]> => {
         try {
-          const texData = await getData(p);
+          const texData = await pkg.read(p);
+          if (!texData) return [p, null];
           const tex = await loadThreeTexture(wasm, texData, p);
           if (tex && cancelled()) {
             tex.dispose();

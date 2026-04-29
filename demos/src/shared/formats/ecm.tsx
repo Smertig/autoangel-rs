@@ -5,20 +5,16 @@ import { renderEcmHoverPreview } from '@shared/components/model-viewer/internal/
 import { HoverCanvasPreview } from '@shared/components/hover-preview/HoverCanvasPreview';
 import { collectEcmDependencies } from '@shared/util/model-dependencies';
 import { sideBySideDiffer } from './helpers';
-import { useNullableGetData } from '@shared/hooks/useNullableGetData';
 import type { DownloadAction, FormatDescriptor, HoverContext, ViewerContext } from './types';
 
 function EcmFormatViewer({
-  path, getData, wasm, listFiles, findFile, onNavigateToFile, state,
+  path, pkg, wasm, onNavigateToFile, state,
 }: ViewerContext) {
-  const getDataNullable = useNullableGetData(getData);
   return (
     <EcmViewer
       path={path}
       wasm={wasm}
-      getData={getDataNullable}
-      listFiles={listFiles}
-      findFile={findFile}
+      pkg={pkg}
       onNavigateToFile={onNavigateToFile}
       state={bridgeModelStatePorts(state)}
     />
@@ -26,8 +22,8 @@ function EcmFormatViewer({
 }
 
 async function downloadModelZip(ctx: ViewerContext): Promise<void> {
-  const { path, getData, wasm, listFiles } = ctx;
-  const files = await collectEcmDependencies(wasm, path, getData, listFiles);
+  const { path, pkg, wasm } = ctx;
+  const files = await collectEcmDependencies(wasm, path, pkg);
 
   const zipEntries: Record<string, Uint8Array> = {};
   for (const [filePath, data] of files) {
@@ -43,8 +39,8 @@ async function downloadModelZip(ctx: ViewerContext): Promise<void> {
 }
 
 async function downloadModelPck(ctx: ViewerContext): Promise<void> {
-  const { path, getData, wasm, listFiles } = ctx;
-  const files = await collectEcmDependencies(wasm, path, getData, listFiles);
+  const { path, pkg, wasm } = ctx;
+  const files = await collectEcmDependencies(wasm, path, pkg);
 
   using builder = new wasm.PckBuilder();
   for (const [filePath, data] of files) {
@@ -59,7 +55,7 @@ async function downloadModelPck(ctx: ViewerContext): Promise<void> {
 function EcmHoverPreview(ctx: HoverContext) {
   return (
     <HoverCanvasPreview
-      path={ctx.path} data={ctx.data} getData={ctx.getData} wasm={ctx.wasm}
+      path={ctx.path} data={ctx.data} pkg={ctx.pkg} wasm={ctx.wasm}
       render={renderEcmHoverPreview}
       label="ECM" width={280} height={280}
     />
@@ -75,9 +71,9 @@ export const ecmFormat: FormatDescriptor = {
   downloadActions(ctx: ViewerContext): DownloadAction[] | undefined {
     if (ctx.ext !== '.ecm') return undefined;
     return [
-      { label: '\u2B07 Download file',        onClick: () => downloadFile(ctx.path, ctx.getData) },
-      { label: '\u2B07 Download model (ZIP)', onClick: () => downloadModelZip(ctx) },
-      { label: '\u2B07 Download model (PCK)', onClick: () => downloadModelPck(ctx) },
+      { label: '⬇ Download file',        onClick: () => downloadFile(ctx.path, ctx.pkg) },
+      { label: '⬇ Download model (ZIP)', onClick: () => downloadModelZip(ctx) },
+      { label: '⬇ Download model (PCK)', onClick: () => downloadModelPck(ctx) },
     ];
   },
 };

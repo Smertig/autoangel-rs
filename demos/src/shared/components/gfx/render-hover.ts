@@ -5,8 +5,9 @@ import {
   elementSkipReason,
   allActiveFinished,
 } from '../gfx-runtime/registry';
-import { ENGINE_PATH_PREFIXES, type FindFile } from './util/resolveEnginePath';
+import { ENGINE_PATH_PREFIXES } from './util/resolveEnginePath';
 import { loadParticleTexture } from '../gfx-runtime/texture';
+import { createPackageView, type PackageView } from '@shared/package';
 import type { GfxElement } from './types';
 import type { GfxElementRuntime, PreloadedTexture } from '../gfx-runtime/types';
 import type { HoverCanvasRenderArgs } from '../hover-preview/types';
@@ -21,7 +22,7 @@ import type { HoverCanvasRenderArgs } from '../hover-preview/types';
  * renderer.
  */
 export async function renderGfxHoverPreview(args: HoverCanvasRenderArgs): Promise<() => void> {
-  const { canvas, data, getData, wasm, cancelled } = args;
+  const { canvas, data, pkg, wasm, cancelled } = args;
 
   await ensureThree();
   const { THREE } = getThree();
@@ -29,10 +30,8 @@ export async function renderGfxHoverPreview(args: HoverCanvasRenderArgs): Promis
   const parsed = wasm.parseGfx(data);
   const elements: GfxElement[] = parsed.elements ?? [];
 
-  // Hover has no findFile — try each engine prefix per unique tex_file and
-  // remember the canonical-cased path that successfully fetches. Dedup so
-  // shared textures don't get decoded twice (with the second decode leaking
-  // the first via map-key collision).
+  // Dedup tex_files first so a shared texture isn't decoded twice (the
+  // second decode would leak the first via map-key collision).
   const texFiles = new Set<string>();
   for (const el of elements) {
     if (el.tex_file) texFiles.add(el.tex_file);
@@ -42,7 +41,7 @@ export async function renderGfxHoverPreview(args: HoverCanvasRenderArgs): Promis
     for (const prefix of ENGINE_PATH_PREFIXES.textures) {
       const candidate = prefix + texFile;
       try {
-        const buf = await getData(candidate);
+        const buf = await pkg.read(candidate);
         if (!buf || buf.byteLength === 0) continue;
         const tex = await loadParticleTexture(wasm, buf, candidate);
         if (!tex) return;
@@ -61,9 +60,17 @@ export async function renderGfxHoverPreview(args: HoverCanvasRenderArgs): Promis
     return () => {};
   }
 
-  // Spawners re-derive paths via `resolveEnginePath(raw, prefixes, findFile)`;
-  // we stored the first-prefix-hit candidate above so this lookup converges.
-  const findFile: FindFile = (p) => (preloadedTextures.has(p) ? p : null);
+  // localView only resolves the textures we just cached; spawners route
+  // every other read through it and silently miss.
+  const localView: PackageView = createPackageView({
+    getData: async (p) => {
+      const buf = await pkg.read(p);
+      if (!buf) throw new Error(`hover view: ${p} not preloaded`);
+      return buf;
+    },
+    resolve: (p) => preloadedTextures.has(p) ? p : null,
+    list: () => [],
+  });
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x101015);
@@ -88,7 +95,7 @@ export async function renderGfxHoverPreview(args: HoverCanvasRenderArgs): Promis
         gfxScale: parsed.default_scale ?? 1,
         gfxSpeed: parsed.play_speed ?? 1,
         timeSpanSec: undefined,
-        findFile,
+        pkg: localView,
         element: el,
         preloadedGfx: new Map(),
         preloadedTextures,

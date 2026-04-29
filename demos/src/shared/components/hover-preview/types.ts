@@ -1,11 +1,11 @@
-import type { GetData } from '@shared/formats/types';
+import type { PackageView } from '@shared/package';
 import type { AutoangelModule } from '../../../types/autoangel';
 
 export interface HoverCanvasRenderArgs {
   canvas: HTMLCanvasElement;
   path: string;
   data: Uint8Array;
-  getData: GetData;
+  pkg: PackageView;
   wasm: AutoangelModule;
   /** Returns true once the popover has unmounted; renderers check between
    *  async steps so resources allocated post-cancel are disposed inline. */

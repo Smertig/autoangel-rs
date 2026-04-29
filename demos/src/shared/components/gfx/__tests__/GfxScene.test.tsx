@@ -73,6 +73,7 @@ vi.mock('../../gfx-runtime/registry', () => ({
 import { spawnElementRuntime } from '../../gfx-runtime/registry';
 import { render, cleanup } from '@testing-library/react';
 import { GfxScene } from '../GfxScene';
+import { EMPTY_PACKAGE_VIEW } from '@shared/package';
 
 const makeRuntime = (overrides: any = {}) => ({
   root: { visible: true, children: [], add() {}, removeFromParent() {} },
@@ -90,7 +91,7 @@ const baseProps: any = {
   solo: null,
   preloadedGfx: new Map(),
   preloadedTextures: new Map(),
-  findFile: () => null,
+  pkg: EMPTY_PACKAGE_VIEW,
   shouldSpawn: () => true,
   onLoop: () => {},
 };

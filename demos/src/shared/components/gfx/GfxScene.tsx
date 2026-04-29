@@ -4,7 +4,7 @@ import { getViewer, type Viewer } from '../model-viewer/internal/viewer';
 import { spawnElementRuntime, allActiveFinished } from '../gfx-runtime/registry';
 import type { GfxElementRuntime, PreloadedTexture } from '../gfx-runtime/types';
 import type { GfxElement } from './types';
-import type { FindFile } from './util/resolveEnginePath';
+import type { PackageView } from '@shared/package';
 import styles from './GfxScene.module.css';
 
 export interface GfxSceneProps {
@@ -19,7 +19,7 @@ export interface GfxSceneProps {
   solo: string | null;
   preloadedGfx: Map<string, unknown>;
   preloadedTextures: Map<string, PreloadedTexture>;
-  findFile: FindFile;
+  pkg: PackageView;
   /** True if this element should get a runtime. False rows still appear in
    *  the parent's sidebar, but no runtime is spawned. */
   shouldSpawn: (el: GfxElement) => boolean;
@@ -30,7 +30,7 @@ export interface GfxSceneProps {
 
 type LiveProps = Pick<GfxSceneProps,
   'playing' | 'speed' | 'parsed' | 'enabled' | 'solo' | 'onLoop'
-  | 'shouldSpawn' | 'preloadedGfx' | 'preloadedTextures' | 'findFile'>;
+  | 'shouldSpawn' | 'preloadedGfx' | 'preloadedTextures' | 'pkg'>;
 
 export function GfxScene(props: GfxSceneProps) {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -76,7 +76,7 @@ export function GfxScene(props: GfxSceneProps) {
           gfxScale: live.parsed.default_scale ?? 1,
           gfxSpeed: live.parsed.play_speed ?? 1,
           timeSpanSec: undefined,
-          findFile: live.findFile,
+          pkg: live.pkg,
           element: el,
           preloadedGfx: live.preloadedGfx,
           preloadedTextures: live.preloadedTextures,

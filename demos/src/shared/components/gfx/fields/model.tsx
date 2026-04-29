@@ -11,7 +11,7 @@ export function buildModelRows(
   ctx: ViewerCtx,
 ): FieldRow[] {
   return [
-    { label: 'model_path', value: <PathOrText value={body.model_path} findFile={ctx.findFile} onNavigate={ctx.onNavigateToFile} /> },
+    { label: 'model_path', value: <PathOrText value={body.model_path} pkg={ctx.pkg} onNavigate={ctx.onNavigateToFile} /> },
     ...(body.model_act_name ? [{ label: 'model_act_name', value: <span>{body.model_act_name}</span> } as FieldRow] : []),
     ...(body.loops !== undefined ? [{ label: 'loops', value: <MonoNum value={body.loops} /> } as FieldRow] : []),
     { divider: true },

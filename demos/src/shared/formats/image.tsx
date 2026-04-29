@@ -7,8 +7,8 @@ import { decodeToCanvas } from '@shared/util/canvas';
 import { HOVER_FIT_STYLE } from './hover-style';
 import type { FormatDescriptor, ViewerContext, DifferContext, HoverContext } from './types';
 
-function ImageViewer({ path, ext, getData, wasm }: ViewerContext) {
-  const state = useFileData(path, getData);
+function ImageViewer({ path, ext, pkg, wasm }: ViewerContext) {
+  const state = useFileData(path, pkg);
 
   if (state.status === 'loading') return <div>Loading...</div>;
   if (state.status === 'error') return <div>Error: {state.message}</div>;

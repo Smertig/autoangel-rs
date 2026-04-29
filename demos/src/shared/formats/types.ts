@@ -1,11 +1,6 @@
 import type { ComponentType } from 'react';
 import type { AutoangelModule } from '../../types/autoangel';
-import type { FindFile } from '@shared/components/gfx/util/resolveEnginePath';
-
-/** Format-facing data fetcher. Resolves with bytes for `path`; rejects on
- *  miss. Distinct from the model-viewer-internal `GetFile` (paths.ts), which
- *  returns `null` on miss; format ports bridge via `useNullableGetData`. */
-export type GetData = (path: string) => Promise<Uint8Array>;
+import type { PackageView } from '@shared/package';
 
 /**
  * Two-scope persisted state ports a viewer can plug into. Both blobs are
@@ -30,11 +25,9 @@ export interface StatePorts<E = unknown, F = unknown> {
 export interface ViewerContext {
   path: string;
   ext: string;
-  getData: GetData;
+  pkg: PackageView;
   wasm: AutoangelModule;
-  listFiles: (prefix: string) => string[];
-  findFile: FindFile;
-  /** Navigate the shell to another file already resolvable via `findFile`.
+  /** Navigate the shell to another file already resolvable via `pkg.resolve`.
    *  Undefined when the host can't host navigation (diff view, single-file
    *  preview) — consumers gate affordances on this. */
   onNavigateToFile?: (path: string) => void;
@@ -64,19 +57,18 @@ export interface DownloadAction {
 
 /** Slimmer than ViewerContext: hover previews are read-only, single-file,
  *  no navigation, no persisted state. The wrapper owns the popover lifecycle
- *  and the initial fetch for `path`; `getData` is for fetching dependencies
- *  of that file (textures, child files). */
+ *  and the initial fetch for `path`; `pkg` is for fetching dependencies of
+ *  that file (textures, child files). */
 export interface HoverContext {
   path: string;
   ext: string;
-  /** Pre-fetched bytes for `path`. Equivalent to `await getData(path)` (both
+  /** Pre-fetched bytes for `path`. Equivalent to `await pkg.read(path)` (both
    *  hit the same cache) — use this when sync access avoids an async loading
    *  state in the format component. */
   data: Uint8Array;
-  /** Fetch `path` itself or any dependency (BMD textures, ECM children, etc.).
-   *  Cache-routed: re-hovers and same-path calls return the same bytes
-   *  without refetching. */
-  getData: GetData;
+  /** Cache-routed file-access port. Re-hovers and same-path calls return
+   *  the same bytes without refetching. */
+  pkg: PackageView;
   wasm: AutoangelModule;
 }
 

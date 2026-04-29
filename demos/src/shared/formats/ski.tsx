@@ -1,11 +1,9 @@
 import { SkiViewer } from '@shared/components/model-viewer';
 import { sideBySideDiffer } from './helpers';
-import { useNullableGetData } from '@shared/hooks/useNullableGetData';
 import type { FormatDescriptor, ViewerContext } from './types';
 
-function SkiFormatViewer({ path, getData, wasm }: ViewerContext) {
-  const getDataNullable = useNullableGetData(getData);
-  return <SkiViewer path={path} wasm={wasm} getData={getDataNullable} />;
+function SkiFormatViewer({ path, pkg, wasm }: ViewerContext) {
+  return <SkiViewer path={path} wasm={wasm} pkg={pkg} />;
 }
 
 export const skiFormat: FormatDescriptor = {

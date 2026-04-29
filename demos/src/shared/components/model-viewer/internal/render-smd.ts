@@ -1,7 +1,7 @@
 import type { AutoangelModule, GfxEffect } from '../../../../types/autoangel';
+import type { PackageView } from '@shared/package';
 import { resolvePath, collectSkinPaths, tryLoadSki, tryFallbackSkiPath, discoverStckPaths } from '@shared/util/model-dependencies';
 import { ensureThree, getThree } from './three';
-import { type GetFile, withWarnOnThrow } from './paths';
 import { type SkinStats, loadSkinFile } from './mesh';
 import {
   type BoneScaleData,
@@ -28,7 +28,7 @@ import { preloadGfxGraph } from '../../gfx-runtime/preload';
 import type { DurationContext, GfxLike, IsRenderable } from '../../gfx-runtime/duration';
 import { createNoopRuntime } from '../../gfx-runtime/noop';
 import { attachToHook } from '../../gfx-runtime/hook';
-import { resolveEnginePath, ENGINE_PATH_PREFIXES, type FindFile } from '../../gfx/util/resolveEnginePath';
+import { ENGINE_PATH_PREFIXES } from '../../gfx/util/resolveEnginePath';
 import { ALL_ELEMENT_BODY_KINDS } from '../../gfx/util/kindLabel';
 import type { ElementBodyKind } from '../../gfx/types';
 import type { PreloadedTexture } from '../../gfx-runtime/types';
@@ -59,11 +59,9 @@ export function findIdleClipName(
 export async function renderFromSmd(
   container: HTMLElement,
   wasm: AutoangelModule,
-  getFile: GetFile,
+  pkg: PackageView,
   smdPath: string,
   smdData: Uint8Array,
-  listFiles: (prefix: string) => string[],
-  findFile: FindFile,
   opts?: {
     additionalSkins?: { paths: string[]; basePath: string };
     boneScaleInfo?: { entries: BoneScaleData[]; isNew: boolean; baseBone: string | undefined };
@@ -84,7 +82,7 @@ export async function renderFromSmd(
     const bonRelPath: string = smd.skeletonPath;
     if (bonRelPath) {
       const bonPath = resolvePath(bonRelPath, smdPath);
-      const bonData = await getFile(bonPath);
+      const bonData = await pkg.read(bonPath);
       if (bonData) {
         try {
           const built = buildSkeleton(wasm, bonData);
@@ -116,7 +114,7 @@ export async function renderFromSmd(
   );
   let skinFallbackWarning: string | undefined;
   if (allSkinPaths.length === 0) {
-    const fallback = await tryFallbackSkiPath(smdPath, getFile);
+    const fallback = await tryFallbackSkiPath(smdPath, pkg);
     if (!fallback) throw new Error('No skin files referenced by SMD');
     allSkinPaths.push(fallback);
     const basename = fallback.split('\\').pop()!;
@@ -128,7 +126,7 @@ export async function renderFromSmd(
   const animNames: string[] = [];
   let loadClip: ((name: string) => Promise<any>) | undefined;
   if (skelData) {
-    const stckPaths = discoverStckPaths(smdPath, smdTcksDir, listFiles);
+    const stckPaths = discoverStckPaths(smdPath, smdTcksDir, pkg);
     const stckPathByName = new Map<string, string>();
     for (const stckPath of stckPaths) {
       const clipName = stckPath.split('\\').pop()!.replace(/\.stck$/i, '');
@@ -144,7 +142,7 @@ export async function renderFromSmd(
       if (cached) return cached;
       const path = stckPathByName.get(name);
       if (!path) throw new Error('Animation path not in track directory');
-      const stckData = await getFile(path);
+      const stckData = await pkg.read(path);
       if (!stckData) throw new Error('Failed to read STCK file from archive');
       const clip = buildAnimationClip(wasm, stckData, name, boneNames);
       if (!clip) throw new Error('No bone tracks matched or zero duration');
@@ -178,10 +176,10 @@ export async function renderFromSmd(
   }
 
   for (const skiPath of allSkinPaths) {
-    const ski = await tryLoadSki(skiPath, getFile);
+    const ski = await tryLoadSki(skiPath, pkg);
     if (!ski) { console.warn('[model] SKI not found:', skiPath); continue; }
 
-    const { meshes, stats } = await loadSkinFile(wasm, getFile, ski.archivePath, ski.data, useSkinning ? skelData!.skeleton : undefined, useSkinning ? skelData!.boneNames : undefined);
+    const { meshes, stats } = await loadSkinFile(wasm, pkg, ski.archivePath, ski.data, useSkinning ? skelData!.skeleton : undefined, useSkinning ? skelData!.boneNames : undefined);
     for (const m of meshes) group.add(m);
     totalStats.verts += stats.verts;
     totalStats.tris += stats.tris;
@@ -237,7 +235,7 @@ export async function renderFromSmd(
   }
 
   const gfxLoader = animNames.length > 0
-    ? createGfxLoader(wasm, (p) => getFile(p))
+    ? createGfxLoader(wasm, pkg)
     : null;
 
   let gfxKinds: Set<ElementBodyKind> = new Set(ALL_ELEMENT_BODY_KINDS);
@@ -272,13 +270,12 @@ export async function renderFromSmd(
     preloadedTextures: Map<string, PreloadedTexture>;
   }> => {
     const resolveGfxPath = (p: string) =>
-      resolveEnginePath(p, ENGINE_PATH_PREFIXES.gfx, findFile);
+      pkg.resolveEngine(p, ENGINE_PATH_PREFIXES.gfx);
     const resolvedPaths = gfxEvents.map((ev) => resolveGfxPath(ev.filePath));
 
     const { preloadedGfx, preloadedTextures } = await preloadGfxGraph({
       wasm,
-      getData: (p) => getFile(p).catch(() => null),
-      findFile,
+      pkg,
       seeds: resolvedPaths.filter((p): p is string => p != null),
     }) as { preloadedGfx: Map<string, GfxLike>; preloadedTextures: Map<string, PreloadedTexture> };
 
@@ -360,7 +357,7 @@ export async function renderFromSmd(
         // self-referential Container(gfx_path=self) is caught at depth 1.
         const visiting = new Set<string>([effect.resolved]);
         const resolveGfxPath = (p: string) =>
-          resolveEnginePath(p, ENGINE_PATH_PREFIXES.gfx, findFile);
+          pkg.resolveEngine(p, ENGINE_PATH_PREFIXES.gfx);
         const durCtx: DurationContext = {
           resolve: (p) => preloadedGfx.get(resolveGfxPath(p) ?? '') ?? null,
           visiting,
@@ -374,7 +371,7 @@ export async function renderFromSmd(
             timeSpanSec: ev.timeSpan > 0
               ? ev.timeSpan / 1000
               : computeElementDurationSec(el, durCtx),
-            findFile,
+            pkg,
             element: el,
             visiting,
             kindFilter: (kind) => gfxKinds.has(kind),
@@ -610,7 +607,7 @@ export async function renderFromSmd(
   // failure; caller uses that to leave the base tooltip unchanged.
   const lookupGfx = gfxLoader
     ? async (filePath: string): Promise<GfxEffect | null> => {
-        const resolved = resolveEnginePath(filePath, ENGINE_PATH_PREFIXES.gfx, findFile);
+        const resolved = pkg.resolveEngine(filePath, ENGINE_PATH_PREFIXES.gfx);
         if (!resolved) return null;
         const gfx = await gfxLoader.load(resolved);
         return (gfx as GfxEffect | null) ?? null;
@@ -662,7 +659,7 @@ export async function renderFromSmd(
             ? ENGINE_PATH_PREFIXES.sound
             : null;
         if (!prefixes) return null;
-        return resolveEnginePath(ev.filePath, prefixes, findFile);
+        return pkg.resolveEngine(ev.filePath, prefixes);
       },
       onNavigateToFile: opts?.onNavigateToFile,
       onLoopModeChange: (m) => { loopModePref = m; },
@@ -678,8 +675,6 @@ export async function renderFromSmd(
 }
 
 export interface RenderOptions {
-  listFiles: (prefix: string) => string[];
-  findFile: FindFile;
   initialClipName?: string;
   /** Host-provided navigation; undefined when the host can't navigate
    *  (diff view, single-file preview). */
@@ -690,25 +685,24 @@ export interface RenderOptions {
 export async function renderEcm(
   container: HTMLElement,
   wasm: AutoangelModule,
-  getFileRaw: GetFile,
+  pkg: PackageView,
   ecmPath: string,
   opts: RenderOptions,
 ): Promise<void> {
   await ensureThree();
-  const getFile = withWarnOnThrow(getFileRaw);
 
-  const ecmData = await getFile(ecmPath);
+  const ecmData = await pkg.read(ecmPath);
   if (!ecmData) throw new Error(`File not found: ${ecmPath}`);
   using ecm = wasm.EcmModel.parse(ecmData);
 
   const smdPath = resolvePath(ecm.skinModelPath, ecmPath);
-  const smdData = await getFile(smdPath);
+  const smdData = await pkg.read(smdPath);
   if (!smdData) throw new Error(`File not found: ${smdPath}`);
 
   // Snapshot additionalSkins before ecm's `using` scope frees it.
   const additionalSkinPaths = [...(ecm.additionalSkins || [])];
 
-  await renderFromSmd(container, wasm, getFile, smdPath, smdData, opts.listFiles, opts.findFile, {
+  await renderFromSmd(container, wasm, pkg, smdPath, smdData, {
     additionalSkins: { paths: additionalSkinPaths, basePath: ecmPath },
     boneScaleInfo: ecm.boneScaleCount > 0 ? readEcmBoneScales(ecm) : undefined,
     eventMapFromAnimNames: (animNames) => buildAnimEventMap(ecm, animNames),
@@ -722,17 +716,16 @@ export async function renderEcm(
 export async function renderSmd(
   container: HTMLElement,
   wasm: AutoangelModule,
-  getFileRaw: GetFile,
+  pkg: PackageView,
   smdPath: string,
   opts: RenderOptions,
 ): Promise<void> {
   await ensureThree();
-  const getFile = withWarnOnThrow(getFileRaw);
 
-  const smdData = await getFile(smdPath);
+  const smdData = await pkg.read(smdPath);
   if (!smdData) throw new Error(`File not found: ${smdPath}`);
 
-  await renderFromSmd(container, wasm, getFile, smdPath, smdData, opts.listFiles, opts.findFile, {
+  await renderFromSmd(container, wasm, pkg, smdPath, smdData, {
     initialClipName: opts.initialClipName,
     state: opts.state,
   });

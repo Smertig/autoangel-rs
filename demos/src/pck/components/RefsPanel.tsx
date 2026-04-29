@@ -1,19 +1,20 @@
 import type { ReactNode } from 'react';
 import type { Edge } from '../index/types';
 import type { AutoangelModule } from '../../types/autoangel';
+import type { PackageView } from '@shared/package';
 import { FileHoverTarget } from '@shared/components/hover-preview/FileHoverTarget';
 import { dedupeEdges } from './dedupeEdges';
 import styles from './RefsPanel.module.css';
 
 interface HoverDeps {
-  getData?: (path: string) => Promise<Uint8Array>;
+  pkg?: PackageView;
   wasm?: AutoangelModule;
 }
 
 type ResolvedHoverDeps = Required<HoverDeps>;
 
 function isHoverable(h: HoverDeps): h is ResolvedHoverDeps {
-  return h.getData != null && h.wasm != null;
+  return h.pkg != null && h.wasm != null;
 }
 
 export interface RefsPanelProps extends HoverDeps {
@@ -80,7 +81,7 @@ function MaybeHoverWrapped({
 }) {
   if (!isHoverable(hover)) return <>{children}</>;
   return (
-    <FileHoverTarget path={path} getData={hover.getData} wasm={hover.wasm}>
+    <FileHoverTarget path={path} pkg={hover.pkg} wasm={hover.wasm}>
       {children}
     </FileHoverTarget>
   );
@@ -91,7 +92,7 @@ export function RefsPanel({
   incoming,
   onNavigate,
   selectedPath,
-  getData,
+  pkg,
   wasm,
 }: RefsPanelProps) {
   if (selectedPath == null) {
@@ -104,7 +105,7 @@ export function RefsPanel({
       </aside>
     );
   }
-  const hover: HoverDeps = { getData, wasm };
+  const hover: HoverDeps = { pkg, wasm };
   // Dedupe by (kind, fromPath, target) so e.g. ten gfx events firing the
   // same .gfx file collapse to one row. The header counts match what's
   // shown.

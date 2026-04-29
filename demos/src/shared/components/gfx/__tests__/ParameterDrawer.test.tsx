@@ -2,6 +2,7 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import { ParameterDrawer } from '../ParameterDrawer';
+import { EMPTY_PACKAGE_VIEW } from '@shared/package';
 
 afterEach(cleanup);
 
@@ -23,7 +24,7 @@ function makeParticleElement(name = 'p1'): any {
   };
 }
 
-const ctx: any = { findFile: () => null };
+const ctx: any = { pkg: EMPTY_PACKAGE_VIEW };
 
 describe('ParameterDrawer', () => {
   it('renders nothing when element is null', () => {

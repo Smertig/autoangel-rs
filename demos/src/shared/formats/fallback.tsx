@@ -6,8 +6,8 @@ import { BinaryDiff } from '@pck-diff/components/BinaryDiff';
 import { useFileData } from '@shared/hooks/useFileData';
 import type { FormatDescriptor, ViewerContext, DifferContext } from './types';
 
-function FallbackViewer({ path, ext, getData }: ViewerContext) {
-  const state = useFileData(path, getData);
+function FallbackViewer({ path, ext, pkg }: ViewerContext) {
+  const state = useFileData(path, pkg);
 
   if (state.status === 'loading') return <div>Loading...</div>;
   if (state.status === 'error') return <div>Error: {state.message}</div>;

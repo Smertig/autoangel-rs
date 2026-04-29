@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import type { FieldRow } from '../fieldPanel';
 import { BoolDot, ColorSwatch, MonoJson, MonoNum, PathOrText } from '../formatters';
 import type { ElementBody, GfxElement, ViewerCtx } from '../types';
-import type { FindFile } from '../util/resolveEnginePath';
+import type { PackageView } from '@shared/package';
 import styles from './default.module.css';
 
 const ARGB_KEY = /^(color|diffuse|specular|ambient)(_min|_max)?$/;
@@ -14,13 +14,13 @@ export function buildDefaultRows(
   ctx: ViewerCtx,
 ): FieldRow[] {
   const obj = body as unknown as Record<string, unknown>;
-  return collectRows(obj, '', ctx.findFile, ctx.onNavigateToFile);
+  return collectRows(obj, '', ctx.pkg, ctx.onNavigateToFile);
 }
 
 function collectRows(
   obj: Record<string, unknown>,
   prefix: string,
-  findFile: FindFile,
+  pkg: PackageView,
   onNavigate: ((path: string) => void) | undefined,
 ): FieldRow[] {
   const entries = Object.entries(obj).filter(([k]) => !SKIP_KEYS.has(k));
@@ -41,9 +41,9 @@ function collectRows(
           label: pairLabel,
           value: (
             <span>
-              {formatLeaf(`${minMatch[1]}_min`, v, findFile, onNavigate)}
+              {formatLeaf(`${minMatch[1]}_min`, v, pkg, onNavigate)}
               <span className={styles.minMaxSep}>‥</span>
-              {formatLeaf(`${minMatch[1]}_max`, next[1], findFile, onNavigate)}
+              {formatLeaf(`${minMatch[1]}_max`, next[1], pkg, onNavigate)}
             </span>
           ),
         });
@@ -82,7 +82,7 @@ function collectRows(
       const nested = collectRows(
         v as Record<string, unknown>,
         label,
-        findFile,
+        pkg,
         onNavigate,
       );
       if (nested.length > 0) {
@@ -93,7 +93,7 @@ function collectRows(
       continue;
     }
 
-    rows.push({ label, value: formatLeaf(k, v, findFile, onNavigate) });
+    rows.push({ label, value: formatLeaf(k, v, pkg, onNavigate) });
     i++;
   }
   return rows;
@@ -102,7 +102,7 @@ function collectRows(
 function formatLeaf(
   key: string,
   value: unknown,
-  findFile: FindFile,
+  pkg: PackageView,
   onNavigate: ((path: string) => void) | undefined,
 ): ReactNode {
   if (value === null || value === undefined) {
@@ -140,6 +140,6 @@ function formatLeaf(
     }
     return <MonoJson value={value} />;
   }
-  if (typeof value === 'string') return <PathOrText value={value} findFile={findFile} onNavigate={onNavigate} />;
+  if (typeof value === 'string') return <PathOrText value={value} pkg={pkg} onNavigate={onNavigate} />;
   return <MonoJson value={value} />;
 }

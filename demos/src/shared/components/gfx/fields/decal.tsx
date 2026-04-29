@@ -18,7 +18,7 @@ export function buildDecalRows(
     { label: 'subtype', value: <span>{subtypeLabel(element.type_id)}</span> },
     {
       label: 'tex_file',
-      value: <PathOrText value={element.tex_file} findFile={ctx.findFile} onNavigate={ctx.onNavigateToFile} />,
+      value: <PathOrText value={element.tex_file} pkg={ctx.pkg} onNavigate={ctx.onNavigateToFile} />,
     },
     { divider: true },
     { label: 'width', value: <MonoNum value={body.width} /> },

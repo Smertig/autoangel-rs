@@ -1,5 +1,5 @@
 import type { ElementBody, GfxElement } from '../gfx/types';
-import type { FindFile } from '../gfx/util/resolveEnginePath';
+import type { PackageView } from '@shared/package';
 
 export interface GfxElementRuntime {
   readonly root: any; // THREE.Object3D
@@ -19,8 +19,9 @@ export interface SpawnOpts {
   gfxSpeed: number;
   /** Seconds; undefined = infinite. */
   timeSpanSec: number | undefined;
-  /** O(1) full-path existence check; returns canonical-cased stored path or null. */
-  findFile: FindFile;
+  /** File-access port — spawners use `pkg.resolveEngine` for engine-relative
+   *  paths and `pkg.resolve` for already-canonical paths. */
+  pkg: PackageView;
   /** Parent element — spawners need it for tex_file, src_blend, dest_blend. */
   element: GfxElement;
   /** Cycle guard — set of already-visited resolved paths; threaded through

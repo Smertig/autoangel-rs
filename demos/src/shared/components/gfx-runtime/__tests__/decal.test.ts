@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
 import { spawnDecalRuntime } from '../decal/runtime';
 import { minimalSpawnOpts } from './_fixtures';
+import { EMPTY_PACKAGE_VIEW } from '@shared/package';
 
 function decalBody(overrides: Partial<Record<string, unknown>> = {}) {
   return {
@@ -86,7 +87,8 @@ describe('spawnDecalRuntime', () => {
     const rt = spawnDecalRuntime(decalBody(), {
       ...minimalSpawnOpts(THREE),
       element: decalElement(100),
-      findFile: () => null, // resolveTexturePath returns null → async tail no-ops
+      // resolveTexturePath returns null → async tail no-ops
+      pkg: EMPTY_PACKAGE_VIEW,
     });
     rt.dispose();
     await new Promise((r) => setTimeout(r, 0));

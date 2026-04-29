@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest';
 import { buildFieldRowsFor } from '../index';
+import { EMPTY_PACKAGE_VIEW } from '@shared/package';
 
-const fakeCtx: any = { findFile: () => null, onNavigateToFile: undefined };
+const fakeCtx: any = { pkg: EMPTY_PACKAGE_VIEW, onNavigateToFile: undefined };
 
 describe('buildFieldRowsFor', () => {
   it('builds particle rows', () => {

@@ -1,11 +1,13 @@
 import {
   type ComponentType, type LazyExoticComponent, type ReactNode,
   type FocusEvent, type MouseEvent,
-  Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState,
+  Suspense, lazy, useEffect, useMemo, useRef, useState,
 } from 'react';
 import type { AutoangelModule } from '../../../types/autoangel';
 import { findFormat, type FormatLoader } from '@shared/formats/registry';
-import type { GetData, HoverContext } from '@shared/formats/types';
+import type { HoverContext } from '@shared/formats/types';
+import type { PackageView } from '@shared/package';
+import { createPackageView } from '@shared/package';
 import { getExtension } from '@shared/util/files';
 import { HoverPopover } from './HoverPopover';
 import {
@@ -19,7 +21,7 @@ interface FileHoverTargetProps {
   /** Identity for the wrapper. Re-key the component (`<FileHoverTarget key={path}>`)
    *  if `path` can change at runtime — the singleton id is captured per-mount. */
   path: string;
-  getData: GetData;
+  pkg: PackageView;
   wasm: AutoangelModule;
   children: ReactNode;
 }
@@ -35,7 +37,7 @@ type State =
   | { phase: 'loaded'; rect: TriggerRect; data: Uint8Array }
   | { phase: 'error'; rect: TriggerRect; message: string };
 
-export function FileHoverTarget({ path, getData, wasm, children }: FileHoverTargetProps) {
+export function FileHoverTarget({ path, pkg, wasm, children }: FileHoverTargetProps) {
   const id = useMemo(() => Symbol(path), [path]);
   const [state, setState] = useState<State>({ phase: 'idle' });
   const wrapperRef = useRef<HTMLSpanElement>(null);
@@ -74,8 +76,12 @@ export function FileHoverTarget({ path, getData, wasm, children }: FileHoverTarg
       registerActive(id);
       if (!isActive(id)) return;
       setState({ phase: 'loading', rect });
-      getCachedFetch(path, () => getData(path)).then(
-        data => { if (isActive(id)) setState({ phase: 'loaded', rect, data }); },
+      getCachedFetch(path, () => pkg.read(path)).then(
+        data => {
+          if (!isActive(id)) return;
+          if (!data) setState({ phase: 'error', rect, message: 'File not found' });
+          else setState({ phase: 'loaded', rect, data });
+        },
         err => { if (isActive(id)) setState({ phase: 'error', rect, message: String(err) }); },
       );
     }, OPEN_DELAY_MS);
@@ -93,14 +99,17 @@ export function FileHoverTarget({ path, getData, wasm, children }: FileHoverTarg
   // through from the package index when `data.length` already has them.
   const size = state.phase === 'loaded' ? state.data.length : null;
 
-  // Cache-routed `getData` for format components: own bytes (path) + every
-  // dependency (textures, child files) all share the popover-level cache, so
-  // re-hovers don't refetch and `getData(path)` returns the same bytes the
-  // wrapper already loaded. Stable per `getData` reference.
-  const cachedGetData = useCallback<GetData>(
-    (p) => getCachedFetch(p, () => getData(p)),
-    [getData],
-  );
+  // Cache-routed view: own bytes + every dependency share the popover-level
+  // cache so re-hovers don't refetch.
+  const cachedPkg = useMemo<PackageView>(() => createPackageView({
+    getData: async (p) => {
+      const buf = await getCachedFetch(p, () => pkg.read(p));
+      if (!buf) throw new Error(`hover read: ${p} not found`);
+      return buf;
+    },
+    resolve: pkg.resolve,
+    list: pkg.list,
+  }), [pkg]);
 
   let body: ReactNode = null;
   if (state.phase === 'loading') {
@@ -113,7 +122,7 @@ export function FileHoverTarget({ path, getData, wasm, children }: FileHoverTarg
       <Suspense fallback={<MutedNote>Loading…</MutedNote>}>
         <HoverPreviewSlot
           loader={loader} path={path} ext={ext}
-          data={state.data} getData={cachedGetData} wasm={wasm}
+          data={state.data} pkg={cachedPkg} wasm={wasm}
         />
       </Suspense>
     );
@@ -168,15 +177,15 @@ function getHoverPreviewLazy(loader: FormatLoader): LazyExoticComponent<Componen
 }
 
 function HoverPreviewSlot({
-  loader, path, ext, data, getData, wasm,
+  loader, path, ext, data, pkg, wasm,
 }: {
   loader: FormatLoader;
   path: string;
   ext: string;
   data: Uint8Array;
-  getData: GetData;
+  pkg: PackageView;
   wasm: AutoangelModule;
 }) {
   const Comp = getHoverPreviewLazy(loader);
-  return <Comp path={path} ext={ext} data={data} getData={getData} wasm={wasm} />;
+  return <Comp path={path} ext={ext} data={data} pkg={pkg} wasm={wasm} />;
 }

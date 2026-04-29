@@ -1,6 +1,8 @@
 // Shared test fixtures for gfx-runtime tests. Kept under __tests__/ with a
 // leading underscore so vitest's discovery skips it as a non-spec file.
 
+import { createPackageView, type PackageView } from '@shared/package';
+
 /** Minimal point-emitter particle body — what spawnElementRuntime / scheduler tests feed. */
 export function minimalParticleBody() {
   return {
@@ -38,11 +40,15 @@ export function minimalParticleElement() {
   } as any;
 }
 
-/** Build a case-insensitive `findFile` from a fixed path list. Mirrors
+/** Build a case-insensitive PackageView from a fixed path list. Mirrors
  *  what App.tsx's path index does, but trivial enough to inline in tests. */
-export function findFileFrom(paths: string[]): (p: string) => string | null {
+export function pkgFrom(paths: string[]): PackageView {
   const lower = new Map(paths.map((p) => [p.toLowerCase(), p]));
-  return (p: string) => lower.get(p.toLowerCase()) ?? null;
+  return createPackageView({
+    getData: async () => { throw new Error('test pkg has no data'); },
+    resolve: (p) => lower.get(p.toLowerCase()) ?? null,
+    list: () => [],
+  });
 }
 
 /** Minimal SpawnOpts the particle/registry tests need. Pre-populates the
@@ -54,18 +60,23 @@ export function minimalSpawnOpts(three: any, overrides: Record<string, any> = {}
     ['gfx\\textures\\test.dds', fakeTex],
     ['gfx\\textures\\d.dds', fakeTex],
   ]);
-  return {
-    three,
-    gfxScale: 1,
-    gfxSpeed: 1,
-    timeSpanSec: undefined as number | undefined,
-    findFile: (p: string) => {
+  const pkg: PackageView = createPackageView({
+    getData: async () => { throw new Error('test pkg: no live read'); },
+    resolve: (p) => {
       const lower = p.toLowerCase();
       for (const stored of preloadedTextures.keys()) {
         if (stored.toLowerCase() === lower) return stored;
       }
       return null;
     },
+    list: () => [],
+  });
+  return {
+    three,
+    gfxScale: 1,
+    gfxSpeed: 1,
+    timeSpanSec: undefined as number | undefined,
+    pkg,
     element: minimalParticleElement(),
     preloadedGfx: new Map<string, unknown>(),
     preloadedTextures,

@@ -2,6 +2,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { render, cleanup, waitFor } from '@testing-library/react';
 import { useGfxPreload } from '../useGfxPreload';
+import { EMPTY_PACKAGE_VIEW } from '@shared/package';
 
 afterEach(cleanup);
 
@@ -17,8 +18,7 @@ describe('useGfxPreload', () => {
     const parsed = { elements: [{ name: 'p', body: { kind: 'particle' }, tex_file: '' }] } as any;
     const context = {
       wasm: { parseGfx: () => ({ elements: [] }) },
-      getData: async () => new Uint8Array(),
-      findFile: () => null,
+      pkg: EMPTY_PACKAGE_VIEW,
     } as any;
     render(<Probe parsed={parsed} context={context} onResult={(r: any) => { captured = r; }} />);
     await waitFor(() => { expect(captured).not.toBeNull(); });

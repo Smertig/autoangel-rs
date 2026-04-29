@@ -1,6 +1,6 @@
 import type { MouseEvent, KeyboardEvent } from 'react';
 import { argbToCss, argbToHex } from './util/argb';
-import type { FindFile } from './util/resolveEnginePath';
+import type { PackageView } from '@shared/package';
 import styles from './formatters.module.css';
 
 export function MonoNum({ value }: { value: number }) {
@@ -53,13 +53,13 @@ export function BoolDot({ on }: { on: boolean }) {
 
 interface PathOrTextProps {
   value: string;
-  findFile: FindFile;
+  pkg: PackageView;
   /** If provided and `value` resolves, render a ↗ button that opens the
    *  resolved file. Receives the canonical-cased path. */
   onNavigate?: (resolvedPath: string) => void;
 }
-export function PathOrText({ value, findFile, onNavigate }: PathOrTextProps) {
-  const resolved = findFile(value);
+export function PathOrText({ value, pkg, onNavigate }: PathOrTextProps) {
+  const resolved = pkg.resolve(value);
   if (resolved !== null && onNavigate !== undefined) {
     const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
       e.stopPropagation();

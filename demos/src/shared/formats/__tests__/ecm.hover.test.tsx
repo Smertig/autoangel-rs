@@ -2,6 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, waitFor } from '@testing-library/react';
 import type { HoverContext } from '../types';
+import { EMPTY_PACKAGE_VIEW } from '@shared/package';
 
 vi.mock('@shared/components/model-viewer/internal/render-ecm-hover', () => ({
   renderEcmHoverPreview: vi.fn(),
@@ -17,7 +18,7 @@ beforeEach(() => {
 
 const fakeWasm = {} as HoverContext['wasm'];
 const fakeData = new Uint8Array(8);
-const fakeGetData = async () => new Uint8Array();
+const fakePkg = EMPTY_PACKAGE_VIEW;
 
 describe('ecmFormat.HoverPreview', () => {
   it('is registered', () => {
@@ -30,7 +31,7 @@ describe('ecmFormat.HoverPreview', () => {
 
     const HP = ecmFormat.HoverPreview!;
     const { container } = render(
-      <HP path="char.ecm" ext=".ecm" data={fakeData} getData={fakeGetData} wasm={fakeWasm} />,
+      <HP path="char.ecm" ext=".ecm" data={fakeData} pkg={fakePkg} wasm={fakeWasm} />,
     );
 
     expect(container.querySelector('canvas')).not.toBeNull();
@@ -45,7 +46,7 @@ describe('ecmFormat.HoverPreview', () => {
 
     const HP = ecmFormat.HoverPreview!;
     const { unmount } = render(
-      <HP path="char.ecm" ext=".ecm" data={fakeData} getData={fakeGetData} wasm={fakeWasm} />,
+      <HP path="char.ecm" ext=".ecm" data={fakeData} pkg={fakePkg} wasm={fakeWasm} />,
     );
     await waitFor(() => expect(renderEcmHoverPreview).toHaveBeenCalledOnce());
 
@@ -58,7 +59,7 @@ describe('ecmFormat.HoverPreview', () => {
 
     const HP = ecmFormat.HoverPreview!;
     const { container, findByText } = render(
-      <HP path="char.ecm" ext=".ecm" data={fakeData} getData={fakeGetData} wasm={fakeWasm} />,
+      <HP path="char.ecm" ext=".ecm" data={fakeData} pkg={fakePkg} wasm={fakeWasm} />,
     );
 
     expect(await findByText(/Failed to render ECM: parse fail/)).toBeDefined();
@@ -74,7 +75,7 @@ describe('ecmFormat.HoverPreview', () => {
 
     const HP = ecmFormat.HoverPreview!;
     const { unmount } = render(
-      <HP path="char.ecm" ext=".ecm" data={fakeData} getData={fakeGetData} wasm={fakeWasm} />,
+      <HP path="char.ecm" ext=".ecm" data={fakeData} pkg={fakePkg} wasm={fakeWasm} />,
     );
     unmount();
     resolveRender(dispose);

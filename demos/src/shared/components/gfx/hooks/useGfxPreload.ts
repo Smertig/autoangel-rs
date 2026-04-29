@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ensureThree } from '../../model-viewer/internal/three';
-import { resolveEnginePath, ENGINE_PATH_PREFIXES } from '../util/resolveEnginePath';
+import { ENGINE_PATH_PREFIXES } from '../util/resolveEnginePath';
 import { preloadGfxGraph } from '../../gfx-runtime/preload';
 import type { ViewerCtx } from '../types';
 import type { PreloadedTexture } from '../../gfx-runtime/types';
@@ -41,7 +41,7 @@ export function useGfxPreload(parsed: any, context: ViewerCtx): PreloadResult {
       const seeds: string[] = [];
       for (const el of parsed?.elements ?? []) {
         if (el?.body?.kind === 'container' && el.body.gfx_path) {
-          const r = resolveEnginePath(el.body.gfx_path, ENGINE_PATH_PREFIXES.gfx, context.findFile);
+          const r = context.pkg.resolveEngine(el.body.gfx_path, ENGINE_PATH_PREFIXES.gfx);
           if (r) seeds.push(r);
         }
       }
@@ -52,8 +52,7 @@ export function useGfxPreload(parsed: any, context: ViewerCtx): PreloadResult {
 
       const { preloadedGfx, preloadedTextures } = await preloadGfxGraph({
         wasm: context.wasm,
-        getData: async (p) => { try { return await context.getData(p); } catch { return null; } },
-        findFile: context.findFile,
+        pkg: context.pkg,
         seeds,
         extraElements: parsed?.elements ?? [],
         cancelled: () => cancelled,
@@ -77,7 +76,7 @@ export function useGfxPreload(parsed: any, context: ViewerCtx): PreloadResult {
       disposeTextures(ownedTexturesRef.current);
       ownedTexturesRef.current = EMPTY_TEX;
     };
-  }, [parsed, context.wasm, context.findFile, context.getData]);
+  }, [parsed, context.wasm, context.pkg]);
 
   return state;
 }

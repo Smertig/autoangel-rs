@@ -1,4 +1,5 @@
 import type { AutoangelModule } from '../../../../types/autoangel';
+import type { PackageView } from '@shared/package';
 import { textureCandidates } from '@shared/util/model-dependencies';
 import { getThree } from './three';
 import { loadThreeTexture } from './texture';
@@ -82,7 +83,7 @@ export interface SkinStats {
 
 export async function loadSkinFile(
   wasm: AutoangelModule,
-  getFile: (path: string) => Promise<Uint8Array | null>,
+  pkg: PackageView,
   skiArchivePath: string,
   skiData: Uint8Array,
   skeleton?: any,
@@ -114,7 +115,7 @@ export async function loadSkinFile(
     const textures = await Promise.all(
       textureNames.map(async (texName: string) => {
         for (const tp of textureCandidates(skiArchivePath, texName)) {
-          const texData = await getFile(tp);
+          const texData = await pkg.read(tp);
           if (texData) return await loadThreeTexture(wasm, texData, texName);
         }
         console.warn('[model] Texture not found:', texName);

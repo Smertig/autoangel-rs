@@ -31,7 +31,7 @@ export function spawnDecalRuntime(
   // Type 101 has no runtime — surfaced by elementSkipReason with a label.
   if (opts.element.type_id === 101) return createNoopRuntime(opts.three);
 
-  const preTex = resolvePreloadedTexture(opts.element.tex_file, opts.findFile, opts.preloadedTextures, 'decal');
+  const preTex = resolvePreloadedTexture(opts.element.tex_file, opts.pkg, opts.preloadedTextures, 'decal');
   if (!preTex) return createNoopRuntime(opts.three);
   const { outer, animated, animator } = createAnimatedGroupPair(
     opts.three, opts.element, opts.gfxScale,

@@ -1,4 +1,5 @@
 import type { AutoangelModule } from '../../../types/autoangel';
+import type { PackageView } from '@shared/package';
 
 export interface GfxLoader {
   load(resolvedPath: string): Promise<unknown | null>;
@@ -10,10 +11,7 @@ export interface GfxLoader {
  * are cached so subsequent calls don't re-fetch. Failures degrade to null
  * with a single console.warn — never let one bad GFX break clip playback.
  */
-export function createGfxLoader(
-  wasm: AutoangelModule,
-  getData: (path: string) => Promise<Uint8Array | null>,
-): GfxLoader {
+export function createGfxLoader(wasm: AutoangelModule, pkg: PackageView): GfxLoader {
   const cache = new Map<string, Promise<unknown | null>>();
   return {
     load(path) {
@@ -21,7 +19,7 @@ export function createGfxLoader(
       if (p) return p;
       p = (async () => {
         try {
-          const data = await getData(path);
+          const data = await pkg.read(path);
           if (!data) { console.warn(`[gfx-runtime] missing: ${path}`); return null; }
           return wasm.parseGfx(data);
         } catch (e) {

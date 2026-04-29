@@ -1,15 +1,15 @@
-import { resolveEnginePath, ENGINE_PATH_PREFIXES, type FindFile } from '../gfx/util/resolveEnginePath';
+import { ENGINE_PATH_PREFIXES } from '../gfx/util/resolveEnginePath';
 import { loadParticleTexture, resolveTexturePath } from './texture';
 import { createGfxLoader } from './loader';
 import type { PreloadedTexture } from './types';
 import type { AutoangelModule } from '../../../types/autoangel';
+import type { PackageView } from '@shared/package';
 
 export interface GfxLike { elements: any[] }
 
 export interface PreloadOpts {
   wasm: AutoangelModule;
-  getData: (path: string) => Promise<Uint8Array | null>;
-  findFile: FindFile;
+  pkg: PackageView;
   /** Resolved (canonical-cased) GFX paths to seed the BFS load. */
   seeds: string[];
   /** Top-level elements whose `tex_file`s should also be collected. Use
@@ -33,9 +33,9 @@ export interface PreloadResult {
  * before invoking this helper.
  */
 export async function preloadGfxGraph(opts: PreloadOpts): Promise<PreloadResult> {
-  const loader = createGfxLoader(opts.wasm, opts.getData);
+  const loader = createGfxLoader(opts.wasm, opts.pkg);
   const resolveGfxPath = (p: string) =>
-    resolveEnginePath(p, ENGINE_PATH_PREFIXES.gfx, opts.findFile);
+    opts.pkg.resolveEngine(p, ENGINE_PATH_PREFIXES.gfx);
 
   const preloadedGfx = new Map<string, GfxLike>();
   const seen = new Set<string>();
@@ -66,7 +66,7 @@ export async function preloadGfxGraph(opts: PreloadOpts): Promise<PreloadResult>
   const collectTextures = (elements: { tex_file?: string }[] | undefined) => {
     for (const el of elements ?? []) {
       if (el?.tex_file) {
-        const tp = resolveTexturePath(el.tex_file, opts.findFile);
+        const tp = resolveTexturePath(el.tex_file, opts.pkg);
         if (tp) texPaths.add(tp);
       }
     }
@@ -77,7 +77,7 @@ export async function preloadGfxGraph(opts: PreloadOpts): Promise<PreloadResult>
   const preloadedTextures = new Map<string, PreloadedTexture>();
   await Promise.all([...texPaths].map(async (texPath) => {
     try {
-      const data = await opts.getData(texPath);
+      const data = await opts.pkg.read(texPath);
       if (!data || data.byteLength === 0) return;
       const tex = await loadParticleTexture(opts.wasm, data, texPath);
       if (!tex) return;

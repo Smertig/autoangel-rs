@@ -4,15 +4,13 @@ import { findFormat, lazyFormatComponent } from '@shared/formats/registry';
 import { getExtension } from '@shared/util/files';
 import { downloadFile } from '@shared/util/download';
 import type { DownloadAction, StatePorts } from '@shared/formats/types';
-import type { FindFile } from '@shared/components/gfx/util/resolveEnginePath';
+import type { PackageView } from '@shared/package';
 import styles from './FilePreview.module.css';
 
 interface FilePreviewProps {
   path: string;
-  getData: (path: string) => Promise<Uint8Array>;
+  pkg: PackageView;
   wasm: AutoangelModule;
-  listFiles: (prefix: string) => string[];
-  findFile: FindFile;
   onNavigateToFile?: (path: string) => void;
   /** Persisted-state ports already routed to the correct session/format/entry. */
   state?: StatePorts;
@@ -91,7 +89,7 @@ function DownloadButton({ actions }: DownloadButtonProps) {
 }
 
 export function FilePreview({
-  path, getData, wasm, listFiles, findFile, onNavigateToFile, state,
+  path, pkg, wasm, onNavigateToFile, state,
 }: FilePreviewProps) {
   const ext = getExtension(path);
   const loader = findFormat(ext);
@@ -99,8 +97,8 @@ export function FilePreview({
   const Viewer = useMemo(() => lazyFormatComponent(loader, 'Viewer'), [loader]);
 
   const defaultActions = useMemo<DownloadAction[]>(
-    () => [{ label: '⬇ Download', onClick: () => downloadFile(path, getData) }],
-    [path, getData],
+    () => [{ label: '⬇ Download', onClick: () => downloadFile(path, pkg) }],
+    [path, pkg],
   );
   const [customActions, setCustomActions] = useState<DownloadAction[] | null>(null);
 
@@ -110,12 +108,12 @@ export function FilePreview({
     void loader.load().then((format) => {
       if (cancelled) return;
       const custom = format.downloadActions?.({
-        path, ext, getData, wasm, listFiles, findFile, onNavigateToFile,
+        path, ext, pkg, wasm, onNavigateToFile,
       });
       setCustomActions(custom ?? null);
     });
     return () => { cancelled = true; };
-  }, [loader, path, ext, getData, wasm, listFiles, findFile, onNavigateToFile]);
+  }, [loader, path, ext, pkg, wasm, onNavigateToFile]);
 
   const actions = customActions ?? defaultActions;
 
@@ -129,10 +127,8 @@ export function FilePreview({
           <Viewer
             path={path}
             ext={ext}
-            getData={getData}
+            pkg={pkg}
             wasm={wasm}
-            listFiles={listFiles}
-            findFile={findFile}
             onNavigateToFile={onNavigateToFile}
             state={state}
           />

@@ -9,7 +9,8 @@ vi.mock('../registry', () => ({
 }));
 
 import { spawnContainerRuntime } from '../container';
-import { findFileFrom, minimalSpawnOpts } from './_fixtures';
+import { pkgFrom, minimalSpawnOpts } from './_fixtures';
+import { EMPTY_PACKAGE_VIEW } from '@shared/package';
 
 beforeEach(() => {
   spawnChildMock.mockReset();
@@ -50,7 +51,7 @@ function containerOpts(overrides: Record<string, unknown> = {}) {
   return {
     ...minimalSpawnOpts(THREE),
     element: containerElement(),
-    findFile: findFileFrom(['gfx\\effects\\nested.gfx']),
+    pkg: pkgFrom(['gfx\\effects\\nested.gfx']),
     ...overrides,
   };
 }
@@ -65,7 +66,7 @@ describe('spawnContainerRuntime', () => {
   it('ticks cleanly when gfx_path is unresolvable (no crash)', async () => {
     const rt = spawnContainerRuntime(
       containerBody({ gfx_path: 'does\\not\\exist.gfx' }),
-      containerOpts({ findFile: () => null }),
+      containerOpts({ pkg: EMPTY_PACKAGE_VIEW }),
     );
     rt.tick(0.016);
     // Outer group always contains the animated group; children of the

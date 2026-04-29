@@ -56,7 +56,7 @@ export function spawnParticleRuntime(
   const rng = Math.random;
 
   const element = opts.element;
-  const preTex = resolvePreloadedTexture(element.tex_file, opts.findFile, opts.preloadedTextures, 'particle');
+  const preTex = resolvePreloadedTexture(element.tex_file, opts.pkg, opts.preloadedTextures, 'particle');
   if (!preTex) return createNoopRuntime(THREE);
   const mesh = createParticleMesh(cfg, {
     texture: preTex,

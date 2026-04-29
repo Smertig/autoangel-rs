@@ -1,19 +1,13 @@
 import { SmdViewer, bridgeModelStatePorts } from '@shared/components/model-viewer';
 import { sideBySideDiffer } from './helpers';
-import { useNullableGetData } from '@shared/hooks/useNullableGetData';
 import type { FormatDescriptor, ViewerContext } from './types';
 
-function SmdFormatViewer({
-  path, getData, wasm, listFiles, findFile, state,
-}: ViewerContext) {
-  const getDataNullable = useNullableGetData(getData);
+function SmdFormatViewer({ path, pkg, wasm, state }: ViewerContext) {
   return (
     <SmdViewer
       path={path}
       wasm={wasm}
-      getData={getDataNullable}
-      listFiles={listFiles}
-      findFile={findFile}
+      pkg={pkg}
       state={bridgeModelStatePorts(state)}
     />
   );

@@ -1,3 +1,5 @@
+import type { PackageView } from '../package';
+
 export function downloadBlob(blob: Blob, filename: string): void {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -6,8 +8,8 @@ export function downloadBlob(blob: Blob, filename: string): void {
   URL.revokeObjectURL(a.href);
 }
 
-export function downloadFile(path: string, getData: (path: string) => Promise<Uint8Array>): Promise<void> {
-  return getData(path).then((data) => {
-    downloadBlob(new Blob([data.buffer as ArrayBuffer]), path.split(/[\\/]/).pop()!);
-  });
+export async function downloadFile(path: string, pkg: PackageView): Promise<void> {
+  const data = await pkg.read(path);
+  if (!data) throw new Error(`File not found: ${path}`);
+  downloadBlob(new Blob([data.buffer as ArrayBuffer]), path.split(/[\\/]/).pop()!);
 }
