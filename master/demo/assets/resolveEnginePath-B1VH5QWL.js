@@ -1,1 +1,0 @@
-function r(o,s,t){for(const n of s){const e=t(n+o);if(e)return e}return null}const f={gfx:["gfx\\","GFX\\"],models:["gfx\\models\\","gfx\\Models\\"],textures:["gfx\\textures\\","gfx\\Textures\\"],sound:["sound\\","Sound\\"]};export{f as E,r};

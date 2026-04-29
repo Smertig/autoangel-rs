@@ -1,0 +1,1 @@
+function r(e,n,t){for(const o of n){const s=t(o+e);if(s)return s}return null}const f={gfx:["gfx\\","GFX\\"],models:["gfx\\models\\","gfx\\Models\\"],textures:["gfx\\textures\\","gfx\\Textures\\"],sound:["sound\\","Sound\\"]};function u(e,n){return n.map(t=>t+e)}export{f as E,r,u as w};

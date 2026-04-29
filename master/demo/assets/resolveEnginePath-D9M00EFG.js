@@ -1,0 +1,1 @@
+const t={gfx:["gfx\\","GFX\\"],models:["gfx\\models\\","gfx\\Models\\"],textures:["gfx\\textures\\","gfx\\Textures\\"],sound:["sound\\","Sound\\"]};function n(e,s){return s.map(x=>x+e)}export{t as E,n as w};
