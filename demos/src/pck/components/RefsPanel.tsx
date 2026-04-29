@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { Edge } from '../index/types';
 import type { AutoangelModule } from '../../types/autoangel';
 import { FileHoverTarget } from '@shared/components/hover-preview/FileHoverTarget';
+import { dedupeEdges } from './dedupeEdges';
 import styles from './RefsPanel.module.css';
 
 interface HoverDeps {
@@ -104,10 +105,18 @@ export function RefsPanel({
     );
   }
   const hover: HoverDeps = { getData, wasm };
-  const grouped = groupByKind(outgoing);
+  // Dedupe by (kind, fromPath, target) so e.g. ten gfx events firing the
+  // same .gfx file collapse to one row. The header counts match what's
+  // shown.
+  const dedupedOutgoing = dedupeEdges(outgoing);
+  const dedupedIncoming = dedupeEdges(incoming);
+  const grouped = groupByKind(dedupedOutgoing);
   return (
     <aside className={styles.panel}>
-      <RailHeader outgoingCount={outgoing.length} incomingCount={incoming.length} />
+      <RailHeader
+        outgoingCount={dedupedOutgoing.length}
+        incomingCount={dedupedIncoming.length}
+      />
       <Section title="Outgoing" empty="No outgoing references.">
         {grouped.size > 0
           ? [...grouped.entries()].map(([kind, edges]) => (
@@ -122,9 +131,9 @@ export function RefsPanel({
           : null}
       </Section>
       <Section title="Used by" empty="No incoming references.">
-        {incoming.length > 0 ? (
+        {dedupedIncoming.length > 0 ? (
           <DirGroupedList
-            edges={incoming}
+            edges={dedupedIncoming}
             getPath={(e) => e.fromPath}
             onClick={(e) => onNavigate(e.fromPath)}
             // Incoming rows show the source's kind (this slot is `kind`

@@ -23,6 +23,13 @@ export const LAST_SEEN_KEY = 'demos:changelogLastSeen';
  */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    id: '2026-04-29-pck-refs-dedupe',
+    date: '2026-04-29',
+    scope: 'pck',
+    title: 'Refs panel collapses duplicate references',
+    body: 'Same target referenced multiple times under one kind shows once.',
+  },
+  {
     id: '2026-04-29-pck-bmd-hover-preview',
     date: '2026-04-29',
     scope: 'pck',

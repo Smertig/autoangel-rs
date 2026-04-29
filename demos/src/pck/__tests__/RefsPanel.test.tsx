@@ -96,7 +96,7 @@ describe('RefsPanel', () => {
   it('shows in/out counts in the rail header', () => {
     render(
       <RefsPanel
-        outgoing={[e(), e()]}
+        outgoing={[e({ resolved: 'a.smd' }), e({ resolved: 'b.smd' })]}
         incoming={[e({ fromPath: 'p.ecm' })]}
         onNavigate={() => {}}
         selectedPath="x.ecm"
