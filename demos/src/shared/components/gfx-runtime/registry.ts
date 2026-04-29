@@ -67,6 +67,23 @@ export function computeGfxDurationSec(
 }
 
 /**
+ * Auto-loop signal: true when at least one runtime implements `finished()`
+ * and every runtime that implements it is finished. Runtimes without
+ * `finished()` (infinite emitters) play forever — we never auto-loop a
+ * scene composed exclusively of them.
+ */
+export function allActiveFinished(runtimes: Iterable<GfxElementRuntime>): boolean {
+  let anyHasFinished = false;
+  for (const rt of runtimes) {
+    if (rt.finished) {
+      anyHasFinished = true;
+      if (!rt.finished()) return false;
+    }
+  }
+  return anyHasFinished;
+}
+
+/**
  * Label describing why an element won't be visible in the model-viewer
  * preview, or `null` if it will render. Drives the GFX tooltip's
  * "not previewed" summary. Keep in sync with `spawnElementRuntime` +

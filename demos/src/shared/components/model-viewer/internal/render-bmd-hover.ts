@@ -12,6 +12,10 @@ interface RenderBmdHoverArgs {
   data: Uint8Array;
   getData: GetData;
   wasm: AutoangelModule;
+  /** Returns true once the popover has unmounted; lets us discard textures
+   *  decoded after cancellation instead of uploading them to GPU only to
+   *  dispose them immediately. */
+  cancelled?: () => boolean;
 }
 
 /**
@@ -26,7 +30,7 @@ interface RenderBmdHoverArgs {
 export async function renderBmdHoverPreview(
   args: RenderBmdHoverArgs,
 ): Promise<() => void> {
-  const { canvas, data, getData, wasm } = args;
+  const { canvas, data, getData, wasm, cancelled = () => false } = args;
 
   await ensureThree();
   const { THREE } = getThree();
@@ -42,7 +46,12 @@ export async function renderBmdHoverPreview(
       uniqueTexPaths.map(async (p): Promise<[string, ThreeModule.Texture | null]> => {
         try {
           const texData = await getData(p);
-          return [p, await loadThreeTexture(wasm, texData, p)];
+          const tex = await loadThreeTexture(wasm, texData, p);
+          if (tex && cancelled()) {
+            tex.dispose();
+            return [p, null];
+          }
+          return [p, tex];
         } catch {
           return [p, null];
         }

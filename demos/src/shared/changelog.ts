@@ -23,6 +23,13 @@ export const LAST_SEEN_KEY = 'demos:changelogLastSeen';
  */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    id: '2026-04-29-gfx-hover-preview',
+    date: '2026-04-29',
+    scope: 'pck',
+    title: 'GFX in hover preview',
+    body: 'Animates the effect inline.',
+  },
+  {
     id: '2026-04-29-gfx-combined-render',
     date: '2026-04-29',
     scope: 'pck',

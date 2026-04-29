@@ -61,6 +61,13 @@ vi.mock('../../model-viewer/internal/viewer', () => ({
 
 vi.mock('../../gfx-runtime/registry', () => ({
   spawnElementRuntime: vi.fn(),
+  allActiveFinished: (runtimes: Iterable<{ finished?: () => boolean }>) => {
+    let any = false;
+    for (const rt of runtimes) {
+      if (rt.finished) { any = true; if (!rt.finished()) return false; }
+    }
+    return any;
+  },
 }));
 
 import { spawnElementRuntime } from '../../gfx-runtime/registry';

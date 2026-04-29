@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { getThree } from '../model-viewer/internal/three';
 import { getViewer, type Viewer } from '../model-viewer/internal/viewer';
-import { spawnElementRuntime } from '../gfx-runtime/registry';
+import { spawnElementRuntime, allActiveFinished } from '../gfx-runtime/registry';
 import type { GfxElementRuntime, PreloadedTexture } from '../gfx-runtime/types';
 import type { GfxElement } from './previews/types';
 import type { FindFile } from './util/resolveEnginePath';
@@ -99,15 +99,7 @@ export function GfxScene(props: GfxSceneProps) {
       const scaled = v.lastDt * live.speed;
       for (const rt of runtimes.values()) rt.tick(scaled);
 
-      let anyHasFinished = false;
-      let allFinished = true;
-      for (const rt of runtimes.values()) {
-        if (rt.finished) {
-          anyHasFinished = true;
-          if (!rt.finished()) { allFinished = false; break; }
-        }
-      }
-      if (anyHasFinished && allFinished) {
+      if (allActiveFinished(runtimes.values())) {
         live.onLoop();
         for (const rt of runtimes.values()) {
           scene.remove(rt.root);
