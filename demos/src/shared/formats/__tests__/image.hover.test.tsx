@@ -25,7 +25,8 @@ describe('imageFormat.HoverPreview', () => {
     const HP = imageFormat.HoverPreview!;
     const fakeWasm = {} as HoverContext['wasm'];
     const data = new Uint8Array([0x89, 0x50, 0x4e, 0x47]);
-    const { container } = render(<HP path="a.png" ext=".png" data={data} wasm={fakeWasm} />);
+    const getData = async () => new Uint8Array();
+    const { container } = render(<HP path="a.png" ext=".png" data={data} getData={getData} wasm={fakeWasm} />);
     expect(container.querySelector('img')).not.toBeNull();
   });
 
@@ -35,7 +36,8 @@ describe('imageFormat.HoverPreview', () => {
     const decodeTga = vi.fn();
     const fakeWasm = { decodeDds, decodeTga } as unknown as HoverContext['wasm'];
     const data = new Uint8Array(128);
-    const { container } = render(<HP path="a.dds" ext=".dds" data={data} wasm={fakeWasm} />);
+    const getData = async () => new Uint8Array();
+    const { container } = render(<HP path="a.dds" ext=".dds" data={data} getData={getData} wasm={fakeWasm} />);
     expect(container.querySelector('canvas')).not.toBeNull();
     expect(decodeDds).toHaveBeenCalled();
   });

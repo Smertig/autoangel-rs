@@ -5,7 +5,7 @@ import {
 } from 'react';
 import type { AutoangelModule } from '../../../types/autoangel';
 import { findFormat, type FormatLoader } from '@shared/formats/registry';
-import type { HoverContext } from '@shared/formats/types';
+import type { GetData, HoverContext } from '@shared/formats/types';
 import { getExtension } from '@shared/util/files';
 import { HoverPopover } from './HoverPopover';
 import {
@@ -19,7 +19,7 @@ interface FileHoverTargetProps {
   /** Identity for the wrapper. Re-key the component (`<FileHoverTarget key={path}>`)
    *  if `path` can change at runtime — the singleton id is captured per-mount. */
   path: string;
-  getData: (p: string) => Promise<Uint8Array>;
+  getData: GetData;
   wasm: AutoangelModule;
   children: ReactNode;
 }
@@ -102,7 +102,10 @@ export function FileHoverTarget({ path, getData, wasm, children }: FileHoverTarg
     const loader = findFormat(ext);
     body = (
       <Suspense fallback={<MutedNote>Loading…</MutedNote>}>
-        <HoverPreviewSlot loader={loader} path={path} ext={ext} data={state.data} wasm={wasm} />
+        <HoverPreviewSlot
+          loader={loader} path={path} ext={ext}
+          data={state.data} getData={getData} wasm={wasm}
+        />
       </Suspense>
     );
   }
@@ -156,14 +159,15 @@ function getHoverPreviewLazy(loader: FormatLoader): LazyExoticComponent<Componen
 }
 
 function HoverPreviewSlot({
-  loader, path, ext, data, wasm,
+  loader, path, ext, data, getData, wasm,
 }: {
   loader: FormatLoader;
   path: string;
   ext: string;
   data: Uint8Array;
+  getData: GetData;
   wasm: AutoangelModule;
 }) {
   const Comp = getHoverPreviewLazy(loader);
-  return <Comp path={path} ext={ext} data={data} wasm={wasm} />;
+  return <Comp path={path} ext={ext} data={data} getData={getData} wasm={wasm} />;
 }

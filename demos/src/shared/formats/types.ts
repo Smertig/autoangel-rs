@@ -2,6 +2,11 @@ import type { ComponentType } from 'react';
 import type { AutoangelModule } from '../../types/autoangel';
 import type { FindFile } from '@shared/components/gfx/util/resolveEnginePath';
 
+/** Format-facing data fetcher. Resolves with bytes for `path`; rejects on
+ *  miss. Distinct from the model-viewer-internal `GetFile` (paths.ts), which
+ *  returns `null` on miss; format ports bridge via `useNullableGetData`. */
+export type GetData = (path: string) => Promise<Uint8Array>;
+
 /**
  * Two-scope persisted state ports a viewer can plug into. Both blobs are
  * format-owned; the host treats them as opaque (defaults to `unknown`).
@@ -25,7 +30,7 @@ export interface StatePorts<E = unknown, F = unknown> {
 export interface ViewerContext {
   path: string;
   ext: string;
-  getData: (path: string) => Promise<Uint8Array>;
+  getData: GetData;
   wasm: AutoangelModule;
   listFiles: (prefix: string) => string[];
   findFile: FindFile;
@@ -58,12 +63,15 @@ export interface DownloadAction {
 }
 
 /** Slimmer than ViewerContext: hover previews are read-only, single-file,
- *  no navigation, no persisted state. The wrapper owns fetch + cancellation,
- *  so the format receives bytes already loaded. */
+ *  no navigation, no persisted state. The wrapper owns the popover lifecycle
+ *  and the initial fetch for `path`; `getData` is for fetching dependencies
+ *  of that file (textures, child files). */
 export interface HoverContext {
   path: string;
   ext: string;
   data: Uint8Array;
+  /** Fetch dependencies of `path` (BMD textures, ECM children, etc.). */
+  getData: GetData;
   wasm: AutoangelModule;
 }
 
