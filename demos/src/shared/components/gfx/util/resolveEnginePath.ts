@@ -32,3 +32,8 @@ export const ENGINE_PATH_PREFIXES = {
   textures: ['gfx\\textures\\', 'gfx\\Textures\\'] as const,
   sound:    ['sound\\',         'Sound\\']         as const,
 };
+
+/** Build a list of resolution candidates by prepending each prefix to `raw`. */
+export function withEnginePrefixes(raw: string, prefixes: readonly string[]): string[] {
+  return prefixes.map((p) => p + raw);
+}

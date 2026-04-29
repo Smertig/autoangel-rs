@@ -23,6 +23,13 @@ export const LAST_SEEN_KEY = 'demos:changelogLastSeen';
  */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    id: '2026-04-29-pck-refs-ecm-events',
+    date: '2026-04-29',
+    scope: 'pck',
+    title: 'GFX and sound events in ECM refs',
+    body: 'Sourced from animation timeline events.',
+  },
+  {
     id: '2026-04-29-pck-refs-dedupe',
     date: '2026-04-29',
     scope: 'pck',

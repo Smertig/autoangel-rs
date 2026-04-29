@@ -1,11 +1,7 @@
 import type { AutoangelModule } from '../../../types/autoangel';
 import type { RefExtractor } from '../../../pck/index/extractors';
 import type { RawRef } from '../../../pck/index/types';
-import { ENGINE_PATH_PREFIXES } from '../../components/gfx/util/resolveEnginePath';
-
-function withPrefixes(raw: string, prefixes: readonly string[]): string[] {
-  return prefixes.map((p) => p + raw);
-}
+import { ENGINE_PATH_PREFIXES, withEnginePrefixes } from '../../components/gfx/util/resolveEnginePath';
 
 /** Extracts asset refs from a GFX file. Each element may carry:
  *  - per-element `tex_file` (particles especially) — engine textures dir
@@ -28,7 +24,7 @@ export const gfxExtractor: RefExtractor = {
         refs.push({
           kind: 'texture',
           raw: el.tex_file,
-          candidates: withPrefixes(el.tex_file, ENGINE_PATH_PREFIXES.textures),
+          candidates: withEnginePrefixes(el.tex_file, ENGINE_PATH_PREFIXES.textures),
         });
       }
       const body = el.body;
@@ -37,13 +33,13 @@ export const gfxExtractor: RefExtractor = {
         refs.push({
           kind: 'gfx',
           raw: body.gfx_path,
-          candidates: withPrefixes(body.gfx_path, ENGINE_PATH_PREFIXES.gfx),
+          candidates: withEnginePrefixes(body.gfx_path, ENGINE_PATH_PREFIXES.gfx),
         });
       } else if (body.kind === 'model' && body.model_path) {
         refs.push({
           kind: 'model',
           raw: body.model_path,
-          candidates: withPrefixes(body.model_path, ENGINE_PATH_PREFIXES.models),
+          candidates: withEnginePrefixes(body.model_path, ENGINE_PATH_PREFIXES.models),
         });
       } else if (body.kind === 'sound') {
         for (const sp of body.paths ?? []) {
@@ -51,7 +47,7 @@ export const gfxExtractor: RefExtractor = {
           refs.push({
             kind: 'sound',
             raw: sp,
-            candidates: withPrefixes(sp, ENGINE_PATH_PREFIXES.sound),
+            candidates: withEnginePrefixes(sp, ENGINE_PATH_PREFIXES.sound),
           });
         }
       }
