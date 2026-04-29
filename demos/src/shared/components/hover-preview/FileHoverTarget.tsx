@@ -1,7 +1,7 @@
 import {
   type ComponentType, type LazyExoticComponent, type ReactNode,
   type FocusEvent, type MouseEvent,
-  Suspense, lazy, useEffect, useMemo, useRef, useState,
+  Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState,
 } from 'react';
 import type { AutoangelModule } from '../../../types/autoangel';
 import { findFormat, type FormatLoader } from '@shared/formats/registry';
@@ -93,6 +93,15 @@ export function FileHoverTarget({ path, getData, wasm, children }: FileHoverTarg
   // through from the package index when `data.length` already has them.
   const size = state.phase === 'loaded' ? state.data.length : null;
 
+  // Cache-routed `getData` for format components: own bytes (path) + every
+  // dependency (textures, child files) all share the popover-level cache, so
+  // re-hovers don't refetch and `getData(path)` returns the same bytes the
+  // wrapper already loaded. Stable per `getData` reference.
+  const cachedGetData = useCallback<GetData>(
+    (p) => getCachedFetch(p, () => getData(p)),
+    [getData],
+  );
+
   let body: ReactNode = null;
   if (state.phase === 'loading') {
     body = <MutedNote>Loading…</MutedNote>;
@@ -104,7 +113,7 @@ export function FileHoverTarget({ path, getData, wasm, children }: FileHoverTarg
       <Suspense fallback={<MutedNote>Loading…</MutedNote>}>
         <HoverPreviewSlot
           loader={loader} path={path} ext={ext}
-          data={state.data} getData={getData} wasm={wasm}
+          data={state.data} getData={cachedGetData} wasm={wasm}
         />
       </Suspense>
     );

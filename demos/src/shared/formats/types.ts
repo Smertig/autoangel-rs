@@ -69,8 +69,13 @@ export interface DownloadAction {
 export interface HoverContext {
   path: string;
   ext: string;
+  /** Pre-fetched bytes for `path`. Equivalent to `await getData(path)` (both
+   *  hit the same cache) — use this when sync access avoids an async loading
+   *  state in the format component. */
   data: Uint8Array;
-  /** Fetch dependencies of `path` (BMD textures, ECM children, etc.). */
+  /** Fetch `path` itself or any dependency (BMD textures, ECM children, etc.).
+   *  Cache-routed: re-hovers and same-path calls return the same bytes
+   *  without refetching. */
   getData: GetData;
   wasm: AutoangelModule;
 }
