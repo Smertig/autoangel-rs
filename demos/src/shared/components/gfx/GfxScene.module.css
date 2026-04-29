@@ -2,7 +2,7 @@
   position: relative;
   flex: 1;
   min-width: 0;
-  height: min(calc(100vh - 220px), 720px);
+  min-height: 0;
   background: #101015;
 }
 .canvasHost canvas { display: block; width: 100% !important; height: 100% !important; }

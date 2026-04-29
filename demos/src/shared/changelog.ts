@@ -23,6 +23,13 @@ export const LAST_SEEN_KEY = 'demos:changelogLastSeen';
  */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    id: '2026-04-29-gfx-combined-render',
+    date: '2026-04-29',
+    scope: 'pck',
+    title: 'Combined GFX preview',
+    body: 'Plays every element on one scene; sidebar mutes or solos individual parts.',
+  },
+  {
     id: '2026-04-29-pck-refs-ecm-events',
     date: '2026-04-29',
     scope: 'pck',

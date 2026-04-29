@@ -8,6 +8,25 @@ export interface TreeRow {
   children?: TreeRow[];
 }
 
+/** Stable string key for a tree path. Use everywhere a row needs a Map key
+ *  or a React key. Round-trips through `parseKey`. */
+export const keyOf = (path: readonly number[]): string => path.join('.');
+export const parseKey = (key: string): number[] => key.split('.').map(Number);
+
+/** Walk the tree once and emit (key → element) so callers don't re-walk
+ *  the structure for every drawer-open or visibility check. */
+export function flattenTree(rows: TreeRow[]): Map<string, GfxElement> {
+  const out = new Map<string, GfxElement>();
+  const walk = (rs: TreeRow[]) => {
+    for (const r of rs) {
+      out.set(keyOf(r.path), r.element);
+      if (r.children) walk(r.children);
+    }
+  };
+  walk(rows);
+  return out;
+}
+
 export interface TreeCtx {
   resolve: (gfxPath: string) => { elements: GfxElement[] } | null;
   /** Resolved gfx_path strings of ancestor containers, used to short-circuit cycles. */

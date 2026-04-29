@@ -1,11 +1,11 @@
 import type { ElementBody } from '../previews/types';
 import { formatKindBadge } from '../util/kindLabel';
-import type { TreeRow } from './buildTree';
+import { keyOf, type TreeRow } from './buildTree';
 import styles from './ElementSidebar.module.css';
 
 interface Props {
   tree: TreeRow[];
-  enabled: Set<string>;            // keys = path.join('.')
+  enabled: Set<string>;
   solo: string | null;
   expanded: Set<string>;
   selectedIndex: string | null;
@@ -15,8 +15,6 @@ interface Props {
   onSelect: (key: string) => void;
   onExpandToggle: (key: string) => void;
 }
-
-const keyOf = (p: readonly number[]) => p.join('.');
 
 export function ElementSidebar(p: Props) {
   return (

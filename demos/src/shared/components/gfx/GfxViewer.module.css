@@ -3,7 +3,8 @@
   container-type: inline-size;
   position: relative;
   height: 100%;
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
   padding: 12px;
   box-sizing: border-box;
 
@@ -105,5 +106,32 @@
   color: var(--gfx-text-muted);
 }
 
-/* ----- Elements list ----- */
-.elements { display: flex; flex-direction: column; gap: 4px; }
+/* ----- Layout: sidebar | (scene + drawer overlay) / transport ----- */
+.split {
+  display: flex;
+  flex: 1;
+  min-height: 360px;
+  min-width: 0;
+}
+.right {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+.canvasWrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+.error {
+  padding: 12px;
+  color: var(--gfx-acc-warn);
+  font: 400 12px var(--gfx-font-data);
+}
+.loading {
+  padding: 12px;
+  color: var(--gfx-text-muted);
+  font: 400 12px var(--gfx-font-data);
+}

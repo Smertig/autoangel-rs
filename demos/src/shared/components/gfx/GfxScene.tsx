@@ -1,11 +1,14 @@
 import { useEffect, useRef } from 'react';
-import * as THREE from 'three';
-import type { GfxElementRuntime } from '../gfx-runtime/types';
+import { getThree } from '../model-viewer/internal/three';
+import { getViewer, type Viewer } from '../model-viewer/internal/viewer';
+import { spawnElementRuntime } from '../gfx-runtime/registry';
+import type { GfxElementRuntime, PreloadedTexture } from '../gfx-runtime/types';
+import type { GfxElement } from './previews/types';
+import type { FindFile } from './util/resolveEnginePath';
 import styles from './GfxScene.module.css';
 
 export interface GfxSceneProps {
-  /** Parsed GFX file. */
-  parsed: { elements: any[] };
+  parsed: { elements: GfxElement[]; default_scale: number; play_speed: number };
   /** Bumped by parent on restart → triggers full dispose + respawn. */
   runtimeKey: number;
   playing: boolean;
@@ -14,170 +17,142 @@ export interface GfxSceneProps {
   enabled: Set<string>;
   /** Path-key of soloed element, or null. */
   solo: string | null;
-  /** Caller-supplied spawn — receives the path key + element, returns a runtime
-   *  or null for kinds the runtime can't render. */
-  spawn: (key: string, element: any) => GfxElementRuntime | null;
+  preloadedGfx: Map<string, unknown>;
+  preloadedTextures: Map<string, PreloadedTexture>;
+  findFile: FindFile;
+  /** True if this element should get a runtime. False rows still appear in
+   *  the parent's sidebar, but no runtime is spawned. */
+  shouldSpawn: (el: GfxElement) => boolean;
   /** Called when every active runtime has reported finished() and the scene
-   *  is about to respawn (auto-loop). */
+   *  is about to respawn. */
   onLoop: () => void;
 }
 
+type LiveProps = Pick<GfxSceneProps,
+  'playing' | 'speed' | 'parsed' | 'enabled' | 'solo' | 'onLoop'
+  | 'shouldSpawn' | 'preloadedGfx' | 'preloadedTextures' | 'findFile'>;
+
 export function GfxScene(props: GfxSceneProps) {
   const hostRef = useRef<HTMLDivElement>(null);
-  const playingRef = useRef(props.playing);
-  const speedRef = useRef(props.speed);
   const runtimesRef = useRef<Map<string, GfxElementRuntime>>(new Map());
-  const onLoopRef = useRef(props.onLoop);
-  const parsedRef = useRef(props.parsed);
-  const spawnRef = useRef(props.spawn);
-  const enabledRef = useRef(props.enabled);
-  const soloRef = useRef(props.solo);
+  const viewerRef = useRef<Viewer | null>(null);
+  const liveRef = useRef<LiveProps>(props);
+  liveRef.current = props;
 
-  // Keep refs in sync with props that the rAF loop reads each frame.
-  playingRef.current = props.playing;
-  speedRef.current = props.speed;
-  onLoopRef.current = props.onLoop;
-  parsedRef.current = props.parsed;
-  spawnRef.current = props.spawn;
-  enabledRef.current = props.enabled;
-  soloRef.current = props.solo;
-
-  // Mount + spawn + rAF — re-runs when runtimeKey changes (full restart).
   useEffect(() => {
     const host = hostRef.current!;
+    // Parent gates GfxScene on `ready`, which only fires after useGfxPreload
+    // awaits ensureThree(); getThree() is safe synchronously here.
+    const { THREE, OrbitControls } = getThree();
+    const v = getViewer(host);
+    viewerRef.current = v;
+
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x101015);
+    v.scene = scene;
 
     const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
     camera.position.set(0, 1.5, 4);
+    camera.lookAt(0, 0, 0);
+    v.camera = camera;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-    renderer.setPixelRatio(typeof window !== 'undefined' ? window.devicePixelRatio : 1);
-    host.appendChild(renderer.domElement);
+    const controls = new OrbitControls(camera, v.renderer.domElement);
+    controls.target.set(0, 0, 0);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    v.setControls(controls);
 
     const runtimes = new Map<string, GfxElementRuntime>();
     runtimesRef.current = runtimes;
-    props.parsed.elements.forEach((el, i) => {
-      const key = String(i);
-      const rt = props.spawn(key, el);
-      if (rt) {
+
+    const spawnAll = () => {
+      const live = liveRef.current;
+      for (let i = 0; i < live.parsed.elements.length; i++) {
+        const el = live.parsed.elements[i];
+        const key = String(i);
+        if (!live.shouldSpawn(el)) continue;
+        const rt = spawnElementRuntime(el.body, {
+          three: THREE,
+          gfxScale: live.parsed.default_scale ?? 1,
+          gfxSpeed: live.parsed.play_speed ?? 1,
+          timeSpanSec: undefined,
+          findFile: live.findFile,
+          element: el,
+          preloadedGfx: live.preloadedGfx,
+          preloadedTextures: live.preloadedTextures,
+        });
+        if (!rt) continue;
         runtimes.set(key, rt);
         scene.add(rt.root);
-        // Initial visibility — match enabled/solo at spawn time.
-        const visibleNow = props.solo ? key === props.solo : props.enabled.has(key);
-        rt.root.visible = visibleNow;
+        rt.root.visible = live.solo ? key === live.solo : live.enabled.has(key);
       }
-    });
-
-    const onResize = () => {
-      const r = host.getBoundingClientRect();
-      const w = Math.max(1, r.width);
-      const h = Math.max(1, r.height);
-      renderer.setSize(w, h);
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
     };
-    onResize();
-    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(onResize) : null;
-    ro?.observe(host);
+    spawnAll();
 
-    let last = performance.now();
-    let rafId = 0;
+    // Freeze the loop entirely while the tab is hidden — getViewer's rAF
+    // self-sustains via isAuxAnimating, so returning false halts it.
     let visible = (typeof document === 'undefined') || document.visibilityState !== 'hidden';
-    const loop = (now: number) => {
-      const dt = Math.min(0.1, (now - last) / 1000);
-      last = now;
-      if (playingRef.current) {
-        const scaled = dt * speedRef.current;
-        for (const rt of runtimes.values()) rt.tick(scaled);
+    v.isAuxAnimating = () => liveRef.current.playing && visible && runtimes.size > 0;
+    v.onFrameUpdate = () => {
+      const live = liveRef.current;
+      if (!live.playing || !visible) return;
+      const scaled = v.lastDt * live.speed;
+      for (const rt of runtimes.values()) rt.tick(scaled);
+
+      let anyHasFinished = false;
+      let allFinished = true;
+      for (const rt of runtimes.values()) {
+        if (rt.finished) {
+          anyHasFinished = true;
+          if (!rt.finished()) { allFinished = false; break; }
+        }
       }
-      if (playingRef.current && runtimes.size > 0) {
-        // Check whether all runtimes that report finished() are finished.
-        // If no runtime reports finished(), the scene plays forever.
-        let anyHasFinished = false;
-        let allFinished = true;
+      if (anyHasFinished && allFinished) {
+        live.onLoop();
         for (const rt of runtimes.values()) {
-          if (rt.finished) {
-            anyHasFinished = true;
-            if (!rt.finished()) { allFinished = false; break; }
-          }
+          scene.remove(rt.root);
+          rt.dispose();
         }
-        if (anyHasFinished && allFinished) {
-          onLoopRef.current();
-          // Dispose + respawn.
-          for (const rt of runtimes.values()) {
-            // remove root from scene first so disposed material/geometry references
-            // don't linger in the scene graph.
-            scene.remove(rt.root);
-            rt.dispose();
-          }
-          runtimes.clear();
-          // Capture current parsed/spawn/enabled/solo via refs so we don't pick up
-          // a stale closure if the parent passed new ones since mount.
-          const elements = parsedRef.current.elements;
-          const spawnFn = spawnRef.current;
-          const enabledNow = enabledRef.current;
-          const soloNow = soloRef.current;
-          elements.forEach((el, i) => {
-            const key = String(i);
-            const rt = spawnFn(key, el);
-            if (rt) {
-              runtimes.set(key, rt);
-              scene.add(rt.root);
-              rt.root.visible = soloNow ? key === soloNow : enabledNow.has(key);
-            }
-          });
-          last = performance.now();
-        }
+        runtimes.clear();
+        spawnAll();
       }
-      renderer.render(scene, camera);
-      // Only re-arm while the tab is visible — when hidden we let the loop freeze
-      // instead of running at the browser's throttled ~1 Hz cadence.
-      if (visible) rafId = requestAnimationFrame(loop);
     };
-    rafId = requestAnimationFrame(loop);
 
     const onVisibilityChange = () => {
       const nowVisible = document.visibilityState !== 'hidden';
-      if (nowVisible && !visible) {
-        visible = true;
-        // Reset the clock so the first frame after resume doesn't see a giant dt.
-        last = performance.now();
-        rafId = requestAnimationFrame(loop);
-      } else if (!nowVisible && visible) {
-        visible = false;
-        // The currently-pending rAF will run once and then not reschedule
-        // (loop checks `visible` before calling requestAnimationFrame).
+      if (nowVisible !== visible) {
+        visible = nowVisible;
+        if (visible) v.requestRender();
       }
     };
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', onVisibilityChange);
     }
 
+    v.requestRender();
+
     return () => {
       if (typeof document !== 'undefined') {
         document.removeEventListener('visibilitychange', onVisibilityChange);
       }
-      cancelAnimationFrame(rafId);
-      ro?.disconnect();
       for (const rt of runtimes.values()) rt.dispose();
       runtimes.clear();
-      renderer.dispose();
-      if (renderer.domElement.parentNode === host) host.removeChild(renderer.domElement);
+      v.dispose();
+      viewerRef.current = null;
     };
-    // We want the full mount/unmount cycle to fire when runtimeKey changes
-    // (restart) but NOT when other props (enabled/solo/playing/speed) change.
-    // parsed/spawn are read fresh on each mount via the props closure — that's
-    // fine because runtimeKey is the only "restart" signal.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.runtimeKey]);
 
-  // Apply visibility changes — enabled/solo can flip without restarting.
   useEffect(() => {
     for (const [key, rt] of runtimesRef.current) {
       rt.root.visible = props.solo ? key === props.solo : props.enabled.has(key);
     }
+    viewerRef.current?.requestRender();
   }, [props.enabled, props.solo]);
+
+  useEffect(() => {
+    if (props.playing) viewerRef.current?.requestRender();
+  }, [props.playing]);
 
   return <div ref={hostRef} className={styles.canvasHost} data-testid="gfx-scene" />;
 }

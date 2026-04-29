@@ -1,8 +1,19 @@
 // @vitest-environment jsdom
-import { describe, it, expect, afterEach, vi } from 'vitest';
+import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 
-// Stub three.js — only methods/types GfxScene actually calls.
-vi.mock('three', () => {
+// Captured by the mocked getViewer so tests can drive frames synchronously.
+let fakeViewer: any = null;
+let onFrameUpdate: (() => void) | null = null;
+let isAuxAnimating: (() => boolean) | null = null;
+
+class OrbitControls {
+  target = { set() {} };
+  enableDamping = false; dampingFactor = 0;
+  addEventListener() {} removeEventListener() {}
+  update() {} dispose() {}
+}
+
+vi.mock('../../model-viewer/internal/three', () => {
   class Scene {
     children: any[] = [];
     add(c: any) { this.children.push(c); }
@@ -14,234 +25,245 @@ vi.mock('three', () => {
     removeFromParent() {}
   }
   class PerspectiveCamera {
-    position = { set: vi.fn() };
-    aspect = 1;
-    updateProjectionMatrix() {}
-  }
-  class WebGLRenderer {
-    domElement: HTMLElement;
-    constructor() { this.domElement = document.createElement('canvas'); }
-    setSize() {} render() {} dispose() {} setPixelRatio() {}
+    position = { set() {} }; aspect = 1;
+    updateProjectionMatrix() {} lookAt() {}
   }
   class Color { constructor(_x?: any) {} }
-  return { Scene, Object3D, PerspectiveCamera, WebGLRenderer, Color };
+  return {
+    ensureThree: async () => {},
+    getThree: () => ({ THREE: { Scene, Object3D, PerspectiveCamera, Color }, OrbitControls }),
+  };
 });
 
+vi.mock('../../model-viewer/internal/viewer', () => ({
+  getViewer: (host: HTMLElement) => {
+    const canvas = document.createElement('canvas');
+    host.appendChild(canvas);
+    fakeViewer = {
+      renderer: { domElement: canvas, dispose() {} },
+      scene: null, camera: null, controls: null,
+      lastDt: 0.016,
+      get onFrameUpdate() { return onFrameUpdate; },
+      set onFrameUpdate(fn: any) { onFrameUpdate = fn; },
+      get isAuxAnimating() { return isAuxAnimating; },
+      set isAuxAnimating(fn: any) { isAuxAnimating = fn; },
+      requestRender: vi.fn(),
+      setControls: vi.fn(),
+      dispose: vi.fn(() => {
+        canvas.parentNode?.removeChild(canvas);
+        onFrameUpdate = null;
+        isAuxAnimating = null;
+      }),
+    };
+    return fakeViewer;
+  },
+}));
+
+vi.mock('../../gfx-runtime/registry', () => ({
+  spawnElementRuntime: vi.fn(),
+}));
+
+import { spawnElementRuntime } from '../../gfx-runtime/registry';
 import { render, cleanup } from '@testing-library/react';
 import { GfxScene } from '../GfxScene';
 
-afterEach(cleanup);
+const makeRuntime = (overrides: any = {}) => ({
+  root: { visible: true, children: [], add() {}, removeFromParent() {} },
+  tick: vi.fn(),
+  dispose: vi.fn(),
+  ...overrides,
+});
 
-describe('GfxScene scaffold', () => {
-  it('mounts a canvas inside the host div', () => {
-    const { container } = render(
-      <GfxScene parsed={{ elements: [] }} runtimeKey={0}
-        playing speed={1} enabled={new Set()} solo={null}
-        spawn={() => null} onLoop={() => {}} />,
-    );
+const baseProps: any = {
+  parsed: { elements: [], default_scale: 1, play_speed: 1 },
+  runtimeKey: 0,
+  playing: true,
+  speed: 1,
+  enabled: new Set<string>(),
+  solo: null,
+  preloadedGfx: new Map(),
+  preloadedTextures: new Map(),
+  findFile: () => null,
+  shouldSpawn: () => true,
+  onLoop: () => {},
+};
+
+beforeEach(() => { (spawnElementRuntime as any).mockReset(); });
+afterEach(() => { cleanup(); fakeViewer = null; onFrameUpdate = null; isAuxAnimating = null; });
+
+const propsFor = (over: Partial<typeof baseProps>) => ({ ...baseProps, ...over });
+
+describe('GfxScene', () => {
+  it('mounts a canvas via getViewer', () => {
+    const { container } = render(<GfxScene {...baseProps} />);
     expect(container.querySelector('canvas')).toBeTruthy();
     expect(container.querySelector('[data-testid=gfx-scene]')).toBeTruthy();
   });
 
-  it('does not throw when unmounted', () => {
-    const { unmount } = render(
-      <GfxScene parsed={{ elements: [] }} runtimeKey={0}
-        playing speed={1} enabled={new Set()} solo={null}
-        spawn={() => null} onLoop={() => {}} />,
-    );
-    expect(() => unmount()).not.toThrow();
-  });
-
-  it('spawns a runtime for each element returned by spawn(); adds root to scene', () => {
-    const spawn = vi.fn((_key: string, _el: any) => ({
-      root: { visible: true, children: [] as any[], add() {}, removeFromParent() {} },
-      tick: () => {}, dispose: () => {},
-    }));
-    render(<GfxScene parsed={{ elements: [{ name: 'a' }, { name: 'b' }] }} runtimeKey={0}
-      playing speed={1} enabled={new Set(['0', '1'])} solo={null}
-      spawn={spawn} onLoop={() => {}} />);
-    expect(spawn).toHaveBeenCalledTimes(2);
-    expect(spawn.mock.calls[0][0]).toBe('0');
-    expect(spawn.mock.calls[1][0]).toBe('1');
-  });
-
-  it('skips elements where spawn returns null (unsupported kinds)', () => {
-    const spawn = vi.fn((_key: string, el: any) => el.kind === 'particle' ? ({
-      root: { visible: true, children: [], add() {}, removeFromParent() {} },
-      tick: () => {}, dispose: () => {},
-    }) : null);
-    expect(() => render(<GfxScene parsed={{ elements: [{ kind: 'light' }, { kind: 'particle' }] }}
-      runtimeKey={0} playing speed={1} enabled={new Set(['0', '1'])} solo={null}
-      spawn={spawn} onLoop={() => {}} />)).not.toThrow();
-    expect(spawn).toHaveBeenCalledTimes(2);
-  });
-
-  it('toggles root.visible when enabled set changes', () => {
-    const root = { visible: true, children: [] as any[], add() {}, removeFromParent() {} };
-    const { rerender } = render(<GfxScene parsed={{ elements: [{}] }} runtimeKey={0}
-      playing speed={1} enabled={new Set(['0'])} solo={null}
-      spawn={() => ({ root, tick: () => {}, dispose: () => {} })} onLoop={() => {}} />);
-    expect(root.visible).toBe(true);
-    rerender(<GfxScene parsed={{ elements: [{}] }} runtimeKey={0}
-      playing speed={1} enabled={new Set([])} solo={null}
-      spawn={() => ({ root, tick: () => {}, dispose: () => {} })} onLoop={() => {}} />);
-    expect(root.visible).toBe(false);
-  });
-
-  it('solo prop overrides enabled — only soloed root visible', () => {
-    const rootA = { visible: true, children: [] as any[], add() {}, removeFromParent() {} };
-    const rootB = { visible: true, children: [] as any[], add() {}, removeFromParent() {} };
-    let i = 0;
-    const spawn = () => {
-      const root = i++ === 0 ? rootA : rootB;
-      return { root, tick: () => {}, dispose: () => {} };
-    };
-    const { rerender } = render(<GfxScene parsed={{ elements: [{}, {}] }} runtimeKey={0}
-      playing speed={1} enabled={new Set(['0', '1'])} solo={null}
-      spawn={spawn} onLoop={() => {}} />);
-    expect(rootA.visible).toBe(true);
-    expect(rootB.visible).toBe(true);
-    rerender(<GfxScene parsed={{ elements: [{}, {}] }} runtimeKey={0}
-      playing speed={1} enabled={new Set(['0', '1'])} solo={'1'}
-      spawn={spawn} onLoop={() => {}} />);
-    expect(rootA.visible).toBe(false);
-    expect(rootB.visible).toBe(true);
-  });
-
-  it('disposes all runtimes when runtimeKey bumps', () => {
-    const dispose = vi.fn();
-    let spawnCount = 0;
-    const spawn = () => {
-      spawnCount++;
-      return {
-        root: { visible: true, children: [], add() {}, removeFromParent() {} },
-        tick: () => {}, dispose,
-      };
-    };
-    const { rerender } = render(<GfxScene parsed={{ elements: [{}] }} runtimeKey={0}
-      playing speed={1} enabled={new Set(['0'])} solo={null}
-      spawn={spawn} onLoop={() => {}} />);
-    expect(spawnCount).toBe(1);
-    rerender(<GfxScene parsed={{ elements: [{}] }} runtimeKey={1}
-      playing speed={1} enabled={new Set(['0'])} solo={null}
-      spawn={spawn} onLoop={() => {}} />);
-    expect(dispose).toHaveBeenCalled();
-    expect(spawnCount).toBe(2);
-  });
-
-  it('disposes all runtimes on unmount', () => {
-    const dispose = vi.fn();
-    const { unmount } = render(<GfxScene parsed={{ elements: [{}] }} runtimeKey={0}
-      playing speed={1} enabled={new Set(['0'])} solo={null}
-      spawn={() => ({
-        root: { visible: true, children: [], add() {}, removeFromParent() {} },
-        tick: () => {}, dispose,
-      })} onLoop={() => {}} />);
+  it('disposes the viewer on unmount', () => {
+    const { unmount } = render(<GfxScene {...baseProps} />);
+    const dispose = fakeViewer.dispose;
     unmount();
     expect(dispose).toHaveBeenCalled();
   });
 
-  it('does not auto-loop when no runtime implements finished()', async () => {
-    const onLoop = vi.fn();
-    const dispose = vi.fn();
-    let spawnCount = 0;
-    const spawn = (_k: string, _el: any) => {
-      spawnCount++;
-      return {
-        root: { visible: true, children: [] as any[], add() {}, removeFromParent() {} },
-        tick: () => {}, dispose,
-        // No finished()
-      };
-    };
-    render(<GfxScene parsed={{ elements: [{}] }} runtimeKey={0}
-      playing speed={1} enabled={new Set(['0'])} solo={null}
-      spawn={spawn} onLoop={onLoop} />);
-    await new Promise(r => setTimeout(r, 64));
-    expect(onLoop).not.toHaveBeenCalled();
-    expect(spawnCount).toBe(1);
-    expect(dispose).not.toHaveBeenCalled();
+  it('spawns a runtime for each element where shouldSpawn returns true', () => {
+    (spawnElementRuntime as any).mockImplementation(() => makeRuntime());
+    render(<GfxScene {...propsFor({
+      parsed: { elements: [{ name: 'a' }, { name: 'b' }], default_scale: 1, play_speed: 1 },
+      enabled: new Set(['0', '1']),
+    })} />);
+    expect(spawnElementRuntime).toHaveBeenCalledTimes(2);
   });
 
-  it('auto-loops when every runtime reports finished()', async () => {
-    const onLoop = vi.fn();
-    const dispose = vi.fn();
-    let spawnCount = 0;
-    let isFinished = false;
-    const spawn = (_k: string, _el: any) => {
-      spawnCount++;
-      return {
-        root: { visible: true, children: [] as any[], add() {}, removeFromParent() {} },
-        tick: () => {}, dispose,
-        finished: () => isFinished,
-      };
-    };
-    render(<GfxScene parsed={{ elements: [{}] }} runtimeKey={0}
-      playing speed={1} enabled={new Set(['0'])} solo={null}
-      spawn={spawn} onLoop={onLoop} />);
-    expect(spawnCount).toBe(1);
-
-    // Flip to finished and let rAF run.
-    isFinished = true;
-    await new Promise(r => setTimeout(r, 96));
-    isFinished = false; // so the respawned runtime doesn't immediately re-fire infinitely
-
-    expect(onLoop).toHaveBeenCalled();
-    expect(spawnCount).toBeGreaterThanOrEqual(2);
-    expect(dispose).toHaveBeenCalled();
+  it('skips elements where shouldSpawn returns false', () => {
+    (spawnElementRuntime as any).mockImplementation(() => makeRuntime());
+    render(<GfxScene {...propsFor({
+      parsed: { elements: [{ name: 'a' }, { name: 'b' }], default_scale: 1, play_speed: 1 },
+      shouldSpawn: (el: any) => el.name === 'a',
+      enabled: new Set(['0', '1']),
+    })} />);
+    expect(spawnElementRuntime).toHaveBeenCalledTimes(1);
   });
 
-  it('does not auto-loop while paused', async () => {
-    const onLoop = vi.fn();
-    const spawn = () => ({
-      root: { visible: true, children: [] as any[], add() {}, removeFromParent() {} },
-      tick: () => {}, dispose: () => {},
-      finished: () => true,
+  it('does not throw when spawnElementRuntime returns null', () => {
+    (spawnElementRuntime as any).mockReturnValue(null);
+    expect(() => render(<GfxScene {...propsFor({
+      parsed: { elements: [{ name: 'a' }], default_scale: 1, play_speed: 1 },
+      enabled: new Set(['0']),
+    })} />)).not.toThrow();
+  });
+
+  it('toggles root.visible when enabled set changes', () => {
+    const root = { visible: true, children: [] as any[], add() {}, removeFromParent() {} };
+    (spawnElementRuntime as any).mockReturnValue(makeRuntime({ root }));
+    const { rerender } = render(<GfxScene {...propsFor({
+      parsed: { elements: [{ name: 'a' }], default_scale: 1, play_speed: 1 },
+      enabled: new Set(['0']),
+    })} />);
+    expect(root.visible).toBe(true);
+    rerender(<GfxScene {...propsFor({
+      parsed: { elements: [{ name: 'a' }], default_scale: 1, play_speed: 1 },
+      enabled: new Set([]),
+    })} />);
+    expect(root.visible).toBe(false);
+  });
+
+  it('solo prop hides peer-level elements', () => {
+    const rootA = { visible: true, children: [] as any[], add() {}, removeFromParent() {} };
+    const rootB = { visible: true, children: [] as any[], add() {}, removeFromParent() {} };
+    let i = 0;
+    (spawnElementRuntime as any).mockImplementation(() =>
+      makeRuntime({ root: i++ === 0 ? rootA : rootB }),
+    );
+    const { rerender } = render(<GfxScene {...propsFor({
+      parsed: { elements: [{ name: 'a' }, { name: 'b' }], default_scale: 1, play_speed: 1 },
+      enabled: new Set(['0', '1']),
+    })} />);
+    expect(rootA.visible).toBe(true);
+    expect(rootB.visible).toBe(true);
+    rerender(<GfxScene {...propsFor({
+      parsed: { elements: [{ name: 'a' }, { name: 'b' }], default_scale: 1, play_speed: 1 },
+      enabled: new Set(['0', '1']),
+      solo: '1',
+    })} />);
+    expect(rootA.visible).toBe(false);
+    expect(rootB.visible).toBe(true);
+  });
+
+  it('runtimeKey bump disposes runtimes and respawns', () => {
+    const dispose = vi.fn();
+    let spawnCount = 0;
+    (spawnElementRuntime as any).mockImplementation(() => {
+      spawnCount++;
+      return makeRuntime({ dispose });
     });
-    render(<GfxScene parsed={{ elements: [{}] }} runtimeKey={0}
-      playing={false} speed={1} enabled={new Set(['0'])} solo={null}
-      spawn={spawn} onLoop={onLoop} />);
-    await new Promise(r => setTimeout(r, 64));
-    expect(onLoop).not.toHaveBeenCalled();
+    const { rerender } = render(<GfxScene {...propsFor({
+      parsed: { elements: [{ name: 'a' }], default_scale: 1, play_speed: 1 },
+      enabled: new Set(['0']),
+    })} />);
+    expect(spawnCount).toBe(1);
+    rerender(<GfxScene {...propsFor({
+      parsed: { elements: [{ name: 'a' }], default_scale: 1, play_speed: 1 },
+      runtimeKey: 1,
+      enabled: new Set(['0']),
+    })} />);
+    expect(dispose).toHaveBeenCalled();
+    expect(spawnCount).toBe(2);
   });
 
-  it('does not tick runtimes when playing=false', async () => {
+  it('ticks runtimes when onFrameUpdate fires while playing', () => {
     const tick = vi.fn();
-    render(<GfxScene parsed={{ elements: [{}] }} runtimeKey={0}
-      playing={false} speed={1}
-      enabled={new Set(['0'])} solo={null}
-      spawn={() => ({
-        root: { visible: true, children: [] as any[], add() {}, removeFromParent() {} },
-        tick, dispose: () => {},
-      })} onLoop={() => {}} />);
-    await new Promise(r => setTimeout(r, 64));
+    (spawnElementRuntime as any).mockReturnValue(makeRuntime({ tick }));
+    render(<GfxScene {...propsFor({
+      parsed: { elements: [{ name: 'a' }], default_scale: 1, play_speed: 1 },
+      enabled: new Set(['0']),
+      speed: 2,
+    })} />);
+    onFrameUpdate?.();
+    expect(tick).toHaveBeenCalledOnce();
+    // lastDt = 0.016, speed = 2 → scaled dt = 0.032
+    expect(tick.mock.calls[0][0]).toBeCloseTo(0.032, 5);
+  });
+
+  it('does not tick when playing is false', () => {
+    const tick = vi.fn();
+    (spawnElementRuntime as any).mockReturnValue(makeRuntime({ tick }));
+    render(<GfxScene {...propsFor({
+      parsed: { elements: [{ name: 'a' }], default_scale: 1, play_speed: 1 },
+      enabled: new Set(['0']),
+      playing: false,
+    })} />);
+    onFrameUpdate?.();
     expect(tick).not.toHaveBeenCalled();
   });
 
-  it('freezes the rAF loop when document.visibilityState becomes hidden', async () => {
-    const tick = vi.fn();
-    render(<GfxScene parsed={{ elements: [{}] }} runtimeKey={0}
-      playing speed={1}
-      enabled={new Set(['0'])} solo={null}
-      spawn={() => ({
-        root: { visible: true, children: [] as any[], add() {}, removeFromParent() {} },
-        tick, dispose: () => {},
-      })} onLoop={() => {}} />);
-    // Let some ticks happen.
-    await new Promise(r => setTimeout(r, 32));
-    const ticksWhileVisible = tick.mock.calls.length;
-    expect(ticksWhileVisible).toBeGreaterThan(0);
+  it('isAuxAnimating reflects playing state', () => {
+    (spawnElementRuntime as any).mockReturnValue(makeRuntime());
+    const { rerender } = render(<GfxScene {...propsFor({
+      parsed: { elements: [{ name: 'a' }], default_scale: 1, play_speed: 1 },
+      enabled: new Set(['0']),
+    })} />);
+    expect(isAuxAnimating?.()).toBe(true);
+    rerender(<GfxScene {...propsFor({
+      parsed: { elements: [{ name: 'a' }], default_scale: 1, play_speed: 1 },
+      enabled: new Set(['0']),
+      playing: false,
+    })} />);
+    expect(isAuxAnimating?.()).toBe(false);
+  });
 
-    // Hide the tab.
-    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
-    document.dispatchEvent(new Event('visibilitychange'));
+  it('auto-loops when every runtime reports finished()', () => {
+    const onLoop = vi.fn();
+    const dispose = vi.fn();
+    let spawnCount = 0;
+    let finished = true;
+    (spawnElementRuntime as any).mockImplementation(() => {
+      spawnCount++;
+      return makeRuntime({ dispose, finished: () => finished });
+    });
+    render(<GfxScene {...propsFor({
+      parsed: { elements: [{ name: 'a' }], default_scale: 1, play_speed: 1 },
+      enabled: new Set(['0']),
+      onLoop,
+    })} />);
+    expect(spawnCount).toBe(1);
+    onFrameUpdate?.();
+    expect(onLoop).toHaveBeenCalled();
+    expect(dispose).toHaveBeenCalled();
+    expect(spawnCount).toBeGreaterThanOrEqual(2);
+    finished = false; // prevent re-loop in subsequent invocations
+  });
 
-    await new Promise(r => setTimeout(r, 64));
-    const ticksAfterHide = tick.mock.calls.length;
-    // Allow at most one stray tick after the visibility change before the loop freezes.
-    expect(ticksAfterHide - ticksWhileVisible).toBeLessThanOrEqual(1);
-
-    // Restore visibility for downstream tests.
-    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
-    document.dispatchEvent(new Event('visibilitychange'));
+  it('does not auto-loop when no runtime implements finished()', () => {
+    const onLoop = vi.fn();
+    (spawnElementRuntime as any).mockReturnValue(makeRuntime());
+    render(<GfxScene {...propsFor({
+      parsed: { elements: [{ name: 'a' }], default_scale: 1, play_speed: 1 },
+      enabled: new Set(['0']),
+      onLoop,
+    })} />);
+    onFrameUpdate?.();
+    expect(onLoop).not.toHaveBeenCalled();
   });
 });

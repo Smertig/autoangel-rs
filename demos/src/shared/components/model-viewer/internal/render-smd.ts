@@ -24,7 +24,7 @@ import {
   computeGfxDurationSec,
 } from '../../gfx-runtime/registry';
 import { createGfxLoader } from '../../gfx-runtime/loader';
-import { loadParticleTexture, resolveTexturePath } from '../../gfx/previews/particle/texture';
+import { preloadGfxGraph } from '../../gfx-runtime/preload';
 import type { DurationContext, GfxLike, IsRenderable } from '../../gfx-runtime/duration';
 import { createNoopRuntime } from '../../gfx-runtime/noop';
 import { attachToHook } from '../../gfx-runtime/hook';
@@ -273,57 +273,14 @@ export async function renderFromSmd(
   }> => {
     const resolveGfxPath = (p: string) =>
       resolveEnginePath(p, ENGINE_PATH_PREFIXES.gfx, findFile);
-    const preloadedGfx = new Map<string, GfxLike>();
     const resolvedPaths = gfxEvents.map((ev) => resolveGfxPath(ev.filePath));
 
-    // BFS-load every referenced GFX file (events + every nested
-    // `Container.gfx_path`) so the spawn flow stays fully synchronous.
-    const seen = new Set<string>();
-    let pending: string[] = [];
-    const enqueue = (p: string | null) => {
-      if (p && !seen.has(p)) { seen.add(p); pending.push(p); }
-    };
-    for (const r of resolvedPaths) enqueue(r);
-    while (pending.length > 0) {
-      const batch = pending;
-      pending = [];
-      const loaded = await Promise.all(batch.map(async (path) => {
-        const gfx = await gfxLoader!.load(path);
-        return { path, gfx: gfx ? (gfx as GfxLike) : null };
-      }));
-      for (const { path, gfx } of loaded) {
-        if (!gfx) continue;
-        preloadedGfx.set(path, gfx);
-        for (const el of gfx.elements) {
-          if (el.body.kind === 'container' && el.body.gfx_path) {
-            enqueue(resolveGfxPath(el.body.gfx_path));
-          }
-        }
-      }
-    }
-
-    // Walk every preloaded element for tex_files; preload + decode in parallel
-    // so particle/decal runtimes can attach the texture at construction.
-    const texPaths = new Set<string>();
-    for (const gfx of preloadedGfx.values()) {
-      for (const el of gfx.elements) {
-        if (el.tex_file) {
-          const tp = resolveTexturePath(el.tex_file, findFile);
-          if (tp) texPaths.add(tp);
-        }
-      }
-    }
-    const preloadedTextures = new Map<string, PreloadedTexture>();
-    await Promise.all([...texPaths].map(async (texPath) => {
-      const data = await getFile(texPath).catch(() => null);
-      if (!data || data.byteLength === 0) return;
-      try {
-        const tex = await loadParticleTexture(wasm, data, texPath);
-        if (tex) preloadedTextures.set(texPath, tex as PreloadedTexture);
-      } catch (e) {
-        console.warn('[gfx-runtime] texture preload failed:', texPath, e);
-      }
-    }));
+    const { preloadedGfx, preloadedTextures } = await preloadGfxGraph({
+      wasm,
+      getData: (p) => getFile(p).catch(() => null),
+      findFile,
+      seeds: resolvedPaths.filter((p): p is string => p != null),
+    }) as { preloadedGfx: Map<string, GfxLike>; preloadedTextures: Map<string, PreloadedTexture> };
 
     const resolveDur = (p: string) => preloadedGfx.get(resolveGfxPath(p) ?? '') ?? null;
     const effects: ScheduledEffect[] = gfxEvents.map((ev, i) => {
