@@ -1,5 +1,5 @@
 import type { GfxElement, KeyPointSet } from '../../../types/autoangel';
-import type { ElementBodyKind } from '../gfx/previews/types';
+import type { ElementBodyKind } from '../gfx/types';
 
 export type DurationElement = Pick<GfxElement, 'body' | 'key_point_set'>;
 export type GfxLike = { elements: ReadonlyArray<GfxElement> };

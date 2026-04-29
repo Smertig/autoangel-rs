@@ -1,4 +1,4 @@
-import type { ElementBody } from '../types';
+import type { ElementBody } from '../../types';
 import type { KpController } from '../../util/gfxTypes';
 import { hasMotionAffector, resolvePoolSize, type ShapeCfg, type SimConfig } from './simulation';
 

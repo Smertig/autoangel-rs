@@ -2,7 +2,7 @@ import { spawnElementRuntime, computeElementDurationSec } from './registry';
 import { createAnimatedGroupPair } from './animated-group';
 import { resolveEnginePath, ENGINE_PATH_PREFIXES } from '../gfx/util/resolveEnginePath';
 import { type DurationContext, type DurationElement, keyPointSetDurationSec } from './duration';
-import type { ElementBody } from '../gfx/previews/types';
+import type { ElementBody } from '../gfx/types';
 import type { GfxElementRuntime, SpawnOpts } from './types';
 
 type ContainerBody = Extract<ElementBody, { kind: 'container' }>;

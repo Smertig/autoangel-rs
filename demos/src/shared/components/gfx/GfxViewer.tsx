@@ -11,7 +11,7 @@ import {
   elementSkipReason,
 } from '../gfx-runtime/registry';
 import { resolveEnginePath, ENGINE_PATH_PREFIXES } from './util/resolveEnginePath';
-import type { ElementBodyKind, GfxElement, ViewerCtx } from './previews/types';
+import type { ElementBodyKind, GfxElement, ViewerCtx } from './types';
 import styles from './GfxViewer.module.css';
 
 interface GfxViewerProps {

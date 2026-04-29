@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { FieldPanel } from './fieldPanel';
 import { buildFieldRowsFor } from './fields';
 import { formatKindBadge } from './util/kindLabel';
-import type { GfxElement, ViewerCtx } from './previews/types';
+import type { GfxElement, ViewerCtx } from './types';
 import styles from './ParameterDrawer.module.css';
 
 interface ParameterDrawerProps {

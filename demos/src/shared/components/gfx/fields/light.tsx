@@ -1,7 +1,7 @@
 import type { FieldRow } from '../fieldPanel';
 import { BoolDot, ColorSwatch, MonoNum, Vec3 } from '../formatters';
 import { buildTrack } from '../util/keypointTrack';
-import type { ElementBody, GfxElement, ViewerCtx } from '../previews/types';
+import type { ElementBody, GfxElement, ViewerCtx } from '../types';
 import styles from '../previews/LightPreview.module.css';
 
 type LightBody = Extract<ElementBody, { kind: 'light' }>;

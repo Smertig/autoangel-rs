@@ -3,7 +3,7 @@ import type { Sample } from '../../util/keypointTrack';
 import { applyKeypointTransform } from '../../util/keypointApply';
 import { decalBlendingProps } from './blend';
 import { sampleAtlasFrame } from '../../util/atlas';
-import type { ElementBody, GfxElement } from '../types';
+import type { ElementBody, GfxElement } from '../../types';
 
 type DecalBody = Extract<ElementBody, { kind: 'decal' }>;
 

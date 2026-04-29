@@ -1,4 +1,4 @@
-import type { GfxElement, ElementBodyKind } from '../previews/types';
+import type { GfxElement, ElementBodyKind } from '../types';
 
 export const BASE_LABELS: Record<ElementBodyKind, string> = {
   particle: 'PARTICLE',

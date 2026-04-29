@@ -1,6 +1,6 @@
 import type { FieldRow } from '../fieldPanel';
 import { BoolDot, MonoNum, PathOrText } from '../formatters';
-import type { ElementBody, GfxElement, ViewerCtx } from '../previews/types';
+import type { ElementBody, GfxElement, ViewerCtx } from '../types';
 import { flagRows } from './_helpers';
 
 type ContainerBody = Extract<ElementBody, { kind: 'container' }>;

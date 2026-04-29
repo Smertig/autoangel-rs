@@ -1,4 +1,4 @@
-import type { GfxElement } from '../previews/types';
+import type { GfxElement } from '../types';
 
 export interface TreeRow {
   /** Stable index path: [0, 2, 1] = root.elements[0].children[2].children[1]. */

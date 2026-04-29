@@ -1,4 +1,4 @@
-import type { ElementBody, GfxElement } from '../gfx/previews/types';
+import type { ElementBody, GfxElement } from '../gfx/types';
 import type { FindFile } from '../gfx/util/resolveEnginePath';
 
 export interface GfxElementRuntime {

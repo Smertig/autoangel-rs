@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { FieldRow } from '../fieldPanel';
 import { BoolDot, ColorSwatch, MonoJson, MonoNum, PathOrText } from '../formatters';
-import type { ElementBody, GfxElement, ViewerCtx } from '../previews/types';
+import type { ElementBody, GfxElement, ViewerCtx } from '../types';
 import type { FindFile } from '../util/resolveEnginePath';
 import styles from '../previews/DefaultPreview.module.css';
 

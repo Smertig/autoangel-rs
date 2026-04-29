@@ -1,5 +1,5 @@
-import type { AutoangelModule } from '../../../../types/autoangel';
-import type { FindFile } from '../util/resolveEnginePath';
+import type { AutoangelModule } from '../../../types/autoangel';
+import type { FindFile } from './util/resolveEnginePath';
 
 type ParseGfxResult = ReturnType<AutoangelModule['parseGfx']>;
 export type GfxElement = ParseGfxResult['elements'][number];

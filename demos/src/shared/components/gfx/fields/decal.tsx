@@ -2,7 +2,7 @@ import type { FieldRow } from '../fieldPanel';
 import { BoolDot, MonoNum, PathOrText } from '../formatters';
 import { buildTrack } from '../util/keypointTrack';
 import { formatBlendMode } from '../util/blendModes';
-import type { ElementBody, GfxElement, ViewerCtx } from '../previews/types';
+import type { ElementBody, GfxElement, ViewerCtx } from '../types';
 import styles from '../previews/decal/DecalPreview.module.css';
 
 type DecalBody = Extract<ElementBody, { kind: 'decal' }>;

@@ -10,7 +10,7 @@ import { type AnimEvent, type EventCluster, EVENT_GFX, EVENT_SOUND, clusterEvent
 import type { SkinStats } from './mesh';
 import type { GfxEffect } from '../../../../types/autoangel';
 import { elementSkipReason } from '../../gfx-runtime/registry';
-import type { ElementBodyKind } from '../../gfx/previews/types';
+import type { ElementBodyKind } from '../../gfx/types';
 import type { ModelEntryState, ModelStatePorts, Vec3 } from '../state';
 
 /** Toolbar loop-mode toggle states. */

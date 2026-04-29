@@ -30,7 +30,7 @@ import { createNoopRuntime } from '../../gfx-runtime/noop';
 import { attachToHook } from '../../gfx-runtime/hook';
 import { resolveEnginePath, ENGINE_PATH_PREFIXES, type FindFile } from '../../gfx/util/resolveEnginePath';
 import { ALL_ELEMENT_BODY_KINDS } from '../../gfx/util/kindLabel';
-import type { ElementBodyKind } from '../../gfx/previews/types';
+import type { ElementBodyKind } from '../../gfx/types';
 import type { PreloadedTexture } from '../../gfx-runtime/types';
 
 // "站立" (standing) — preferred default animation clip

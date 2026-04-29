@@ -6,7 +6,7 @@ import { resolvePreloadedTexture } from '../gfx/previews/particle/texture';
 import { createAnimatedGroupPair } from './animated-group';
 import { createNoopRuntime } from './noop';
 import { type DurationContext, type DurationElement, keyPointSetDurationSec } from './duration';
-import type { ElementBody } from '../gfx/previews/types';
+import type { ElementBody } from '../gfx/types';
 import type { GfxElementRuntime, SpawnOpts } from './types';
 
 type ParticleBody = Extract<ElementBody, { kind: 'particle' }>;

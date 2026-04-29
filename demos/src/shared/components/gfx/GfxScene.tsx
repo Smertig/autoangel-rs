@@ -3,7 +3,7 @@ import { getThree } from '../model-viewer/internal/three';
 import { getViewer, type Viewer } from '../model-viewer/internal/viewer';
 import { spawnElementRuntime, allActiveFinished } from '../gfx-runtime/registry';
 import type { GfxElementRuntime, PreloadedTexture } from '../gfx-runtime/types';
-import type { GfxElement } from './previews/types';
+import type { GfxElement } from './types';
 import type { FindFile } from './util/resolveEnginePath';
 import styles from './GfxScene.module.css';
 

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ensureThree } from '../../model-viewer/internal/three';
 import { resolveEnginePath, ENGINE_PATH_PREFIXES } from '../util/resolveEnginePath';
 import { preloadGfxGraph } from '../../gfx-runtime/preload';
-import type { ViewerCtx } from '../previews/types';
+import type { ViewerCtx } from '../types';
 import type { PreloadedTexture } from '../../gfx-runtime/types';
 
 export interface PreloadResult {

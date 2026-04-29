@@ -3,7 +3,7 @@ import { spawnContainerRuntime, computeContainerDurationSec } from './container'
 import { spawnDecalRuntime, computeDecalDurationSec } from './decal';
 import { createNoopRuntime } from './noop';
 import type { DurationContext, DurationElement, GfxLike } from './duration';
-import type { ElementBody, ElementBodyKind } from '../gfx/previews/types';
+import type { ElementBody, ElementBodyKind } from '../gfx/types';
 import type { GfxElement } from '../../../types/autoangel';
 import type { GfxElementRuntime, SpawnOpts } from './types';
 

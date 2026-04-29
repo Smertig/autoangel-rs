@@ -1,4 +1,4 @@
-import type { ElementBody } from '../previews/types';
+import type { ElementBody } from '../types';
 import { formatKindBadge } from '../util/kindLabel';
 import { keyOf, type TreeRow } from './buildTree';
 import styles from './ElementSidebar.module.css';
