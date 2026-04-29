@@ -4,6 +4,7 @@ import { ImagePreview } from '@shared/components/ImagePreview';
 import { ImageDiff } from '@pck-diff/components/ImageDiff';
 import { useFileData } from '@shared/hooks/useFileData';
 import { decodeToCanvas } from '@shared/util/canvas';
+import { HOVER_FIT_STYLE } from './hover-style';
 import type { FormatDescriptor, ViewerContext, DifferContext, HoverContext } from './types';
 
 function ImageViewer({ path, ext, getData, wasm }: ViewerContext) {
@@ -36,8 +37,6 @@ function ImageHoverPreview({ ext, data, wasm }: HoverContext) {
   return null;
 }
 
-const FIT_STYLE = { maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' } as const;
-
 function NativeHoverImage({ data, ext }: { data: Uint8Array; ext: string }) {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
@@ -47,7 +46,7 @@ function NativeHoverImage({ data, ext }: { data: Uint8Array; ext: string }) {
     return () => { URL.revokeObjectURL(u); };
   }, [data, ext]);
   if (!url) return null;
-  return <img src={url} alt="" style={FIT_STYLE} />;
+  return <img src={url} alt="" style={HOVER_FIT_STYLE} />;
 }
 
 function CanvasHoverImage({
@@ -66,7 +65,7 @@ function CanvasHoverImage({
       // Swallow; metadata strip below still informs the user.
     }
   }, [data, ext, wasm]);
-  return <canvas ref={canvasRef} style={FIT_STYLE} />;
+  return <canvas ref={canvasRef} style={HOVER_FIT_STYLE} />;
 }
 
 export const imageFormat: FormatDescriptor = {

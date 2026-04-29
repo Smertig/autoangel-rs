@@ -3,14 +3,13 @@ import { BmdViewer } from '@shared/components/model-viewer';
 import { renderBmdHoverPreview } from '@shared/components/model-viewer/internal/render-bmd-hover';
 import { sideBySideDiffer } from './helpers';
 import { useNullableGetData } from '@shared/hooks/useNullableGetData';
+import { HOVER_FIT_STYLE } from './hover-style';
 import type { FormatDescriptor, ViewerContext, HoverContext } from './types';
 
 function BmdFormatViewer({ path, getData, wasm }: ViewerContext) {
   const getDataNullable = useNullableGetData(getData);
   return <BmdViewer path={path} wasm={wasm} getData={getDataNullable} />;
 }
-
-const FIT_STYLE = { maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' } as const;
 
 function BmdHoverPreview({ data, getData, wasm }: HoverContext) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -46,7 +45,7 @@ function BmdHoverPreview({ data, getData, wasm }: HoverContext) {
   if (error) {
     return <div style={{ color: '#c66', fontSize: 11, padding: 8 }}>{error}</div>;
   }
-  return <canvas ref={canvasRef} width={280} height={280} style={FIT_STYLE} />;
+  return <canvas ref={canvasRef} width={280} height={280} style={HOVER_FIT_STYLE} />;
 }
 
 export const bmdFormat: FormatDescriptor = {
