@@ -4,7 +4,7 @@ import { BoolDot, ColorSwatch, MonoNum, PathOrText, Vec3 } from '../formatters';
 import { argbToCss } from '../util/argb';
 import { formatBlendMode } from '../util/blendModes';
 import type { ElementBody, GfxElement, ViewerCtx } from '../types';
-import styles from '../previews/ParticlePreview.module.css';
+import styles from './particle.module.css';
 
 type ParticleBody = Extract<ElementBody, { kind: 'particle' }>;
 

@@ -3,7 +3,7 @@ import type { FieldRow } from '../fieldPanel';
 import { BoolDot, ColorSwatch, MonoJson, MonoNum, PathOrText } from '../formatters';
 import type { ElementBody, GfxElement, ViewerCtx } from '../types';
 import type { FindFile } from '../util/resolveEnginePath';
-import styles from '../previews/DefaultPreview.module.css';
+import styles from './default.module.css';
 
 const ARGB_KEY = /^(color|diffuse|specular|ambient)(_min|_max)?$/;
 const SKIP_KEYS = new Set(['tail_lines', 'kind', 'shape', 'raw_lines']);
