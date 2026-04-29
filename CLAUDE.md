@@ -119,7 +119,7 @@ User-visible changes surface inside each demo via the sparkle button in `NavBar`
 When adding a new entry:
 
 - **`id`** — stable slug, unique forever. Convention: `YYYY-MM-DD-short-slug`. Don't reuse or rewrite ids; they're the seen-marker keys.
-- **`scope`** — one of `'elements' | 'pck' | 'pck-diff' | 'shared'`. Use a demo's scope when the change only affects that demo. Use `'shared'` only when the change touches more than one demo (NavBar, theme, FOUC fix, cross-cutting perf). Model viewer / GFX runtime / particle previews live inside the pck demo → scope `'pck'`.
+- **`scope`** — one of `'elements' | 'pck' | 'pck-diff' | 'shared'`. Use a demo's scope when the change only affects that demo. Use `'shared'` only when the change touches more than one demo (NavBar, theme, FOUC fix, cross-cutting perf). Model viewer / GFX runtime / particle simulation live inside the pck demo → scope `'pck'`.
 - **`title`** — sentence case, no terminal period, ≤60 chars. Pick **one** of these grammatical shapes per entry and don't mix:
   - **Noun phrase** announcing the feature: *"Persistent PCK session history"*, *"3D particle simulation"*.
   - **What the user can now do** (active voice, no subject): *"Click GFX/sound paths to jump to the file"*.
