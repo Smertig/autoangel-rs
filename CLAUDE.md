@@ -94,6 +94,22 @@ The `?local` parameter still works for loading WASM from the local build.
 
 Demo source is in `demos/src/` (TypeScript + React). Run `cd demos && npx vitest` for unit tests.
 
+### Three.js + GFX runtime invariants (demos)
+
+These are non-obvious rules that bite anyone adding a new 3D pane or texture-decoding code path:
+
+- **The lazy three loader is the single source of truth for `three`.** `model-viewer/internal/three.ts` exports `ensureThree()` (async) and `getThree()` (sync, throws if not awaited). `loadParticleTexture` and other texture decoders go through `getThree()`, so they fail unless `ensureThree()` was awaited somewhere on the path. **Static `import * as THREE from 'three'` does NOT prime the lazy loader's internal binding** — it imports the module but the loader's `THREE` variable stays null. Always call `await ensureThree()` once at the top of any new initialization that will reach `loadParticleTexture`/`loadThreeTexture`/etc.
+
+- **Particle and decal runtimes deliberately render *nothing* for textureless particles** (engine parity — see `gfx-runtime/particle.ts:36-40`). When `opts.preloadedTextures` lacks the resolved texture path, `spawnParticleRuntime` returns `createNoopRuntime` instead of falling back to a colored quad. Consumers that want visible particles MUST preload textures (via `gfx-runtime/preload.ts:preloadGfxGraph` or equivalent) before spawning. A subtle symptom: every runtime is a noop → all `finished()` return true → auto-loop fires every frame → loop indicators stay lit.
+
+- **`getViewer` (`model-viewer/internal/viewer.ts`) is the right primitive for any new 3D pane, not just the model viewer.** It owns lazy-three loading, render-on-demand scheduling, controls integration (re-arms render on damping motion via `'change'` event), scene disposal, and tab-throttling avoidance. The render loop self-sustains via `isMixerActive() || v.isAuxAnimating?.()`. New panes set `v.scene`, `v.camera`, `v.setControls(...)`, `v.onFrameUpdate`, and `v.isAuxAnimating`; never roll their own renderer + rAF. Toggle `isAuxAnimating` rather than starting/stopping rAF manually.
+
+- **`gfx-runtime/preload.ts:preloadGfxGraph` is the single source of truth for the BFS-load + parallel texture-decode flow.** Both the model viewer's GFX event preload (`render-smd.ts:buildEffectList`) and the standalone GFX viewer (`useGfxPreload`) consume it. Don't reimplement. Pass `seeds: string[]` (resolved engine-prefix paths) and optional `extraElements` for any top-level elements not represented in `preloadedGfx` itself.
+
+- **Engine path resolution: every reference uses `resolveEnginePath(rawPath, ENGINE_PATH_PREFIXES.<kind>, findFile)`.** Prefix tuples are in `gfx/util/resolveEnginePath.ts` (`gfx`, `models`, `textures`, `sound`). Don't hand-prefix paths. PCKs sometimes contain double-`gfx\` entries (`gfx\gfx\textures\...`) for a small subset of files; `findFile` is case-insensitive and the prefix loop tries `gfx\textures\` and `gfx\Textures\`, so both spellings resolve correctly.
+
+- **`bindable!` macro doesn't accept tuple-variant enums.** `Foo(Bar)` breaks PyO3 derive. Use `Foo { bar: Bar }` instead. Applies to every `enum` inside `model/` that crosses the language boundary.
+
 ### Demo changelog
 
 User-visible changes surface inside each demo via the sparkle button in `NavBar`, backed by `demos/src/shared/changelog.ts`. The `CHANGELOG` array is hand-edited; first-time visitors get a silent localStorage init so they don't see a dot for historical entries.
