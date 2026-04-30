@@ -2,7 +2,7 @@ import type * as ThreeModule from 'three';
 import type { HoverCanvasRenderArgs } from '@shared/components/hover-preview/types';
 import { ensureThree, getThree } from './three';
 import { resolvePath, collectSkinPaths, tryLoadSki, tryFallbackSkiPath } from '@shared/util/model-dependencies';
-import { loadSkinFile } from './mesh';
+import { disposeSkinMeshes, loadSkinFile } from './mesh';
 import { fitCameraToObject } from './camera-fit';
 import { addStandardLights } from './scene';
 
@@ -51,22 +51,11 @@ export async function renderEcmHoverPreview(
   }
   if (cancelled()) return () => {};
 
-  // All decoded meshes — kept as a typed list so disposeAll can release
-  // their geometry/material/textures explicitly without traversing the
-  // group (and without falling back to `c: any` casts).
   const tracked: ThreeModule.Mesh[] = [];
   let renderer: ThreeModule.WebGLRenderer | null = null;
   const disposeAll = () => {
     renderer?.dispose();
-    for (const m of tracked) {
-      m.geometry.dispose();
-      const mats = Array.isArray(m.material) ? m.material : [m.material];
-      for (const mat of mats) {
-        const mapped = mat as ThreeModule.Material & { map?: ThreeModule.Texture | null };
-        mapped.map?.dispose();
-        mat.dispose();
-      }
-    }
+    disposeSkinMeshes(tracked);
   };
 
   try {

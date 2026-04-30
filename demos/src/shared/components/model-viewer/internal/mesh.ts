@@ -1,8 +1,25 @@
+import type * as ThreeModule from 'three';
 import type { AutoangelModule } from '../../../../types/autoangel';
 import type { PackageView } from '@shared/package';
 import { textureCandidates } from '@shared/util/model-dependencies';
 import { getThree } from './three';
 import { loadThreeTexture } from './texture';
+
+/** Release everything `loadSkinFile` allocates: each mesh's geometry, its
+ *  material(s), and the texture attached as `material.map`. Hover preview
+ *  renderers call this from both their success-path cleanup and their
+ *  catch block — keeps the two paths in sync. */
+export function disposeSkinMeshes(meshes: readonly ThreeModule.Mesh[]): void {
+  for (const m of meshes) {
+    m.geometry.dispose();
+    const mats = Array.isArray(m.material) ? m.material : [m.material];
+    for (const mat of mats) {
+      const mapped = mat as ThreeModule.Material & { map?: ThreeModule.Texture | null };
+      mapped.map?.dispose();
+      mat.dispose();
+    }
+  }
+}
 
 export function buildMesh(
   skin: any,
