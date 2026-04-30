@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
-import { spawnElementRuntime, elementSkipReason } from '../registry';
+import { spawnElementRuntime, elementSkipReason, RENDERABLE_KINDS } from '../registry';
 import { minimalParticleBody, minimalSpawnOpts } from './_fixtures';
 
 describe('spawnElementRuntime', () => {
@@ -46,5 +46,10 @@ describe('elementSkipReason', () => {
 
   it('returns the kind for unknown kinds', () => {
     expect(elementSkipReason(el('lightning'))).toBe('lightning');
+  });
+
+  it('grid_decal_3d is renderable; spawn dispatches; skipReason is null', () => {
+    expect(RENDERABLE_KINDS.has('grid_decal_3d')).toBe(true);
+    expect(elementSkipReason(el('grid_decal_3d', 210))).toBeNull();
   });
 });

@@ -377,6 +377,7 @@ export async function renderFromSmd(
             kindFilter: (kind) => gfxKinds.has(kind),
             preloadedGfx,
             preloadedTextures,
+            camera: v.camera,
           });
           // ECM events usually target hooks (HH_*); prefer hooks then fall
           // back to bones, then to scene root if neither matches.

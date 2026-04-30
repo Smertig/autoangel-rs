@@ -36,6 +36,11 @@ export interface SpawnOpts {
   /** Pre-decoded textures keyed by resolved texture path. The cache outlives
    *  every runtime; meshes do not dispose these. */
   preloadedTextures?: Map<string, PreloadedTexture>;
+  /** Camera for view-aligned rendering (rot_from_view). Optional —
+   *  spawners that don't need it ignore it; grid-decal silently falls back to
+   *  default local-space mode when null. */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  camera?: any; // THREE.Camera
 }
 
 export type GfxElementSpawner<K extends ElementBody['kind']> = (

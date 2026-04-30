@@ -99,6 +99,7 @@ export async function renderGfxHoverPreview(args: HoverCanvasRenderArgs): Promis
         element: el,
         preloadedGfx: new Map(),
         preloadedTextures,
+        camera,
       });
       if (!rt) continue;
       runtimes.push(rt);

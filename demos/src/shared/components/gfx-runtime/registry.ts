@@ -1,6 +1,7 @@
 import { spawnParticleRuntime, computeParticleDurationSec } from './particle/runtime';
 import { spawnContainerRuntime, computeContainerDurationSec } from './container';
 import { spawnDecalRuntime, computeDecalDurationSec } from './decal/runtime';
+import { spawnGridDecalRuntime, computeGridDecalDurationSec } from './grid-decal/runtime';
 import { createNoopRuntime } from './noop';
 import type { DurationContext, DurationElement, GfxLike } from './duration';
 import type { ElementBody, ElementBodyKind } from '../gfx/types';
@@ -10,7 +11,7 @@ import type { GfxElementRuntime, SpawnOpts } from './types';
 /** Kinds that produce a real (non-noop) runtime. Keep in sync with the switch
  *  in `spawnElementRuntime`. */
 export const RENDERABLE_KINDS: ReadonlySet<ElementBodyKind> = new Set([
-  'particle', 'container', 'decal',
+  'particle', 'container', 'decal', 'grid_decal_3d',
 ]);
 
 export function isRenderableKind(kind: ElementBodyKind): boolean {
@@ -31,6 +32,8 @@ export function spawnElementRuntime(
       return spawnContainerRuntime(body, opts);
     case 'decal':
       return spawnDecalRuntime(body, opts);
+    case 'grid_decal_3d':
+      return spawnGridDecalRuntime(body, opts);
     default:
       return createNoopRuntime(opts.three);
   }
@@ -48,6 +51,7 @@ export function computeElementDurationSec(
     case 'particle': return computeParticleDurationSec(el, ctx);
     case 'container': return computeContainerDurationSec(el, ctx);
     case 'decal': return computeDecalDurationSec(el, ctx);
+    case 'grid_decal_3d': return computeGridDecalDurationSec(el, ctx);
     default: return 0;
   }
 }
@@ -95,6 +99,7 @@ export function elementSkipReason(element: GfxElement): string | null {
   switch (body.kind) {
     case 'particle':
     case 'container':
+    case 'grid_decal_3d':
       return null;
     case 'decal':
       // Type 101 (screen-space) parses but has no runtime — needs an

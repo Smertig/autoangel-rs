@@ -23,6 +23,13 @@ export const LAST_SEEN_KEY = 'demos:changelogLastSeen';
  */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    id: '2026-04-29-grid-decal-3d',
+    date: '2026-04-29',
+    scope: 'pck',
+    title: 'GRID DECAL 3D in 3D scene',
+    body: 'Animated vertex grids and view-aligned variants render in the model viewer.',
+  },
+  {
     id: '2026-04-29-gfx-hover-preview',
     date: '2026-04-29',
     scope: 'pck',

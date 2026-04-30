@@ -168,3 +168,15 @@ build_ecm_gfx_fixture(
     src_gfx_rel="decal_v58.gfx",
     bundled_gfx_name="decal_v58.gfx",
 )
+
+# --- ECM + GFX grid_decal_3d event fixture (ecm-gfx-grid-decal.spec.ts) ---
+# Real grid_decal_3d.gfx referenced as the event's target. Grid decal runtime
+# spawns synchronously and renders the w*h vertex grid via createGridDecalMesh.
+# Texture (grid.dds or whatever the .gfx references) may not be bundled —
+# either way the spawn proves the registry routes 'grid_decal_3d' through
+# spawnGridDecalRuntime.
+build_ecm_gfx_fixture(
+    out_name="ecm_with_gfx_grid_decal_event.pck",
+    src_gfx_rel="grid_decal_3d.gfx",
+    bundled_gfx_name="grid_decal_3d.gfx",
+)

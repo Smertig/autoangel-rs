@@ -80,6 +80,7 @@ export function GfxScene(props: GfxSceneProps) {
           element: el,
           preloadedGfx: live.preloadedGfx,
           preloadedTextures: live.preloadedTextures,
+          camera,
         });
         if (!rt) continue;
         runtimes.set(key, rt);
