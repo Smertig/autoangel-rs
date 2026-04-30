@@ -1,1 +1,0 @@
-function t(o,n){const e=document.createElement("a");e.href=URL.createObjectURL(o),e.download=n,e.click(),URL.revokeObjectURL(e.href)}function c(o,n){return n(o).then(e=>{t(new Blob([e.buffer]),o.split(/[\\/]/).pop())})}export{t as a,c as d};

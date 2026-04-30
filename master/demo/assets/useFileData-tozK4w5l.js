@@ -1,0 +1,1 @@
+import{r as u}from"./useDividerDrag-B089He_E.js";function i(s,a){const[n,e]=u.useState({status:"loading"});return u.useEffect(()=>{let r=!1;return e({status:"loading"}),a.read(s).then(t=>{r||e(t?{status:"loaded",data:t}:{status:"error",message:`File not found: ${s}`})},t=>{r||e({status:"error",message:String(t)})}),()=>{r=!0}},[s,a]),n}export{i as u};
