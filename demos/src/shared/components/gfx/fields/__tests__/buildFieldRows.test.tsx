@@ -32,4 +32,35 @@ describe('buildFieldRowsFor', () => {
     const rows = buildFieldRowsFor(body, element, fakeCtx);
     expect(rows.length).toBeGreaterThan(0);
   });
+
+  it('builds grid_decal_3d rows', () => {
+    const body: any = {
+      kind: 'grid_decal_3d',
+      w_number: 4,
+      h_number: 4,
+      vertices: [],
+      grid_size: 10,
+      z_offset: 0.5,
+      animation_keys: [
+        { time_ms: 0, vertices: [] },
+        { time_ms: 500, vertices: [] },
+      ],
+      aff_by_scl: false,
+      rot_from_view: true,
+      offset_height: 0.25,
+      always_on_ground: true,
+    };
+    const element: any = {
+      tex_file: 'foo.dds',
+      tex_row: 1,
+      tex_col: 1,
+      tex_interval: 0,
+      src_blend: 5,
+      dest_blend: 6,
+      key_point_set: undefined,
+    };
+    const rows = buildFieldRowsFor(body, element, fakeCtx);
+    const labels = rows.map((r: any) => 'divider' in r ? '---' : r.label);
+    expect(labels).toMatchSnapshot();
+  });
 });
