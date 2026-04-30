@@ -5,18 +5,30 @@ import type { PackageView } from '../package';
 // These encode Angelica Engine archive path conventions used by both
 // the 3D renderer and the dependency collector.
 
+// Callers may hand us either PCK-canonical (`gfx\models\foo.smd`) or
+// indexer-normalized (`gfx/models/foo.smd`, see `pck/index/pathKey.ts`)
+// paths. Internal manipulation runs against backslashes so the output
+// matches PCK-canonical form regardless of input.
+function toBackslashes(p: string): string {
+  return p.replace(/\//g, '\\');
+}
+
 /** Resolve a basename relative to a parent file's directory, lowercased. */
 export function resolveRelative(parentPath: string, basename: string): string {
-  const dir = parentPath.substring(0, parentPath.lastIndexOf('\\') + 1);
+  const p = toBackslashes(parentPath);
+  const dir = p.substring(0, p.lastIndexOf('\\') + 1);
   return (dir + basename).toLowerCase();
 }
 
 /**
- * Resolve a file reference that may be absolute (contains `\`) or relative.
- * Absolute paths are just lowercased; relative ones are resolved against parentPath.
+ * Resolve a file reference that may be absolute (contains a separator) or relative.
+ * Absolute paths are normalized to backslash + lowercase; relative ones are
+ * resolved against parentPath.
  */
 export function resolvePath(refPath: string, parentPath: string): string {
-  return refPath.includes('\\') ? refPath.toLowerCase() : resolveRelative(parentPath, refPath);
+  return /[\\/]/.test(refPath)
+    ? toBackslashes(refPath).toLowerCase()
+    : resolveRelative(parentPath, refPath);
 }
 
 /**
@@ -24,7 +36,7 @@ export function resolvePath(refPath: string, parentPath: string): string {
  * The engine tries three locations in order: textures/ subdir, tex_<skinname>/ subdir, bare.
  */
 export function textureCandidates(skiArchivePath: string, texName: string): string[] {
-  const skiBasename = skiArchivePath.split('\\').pop()!.replace(/\.ski$/i, '');
+  const skiBasename = toBackslashes(skiArchivePath).split('\\').pop()!.replace(/\.ski$/i, '');
   return [
     resolveRelative(skiArchivePath, 'textures\\' + texName),
     resolveRelative(skiArchivePath, 'tex_' + skiBasename + '\\' + texName),
@@ -95,11 +107,12 @@ export function discoverStckPaths(
   smdTcksDir: string | undefined,
   pkg: PackageView,
 ): string[] {
+  const p = toBackslashes(smdPath);
   const tcksName = smdTcksDir
-    || ('tcks_' + smdPath.split('\\').pop()!.replace(/\.[^.]+$/i, ''));
-  const smdDir = smdPath.substring(0, smdPath.lastIndexOf('\\'));
+    || ('tcks_' + p.split('\\').pop()!.replace(/\.[^.]+$/i, ''));
+  const smdDir = p.substring(0, p.lastIndexOf('\\'));
   const trackDir = smdDir + '\\' + tcksName;
-  return pkg.list(trackDir).filter((p: string) => p.toLowerCase().endsWith('.stck'));
+  return pkg.list(trackDir).filter((q: string) => q.toLowerCase().endsWith('.stck'));
 }
 
 // ── Dependency collector ──
