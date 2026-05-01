@@ -1,10 +1,9 @@
 import type * as ThreeModule from 'three';
 import type { HoverCanvasRenderArgs } from '@shared/components/hover-preview/types';
 import { ensureThree, getThree } from './three';
-import { resolvePath, collectSkinPaths, tryLoadSki, tryFallbackSkiPath } from '@shared/util/model-dependencies';
-import { disposeSkinMeshes, loadSkinFile } from './mesh';
-import { fitCameraToObject } from './camera-fit';
-import { addStandardLights } from './scene';
+import { resolvePath, collectSkinPaths, tryFallbackSkiPath } from '@shared/util/model-dependencies';
+import { disposeSkinMeshes, loadAllSkins } from './mesh';
+import { setupHoverScene } from './hover-scene';
 
 /**
  * One-shot static render of an ECM into a fixed-size canvas. Loads the
@@ -59,16 +58,7 @@ export async function renderEcmHoverPreview(
   };
 
   try {
-    // Load every skin variant in parallel — `tryLoadSki` and `loadSkinFile`
-    // are independent per skiPath. Sequential await would stack their fetch
-    // + decode latencies; characters with multiple `additionalSkins` were
-    // visibly slow.
-    const perSkin = await Promise.all(allSkinPaths.map(async (skiPath) => {
-      const ski = await tryLoadSki(skiPath, pkg);
-      if (!ski) return [] as ThreeModule.Mesh[];
-      const { meshes } = await loadSkinFile(wasm, pkg, ski.archivePath, ski.data);
-      return meshes as ThreeModule.Mesh[];
-    }));
+    const perSkin = await loadAllSkins(wasm, pkg, allSkinPaths);
 
     // Cancellation may have fired while skin variants were decoding —
     // dispose everything we've decoded instead of uploading it to the GPU
@@ -88,18 +78,9 @@ export async function renderEcmHoverPreview(
     }
     if (group.children.length === 0) throw new Error('No meshes built from skin files');
 
-    const scene = new THREE.Scene();
-    addStandardLights(THREE, scene);
-    scene.add(group);
-
-    const w = canvas.clientWidth || 280;
-    const h = canvas.clientHeight || 280;
-    const { camera } = fitCameraToObject(THREE, group, w, h);
-
-    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(w, h, false);
-    renderer.render(scene, camera);
+    const scene = setupHoverScene(THREE, canvas, group);
+    renderer = scene.renderer;
+    renderer.render(scene.scene, scene.camera);
 
     return disposeAll;
   } catch (e) {

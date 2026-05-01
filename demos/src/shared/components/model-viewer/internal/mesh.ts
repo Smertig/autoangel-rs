@@ -1,7 +1,7 @@
 import type * as ThreeModule from 'three';
 import type { AutoangelModule } from '../../../../types/autoangel';
 import type { PackageView } from '@shared/package';
-import { textureCandidates } from '@shared/util/model-dependencies';
+import { textureCandidates, tryLoadSki } from '@shared/util/model-dependencies';
 import { getThree } from './three';
 import { loadThreeTexture } from './texture';
 
@@ -162,4 +162,26 @@ export async function loadSkinFile(
   }
 
   return { meshes, stats };
+}
+
+/** Load every SKI variant in parallel (independent reads, decode, GPU upload).
+ *  Returns one mesh array per input path; empty arrays for paths that don't
+ *  resolve. Used by SMD/ECM hover previews where the slowest single SKI
+ *  bounds time-to-first-paint. */
+export async function loadAllSkins(
+  wasm: AutoangelModule,
+  pkg: PackageView,
+  skiPaths: readonly string[],
+  opts?: { skeleton?: any; boneNames?: string[] },
+): Promise<ThreeModule.Mesh[][]> {
+  return Promise.all(
+    skiPaths.map(async (skiPath) => {
+      const ski = await tryLoadSki(skiPath, pkg);
+      if (!ski) return [] as ThreeModule.Mesh[];
+      const { meshes } = await loadSkinFile(
+        wasm, pkg, ski.archivePath, ski.data, opts?.skeleton, opts?.boneNames,
+      );
+      return meshes as ThreeModule.Mesh[];
+    }),
+  );
 }

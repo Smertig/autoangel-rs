@@ -2,8 +2,7 @@ import type * as ThreeModule from 'three';
 import type { HoverCanvasRenderArgs } from '@shared/components/hover-preview/types';
 import { ensureThree, getThree } from './three';
 import { disposeSkinMeshes, loadSkinFile } from './mesh';
-import { fitCameraToObject } from './camera-fit';
-import { addStandardLights } from './scene';
+import { setupHoverScene } from './hover-scene';
 
 /** Static one-shot render of a SKI — meshes at bind transforms with
  *  textures applied. Standalone SKIs have no animation pipeline, so this
@@ -33,18 +32,9 @@ export async function renderSkiHoverPreview(
     const group = new THREE.Group();
     for (const m of meshes) group.add(m);
 
-    const scene = new THREE.Scene();
-    addStandardLights(THREE, scene);
-    scene.add(group);
-
-    const w = canvas.clientWidth || 280;
-    const h = canvas.clientHeight || 280;
-    const { camera } = fitCameraToObject(THREE, group, w, h);
-
-    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(w, h, false);
-    renderer.render(scene, camera);
+    const scene = setupHoverScene(THREE, canvas, group);
+    renderer = scene.renderer;
+    renderer.render(scene.scene, scene.camera);
 
     return disposeAll;
   } catch (e) {

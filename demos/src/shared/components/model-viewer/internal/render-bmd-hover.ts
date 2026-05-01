@@ -3,8 +3,7 @@ import type { HoverCanvasRenderArgs } from '@shared/components/hover-preview/typ
 import { ensureThree, getThree } from './three';
 import { loadThreeTexture } from './texture';
 import { buildBmdMeshes, buildBmdRoot } from './bmd-mesh';
-import { fitCameraToObject } from './camera-fit';
-import { addStandardLights } from './scene';
+import { setupHoverScene } from './hover-scene';
 
 /**
  * One-shot render of a parsed BMD into a fixed-size canvas. Returns a
@@ -66,18 +65,9 @@ export async function renderBmdHoverPreview(
     ({ meshes } = buildBmdMeshes(THREE, bmd, textureByPath));
     for (const m of meshes) root.add(m);
 
-    const scene = new THREE.Scene();
-    addStandardLights(THREE, scene);
-    scene.add(root);
-
-    const w = canvas.clientWidth || 280;
-    const h = canvas.clientHeight || 280;
-    const { camera } = fitCameraToObject(THREE, root, w, h);
-
-    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(w, h, false);
-    renderer.render(scene, camera);
+    const scene = setupHoverScene(THREE, canvas, root);
+    renderer = scene.renderer;
+    renderer.render(scene.scene, scene.camera);
 
     return disposeAll;
   } catch (e) {

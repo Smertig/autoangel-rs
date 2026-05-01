@@ -2,14 +2,13 @@ import type * as ThreeModule from 'three';
 import type { HoverCanvasRenderArgs } from '@shared/components/hover-preview/types';
 import { basename } from '@shared/util/path';
 import {
-  collectSkinPaths, discoverStckPaths, resolvePath, tryFallbackSkiPath, tryLoadSki,
+  collectSkinPaths, discoverStckPaths, resolvePath, tryFallbackSkiPath,
 } from '@shared/util/model-dependencies';
 import { ensureThree, getThree } from './three';
-import { disposeSkinMeshes, loadSkinFile } from './mesh';
+import { disposeSkinMeshes, loadAllSkins } from './mesh';
 import { buildSkeleton } from './skeleton';
 import { buildAnimationClip } from './clip';
-import { fitCameraToObject } from './camera-fit';
-import { addStandardLights } from './scene';
+import { setupHoverScene } from './hover-scene';
 import { PREFERRED_ANIM_HINT } from './render-smd';
 
 type SkelData = ReturnType<typeof buildSkeleton>;
@@ -77,18 +76,10 @@ export async function renderSmdHoverPreview(
 
   // Skin loads and (optional) clip fetch are independent — kick them off in
   // parallel so the slowest single read bounds time-to-first-paint.
-  const skinsPromise: Promise<ThreeModule.Mesh[][]> = Promise.all(
-    allSkinPaths.map(async (skiPath) => {
-      const ski = await tryLoadSki(skiPath, pkg);
-      if (!ski) return [] as ThreeModule.Mesh[];
-      const { meshes } = await loadSkinFile(
-        wasm, pkg, ski.archivePath, ski.data,
-        useSkinning ? skel!.skeleton : undefined,
-        useSkinning ? skel!.boneNames : undefined,
-      );
-      return meshes as ThreeModule.Mesh[];
-    }),
-  );
+  const skinOpts = useSkinning
+    ? { skeleton: skel!.skeleton, boneNames: skel!.boneNames }
+    : undefined;
+  const skinsPromise = loadAllSkins(wasm, pkg, allSkinPaths, skinOpts);
   const stckPromise: Promise<Uint8Array | null> = defaultStckPath
     ? pkg.read(defaultStckPath)
     : Promise.resolve(null);
@@ -129,17 +120,8 @@ export async function renderSmdHoverPreview(
     }
     for (const m of allMeshes) group.add(m);
 
-    const scene = new THREE.Scene();
-    addStandardLights(THREE, scene);
-    scene.add(group);
-
-    const w = canvas.clientWidth || 280;
-    const h = canvas.clientHeight || 280;
-    const { camera } = fitCameraToObject(THREE, group, w, h);
-
-    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(w, h, false);
+    const { scene, camera, renderer: r } = setupHoverScene(THREE, canvas, group);
+    renderer = r;
 
     if (clip) {
       mixer = new THREE.AnimationMixer(group);
