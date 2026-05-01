@@ -1,0 +1,142 @@
+.sidebar {
+  width: 260px;
+  flex: 0 0 260px;
+  height: 100%;
+  border-left: 1px solid var(--border);
+  background: var(--surface);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.header {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex: 0 0 auto;
+}
+
+.tree {
+  overflow-y: auto;
+  overflow-x: auto;
+  /* `flex-basis: 0` (not `auto`) forces the tree to take exactly the
+     parent's remaining space rather than its content's natural height —
+     content's natural height short-circuits `overflow-y: auto`. */
+  flex: 1 1 0;
+  min-height: 0;
+  padding: 4px 0;
+  /* Grid sizes its single column to the longest row's max-content. Every
+     row then spans that column, so hover/selected backgrounds align
+     across rows even when the tree is scrolled horizontally — without
+     it, each row's background ends at its own natural content width. */
+  display: grid;
+  grid-template-columns: max-content;
+  grid-auto-rows: auto;
+  align-content: start;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  color: var(--text);
+  /* No min-width: 0 / no flex on `.name` — rows extend to their natural
+     width so the tree's `overflow-x: auto` engages on long bone names. */
+}
+
+.row:hover {
+  background: var(--tree-hover);
+}
+
+.row.selected {
+  background: var(--tree-selected);
+}
+
+.footer {
+  flex: 0 0 auto;
+  border-top: 1px solid var(--border);
+  padding: 10px 12px;
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--bg);
+}
+
+.footerName {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  word-break: break-all;
+}
+
+.footerKind {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.footerRow {
+  display: flex;
+  gap: 6px;
+  color: var(--text);
+}
+
+.footerKey {
+  flex: 0 0 60px;
+  color: var(--text-muted);
+}
+
+.footerValue {
+  flex: 1 1 auto;
+  word-break: break-all;
+  color: var(--text);
+}
+
+.footerCoords {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  column-gap: 6px;
+  row-gap: 2px;
+  color: var(--text-muted);
+}
+
+.footerCoords code {
+  color: var(--text);
+}
+
+.chevron {
+  display: inline-block;
+  width: 12px;
+  flex: 0 0 12px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1;
+}
+
+.chevron.leaf {
+  visibility: hidden;
+}
+
+.glyph {
+  flex: 0 0 12px;
+  text-align: center;
+  color: var(--bon-hook);
+}
+
+.name {
+  /* Stays at natural width — when the row exceeds 260px the tree
+     scrolls horizontally rather than ellipsing the name. */
+}

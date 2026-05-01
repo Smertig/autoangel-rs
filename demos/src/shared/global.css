@@ -56,6 +56,10 @@
   /* Hunk separator */
   --hunk-bg: #f0f4f8;
   --hunk-bg-hover: #e4eaf0;
+
+  /* BON viewer: warm contrast for hook points so they read as distinct from
+     the cool-blue bone lines without conflicting with selection-highlight. */
+  --bon-hook: #fab005;
 }
 
 [data-theme="dark"] {
@@ -97,6 +101,8 @@
 
   --hunk-bg: #2c2e33;
   --hunk-bg-hover: #373a40;
+
+  --bon-hook: #ffd43b;
 }
 
 body {

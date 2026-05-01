@@ -28,6 +28,9 @@ describe('findFormat', () => {
   it('returns ski for .ski', () => {
     expect(findFormat('.ski').name).toBe('ski');
   });
+  it('returns bon for .bon', () => {
+    expect(findFormat('.bon').name).toBe('bon');
+  });
   it('returns stck for .stck', () => {
     expect(findFormat('.stck').name).toBe('stck');
   });
