@@ -1,0 +1,1 @@
+import{n as r,b as i,d as o}from"./index-worker-FPOJrtpH.js";function s(t,e){return r(o(r(t))+e)}function c(t,e){return/[\\/]/.test(t)?r(t):s(e,t)}function l(t,e){const n=r(t),a=i(n).replace(/\.ski$/i,"");return[s(n,"textures/"+e),s(n,"tex_"+a+"/"+e),s(n,e)]}export{c as r,l as t};

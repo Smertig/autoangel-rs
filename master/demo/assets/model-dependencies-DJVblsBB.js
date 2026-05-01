@@ -1,1 +1,0 @@
-function s(e,n){return(e.substring(0,e.lastIndexOf("\\")+1)+n).toLowerCase()}function o(e,n){return e.includes("\\")?e.toLowerCase():s(n,e)}function r(e,n){const t=e.split("\\").pop().replace(/\.ski$/i,"");return[s(e,"textures\\"+n),s(e,"tex_"+t+"\\"+n),s(e,n)]}export{o as r,r as t};
