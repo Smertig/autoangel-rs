@@ -23,6 +23,13 @@ export const LAST_SEEN_KEY = 'demos:changelogLastSeen';
  */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    id: '2026-05-01-bon-viewer',
+    date: '2026-05-01',
+    scope: 'pck',
+    title: 'BON viewer with bone tree and hook points',
+    body: 'Click any bone or hook in the side tree to pinpoint its position in the 3D rig.',
+  },
+  {
     id: '2026-05-01-3d-models-in-hover-preview',
     date: '2026-05-01',
     scope: 'pck',
