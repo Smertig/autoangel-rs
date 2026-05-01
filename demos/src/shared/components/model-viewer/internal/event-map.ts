@@ -17,9 +17,12 @@ export interface AnimEvent {
   gfxSpeed: number; // 1.0 default when EcmEvent.gfx_speed is null
 }
 
-/** Build a map from STCK animation name stem → events from ECM combined actions. */
-export function buildAnimEventMap(ecm: any, animNames: string[]): Map<string, AnimEvent[]> {
-  const animSet = new Set(animNames);
+/** Build a map from STCK animation name stem → events from ECM combined actions.
+ *  When `animNames` is omitted, every base action name in the ECM is included —
+ *  callers can extract from a wasm-owned ECM before STCK discovery and filter
+ *  by the actual clip set later. */
+export function buildAnimEventMap(ecm: any, animNames?: readonly string[]): Map<string, AnimEvent[]> {
+  const animSet = animNames ? new Set(animNames) : null;
   const result = new Map<string, AnimEvent[]>();
   const actionCount: number = ecm.combineActionCount ?? 0;
   for (let i = 0; i < actionCount; i++) {
@@ -28,7 +31,8 @@ export function buildAnimEventMap(ecm: any, animNames: string[]): Map<string, An
     const baseCount: number = ecm.combineActionBaseActionCount(i);
     for (let b = 0; b < baseCount; b++) {
       const baseName: string | undefined = ecm.combineActionBaseActionName(i, b);
-      if (!baseName || !animSet.has(baseName)) continue;
+      if (!baseName) continue;
+      if (animSet && !animSet.has(baseName)) continue;
       // Collect events for this combined action
       const events: AnimEvent[] = [];
       for (let e = 0; e < eventCount; e++) {
