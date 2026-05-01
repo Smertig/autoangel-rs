@@ -93,3 +93,9 @@ export async function preloadGfxGraph(opts: PreloadOpts): Promise<PreloadResult>
 
   return { preloadedGfx, preloadedTextures };
 }
+
+/** Dispose every texture in a `preloadedTextures` map and let the map be
+ *  GC'd. Idempotent for textures whose `dispose` is a no-op. */
+export function disposePreloadedTextures(textures: Map<string, PreloadedTexture>): void {
+  for (const tex of textures.values()) tex.dispose?.();
+}

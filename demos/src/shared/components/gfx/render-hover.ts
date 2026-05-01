@@ -7,6 +7,7 @@ import {
 } from '../gfx-runtime/registry';
 import { ENGINE_PATH_PREFIXES } from './util/resolveEnginePath';
 import { loadParticleTexture } from '../gfx-runtime/texture';
+import { disposePreloadedTextures } from '../gfx-runtime/preload';
 import { createPackageView, type PackageView } from '@shared/package';
 import type { GfxElement } from './types';
 import type { GfxElementRuntime, PreloadedTexture } from '../gfx-runtime/types';
@@ -55,7 +56,7 @@ export async function renderGfxHoverPreview(args: HoverCanvasRenderArgs): Promis
     }
   }));
   if (cancelled()) {
-    for (const tex of preloadedTextures.values()) tex.dispose?.();
+    disposePreloadedTextures(preloadedTextures);
     preloadedTextures.clear();
     return () => {};
   }
@@ -134,7 +135,7 @@ export async function renderGfxHoverPreview(args: HoverCanvasRenderArgs): Promis
     cancelAnimationFrame(rafId);
     for (const rt of runtimes) rt.dispose();
     runtimes.length = 0;
-    for (const tex of preloadedTextures.values()) tex.dispose?.();
+    disposePreloadedTextures(preloadedTextures);
     preloadedTextures.clear();
     renderer.dispose();
   };

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ensureThree } from '../../model-viewer/internal/three';
 import { ENGINE_PATH_PREFIXES } from '../util/resolveEnginePath';
-import { preloadGfxGraph } from '../../gfx-runtime/preload';
+import { disposePreloadedTextures, preloadGfxGraph } from '../../gfx-runtime/preload';
 import type { ViewerCtx } from '../types';
 import type { PreloadedTexture } from '../../gfx-runtime/types';
 
@@ -13,10 +13,6 @@ export interface PreloadResult {
 
 const EMPTY_GFX = new Map<string, unknown>();
 const EMPTY_TEX = new Map<string, PreloadedTexture>();
-
-function disposeTextures(textures: Map<string, PreloadedTexture>) {
-  for (const tex of textures.values()) tex.dispose?.();
-}
 
 /**
  * Preload nested container GFX + every element's tex_file referenced from
@@ -59,7 +55,7 @@ export function useGfxPreload(parsed: any, context: ViewerCtx): PreloadResult {
       });
 
       if (cancelled) {
-        disposeTextures(preloadedTextures);
+        disposePreloadedTextures(preloadedTextures);
         return;
       }
       ownedTexturesRef.current = preloadedTextures;
@@ -73,7 +69,7 @@ export function useGfxPreload(parsed: any, context: ViewerCtx): PreloadResult {
 
     return () => {
       cancelled = true;
-      disposeTextures(ownedTexturesRef.current);
+      disposePreloadedTextures(ownedTexturesRef.current);
       ownedTexturesRef.current = EMPTY_TEX;
     };
   }, [parsed, context.wasm, context.pkg]);

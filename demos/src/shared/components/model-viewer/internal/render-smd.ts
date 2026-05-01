@@ -25,7 +25,7 @@ import {
   computeGfxDurationSec,
 } from '../../gfx-runtime/registry';
 import { createGfxLoader } from '../../gfx-runtime/loader';
-import { preloadGfxGraph } from '../../gfx-runtime/preload';
+import { disposePreloadedTextures, preloadGfxGraph } from '../../gfx-runtime/preload';
 import type { DurationContext, GfxLike, IsRenderable } from '../../gfx-runtime/duration';
 import { createNoopRuntime } from '../../gfx-runtime/noop';
 import { attachToHook } from '../../gfx-runtime/hook';
@@ -248,7 +248,7 @@ export async function renderFromSmd(
   let currentTextures: Map<string, PreloadedTexture> | null = null;
   function disposeCurrentTextures() {
     if (!currentTextures) return;
-    for (const tex of currentTextures.values()) tex.dispose?.();
+    disposePreloadedTextures(currentTextures);
     currentTextures = null;
   }
 
