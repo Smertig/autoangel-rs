@@ -23,6 +23,13 @@ export const LAST_SEEN_KEY = 'demos:changelogLastSeen';
  */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    id: '2026-05-01-3d-models-in-hover-preview',
+    date: '2026-05-01',
+    scope: 'pck',
+    title: '3D models in hover preview',
+    body: 'BMD/SKI render statically, SMD/ECM animate the default clip, and ECM also fires GFX events.',
+  },
+  {
     id: '2026-04-29-grid-decal-3d',
     date: '2026-04-29',
     scope: 'pck',
