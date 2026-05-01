@@ -1,4 +1,4 @@
-import { normalizePathKey } from './pathKey';
+import { normalizePath } from '@shared/util/path';
 
 /** Walks `candidates` against the path index. Returns the canonical
  *  (originally-stored) path of the first candidate whose normalized key
@@ -8,7 +8,7 @@ export function resolveCandidates(
   pathIndex: Map<string, string>,
 ): string | null {
   for (const c of candidates) {
-    const hit = pathIndex.get(normalizePathKey(c));
+    const hit = pathIndex.get(normalizePath(c));
     if (hit) return hit;
   }
   return null;
@@ -25,7 +25,7 @@ export function expandDirRef(
 ): string[] {
   const ext = dirExt.toLowerCase();
   for (const dir of dirCandidates) {
-    const dirKey = normalizePathKey(dir);
+    const dirKey = normalizePath(dir);
     const prefix = dirKey.endsWith('/') ? dirKey : dirKey + '/';
     const out: string[] = [];
     for (const [key, canonical] of pathIndex) {

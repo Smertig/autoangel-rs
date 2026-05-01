@@ -55,7 +55,7 @@ export function buildTree(paths: string[]): TreeNode {
   const root = emptyTreeNode();
 
   for (const path of paths) {
-    const parts = path.split('\\');
+    const parts = path.split('/');
     let node = root;
     for (let i = 0; i < parts.length - 1; i++) {
       const dir = parts[i];
@@ -522,10 +522,10 @@ export function FileTree({
   const selectionAncestors = useMemo<string[]>(() => {
     if (!selectedPath) return [];
     const out: string[] = [];
-    let idx = selectedPath.indexOf('\\');
+    let idx = selectedPath.indexOf('/');
     while (idx >= 0) {
       out.push(selectedPath.slice(0, idx));
-      idx = selectedPath.indexOf('\\', idx + 1);
+      idx = selectedPath.indexOf('/', idx + 1);
     }
     return out;
   }, [selectedPath]);

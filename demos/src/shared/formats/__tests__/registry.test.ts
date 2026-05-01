@@ -38,7 +38,7 @@ describe('findFormat', () => {
 
 describe('downloadActions', () => {
   const mockCtx = (ext: string) => ({
-    path: `models\\test${ext}`,
+    path: `models/test${ext}`,
     ext,
     pkg: EMPTY_PACKAGE_VIEW,
     wasm: {} as any,

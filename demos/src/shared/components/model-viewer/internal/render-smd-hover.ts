@@ -1,5 +1,6 @@
 import type * as ThreeModule from 'three';
 import type { HoverCanvasRenderArgs } from '@shared/components/hover-preview/types';
+import { basename } from '@shared/util/path';
 import {
   collectSkinPaths, discoverStckPaths, resolvePath, tryFallbackSkiPath, tryLoadSki,
 } from '@shared/util/model-dependencies';
@@ -65,7 +66,7 @@ export async function renderSmdHoverPreview(
   let defaultStckPath: string | null = null;
   if (skel) {
     const stckPaths = discoverStckPaths(path, tcksDir, pkg);
-    const animNames = stckPaths.map((p) => p.split('\\').pop()!.replace(/\.stck$/i, ''));
+    const animNames = stckPaths.map((p) => basename(p).replace(/\.stck$/i, ''));
     defaultClipName = animNames.find((n) => n.includes(PREFERRED_ANIM_HINT)) ?? animNames[0] ?? null;
     if (defaultClipName) defaultStckPath = stckPaths[animNames.indexOf(defaultClipName)];
   }

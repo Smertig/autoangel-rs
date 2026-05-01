@@ -52,34 +52,34 @@ describe('ecmExtractor', () => {
     });
     const refs = ecmExtractor.extract(
       new Uint8Array(0),
-      'models\\foo\\利齿绿萼.ecm',
+      'models/foo/利齿绿萼.ecm',
       wasm,
     );
     expect(refs).toEqual([
       {
         kind: 'skin-model',
         raw: '花苞食人花.smd',
-        candidates: ['models\\foo\\花苞食人花.smd'],
+        candidates: ['models/foo/花苞食人花.smd'],
       },
       {
         kind: 'additional-skin',
         raw: 'extra1.ski',
-        candidates: ['models\\foo\\extra1.ski'],
+        candidates: ['models/foo/extra1.ski'],
       },
       {
         kind: 'additional-skin',
         raw: 'models\\other\\extra2.ski',
-        candidates: ['models\\other\\extra2.ski'],
+        candidates: ['models/other/extra2.ski'],
       },
       {
         kind: 'child-ecm',
         raw: 'child1.ecm',
-        candidates: ['models\\foo\\child1.ecm'],
+        candidates: ['models/foo/child1.ecm'],
       },
       {
         kind: 'child-ecm',
         raw: 'child2.ecm',
-        candidates: ['models\\foo\\child2.ecm'],
+        candidates: ['models/foo/child2.ecm'],
       },
     ]);
   });
@@ -108,17 +108,17 @@ describe('ecmExtractor', () => {
       {
         kind: 'gfx',
         raw: '人物\\技能\\刺客\\foo.gfx',
-        candidates: ['gfx\\人物\\技能\\刺客\\foo.gfx', 'GFX\\人物\\技能\\刺客\\foo.gfx'],
+        candidates: ['gfx/人物/技能/刺客/foo.gfx'],
       },
       {
         kind: 'sound',
         raw: '动作\\hit.wav',
-        candidates: ['sound\\动作\\hit.wav', 'Sound\\动作\\hit.wav'],
+        candidates: ['sound/动作/hit.wav'],
       },
       {
         kind: 'gfx',
         raw: 'shared\\bar.gfx',
-        candidates: ['gfx\\shared\\bar.gfx', 'GFX\\shared\\bar.gfx'],
+        candidates: ['gfx/shared/bar.gfx'],
       },
     ]);
   });

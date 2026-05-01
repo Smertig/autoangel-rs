@@ -12,7 +12,6 @@ import {
   reresolve,
   type IndexState,
 } from './reducer';
-import { normalizePathKey } from './pathKey';
 import { resolveCandidates } from './resolver';
 import { EXTRACTOR_LOADERS } from './extractors';
 import type { CachedSlotIndex, Edge } from './types';
@@ -397,11 +396,12 @@ export function useFileIndex({
   // First-pkg-wins on cross-package collision (matches the existing
   // `findFile` convention).
   useEffect(() => {
+    // `slot.fileList` is already in canonical form, so each entry doubles
+    // as its own ownership key.
     const owner = new Map<string, number>();
     for (const slot of slots) {
       for (const f of slot.fileList) {
-        const key = normalizePathKey(f);
-        if (!owner.has(key)) owner.set(key, slot.pkgId);
+        if (!owner.has(f)) owner.set(f, slot.pkgId);
       }
     }
     rebuildOwnership(stateRef.current, owner);

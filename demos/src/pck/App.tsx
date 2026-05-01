@@ -32,7 +32,7 @@ import {
   IndexerProgressStrip,
   IndexerStatus,
 } from './components/IndexerStatus';
-import { normalizePathKey } from './index/pathKey';
+import { normalizePath } from '@shared/util/path';
 import { useSessions } from './history/useSessions';
 import {
   fileFingerprint,
@@ -106,15 +106,19 @@ export function App() {
     [slots],
   );
 
+  // `slot.fileList` items are already in canonical JS form (lowercase +
+  // forward-slash), normalized by usePackageSlots at the WASM boundary —
+  // so the entry path doubles as the lookup key. The bucket retains an
+  // `orig` so that callers needing the original (i.e. WASM read) get a
+  // string that round-trips through `getFile`.
   const pathIndex = useMemo(() => {
     const byKey = new Map<string, Array<{ orig: string; pkgId: number }>>();
     for (const slot of slots) {
       for (const f of slot.fileList) {
-        const key = normalizePathKey(f);
         const entry = { orig: f, pkgId: slot.pkgId };
-        const bucket = byKey.get(key);
+        const bucket = byKey.get(f);
         if (bucket) bucket.push(entry);
-        else byKey.set(key, [entry]);
+        else byKey.set(f, [entry]);
       }
     }
     return byKey;
@@ -141,14 +145,14 @@ export function App() {
       const sel = selectedPkgIdRef.current;
       if (sel === null) throw new PackageRemovedError();
       // `canonicalPath` came from `resolve`, so the bucket lookup must hit.
-      const bucket = pathIndexRef.current.get(normalizePathKey(canonicalPath))!;
+      const bucket = pathIndexRef.current.get(canonicalPath)!;
       // Selected slot wins on cross-package collision (rare).
       const hit = bucket.find((e) => e.pkgId === sel) ?? bucket[0];
       return getFileRef.current(hit.pkgId, hit.orig);
     },
-    resolve: (path) => pathIndexRef.current.get(normalizePathKey(path))?.[0].orig ?? null,
+    resolve: (path) => pathIndexRef.current.get(normalizePath(path))?.[0].orig ?? null,
     list: (prefix) => {
-      const key = normalizePathKey(prefix);
+      const key = normalizePath(prefix);
       const out: string[] = [];
       for (const [k, bucket] of pathIndexRef.current) {
         if (k.startsWith(key)) {
@@ -286,7 +290,7 @@ export function App() {
   // (package changed, file renamed, etc.). `isStable` is defined above.
   useEffect(() => {
     if (!pendingSelection || !isStable || slots.length === 0) return;
-    const bucket = pathIndex.get(normalizePathKey(pendingSelection.path));
+    const bucket = pathIndex.get(normalizePath(pendingSelection.path));
     const slotForPck = slots.find(
       (s) => `${s.stem}.pck`.toLowerCase() === pendingSelection.pckName.toLowerCase(),
     );
@@ -370,7 +374,7 @@ export function App() {
   // `getFileData` so the file opens from the same slot the viewer is using.
   const handleNavigateToFile = useCallback(
     (path: string) => {
-      const bucket = pathIndex.get(normalizePathKey(path));
+      const bucket = pathIndex.get(normalizePath(path));
       if (!bucket) return;
       const hit = bucket.find((e) => e.pkgId === selectedPkgId) ?? bucket[0];
       setSelectedFile({ pkgId: hit.pkgId, path: hit.orig });
@@ -391,7 +395,7 @@ export function App() {
   }, []);
 
   const selectedParts = useMemo(
-    () => (selectedFile ? selectedFile.path.split('\\') : []),
+    () => (selectedFile ? selectedFile.path.split('/') : []),
     [selectedFile],
   );
 
@@ -471,7 +475,7 @@ export function App() {
     void clearAllCachedSlotIndexes();
   }, [sessionsApi, currentSessionId]);
 
-  const selectedKey = selectedFile ? normalizePathKey(selectedFile.path) : null;
+  const selectedKey = selectedFile ? normalizePath(selectedFile.path) : null;
   const outgoingRefs = useMemo(
     () => (selectedKey ? fileIndex.getOutgoing(selectedKey) : []),
     [fileIndex, selectedKey],

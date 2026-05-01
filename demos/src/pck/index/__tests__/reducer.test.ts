@@ -5,12 +5,12 @@ import {
   removeSlot,
   reresolve,
 } from '../reducer';
-import { normalizePathKey } from '../pathKey';
+import { normalizePath } from '@shared/util/path';
 import type { Edge } from '../types';
 
 function pathIndex(paths: string[]): Map<string, string> {
   const m = new Map<string, string>();
-  for (const p of paths) m.set(normalizePathKey(p), p);
+  for (const p of paths) m.set(normalizePath(p), p);
   return m;
 }
 

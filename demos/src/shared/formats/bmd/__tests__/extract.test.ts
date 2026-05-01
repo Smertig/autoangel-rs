@@ -14,8 +14,8 @@ describe('bmdExtractor', () => {
     const wasm = makeWasm(['textures\\a.dds', 'textures\\b.dds']);
     const refs = bmdExtractor.extract(new Uint8Array(0), 'b.bmd', wasm);
     expect(refs).toEqual([
-      { kind: 'texture', raw: 'textures\\a.dds', candidates: ['textures\\a.dds'] },
-      { kind: 'texture', raw: 'textures\\b.dds', candidates: ['textures\\b.dds'] },
+      { kind: 'texture', raw: 'textures\\a.dds', candidates: ['textures/a.dds'] },
+      { kind: 'texture', raw: 'textures\\b.dds', candidates: ['textures/b.dds'] },
     ]);
   });
 

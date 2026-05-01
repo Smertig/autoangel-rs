@@ -60,7 +60,7 @@ export function buildDiffTree(fileStatus: Map<string, DiffStatusValue>): DiffTre
   const root: DiffTreeNode = { name: '', children: new Map(), files: [], sortedChildren: [], sortedFiles: [] };
 
   for (const [path, status] of fileStatus) {
-    const parts = path.split('\\');
+    const parts = path.split('/');
     let node = root;
     for (let i = 0; i < parts.length - 1; i++) {
       const dir = parts[i];

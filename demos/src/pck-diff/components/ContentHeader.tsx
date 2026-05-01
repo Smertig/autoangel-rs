@@ -25,7 +25,7 @@ export function ContentHeader({
   return (
     <div className={styles.contentHeader}>
       <span className={styles.contentPath}>{path}</span>
-      <CopyButton text={path.replaceAll('\\', '/')} />
+      <CopyButton text={path} />
       {leftSize != null && rightSize != null && (
         <span className={styles.contentSize}>
           {formatSize(leftSize)} &rarr; {formatSize(rightSize)}

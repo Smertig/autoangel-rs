@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { expandDirRef, resolveCandidates } from '../resolver';
-import { normalizePathKey } from '../pathKey';
+import { normalizePath } from '@shared/util/path';
 
 function pathIndex(paths: string[]): Map<string, string> {
   const m = new Map<string, string>();
-  for (const p of paths) m.set(normalizePathKey(p), p);
+  for (const p of paths) m.set(normalizePath(p), p);
   return m;
 }
 

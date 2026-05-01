@@ -2,6 +2,7 @@
 // leading underscore so vitest's discovery skips it as a non-spec file.
 
 import { createPackageView, type PackageView } from '@shared/package';
+import { normalizePath } from '@shared/util/path';
 
 /** Minimal point-emitter particle body — what spawnElementRuntime / scheduler tests feed. */
 export function minimalParticleBody() {
@@ -40,13 +41,13 @@ export function minimalParticleElement() {
   } as any;
 }
 
-/** Build a case-insensitive PackageView from a fixed path list. Mirrors
- *  what App.tsx's path index does, but trivial enough to inline in tests. */
+/** Build a case-insensitive, separator-agnostic PackageView from a fixed
+ *  path list. Mirrors what App.tsx's path index does. */
 export function pkgFrom(paths: string[]): PackageView {
-  const lower = new Map(paths.map((p) => [p.toLowerCase(), p]));
+  const byKey = new Map(paths.map((p) => [normalizePath(p), p]));
   return createPackageView({
     getData: async () => { throw new Error('test pkg has no data'); },
-    resolve: (p) => lower.get(p.toLowerCase()) ?? null,
+    resolve: (p) => byKey.get(normalizePath(p)) ?? null,
     list: () => [],
   });
 }
@@ -57,18 +58,14 @@ export function pkgFrom(paths: string[]): PackageView {
 export function minimalSpawnOpts(three: any, overrides: Record<string, any> = {}) {
   const fakeTex: { dispose?: () => void } = { dispose: () => {} };
   const preloadedTextures = new Map<string, { dispose?: () => void }>([
-    ['gfx\\textures\\test.dds', fakeTex],
-    ['gfx\\textures\\d.dds', fakeTex],
+    ['gfx/textures/test.dds', fakeTex],
+    ['gfx/textures/d.dds', fakeTex],
   ]);
+  const byKey = new Map<string, string>();
+  for (const p of preloadedTextures.keys()) byKey.set(normalizePath(p), p);
   const pkg: PackageView = createPackageView({
     getData: async () => { throw new Error('test pkg: no live read'); },
-    resolve: (p) => {
-      const lower = p.toLowerCase();
-      for (const stored of preloadedTextures.keys()) {
-        if (stored.toLowerCase() === lower) return stored;
-      }
-      return null;
-    },
+    resolve: (p) => byKey.get(normalizePath(p)) ?? null,
     list: () => [],
   });
   return {

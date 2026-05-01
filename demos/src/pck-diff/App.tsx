@@ -17,6 +17,7 @@ import { useWorkerInit } from '@shared/hooks/useWorkerInit';
 import { NavBar } from '@shared/components/NavBar';
 import { ErrorBanner } from '@shared/components/ErrorBanner';
 import { classifyFiles, formatSize } from '@shared/util/files';
+import { normalizePath } from '@shared/util/path';
 import { bytesEqual } from '@shared/util/bytes';
 import type { KeyConfig } from '@shared/components/KeysPanel';
 import type { EntryInfo } from '../pck/worker-protocol';
@@ -369,17 +370,20 @@ export function App() {
         },
       );
 
+      // Normalize at the WASM boundary — see `shared/util/path.ts`.
+      const files = result.fileList.map(normalizePath);
+
       workerSidesRef.current[side].pckFile = pckFile;
       workerSidesRef.current[side].pkxFiles = pkxFiles;
       workerSidesRef.current[side].customKeys = customKeys;
-      workerSidesRef.current[side].files = result.fileList;
+      workerSidesRef.current[side].files = files;
 
       const totalSize = pckFile.size + pkxFiles.reduce((s, f) => s + f.size, 0);
       dispatch({
         type: 'SET_SIDE_LOADED',
         side,
         fileName: `${label} (${formatSize(totalSize)})`,
-        files: result.fileList,
+        files,
       });
     } catch (e: unknown) {
       dispatch({ type: 'SET_ERROR', message: e instanceof Error ? e.message : String(e) });

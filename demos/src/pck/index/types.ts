@@ -26,7 +26,7 @@ export interface RawRef {
 /** One edge in the index. Stored both in memory and in IDB. */
 export interface Edge {
   fromPkgId: number;
-  fromPath: string;     // canonical via normalizePathKey
+  fromPath: string;     // canonical via normalizePath
   fromName: string;     // RefExtractor.name — used for type-scoped invalidation
   kind: string;
   raw: string;

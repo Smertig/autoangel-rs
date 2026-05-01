@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import type { KeyboardEvent, MouseEvent } from 'react';
 import type { PackageSlot } from '../usePackageSlots';
 import type { RecentEntry } from '../history/types';
+import { basename, dirname } from '@shared/util/path';
 import styles from './RecentEntries.module.css';
 
 interface RecentEntriesProps {
@@ -32,13 +33,6 @@ function writeOpen(open: boolean): void {
   }
 }
 
-function splitPath(path: string): { dir: string; name: string } {
-  // Engine paths use backslashes; fall back to forward slash for safety.
-  const sep = path.lastIndexOf('\\') >= 0 ? '\\' : '/';
-  const idx = path.lastIndexOf(sep);
-  if (idx < 0) return { dir: '', name: path };
-  return { dir: path.slice(0, idx) + sep, name: path.slice(idx + 1) };
-}
 
 interface Row extends RecentEntry {
   slot: PackageSlot | null;
@@ -74,8 +68,7 @@ export const RecentEntries = memo(function RecentEntries({
         const slot = slotByPckName.get(e.pckName.toLowerCase()) ?? null;
         const isSelected =
           slot !== null && slot.pkgId === selectedPkgId && e.path === selectedPath;
-        const parts = splitPath(e.path);
-        return { ...e, slot, isSelected, dir: parts.dir, name: parts.name };
+        return { ...e, slot, isSelected, dir: dirname(e.path), name: basename(e.path) };
       }),
     [entries, slotByPckName, selectedPkgId, selectedPath],
   );

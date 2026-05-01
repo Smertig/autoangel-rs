@@ -2,7 +2,6 @@
 
 import { getExtension } from '@shared/util/files';
 import { EXTRACTOR_LOADERS, type RefExtractor } from './extractors';
-import { normalizePathKey } from './pathKey';
 import { expandDirRef } from './resolver';
 import { SCHEMA_VERSION, type CachedSlotIndex, type Edge } from './types';
 import type { MainToWorker, WorkerToMain } from './worker-protocol';
@@ -87,8 +86,10 @@ async function emitSlotMeta(pkgId: number, job: SlotJob): Promise<void> {
  *  every dir ref the slot's extractors emit. */
 function getOrBuildPathIndex(job: SlotJob): Map<string, string> {
   if (job.pathIndex) return job.pathIndex;
+  // `job.fileList` items are already in canonical JS form (lowercase +
+  // forward-slash) — keyed by themselves.
   const m = new Map<string, string>();
-  for (const f of job.fileList) m.set(normalizePathKey(f), f);
+  for (const f of job.fileList) m.set(f, f);
   job.pathIndex = m;
   return m;
 }
@@ -209,8 +210,10 @@ async function processSlot(pkgId: number): Promise<void> {
       await waitWhilePaused(job);
       if (job.cancelled) break;
 
+      // `path` already canonical — `job.fileList` was normalized at the
+      // WASM boundary in `usePackageSlots`.
       const path = files[i];
-      const fromPath = normalizePathKey(path);
+      const fromPath = path;
       try {
         const data = await pkg.getFile(path);
         if (!data) throw new Error('decompression failed');

@@ -62,9 +62,10 @@ export const ENCODINGS = ['auto', 'gbk', 'utf-8', 'utf-16le', 'utf-16be', 'shift
 
 // --- Utilities ---
 
-/** Lowercase + normalize forward slashes to backslashes (paths in PCK archives use `\`). */
+/** Tolerant input form for filter text — accepts either separator and any
+ *  case so a typed substring matches against canonical paths. */
 export function normalizeFilter(text: string): string {
-  return text.toLowerCase().replaceAll('/', '\\');
+  return text.toLowerCase().replaceAll('\\', '/');
 }
 
 export function getExtension(path: string): string {

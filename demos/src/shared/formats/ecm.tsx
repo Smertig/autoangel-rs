@@ -4,6 +4,7 @@ import { EcmViewer, bridgeModelStatePorts } from '@shared/components/model-viewe
 import { renderEcmHoverPreview } from '@shared/components/model-viewer/internal/render-ecm-hover';
 import { HoverCanvasPreview } from '@shared/components/hover-preview/HoverCanvasPreview';
 import { collectEcmDependencies } from '@shared/util/model-dependencies';
+import { basename } from '@shared/util/path';
 import { sideBySideDiffer } from './helpers';
 import type { DownloadAction, FormatDescriptor, HoverContext, ViewerContext } from './types';
 
@@ -27,15 +28,14 @@ async function downloadModelZip(ctx: ViewerContext): Promise<void> {
 
   const zipEntries: Record<string, Uint8Array> = {};
   for (const [filePath, data] of files) {
-    const zipPath = filePath.replace(/\\/g, '/').replace(/^\//, '');
-    zipEntries[zipPath] = data;
+    zipEntries[filePath] = data;
   }
 
   const zipped = await new Promise<Uint8Array>((resolve, reject) =>
     zip(zipEntries, (err, data) => err ? reject(err) : resolve(data)),
   );
-  const basename = path.split(/[\\/]/).pop()!.replace(/\.ecm$/i, '');
-  downloadBlob(new Blob([zipped.buffer as ArrayBuffer], { type: 'application/zip' }), basename + '.zip');
+  const stem = basename(path).replace(/\.ecm$/i, '');
+  downloadBlob(new Blob([zipped.buffer as ArrayBuffer], { type: 'application/zip' }), stem + '.zip');
 }
 
 async function downloadModelPck(ctx: ViewerContext): Promise<void> {
@@ -48,8 +48,8 @@ async function downloadModelPck(ctx: ViewerContext): Promise<void> {
   }
   const pckBytes = builder.toBytes();
 
-  const basename = path.split(/[\\/]/).pop()!.replace(/\.ecm$/i, '');
-  downloadBlob(new Blob([pckBytes.buffer as ArrayBuffer], { type: 'application/octet-stream' }), basename + '.pck');
+  const stem = basename(path).replace(/\.ecm$/i, '');
+  downloadBlob(new Blob([pckBytes.buffer as ArrayBuffer], { type: 'application/octet-stream' }), stem + '.pck');
 }
 
 function EcmHoverPreview(ctx: HoverContext) {

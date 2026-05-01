@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { buildTree, emptyTreeNode, type TreeNode } from '@shared/components/FileTree';
 import type { KeyConfig } from '@shared/components/KeysPanel';
 import type { PackageDrop } from '@shared/util/files';
+import { normalizePath } from '@shared/util/path';
 import { ColorAllocator, PACKAGE_COLORS } from './colors';
 import { fileFingerprint } from './history/types';
 
@@ -289,8 +290,10 @@ export function usePackageSlots(cdn: string): UsePackageSlotsResult {
             bumpLoading();
           },
         );
-        slot.public.fileList = result.fileList;
-        slot.public.tree = buildTree(result.fileList);
+        // Normalize at the WASM boundary — see `shared/util/path.ts`.
+        const fileList = result.fileList.map(normalizePath);
+        slot.public.fileList = fileList;
+        slot.public.tree = buildTree(fileList);
         slot.public.version = result.version;
         slot.public.fileCount = result.fileCount;
       } catch (e) {

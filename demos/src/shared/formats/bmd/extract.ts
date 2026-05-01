@@ -1,7 +1,7 @@
 import type { AutoangelModule } from '../../../types/autoangel';
 import type { RefExtractor } from '../../../pck/index/extractors';
 import type { RawRef } from '../../../pck/index/types';
-import { normalizePathKey } from '../../../pck/index/pathKey';
+import { normalizePath } from '@shared/util/path';
 
 /** Extracts texture refs from a BMD's per-mesh `texture_map`. BMD textures
  *  are loaded directly via `getFile(texture_map)` with no engine prefix
@@ -18,13 +18,13 @@ export const bmdExtractor: RefExtractor = {
     for (const mesh of bmd.meshes ?? []) {
       const tex = mesh.texture_map;
       if (!tex) continue;
-      const key = normalizePathKey(tex);
+      const key = normalizePath(tex);
       if (seen.has(key)) continue;
       seen.add(key);
       refs.push({
         kind: 'texture',
         raw: tex,
-        candidates: [tex],
+        candidates: [key],
       });
     }
     return refs;

@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { formatSize, getExtension } from '@shared/util/files';
+import { basename, dirname } from '@shared/util/path';
 import { computeAnchor, type TriggerRect } from './anchor';
 import styles from './HoverPopover.module.css';
 
@@ -17,16 +18,12 @@ interface HoverPopoverProps {
   children: ReactNode;
 }
 
-function splitPath(path: string): { dir: string; name: string } {
-  const i = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
-  if (i < 0) return { dir: '', name: path };
-  return { dir: path.slice(0, i + 1), name: path.slice(i + 1) };
-}
 
 export function HoverPopover({ path, size, triggerRect, children }: HoverPopoverProps) {
   const viewport = { w: window.innerWidth, h: window.innerHeight };
   const { left, top } = computeAnchor(triggerRect, POPOVER_W, POPOVER_H, viewport, GAP);
-  const { dir, name } = splitPath(path);
+  const dir = dirname(path);
+  const name = basename(path);
   const ext = getExtension(name);
   const extLabel = ext ? ext.slice(1).toUpperCase() : '';
   const sizeLabel = size != null ? formatSize(size) : null;

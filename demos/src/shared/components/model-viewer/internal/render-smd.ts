@@ -1,5 +1,6 @@
 import type { AutoangelModule, GfxEffect } from '../../../../types/autoangel';
 import type { PackageView } from '@shared/package';
+import { basename } from '@shared/util/path';
 import { resolvePath, collectSkinPaths, tryLoadSki, tryFallbackSkiPath, discoverStckPaths } from '@shared/util/model-dependencies';
 import { ensureThree, getThree } from './three';
 import { type SkinStats, loadSkinFile } from './mesh';
@@ -117,8 +118,7 @@ export async function renderFromSmd(
     const fallback = await tryFallbackSkiPath(smdPath, pkg);
     if (!fallback) throw new Error('No skin files referenced by SMD');
     allSkinPaths.push(fallback);
-    const basename = fallback.split('\\').pop()!;
-    skinFallbackWarning = `No skin declared by SMD/ECM. Showing ${basename} as a guess — the game picks one of the *.ski variants in this folder at runtime.`;
+    skinFallbackWarning = `No skin declared by SMD/ECM. Showing ${basename(fallback)} as a guess — the game picks one of the *.ski variants in this folder at runtime.`;
     console.warn(`[model] ${skinFallbackWarning}`);
   }
 
@@ -129,7 +129,7 @@ export async function renderFromSmd(
     const stckPaths = discoverStckPaths(smdPath, smdTcksDir, pkg);
     const stckPathByName = new Map<string, string>();
     for (const stckPath of stckPaths) {
-      const clipName = stckPath.split('\\').pop()!.replace(/\.stck$/i, '');
+      const clipName = basename(stckPath).replace(/\.stck$/i, '');
       animNames.push(clipName);
       stckPathByName.set(clipName, stckPath);
     }

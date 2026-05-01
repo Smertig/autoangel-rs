@@ -47,7 +47,7 @@ describe('mergePackageTrees — empty input', () => {
 
 describe('mergePackageTrees — single package', () => {
   it('preserves folder structure and tags files with provided pkgIndex', () => {
-    const tree = buildTree(['gfx\\ui\\icon.dds', 'gfx\\ui\\btn.dds', 'readme.txt']);
+    const tree = buildTree(['gfx/ui/icon.dds', 'gfx/ui/btn.dds', 'readme.txt']);
     const merged = mergePackageTrees([{ tree, pkgIndex: 2 }]);
 
     // Same top-level shape: children 'gfx', file 'readme.txt'.
@@ -60,7 +60,7 @@ describe('mergePackageTrees — single package', () => {
 
     // Nested folder preserved.
     const ui = findChild(findChild(merged, 'gfx'), 'ui');
-    expect(ui.files.map((f) => f.fullPath).sort()).toEqual(['gfx\\ui\\btn.dds', 'gfx\\ui\\icon.dds']);
+    expect(ui.files.map((f) => f.fullPath).sort()).toEqual(['gfx/ui/btn.dds', 'gfx/ui/icon.dds']);
 
     for (const f of ui.files) {
       const t = asTagged(f);
@@ -79,8 +79,8 @@ describe('mergePackageTrees — single package', () => {
 
 describe('mergePackageTrees — disjoint roots', () => {
   it('unions root folders, tagging files correctly', () => {
-    const t0 = buildTree(['gfx\\ui\\icon.dds']);
-    const t1 = buildTree(['models\\m01.ski']);
+    const t0 = buildTree(['gfx/ui/icon.dds']);
+    const t1 = buildTree(['models/m01.ski']);
     const merged = mergePackageTrees([
       { tree: t0, pkgIndex: 0 },
       { tree: t1, pkgIndex: 1 },
@@ -89,12 +89,12 @@ describe('mergePackageTrees — disjoint roots', () => {
     expect([...merged.children.keys()].sort()).toEqual(['gfx', 'models']);
 
     const icon = asTagged(findChild(findChild(merged, 'gfx'), 'ui').files[0]);
-    expect(icon.fullPath).toBe('gfx\\ui\\icon.dds');
+    expect(icon.fullPath).toBe('gfx/ui/icon.dds');
     expect(icon.pkgIndex).toBe(0);
     expect(icon.duplicate).toBe(false);
 
     const m01 = asTagged(findChild(merged, 'models').files[0]);
-    expect(m01.fullPath).toBe('models\\m01.ski');
+    expect(m01.fullPath).toBe('models/m01.ski');
     expect(m01.pkgIndex).toBe(1);
     expect(m01.duplicate).toBe(false);
   });
@@ -106,8 +106,8 @@ describe('mergePackageTrees — disjoint roots', () => {
 
 describe('mergePackageTrees — overlapping folders, distinct files', () => {
   it('merges siblings under a shared folder without marking duplicates', () => {
-    const t0 = buildTree(['data\\a.txt']);
-    const t1 = buildTree(['data\\b.txt']);
+    const t0 = buildTree(['data/a.txt']);
+    const t1 = buildTree(['data/b.txt']);
     const merged = mergePackageTrees([
       { tree: t0, pkgIndex: 0 },
       { tree: t1, pkgIndex: 1 },
@@ -120,10 +120,10 @@ describe('mergePackageTrees — overlapping folders, distinct files', () => {
     // Two files, both non-duplicate, each tagged with its pkg.
     expect(data.files).toHaveLength(2);
     const byPath = new Map(data.files.map((f) => [f.fullPath, asTagged(f)]));
-    expect(byPath.get('data\\a.txt')!.pkgIndex).toBe(0);
-    expect(byPath.get('data\\a.txt')!.duplicate).toBe(false);
-    expect(byPath.get('data\\b.txt')!.pkgIndex).toBe(1);
-    expect(byPath.get('data\\b.txt')!.duplicate).toBe(false);
+    expect(byPath.get('data/a.txt')!.pkgIndex).toBe(0);
+    expect(byPath.get('data/a.txt')!.duplicate).toBe(false);
+    expect(byPath.get('data/b.txt')!.pkgIndex).toBe(1);
+    expect(byPath.get('data/b.txt')!.duplicate).toBe(false);
 
     // sortedFiles alphabetical.
     expect(data.sortedFiles.map((f) => f.name)).toEqual(['a.txt', 'b.txt']);
@@ -136,8 +136,8 @@ describe('mergePackageTrees — overlapping folders, distinct files', () => {
 
 describe('mergePackageTrees — duplicate full paths', () => {
   it('keeps both entries as siblings, tagged duplicate=true, ordered by pkgIndex', () => {
-    const t0 = buildTree(['gfx\\icon.dds']);
-    const t1 = buildTree(['gfx\\icon.dds']);
+    const t0 = buildTree(['gfx/icon.dds']);
+    const t1 = buildTree(['gfx/icon.dds']);
     const merged = mergePackageTrees([
       { tree: t0, pkgIndex: 3 },
       { tree: t1, pkgIndex: 1 },
@@ -150,7 +150,7 @@ describe('mergePackageTrees — duplicate full paths', () => {
     // Same name → tiebreaker is pkgIndex ascending: 1 before 3.
     expect(tagged.map((f) => f.pkgIndex)).toEqual([1, 3]);
     for (const f of tagged) {
-      expect(f.fullPath).toBe('gfx\\icon.dds');
+      expect(f.fullPath).toBe('gfx/icon.dds');
       expect(f.name).toBe('icon.dds');
       expect(f.duplicate).toBe(true);
     }
@@ -163,9 +163,9 @@ describe('mergePackageTrees — duplicate full paths', () => {
 
 describe('mergePackageTrees — three packages, partial duplication', () => {
   it('marks only the colliding pair as duplicate', () => {
-    const shared = 'gfx\\shared.dds';
-    const t0 = buildTree([shared, 'gfx\\only0.dds']);
-    const t1 = buildTree(['models\\only1.ski']);
+    const shared = 'gfx/shared.dds';
+    const t0 = buildTree([shared, 'gfx/only0.dds']);
+    const t1 = buildTree(['models/only1.ski']);
     const t2 = buildTree([shared]);
     const merged = mergePackageTrees([
       { tree: t0, pkgIndex: 0 },
@@ -182,7 +182,7 @@ describe('mergePackageTrees — three packages, partial duplication', () => {
     expect(sharedFiles.every((f) => f.duplicate)).toBe(true);
     expect(sharedFiles.map((f) => f.pkgIndex).sort()).toEqual([0, 2]);
 
-    const only0 = gfx.files.find((f) => f.fullPath === 'gfx\\only0.dds')!;
+    const only0 = gfx.files.find((f) => f.fullPath === 'gfx/only0.dds')!;
     expect(asTagged(only0).pkgIndex).toBe(0);
     expect(asTagged(only0).duplicate).toBe(false);
 
@@ -192,7 +192,7 @@ describe('mergePackageTrees — three packages, partial duplication', () => {
 
     // All files accounted for.
     expect(collectFilePaths(merged).sort()).toEqual(
-      ['gfx\\only0.dds', 'gfx\\shared.dds', 'gfx\\shared.dds', 'models\\only1.ski'].sort(),
+      ['gfx/only0.dds', 'gfx/shared.dds', 'gfx/shared.dds', 'models/only1.ski'].sort(),
     );
   });
 });
@@ -203,9 +203,9 @@ describe('mergePackageTrees — three packages, partial duplication', () => {
 
 describe('mergePackageTrees — sort determinism', () => {
   it('sortedChildren is alphabetical', () => {
-    const t0 = buildTree(['zeta\\z.txt']);
-    const t1 = buildTree(['alpha\\a.txt']);
-    const t2 = buildTree(['mu\\m.txt']);
+    const t0 = buildTree(['zeta/z.txt']);
+    const t1 = buildTree(['alpha/a.txt']);
+    const t2 = buildTree(['mu/m.txt']);
     const merged = mergePackageTrees([
       { tree: t0, pkgIndex: 0 },
       { tree: t1, pkgIndex: 1 },
@@ -216,7 +216,7 @@ describe('mergePackageTrees — sort determinism', () => {
 
   it('sortedFiles ties break on pkgIndex ascending', () => {
     // Three packages colliding on the same full path, provided out of order.
-    const path = 'a\\x.txt';
+    const path = 'a/x.txt';
     const t0 = buildTree([path]);
     const t1 = buildTree([path]);
     const t2 = buildTree([path]);
@@ -230,8 +230,8 @@ describe('mergePackageTrees — sort determinism', () => {
   });
 
   it('sortedFiles primary key is localeCompare on name', () => {
-    const t0 = buildTree(['d\\b.txt']);
-    const t1 = buildTree(['d\\a.txt']);
+    const t0 = buildTree(['d/b.txt']);
+    const t1 = buildTree(['d/a.txt']);
     const merged = mergePackageTrees([
       { tree: t0, pkgIndex: 0 },
       { tree: t1, pkgIndex: 1 },

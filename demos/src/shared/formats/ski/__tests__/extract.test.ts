@@ -27,7 +27,7 @@ describe('skiExtractor', () => {
     const wasm = makeWasm(['花苞食人花2.dds', '花苞食人花透明2.dds']);
     const refs = skiExtractor.extract(
       new Uint8Array(0),
-      'models\\npcs\\11木元素\\利齿绿萼.ski',
+      'models/npcs/11木元素/利齿绿萼.ski',
       wasm,
     );
     expect(refs).toEqual([
@@ -35,18 +35,18 @@ describe('skiExtractor', () => {
         kind: 'texture',
         raw: '花苞食人花2.dds',
         candidates: [
-          'models\\npcs\\11木元素\\textures\\花苞食人花2.dds',
-          'models\\npcs\\11木元素\\tex_利齿绿萼\\花苞食人花2.dds',
-          'models\\npcs\\11木元素\\花苞食人花2.dds',
+          'models/npcs/11木元素/textures/花苞食人花2.dds',
+          'models/npcs/11木元素/tex_利齿绿萼/花苞食人花2.dds',
+          'models/npcs/11木元素/花苞食人花2.dds',
         ],
       },
       {
         kind: 'texture',
         raw: '花苞食人花透明2.dds',
         candidates: [
-          'models\\npcs\\11木元素\\textures\\花苞食人花透明2.dds',
-          'models\\npcs\\11木元素\\tex_利齿绿萼\\花苞食人花透明2.dds',
-          'models\\npcs\\11木元素\\花苞食人花透明2.dds',
+          'models/npcs/11木元素/textures/花苞食人花透明2.dds',
+          'models/npcs/11木元素/tex_利齿绿萼/花苞食人花透明2.dds',
+          'models/npcs/11木元素/花苞食人花透明2.dds',
         ],
       },
     ]);

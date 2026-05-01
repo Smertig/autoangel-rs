@@ -51,7 +51,7 @@ function containerOpts(overrides: Record<string, unknown> = {}) {
   return {
     ...minimalSpawnOpts(THREE),
     element: containerElement(),
-    pkg: pkgFrom(['gfx\\effects\\nested.gfx']),
+    pkg: pkgFrom(['gfx/effects/nested.gfx']),
     ...overrides,
   };
 }
@@ -77,8 +77,8 @@ describe('spawnContainerRuntime', () => {
 
   it('skips recursion with a console.warn when path is already in visiting set', () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const visiting = new Set(['gfx\\effects\\nested.gfx']);
-    const preloadedGfx = new Map<string, unknown>([['gfx\\effects\\nested.gfx', { elements: [] }]]);
+    const visiting = new Set(['gfx/effects/nested.gfx']);
+    const preloadedGfx = new Map<string, unknown>([['gfx/effects/nested.gfx', { elements: [] }]]);
     const rt = spawnContainerRuntime(containerBody(), containerOpts({ visiting, preloadedGfx }));
 
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('cycle'), expect.any(String));
@@ -90,7 +90,7 @@ describe('spawnContainerRuntime', () => {
   it('multiplies play_speed into child gfxSpeed', () => {
     const childEl = { type_id: 120, body: { kind: 'particle' } };
     const preloadedGfx = new Map<string, unknown>([
-      ['gfx\\effects\\nested.gfx', { elements: [childEl] }],
+      ['gfx/effects/nested.gfx', { elements: [childEl] }],
     ]);
     const rt = spawnContainerRuntime(
       containerBody({ play_speed: 2.0 }),
@@ -103,7 +103,7 @@ describe('spawnContainerRuntime', () => {
     expect(childOpts.gfxSpeed).toBeCloseTo(6.0);
     // visiting set passed down to child must contain the resolved path
     expect(childOpts.visiting instanceof Set).toBe(true);
-    expect((childOpts.visiting as Set<string>).has('gfx\\effects\\nested.gfx')).toBe(true);
+    expect((childOpts.visiting as Set<string>).has('gfx/effects/nested.gfx')).toBe(true);
     rt.dispose();
   });
 

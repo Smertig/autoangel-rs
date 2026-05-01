@@ -1,33 +1,24 @@
 import type { AutoangelModule } from '../../types/autoangel';
 import type { PackageView } from '../package';
+import { basename, dirname, normalizePath } from './path';
 
-// ── Shared path helpers ──
-// These encode Angelica Engine archive path conventions used by both
-// the 3D renderer and the dependency collector.
+// Helpers normalize their inputs — format fields read from WASM may still
+// carry backslashes from the stored binary, but the canonical JS form is
+// lowercase + forward-slash (see `shared/util/path.ts`).
 
-// Callers may hand us either PCK-canonical (`gfx\models\foo.smd`) or
-// indexer-normalized (`gfx/models/foo.smd`, see `pck/index/pathKey.ts`)
-// paths. Internal manipulation runs against backslashes so the output
-// matches PCK-canonical form regardless of input.
-function toBackslashes(p: string): string {
-  return p.replace(/\//g, '\\');
-}
-
-/** Resolve a basename relative to a parent file's directory, lowercased. */
-export function resolveRelative(parentPath: string, basename: string): string {
-  const p = toBackslashes(parentPath);
-  const dir = p.substring(0, p.lastIndexOf('\\') + 1);
-  return (dir + basename).toLowerCase();
+/** Resolve a ref relative to a parent file's directory. */
+export function resolveRelative(parentPath: string, ref: string): string {
+  return normalizePath(dirname(normalizePath(parentPath)) + ref);
 }
 
 /**
  * Resolve a file reference that may be absolute (contains a separator) or relative.
- * Absolute paths are normalized to backslash + lowercase; relative ones are
+ * Absolute paths are normalized to canonical JS form; relative ones are
  * resolved against parentPath.
  */
 export function resolvePath(refPath: string, parentPath: string): string {
   return /[\\/]/.test(refPath)
-    ? toBackslashes(refPath).toLowerCase()
+    ? normalizePath(refPath)
     : resolveRelative(parentPath, refPath);
 }
 
@@ -36,11 +27,12 @@ export function resolvePath(refPath: string, parentPath: string): string {
  * The engine tries three locations in order: textures/ subdir, tex_<skinname>/ subdir, bare.
  */
 export function textureCandidates(skiArchivePath: string, texName: string): string[] {
-  const skiBasename = toBackslashes(skiArchivePath).split('\\').pop()!.replace(/\.ski$/i, '');
+  const ski = normalizePath(skiArchivePath);
+  const stem = basename(ski).replace(/\.ski$/i, '');
   return [
-    resolveRelative(skiArchivePath, 'textures\\' + texName),
-    resolveRelative(skiArchivePath, 'tex_' + skiBasename + '\\' + texName),
-    resolveRelative(skiArchivePath, texName),
+    resolveRelative(ski, 'textures/' + texName),
+    resolveRelative(ski, 'tex_' + stem + '/' + texName),
+    resolveRelative(ski, texName),
   ];
 }
 
@@ -66,17 +58,18 @@ export function collectSkinPaths(
 }
 
 /**
- * Try to load a SKI file, falling back to a `models\` prefix if the direct path fails.
+ * Try to load a SKI file, falling back to a `models/` prefix if the direct path fails.
  * Some archives store skins under models/ but reference them without the prefix.
  */
 export async function tryLoadSki(
   skiPath: string,
   pkg: PackageView,
 ): Promise<{ data: Uint8Array; archivePath: string } | null> {
-  let data = await pkg.read(skiPath);
-  if (data) return { data, archivePath: skiPath };
-  if (!skiPath.startsWith('models\\')) {
-    const withPrefix = 'models\\' + skiPath;
+  const direct = normalizePath(skiPath);
+  let data = await pkg.read(direct);
+  if (data) return { data, archivePath: direct };
+  if (!direct.startsWith('models/')) {
+    const withPrefix = 'models/' + direct;
     data = await pkg.read(withPrefix);
     if (data) return { data, archivePath: withPrefix };
   }
@@ -107,12 +100,11 @@ export function discoverStckPaths(
   smdTcksDir: string | undefined,
   pkg: PackageView,
 ): string[] {
-  const p = toBackslashes(smdPath);
+  const p = normalizePath(smdPath);
   const tcksName = smdTcksDir
-    || ('tcks_' + p.split('\\').pop()!.replace(/\.[^.]+$/i, ''));
-  const smdDir = p.substring(0, p.lastIndexOf('\\'));
-  const trackDir = smdDir + '\\' + tcksName;
-  return pkg.list(trackDir).filter((q: string) => q.toLowerCase().endsWith('.stck'));
+    || ('tcks_' + basename(p).replace(/\.[^.]+$/i, ''));
+  const trackDir = dirname(p) + tcksName;
+  return pkg.list(trackDir).filter((q) => q.endsWith('.stck'));
 }
 
 // ── Dependency collector ──
@@ -156,7 +148,7 @@ export async function collectEcmDependencies(
   const visited = new Set<string>();
 
   async function collect(ecmPath: string): Promise<void> {
-    const normalizedEcm = ecmPath.toLowerCase();
+    const normalizedEcm = normalizePath(ecmPath);
     if (visited.has(normalizedEcm)) return;
     visited.add(normalizedEcm);
 

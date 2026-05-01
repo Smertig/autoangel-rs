@@ -20,7 +20,7 @@ describe('gfxExtractor', () => {
       {
         kind: 'texture',
         raw: 'foo.dds',
-        candidates: ['gfx\\textures\\foo.dds', 'gfx\\Textures\\foo.dds'],
+        candidates: ['gfx/textures/foo.dds'],
       },
     ]);
   });
@@ -34,7 +34,7 @@ describe('gfxExtractor', () => {
       {
         kind: 'gfx',
         raw: 'sub.gfx',
-        candidates: ['gfx\\sub.gfx', 'GFX\\sub.gfx'],
+        candidates: ['gfx/sub.gfx'],
       },
     ]);
   });
@@ -48,7 +48,7 @@ describe('gfxExtractor', () => {
       {
         kind: 'model',
         raw: 'weapon.smd',
-        candidates: ['gfx\\models\\weapon.smd', 'gfx\\Models\\weapon.smd'],
+        candidates: ['gfx/models/weapon.smd'],
       },
     ]);
   });
@@ -62,7 +62,7 @@ describe('gfxExtractor', () => {
     expect(refs[0]).toEqual({
       kind: 'sound',
       raw: 'hit.ogg',
-      candidates: ['sound\\hit.ogg', 'Sound\\hit.ogg'],
+      candidates: ['sound/hit.ogg'],
     });
   });
 

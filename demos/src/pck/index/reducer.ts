@@ -1,6 +1,6 @@
 import { pushTo } from '@shared/util/maps';
 import type { Edge } from './types';
-import { normalizePathKey } from './pathKey';
+import { normalizePath } from '@shared/util/path';
 import { resolveCandidates } from './resolver';
 
 export interface IndexState {
@@ -67,7 +67,7 @@ function edgeBytes(e: Edge): number {
 function bindEdge(s: IndexState, e: Edge): void {
   pushTo(s.byFrom, e.fromPath, e);
   if (e.resolved !== null) {
-    const key = normalizePathKey(e.resolved);
+    const key = normalizePath(e.resolved);
     pushTo(s.byTo, key, e);
     incInDegree(s, key);
   } else {
@@ -119,7 +119,7 @@ export function rebuildOwnership(
   s.pkgIdByPath = pkgIdByPath;
   s.inDegreeByPkg.clear();
   for (const e of s.edges) {
-    if (e.resolved !== null) incInDegree(s, normalizePathKey(e.resolved));
+    if (e.resolved !== null) incInDegree(s, normalizePath(e.resolved));
   }
 }
 
@@ -133,7 +133,7 @@ export function reresolve(s: IndexState, pathIndex: Map<string, string>): void {
   for (const e of s.edges) {
     e.resolved = resolveCandidates(e.candidates, pathIndex);
     if (e.resolved !== null) {
-      const key = normalizePathKey(e.resolved);
+      const key = normalizePath(e.resolved);
       pushTo(s.byTo, key, e);
       incInDegree(s, key);
     } else {
