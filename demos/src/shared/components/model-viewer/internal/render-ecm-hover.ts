@@ -74,10 +74,43 @@ export async function renderEcmHoverPreview(
     skelRelPath = smd.skeletonPath;
   }
 
-  // Missing BON falls through to a static render — some ECMs reference a
-  // `.bon` that isn't shipped in the pack.
-  const built = await loadBonSkeleton(wasm, pkg, skelRelPath, smdPath, '[ecm-hover]');
-  if (cancelled()) return () => {};
+  // Kick off BON read and skin-path resolution before we know the clip —
+  // the BON parse is the slowest serial step otherwise. STCK/GFX fetches
+  // depend only on `pickDefaultClip` (sync, skel-independent), so they
+  // batch in the same await as skins below.
+  const skelPromise = loadBonSkeleton(wasm, pkg, skelRelPath, smdPath, '[ecm-hover]');
+  const allSkinPathsPromise = resolveAnimatedSkinPaths({
+    pkg, basePath: smdPath, smdSkinPaths, originPath: path, additionalSkinPaths,
+  });
+
+  const clipPick = pickDefaultClip(smdPath, smdTcksDir, pkg);
+  const animEvents: AnimEvent[] = clipPick.defaultClipName
+    ? (allEvents.get(clipPick.defaultClipName) ?? []).filter((e) => e.type === EVENT_GFX)
+    : [];
+
+  // STCK and GFX preload don't need the skeleton — kick them off now;
+  // they may resolve concurrently with the BON read.
+  const stckPromise: Promise<Uint8Array | null> = clipPick.defaultStckPath
+    ? pkg.read(clipPick.defaultStckPath)
+    : Promise.resolve(null);
+  const gfxSeeds = animEvents
+    .map((e) => pkg.resolveEngine(e.filePath, ENGINE_PATH_PREFIXES.gfx))
+    .filter((p): p is string => p != null);
+  const gfxPromise = gfxSeeds.length > 0
+    ? preloadGfxGraph({ wasm, pkg, seeds: gfxSeeds })
+    : Promise.resolve({ preloadedGfx: new Map(), preloadedTextures: new Map() });
+
+  // Disposes the GFX texture map once it settles — the in-flight bytes from
+  // `stckPromise` GC themselves once their promise resolves.
+  const cancelDisposePending = (): (() => void) => {
+    gfxPromise
+      .then((g) => disposePreloadedTextures(g.preloadedTextures as Map<string, PreloadedTexture>))
+      .catch(() => { /* preloadGfxGraph swallows internally today; defensive */ });
+    return () => {};
+  };
+
+  const built = await skelPromise;
+  if (cancelled()) return cancelDisposePending();
   const skel: SkelData | null = built ? { ...built, footOffset: 0 } : null;
 
   if (skel && boneScaleInfo) {
@@ -87,36 +120,17 @@ export async function renderEcmHoverPreview(
     );
   }
 
-  const allSkinPaths = await resolveAnimatedSkinPaths({
-    pkg, basePath: smdPath, smdSkinPaths, originPath: path, additionalSkinPaths,
-  });
-  if (cancelled()) return () => {};
+  const allSkinPaths = await allSkinPathsPromise;
+  if (cancelled()) return cancelDisposePending();
 
-  const { defaultClipName, defaultStckPath } = skel
-    ? pickDefaultClip(smdPath, smdTcksDir, pkg)
-    : { defaultClipName: null, defaultStckPath: null };
-  const animEvents: AnimEvent[] = defaultClipName
-    ? (allEvents.get(defaultClipName) ?? []).filter((e) => e.type === EVENT_GFX)
-    : [];
-
-  const useSkinning = skel != null && defaultStckPath != null;
+  const useSkinning = skel != null && clipPick.defaultStckPath != null;
   const skinOpts = useSkinning
     ? { skeleton: skel!.skeleton, boneNames: skel!.boneNames }
     : undefined;
-
-  // Skin loads, STCK fetch, and GFX preload are independent — fan out so
-  // the slowest single read bounds time-to-first-paint.
   const skinsPromise = loadAllSkins(wasm, pkg, allSkinPaths, skinOpts);
-  const stckPromise: Promise<Uint8Array | null> = defaultStckPath
-    ? pkg.read(defaultStckPath)
-    : Promise.resolve(null);
-  const gfxSeeds = animEvents
-    .map((e) => pkg.resolveEngine(e.filePath, ENGINE_PATH_PREFIXES.gfx))
-    .filter((p): p is string => p != null);
-  const gfxPromise = gfxSeeds.length > 0
-    ? preloadGfxGraph({ wasm, pkg, seeds: gfxSeeds })
-    : Promise.resolve({ preloadedGfx: new Map(), preloadedTextures: new Map() });
 
+  // Skins, STCK, and GFX preload are independent — slowest single read
+  // bounds time-to-first-paint.
   const [perSkin, stckData, gfx] = await Promise.all([skinsPromise, stckPromise, gfxPromise]);
   const preloadedGfx = gfx.preloadedGfx as Map<string, GfxLike>;
   const preloadedTextures = gfx.preloadedTextures as Map<string, PreloadedTexture>;
@@ -126,8 +140,8 @@ export async function renderEcmHoverPreview(
     return () => {};
   }
 
-  const clip: ThreeModule.AnimationClip | null = (skel && stckData && defaultClipName)
-    ? buildAnimationClip(wasm, stckData, defaultClipName, skel.boneNames)
+  const clip: ThreeModule.AnimationClip | null = (skel && stckData && clipPick.defaultClipName)
+    ? buildAnimationClip(wasm, stckData, clipPick.defaultClipName, skel.boneNames)
     : null;
 
   let renderer: ThreeModule.WebGLRenderer | null = null;
