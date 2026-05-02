@@ -15,9 +15,7 @@ export async function renderSkiHoverPreview(
   await ensureThree();
   const { THREE } = getThree();
 
-  const { meshes } = await loadSkinFile(wasm, pkg, path, data) as {
-    meshes: ThreeModule.Mesh[];
-  };
+  const { meshes } = await loadSkinFile(wasm, pkg, path, data);
 
   let renderer: ThreeModule.WebGLRenderer | null = null;
   const disposeAll = () => {

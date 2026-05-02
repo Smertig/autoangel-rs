@@ -29,7 +29,7 @@ export function buildMesh(
   skeleton?: any,
   boneRemap?: Uint16Array,
   rigidBoneIdx?: number,
-): any | null {
+): ThreeModule.Mesh | null {
   const { THREE } = getThree();
   const positions = skin[`${kind}MeshPositions`](index);
   const normals = skin[`${kind}MeshNormals`](index);
@@ -105,10 +105,10 @@ export async function loadSkinFile(
   skiData: Uint8Array,
   skeleton?: any,
   skelBoneNames?: string[],
-): Promise<{ meshes: any[]; stats: SkinStats }> {
+): Promise<{ meshes: ThreeModule.Mesh[]; stats: SkinStats }> {
   using skin = wasm.Skin.parse(skiData);
   const stats: SkinStats = { verts: 0, tris: 0, meshes: 0, textures: 0 };
-  const meshes: any[] = [];
+  const meshes: ThreeModule.Mesh[] = [];
 
   {
     // Build remap table: SKI bone index → skeleton (BON) bone index
@@ -177,11 +177,11 @@ export async function loadAllSkins(
   return Promise.all(
     skiPaths.map(async (skiPath) => {
       const ski = await tryLoadSki(skiPath, pkg);
-      if (!ski) return [] as ThreeModule.Mesh[];
+      if (!ski) return [];
       const { meshes } = await loadSkinFile(
         wasm, pkg, ski.archivePath, ski.data, opts?.skeleton, opts?.boneNames,
       );
-      return meshes as ThreeModule.Mesh[];
+      return meshes;
     }),
   );
 }
