@@ -20,7 +20,7 @@ function SmdHoverPreview(ctx: HoverContext) {
     <HoverCanvasPreview
       path={ctx.path} data={ctx.data} pkg={ctx.pkg} wasm={ctx.wasm}
       render={renderSmdHoverPreview}
-      label="SMD" width={280} height={280}
+      label="SMD"
     />
   );
 }

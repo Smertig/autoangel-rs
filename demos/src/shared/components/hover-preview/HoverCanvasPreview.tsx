@@ -14,15 +14,15 @@ interface HoverCanvasPreviewProps {
   render: HoverCanvasRenderer;
   /** Inserted into the error message: "Failed to render <label>: …". */
   label: string;
-  width: number;
-  height: number;
+  width?: number;
+  height?: number;
 }
 
 /** Shared hover-popover shell for canvas-based previews (BMD, GFX, ECM).
  *  Handles the mount/disposed-flag/cleanup-on-unmount race; renders the error
  *  fallback when the render helper rejects. */
 export function HoverCanvasPreview({
-  path, data, pkg, wasm, render, label, width, height,
+  path, data, pkg, wasm, render, label, width = 280, height = 280,
 }: HoverCanvasPreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [error, setError] = useState<string | null>(null);

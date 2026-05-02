@@ -13,7 +13,7 @@ function SkiHoverPreview(ctx: HoverContext) {
     <HoverCanvasPreview
       path={ctx.path} data={ctx.data} pkg={ctx.pkg} wasm={ctx.wasm}
       render={renderSkiHoverPreview}
-      label="SKI" width={280} height={280}
+      label="SKI"
     />
   );
 }

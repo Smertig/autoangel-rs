@@ -13,7 +13,7 @@ function BonHoverPreview(ctx: HoverContext) {
     <HoverCanvasPreview
       path={ctx.path} data={ctx.data} pkg={ctx.pkg} wasm={ctx.wasm}
       render={renderBonHoverPreview}
-      label="BON" width={280} height={280}
+      label="BON"
     />
   );
 }
