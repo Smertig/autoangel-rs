@@ -119,6 +119,7 @@ export function buildSkeleton(wasm: AutoangelModule, bonData: Uint8Array): {
   boneNames: string[];
   tmpRoot: any;
   hooksByName: Map<string, any>;
+  bonesByName: Map<string, any>;
 } {
   const { THREE } = getThree();
   const skel = wasm.parseSkeleton(bonData);
@@ -202,5 +203,7 @@ export function buildSkeleton(wasm: AutoangelModule, bonData: Uint8Array): {
   tmpRoot.updateWorldMatrix(false, true);
 
   const skeleton = new THREE.Skeleton(bones, boneInverses);
-  return { skeleton, bones, boneNames, tmpRoot, hooksByName };
+  const bonesByName = new Map<string, any>();
+  for (const b of bones) bonesByName.set(b.name, b);
+  return { skeleton, bones, boneNames, tmpRoot, hooksByName, bonesByName };
 }

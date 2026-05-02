@@ -1,17 +1,17 @@
 import type * as ThreeModule from 'three';
 import type { HoverCanvasRenderArgs } from '@shared/components/hover-preview/types';
-import { basename } from '@shared/util/path';
-import {
-  collectSkinPaths, discoverStckPaths, resolvePath, tryFallbackSkiPath,
-} from '@shared/util/model-dependencies';
 import { ensureThree, getThree } from './three';
 import { disposeSkinMeshes, loadAllSkins } from './mesh';
-import { buildSkeleton } from './skeleton';
 import { buildAnimationClip } from './clip';
 import { setupHoverScene } from './hover-scene';
-import { PREFERRED_ANIM_HINT } from './render-smd';
+import {
+  loadBonSkeleton,
+  pickDefaultClip,
+  resolveAnimatedSkinPaths,
+  type SkeletonBuildResult,
+} from './animated-assets';
 
-type SkelData = ReturnType<typeof buildSkeleton>;
+type SkelData = SkeletonBuildResult;
 
 /**
  * Animated hover preview for SMD: matches the full SmdViewer's first paint —
@@ -41,34 +41,17 @@ export async function renderSmdHoverPreview(
     skelRelPath = smd.skeletonPath;
   }
 
-  let skel: SkelData | null = null;
-  if (skelRelPath) {
-    const bonData = await pkg.read(resolvePath(skelRelPath, path));
-    if (cancelled()) return () => {};
-    if (bonData) {
-      try { skel = buildSkeleton(wasm, bonData); }
-      catch (e) { console.warn('[smd-hover] skeleton build failed:', e); }
-    }
-  }
+  const skel: SkelData | null = await loadBonSkeleton(wasm, pkg, skelRelPath, path, '[smd-hover]');
+  if (cancelled()) return () => {};
 
-  const allSkinPaths = collectSkinPaths(path, skinPaths, path, []);
-  if (allSkinPaths.length === 0) {
-    const fallback = await tryFallbackSkiPath(path, pkg);
-    if (!fallback) throw new Error('No skin files referenced by SMD');
-    allSkinPaths.push(fallback);
-  }
+  const allSkinPaths = await resolveAnimatedSkinPaths({ pkg, basePath: path, smdSkinPaths: skinPaths });
   if (cancelled()) return () => {};
 
   // Pick default clip iff the skeleton loaded — without bones, animation
   // can't apply.
-  let defaultClipName: string | null = null;
-  let defaultStckPath: string | null = null;
-  if (skel) {
-    const stckPaths = discoverStckPaths(path, tcksDir, pkg);
-    const animNames = stckPaths.map((p) => basename(p).replace(/\.stck$/i, ''));
-    defaultClipName = animNames.find((n) => n.includes(PREFERRED_ANIM_HINT)) ?? animNames[0] ?? null;
-    if (defaultClipName) defaultStckPath = stckPaths[animNames.indexOf(defaultClipName)];
-  }
+  const { defaultClipName, defaultStckPath } = skel
+    ? pickDefaultClip(path, tcksDir, pkg)
+    : { defaultClipName: null, defaultStckPath: null };
 
   // Skin meshes bind to the skeleton iff there's an animation to drive them
   // — otherwise SkinnedMesh hits an inconsistent state on first render.

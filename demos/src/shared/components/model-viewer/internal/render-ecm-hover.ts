@@ -2,34 +2,32 @@ import type * as ThreeModule from 'three';
 import type { PreloadedTexture } from '../../gfx-runtime/types';
 import type { GfxLike } from '../../gfx-runtime/duration';
 import type { HoverCanvasRenderArgs } from '@shared/components/hover-preview/types';
-import { basename } from '@shared/util/path';
-import {
-  collectSkinPaths, discoverStckPaths, resolvePath, tryFallbackSkiPath,
-} from '@shared/util/model-dependencies';
+import { resolvePath } from '@shared/util/model-dependencies';
 import { ensureThree, getThree } from './three';
 import { disposeSkinMeshes, loadAllSkins } from './mesh';
 import {
   type BoneScaleData,
   applyBoneScales,
   applyBoneScalesToHierarchy,
-  buildSkeleton,
   computeFootOffset,
   readEcmBoneScales,
 } from './skeleton';
 import { buildAnimationClip } from './clip';
 import { buildAnimEventMap, EVENT_GFX, type AnimEvent } from './event-map';
 import { setupHoverScene } from './hover-scene';
-import { PREFERRED_ANIM_HINT } from './render-smd';
 import { disposePreloadedTextures, preloadGfxGraph } from '../../gfx-runtime/preload';
 import { createGfxEventScheduler } from '../../gfx-runtime/scheduler';
-import {
-  computeElementDurationSec, isRenderableKind, spawnElementRuntime,
-} from '../../gfx-runtime/registry';
-import { createNoopRuntime } from '../../gfx-runtime/noop';
-import { attachToHook } from '../../gfx-runtime/hook';
+import { isRenderableKind } from '../../gfx-runtime/registry';
 import { ENGINE_PATH_PREFIXES } from '../../gfx/util/resolveEnginePath';
+import { createSpawnFromPreloaded } from './gfx-spawn';
+import {
+  loadBonSkeleton,
+  pickDefaultClip,
+  resolveAnimatedSkinPaths,
+  type SkeletonBuildResult,
+} from './animated-assets';
 
-type SkelData = ReturnType<typeof buildSkeleton> & { footOffset: number };
+type SkelData = SkeletonBuildResult & { footOffset: number };
 
 /**
  * Animated hover preview for ECM: matches the full EcmViewer's first paint
@@ -78,19 +76,9 @@ export async function renderEcmHoverPreview(
 
   // Missing BON falls through to a static render — some ECMs reference a
   // `.bon` that isn't shipped in the pack.
-  let skel: SkelData | null = null;
-  if (skelRelPath) {
-    const bonData = await pkg.read(resolvePath(skelRelPath, smdPath));
-    if (cancelled()) return () => {};
-    if (bonData) {
-      try {
-        const built = buildSkeleton(wasm, bonData);
-        skel = { ...built, footOffset: 0 };
-      } catch (e) {
-        console.warn('[ecm-hover] skeleton build failed:', e);
-      }
-    }
-  }
+  const built = await loadBonSkeleton(wasm, pkg, skelRelPath, smdPath, '[ecm-hover]');
+  if (cancelled()) return () => {};
+  const skel: SkelData | null = built ? { ...built, footOffset: 0 } : null;
 
   if (skel && boneScaleInfo) {
     applyBoneScales(skel.bones, boneScaleInfo.entries, boneScaleInfo.isNew);
@@ -99,26 +87,17 @@ export async function renderEcmHoverPreview(
     );
   }
 
-  const allSkinPaths = collectSkinPaths(smdPath, smdSkinPaths, path, additionalSkinPaths);
-  if (allSkinPaths.length === 0) {
-    const fallback = await tryFallbackSkiPath(smdPath, pkg);
-    if (!fallback) throw new Error('No skin files referenced by SMD');
-    allSkinPaths.push(fallback);
-  }
+  const allSkinPaths = await resolveAnimatedSkinPaths({
+    pkg, basePath: smdPath, smdSkinPaths, originPath: path, additionalSkinPaths,
+  });
   if (cancelled()) return () => {};
 
-  let defaultClipName: string | null = null;
-  let defaultStckPath: string | null = null;
-  let animEvents: AnimEvent[] = [];
-  if (skel) {
-    const stckPaths = discoverStckPaths(smdPath, smdTcksDir, pkg);
-    const animNames = stckPaths.map((p) => basename(p).replace(/\.stck$/i, ''));
-    defaultClipName = animNames.find((n) => n.includes(PREFERRED_ANIM_HINT)) ?? animNames[0] ?? null;
-    if (defaultClipName) {
-      defaultStckPath = stckPaths[animNames.indexOf(defaultClipName)];
-      animEvents = (allEvents.get(defaultClipName) ?? []).filter((e) => e.type === EVENT_GFX);
-    }
-  }
+  const { defaultClipName, defaultStckPath } = skel
+    ? pickDefaultClip(smdPath, smdTcksDir, pkg)
+    : { defaultClipName: null, defaultStckPath: null };
+  const animEvents: AnimEvent[] = defaultClipName
+    ? (allEvents.get(defaultClipName) ?? []).filter((e) => e.type === EVENT_GFX)
+    : [];
 
   const useSkinning = skel != null && defaultStckPath != null;
   const skinOpts = useSkinning
@@ -193,56 +172,29 @@ export async function renderEcmHoverPreview(
     action.play();
 
     if (animEvents.length > 0) {
-      const isRenderable = (kind: string) => isRenderableKind(kind as any);
       const resolveGfxPath = (p: string) =>
         pkg.resolveEngine(p, ENGINE_PATH_PREFIXES.gfx);
       const localScheduler = createGfxEventScheduler({
         events: animEvents,
         bones: skel!.bones,
         sceneRoot: group,
-        spawn: (ev) => {
-          const resolved = resolveGfxPath(ev.filePath);
-          const fx = resolved ? preloadedGfx.get(resolved) : null;
-          if (!fx || !resolved) return createNoopRuntime(THREE);
-          const visiting = new Set<string>([resolved]);
-          const durCtx = {
-            resolve: (p: string) => preloadedGfx.get(resolveGfxPath(p) ?? '') ?? null,
-            visiting,
-            isRenderable,
-          };
-          const hooks = skel!.hooksByName;
-          const findAttachPoint = (name: string) => {
-            if (!name) return undefined;
-            return hooks.get(name) ?? skel!.bones.find((b: any) => b.name === name);
-          };
-          for (const el of fx.elements) {
-            const rt = spawnElementRuntime(el.body, {
-              three: THREE,
-              gfxScale: ev.gfxScale,
-              gfxSpeed: ev.gfxSpeed,
-              timeSpanSec: ev.timeSpan > 0
-                ? ev.timeSpan / 1000
-                : computeElementDurationSec(el, durCtx),
-              pkg,
-              element: el,
-              visiting,
-              kindFilter: () => true,
-              preloadedGfx,
-              preloadedTextures,
-              camera,
-            });
-            attachToHook(rt.root, {
-              hookName: ev.hookName,
-              hookOffset: ev.hookOffset,
-              hookYaw: ev.hookYaw,
-              hookPitch: ev.hookPitch,
-              hookRot: ev.hookRot,
-              bindParent: ev.bindParent,
-            }, findAttachPoint, group);
-            localScheduler.attachRuntime(rt);
-          }
-          return createNoopRuntime(THREE);
-        },
+        spawn: createSpawnFromPreloaded({
+          three: THREE,
+          pkg,
+          skel,
+          sceneRoot: group,
+          camera,
+          preloadedGfx,
+          preloadedTextures,
+          isRenderable: (kind) => isRenderableKind(kind),
+          kindFilter: () => true,
+          lookupEffect: (ev) => {
+            const resolved = resolveGfxPath(ev.filePath);
+            const fx = resolved ? preloadedGfx.get(resolved) : null;
+            return fx && resolved ? { fx, resolved } : null;
+          },
+          attachRuntime: (rt) => localScheduler.attachRuntime(rt),
+        }),
       });
       scheduler = localScheduler;
     }

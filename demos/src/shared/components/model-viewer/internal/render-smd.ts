@@ -19,17 +19,14 @@ import { mountScene, type LoopMode } from './scene';
 import type { ModelStatePorts } from '../state';
 import { createGfxEventScheduler, type GfxEventScheduler } from '../../gfx-runtime/scheduler';
 import {
-  spawnElementRuntime,
   isRenderableKind,
-  computeElementDurationSec,
   computeGfxDurationSec,
 } from '../../gfx-runtime/registry';
 import { createGfxLoader } from '../../gfx-runtime/loader';
 import { disposePreloadedTextures, preloadGfxGraph } from '../../gfx-runtime/preload';
 import type { DurationContext, GfxLike, IsRenderable } from '../../gfx-runtime/duration';
-import { createNoopRuntime } from '../../gfx-runtime/noop';
-import { attachToHook } from '../../gfx-runtime/hook';
 import { ENGINE_PATH_PREFIXES } from '../../gfx/util/resolveEnginePath';
+import { createSpawnFromPreloaded } from './gfx-spawn';
 import { ALL_ELEMENT_BODY_KINDS } from '../../gfx/util/kindLabel';
 import type { ElementBodyKind } from '../../gfx/types';
 import type { PreloadedTexture } from '../../gfx-runtime/types';
@@ -75,7 +72,7 @@ export async function renderFromSmd(
 ): Promise<void> {
   let smdSkinPaths: string[] = [];
   let smdTcksDir: string | undefined;
-  let skelData: { skeleton: any; bones: any[]; boneNames: string[]; tmpRoot: any; hooksByName: Map<string, any>; footOffset: number } | null = null;
+  let skelData: { skeleton: any; bones: any[]; boneNames: string[]; tmpRoot: any; hooksByName: Map<string, any>; bonesByName: Map<string, any>; footOffset: number } | null = null;
   {
     using smd = wasm.SmdModel.parse(smdData);
     smdSkinPaths = smd.skinPaths || [];
@@ -350,57 +347,22 @@ export async function renderFromSmd(
       events: gfxEvents,
       bones: skelData?.bones ?? [],
       sceneRoot: group,
-      spawn: (ev) => {
-        const effect = effectByEvent.get(ev);
-        if (!effect?.gfx || !effect.resolved) return createNoopRuntime(THREE);
-        // Cycle guard pre-populated with this event's own path so a
-        // self-referential Container(gfx_path=self) is caught at depth 1.
-        const visiting = new Set<string>([effect.resolved]);
-        const resolveGfxPath = (p: string) =>
-          pkg.resolveEngine(p, ENGINE_PATH_PREFIXES.gfx);
-        const durCtx: DurationContext = {
-          resolve: (p) => preloadedGfx.get(resolveGfxPath(p) ?? '') ?? null,
-          visiting,
-          isRenderable,
-        };
-        for (const el of effect.gfx.elements) {
-          const rt = spawnElementRuntime(el.body, {
-            three: THREE,
-            gfxScale: ev.gfxScale,
-            gfxSpeed: ev.gfxSpeed,
-            timeSpanSec: ev.timeSpan > 0
-              ? ev.timeSpan / 1000
-              : computeElementDurationSec(el, durCtx),
-            pkg,
-            element: el,
-            visiting,
-            kindFilter: (kind) => gfxKinds.has(kind),
-            preloadedGfx,
-            preloadedTextures,
-            camera: v.camera,
-          });
-          // ECM events usually target hooks (HH_*); prefer hooks then fall
-          // back to bones, then to scene root if neither matches.
-          const hooks = skelData?.hooksByName;
-          const bones = skelData?.bones;
-          const findAttachPoint = (name: string) => {
-            if (!name) return undefined;
-            const hook = hooks?.get(name);
-            if (hook) return hook;
-            return bones?.find((b) => b.name === name);
-          };
-          attachToHook(rt.root, {
-            hookName: ev.hookName,
-            hookOffset: ev.hookOffset,
-            hookYaw: ev.hookYaw,
-            hookPitch: ev.hookPitch,
-            hookRot: ev.hookRot,
-            bindParent: ev.bindParent,
-          }, findAttachPoint, group);
-          localScheduler.attachRuntime(rt);
-        }
-        return createNoopRuntime(THREE);
-      },
+      spawn: createSpawnFromPreloaded({
+        three: THREE,
+        pkg,
+        skel: skelData,
+        sceneRoot: group,
+        camera: v.camera,
+        preloadedGfx,
+        preloadedTextures,
+        isRenderable,
+        kindFilter: (kind) => gfxKinds.has(kind),
+        lookupEffect: (ev) => {
+          const e = effectByEvent.get(ev);
+          return e?.gfx && e.resolved ? { fx: e.gfx, resolved: e.resolved } : null;
+        },
+        attachRuntime: (rt) => localScheduler.attachRuntime(rt),
+      }),
     });
     scheduler = localScheduler;
   };
