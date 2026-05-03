@@ -163,7 +163,7 @@ def test_read_animation_v1_static():
     assert len(ts.bone_tracks) == 1
     assert len(ts.bone_tracks[0].position.keys) == 3
     assert len(ts.bone_tracks[0].rotation.keys) == 4
-    assert ts.bone_tracks[0].position.key_frame_ids is None
+    assert ts.bone_tracks[0].position.key_frame_ids == [0]
 
 
 def test_read_animation_v1_animated():

@@ -1004,9 +1004,8 @@ describe("Animation", () => {
     assert.equal(ts.bone_tracks[0].position.keys.length, 3);
     // 1 key × 4 floats
     assert.equal(ts.bone_tracks[0].rotation.keys.length, 4);
-    // V1 has no frame IDs
-    assert.equal(ts.bone_tracks[0].position.key_frame_ids, undefined);
-    assert.equal(ts.bone_tracks[0].rotation.key_frame_ids, undefined);
+    assert.deepEqual(ts.bone_tracks[0].position.key_frame_ids, [0]);
+    assert.deepEqual(ts.bone_tracks[0].rotation.key_frame_ids, [0]);
   });
 
   it("parses V1 animated track set", () => {

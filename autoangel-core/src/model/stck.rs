@@ -91,6 +91,62 @@ impl Animation {
     }
 }
 
+/// Raw segment record from V1 / BON-embedded track data.
+/// Used internally to derive `key_frame_ids` so sparse tracks play with correct timing.
+struct Segment {
+    start_time: i32,
+    start_key: i32,
+    end_key: i32,
+}
+
+/// Derive per-key frame indices from V1 segment records.
+///
+/// Engine reference (`A3DTrackData::GetFloorKeyIndex_OV`):
+/// ```text
+/// iKey = pSegment->iStartKey + (nAbsTime - pSegment->iStartTime) * m_nFrameRate / 1000;
+/// ```
+/// So within a segment, keys advance one step per `1000 / frame_rate` ms, anchored at
+/// `iStartTime` for index `iStartKey`. This gives:
+/// ```text
+/// time_ms(K) = segment.start_time + (K - segment.start_key) * 1000 / frame_rate
+/// base_frame = round((segment.start_time * frame_rate) / 1000)
+/// key_frame_ids[K] = base_frame + (K - segment.start_key)   // for K in [start_key, end_key]
+/// ```
+///
+/// Caller must gate on `frame_rate > 0`; this body assumes that.
+fn derive_frame_ids(segments: &[Segment], num_keys: usize, frame_rate: i32) -> Result<Vec<u16>> {
+    debug_assert!(frame_rate > 0, "derive_frame_ids requires frame_rate > 0");
+    let mut ids = vec![0u16; num_keys];
+    for seg in segments {
+        if seg.start_key < 0 || seg.end_key < seg.start_key {
+            continue; // malformed: negative start, or end < start
+        }
+        // Round-half-up via integer math (i64 to avoid overflow on long timelines):
+        // engine's runtime time→key uses truncating divide, but for our key→frame
+        // direction the boundary case (e.g. boss seg start_time=66 at 15fps:
+        // 0.99 frames) needs rounding to preserve key ordering — floor would
+        // collapse adjacent boundary keys to the same frame.
+        let base = ((seg.start_time as i64 * frame_rate as i64 + 500) / 1000) as i32;
+        let span = seg.end_key - seg.start_key;
+        for i in 0..=span {
+            let k = (seg.start_key + i) as usize;
+            if k >= num_keys {
+                continue; // defensive: malformed segment
+            }
+            let frame = base + i;
+            if frame < 0 || frame > u16::MAX as i32 {
+                eyre::bail!(
+                    "track frame index {frame} out of u16 range (start_time={}, frame_rate={})",
+                    seg.start_time,
+                    frame_rate
+                );
+            }
+            ids[k] = frame as u16;
+        }
+    }
+    Ok(ids)
+}
+
 /// Read a single track (position or rotation) for V1.
 /// `floats_per_key` is 3 for position (vec3) or 4 for rotation (quaternion xyzw).
 pub(crate) async fn read_track_v1<R: DataReader>(
@@ -118,14 +174,30 @@ pub(crate) async fn read_track_v1<R: DataReader>(
         *offset += 4;
     }
 
-    // Skip segments (4 × i32 = 16 bytes each, read and discarded)
-    *offset += num_segments as u64 * 16;
+    // Read segment records (4 × i32 = 16 bytes each) and derive per-key frame ids.
+    // Layout: start_time, end_time (skipped), start_key, end_key.
+    let mut segments = Vec::with_capacity(num_segments);
+    for _ in 0..num_segments {
+        let view = data.get(*offset..*offset + 16)?;
+        segments.push(Segment {
+            start_time: view.get(0..4)?.as_le::<i32>().await?,
+            start_key: view.get(8..12)?.as_le::<i32>().await?,
+            end_key: view.get(12..16)?.as_le::<i32>().await?,
+        });
+        *offset += 16;
+    }
+
+    let key_frame_ids = if !segments.is_empty() && num_keys > 0 && frame_rate > 0 {
+        Some(derive_frame_ids(&segments, num_keys, frame_rate)?)
+    } else {
+        None
+    };
 
     Ok(Track {
         frame_rate,
         track_length_ms,
         keys,
-        key_frame_ids: None,
+        key_frame_ids,
     })
 }
 
@@ -251,7 +323,8 @@ mod tests {
         assert_eq!(ts.bone_tracks.len(), 1);
         assert_eq!(ts.bone_tracks[0].position.keys.len(), 3); // 1 key × 3 floats
         assert_eq!(ts.bone_tracks[0].rotation.keys.len(), 4); // 1 key × 4 floats
-        assert!(ts.bone_tracks[0].position.key_frame_ids.is_none());
+        // Static tracks still have at least one segment, so derived ids are Some.
+        assert!(ts.bone_tracks[0].position.key_frame_ids.is_some());
     }
 
     #[test]
@@ -265,6 +338,31 @@ mod tests {
         // bone 0 has 1 key each; bone 1 has 71 position keys (71×3 floats) and 1 rotation key
         assert!(ts.bone_tracks[1].position.keys.len() > 3);
         assert!(ts.bone_tracks[2].rotation.keys.len() > 4);
+    }
+
+    #[test]
+    fn parse_v1_animated_key_frame_ids_populated() {
+        let bytes = include_test_data_bytes!("models/stck_v1_animated.stck");
+        let ds = DataSource::from_bytes(bytes.to_vec());
+        let ts = pollster::block_on(Animation::parse(&ds)).unwrap();
+        // Find a non-static track (>1 key) — those have segments worth deriving from.
+        let animated = ts
+            .bone_tracks
+            .iter()
+            .find(|bt| bt.position.keys.len() > 3)
+            .or_else(|| ts.bone_tracks.iter().find(|bt| bt.rotation.keys.len() > 4))
+            .expect("at least one non-static track in fixture");
+        let chosen = if animated.position.keys.len() > 3 {
+            &animated.position
+        } else {
+            &animated.rotation
+        };
+        let ids = chosen
+            .key_frame_ids
+            .as_ref()
+            .expect("derived key_frame_ids on v1 sparse track");
+        assert!(!ids.is_empty());
+        assert_eq!(ids[0], 0);
     }
 
     #[test]

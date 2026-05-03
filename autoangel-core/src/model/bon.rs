@@ -214,6 +214,38 @@ mod tests {
     }
 
     #[test]
+    fn parse_carnivore_plant_bon_key_frame_ids_populated() {
+        let bytes = include_test_data_bytes!("models/carnivore_plant/花苞食人花_b.bon");
+        let ds = DataSource::from_bytes(bytes.to_vec());
+        let skel = pollster::block_on(Skeleton::parse(&ds)).unwrap();
+        let anim = skel
+            .embedded_animation
+            .as_ref()
+            .expect("embedded animation");
+        let sparse_track = anim
+            .bone_tracks
+            .iter()
+            .max_by_key(|bt| bt.position.keys.len())
+            .expect("at least one bone track");
+        let ids = sparse_track
+            .position
+            .key_frame_ids
+            .as_ref()
+            .expect("key_frame_ids must be Some after segment derivation");
+        assert!(
+            ids.len() > 1,
+            "fixture must exercise a sparse (multi-key) track"
+        );
+        assert_eq!(ids[0], 0, "first key always at frame 0");
+        let max_id = *ids.iter().max().unwrap() as i32;
+        let anim_end = anim.anim_end.unwrap();
+        assert!(
+            max_id <= anim_end + 1,
+            "max derived frame {max_id} <= anim_end {anim_end}"
+        );
+    }
+
+    #[test]
     fn parse_fallen_general_bon() {
         let bytes = include_test_data_bytes!("models/fallen_general/兵殇将军.bon");
         let ds = DataSource::from_bytes(bytes.to_vec());
