@@ -12,18 +12,18 @@ export const smdExtractor: RefExtractor = {
   ext: '.smd',
   version: 1,
   extract(data, sourcePath, wasm: AutoangelModule): RawRef[] {
-    using smd = wasm.SmdModel.parse(data);
+    const smd = wasm.parseSmd(data);
     const refs: RawRef[] = [];
 
-    if (smd.skeletonPath) {
+    if (smd.skeleton_path) {
       refs.push({
         kind: 'skeleton',
-        raw: smd.skeletonPath,
-        candidates: [resolvePath(smd.skeletonPath, sourcePath)],
+        raw: smd.skeleton_path,
+        candidates: [resolvePath(smd.skeleton_path, sourcePath)],
       });
     }
 
-    for (const skinPath of smd.skinPaths ?? []) {
+    for (const skinPath of smd.skin_paths ?? []) {
       if (!skinPath) continue;
       refs.push({
         kind: 'skin',
@@ -32,12 +32,12 @@ export const smdExtractor: RefExtractor = {
       });
     }
 
-    if (smd.tcksDir) {
+    if (smd.tcks_dir) {
       refs.push({
         kind: 'animation',
-        raw: smd.tcksDir,
+        raw: smd.tcks_dir,
         candidates: [],
-        dirCandidates: [resolvePath(smd.tcksDir, sourcePath)],
+        dirCandidates: [resolvePath(smd.tcks_dir, sourcePath)],
         dirExt: '.stck',
       });
     }

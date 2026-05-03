@@ -7,15 +7,11 @@ function makeWasm(parsed: {
   tcksDir?: string;
 }): any {
   return {
-    SmdModel: {
-      parse: (_: Uint8Array) => ({
-        skeletonPath: parsed.skeletonPath ?? '',
-        skinPaths: parsed.skinPaths ?? [],
-        tcksDir: parsed.tcksDir,
-        free() {},
-        [Symbol.dispose]() {},
-      }),
-    },
+    parseSmd: (_: Uint8Array) => ({
+      skeleton_path: parsed.skeletonPath ?? '',
+      skin_paths: parsed.skinPaths ?? [],
+      tcks_dir: parsed.tcksDir,
+    }),
   };
 }
 

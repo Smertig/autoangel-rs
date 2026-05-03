@@ -35,10 +35,10 @@ export async function renderSmdHoverPreview(
   let tcksDir: string | undefined;
   let skelRelPath = '';
   {
-    using smd = wasm.SmdModel.parse(data);
-    skinPaths = smd.skinPaths || [];
-    tcksDir = smd.tcksDir;
-    skelRelPath = smd.skeletonPath;
+    const smd = wasm.parseSmd(data);
+    skinPaths = smd.skin_paths || [];
+    tcksDir = smd.tcks_dir ?? undefined;
+    skelRelPath = smd.skeleton_path;
   }
 
   const skel: SkelData | null = await loadBonSkeleton(wasm, pkg, skelRelPath, path, '[smd-hover]');

@@ -74,10 +74,10 @@ export async function renderFromSmd(
   let smdTcksDir: string | undefined;
   let skelData: { skeleton: any; bones: any[]; boneNames: string[]; tmpRoot: any; hooksByName: Map<string, any>; bonesByName: Map<string, any>; footOffset: number } | null = null;
   {
-    using smd = wasm.SmdModel.parse(smdData);
-    smdSkinPaths = smd.skinPaths || [];
-    smdTcksDir = smd.tcksDir;
-    const bonRelPath: string = smd.skeletonPath;
+    const smd = wasm.parseSmd(smdData);
+    smdSkinPaths = smd.skin_paths || [];
+    smdTcksDir = smd.tcks_dir ?? undefined;
+    const bonRelPath: string = smd.skeleton_path;
     if (bonRelPath) {
       const bonPath = resolvePath(bonRelPath, smdPath);
       const bonData = await pkg.read(bonPath);

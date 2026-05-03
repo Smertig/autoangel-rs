@@ -68,10 +68,10 @@ export async function renderEcmHoverPreview(
   let smdTcksDir: string | undefined;
   let skelRelPath = '';
   {
-    using smd = wasm.SmdModel.parse(smdData);
-    smdSkinPaths = smd.skinPaths || [];
-    smdTcksDir = smd.tcksDir;
-    skelRelPath = smd.skeletonPath;
+    const smd = wasm.parseSmd(smdData);
+    smdSkinPaths = smd.skin_paths || [];
+    smdTcksDir = smd.tcks_dir ?? undefined;
+    skelRelPath = smd.skeleton_path;
   }
 
   // Kick off BON read and skin-path resolution before we know the clip —

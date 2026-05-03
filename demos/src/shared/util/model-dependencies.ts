@@ -165,11 +165,11 @@ export async function collectEcmDependencies(
 
     if (smdData) {
       files.set(smdPath, smdData);
-      using smd = wasm.SmdModel.parse(smdData);
-      smdSkinPaths = smd.skinPaths || [];
-      smdTcksDir = smd.tcksDir;
+      const smd = wasm.parseSmd(smdData);
+      smdSkinPaths = smd.skin_paths || [];
+      smdTcksDir = smd.tcks_dir ?? undefined;
 
-      const bonRelPath: string = smd.skeletonPath;
+      const bonRelPath: string = smd.skeleton_path;
       if (bonRelPath) {
         const bonPath = resolvePath(bonRelPath, smdPath);
         const bonData = await pkg.read(bonPath);
