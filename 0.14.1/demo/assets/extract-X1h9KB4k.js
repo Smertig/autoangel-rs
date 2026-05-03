@@ -1,0 +1,1 @@
+import{n as m}from"./index-worker-o_gPbD59.js";const u={name:"bmd",ext:".bmd",version:1,extract(o,d,r){const a=r.parseBmd(o),n=[],s=new Set;for(const c of a.meshes??[]){const e=c.texture_map;if(!e)continue;const t=m(e);s.has(t)||(s.add(t),n.push({kind:"texture",raw:e,candidates:[t]}))}return n}};export{u as bmdExtractor};
