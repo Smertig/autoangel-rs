@@ -25,7 +25,7 @@ export class ClipCache {
   }
 }
 
-export function buildKeyTimes(keyCount: number, frameIds: Uint16Array | undefined, frameRate: number): Float32Array {
+export function buildKeyTimes(keyCount: number, frameIds: ArrayLike<number> | undefined, frameRate: number): Float32Array {
   const times = new Float32Array(keyCount);
   if (frameIds) {
     for (let k = 0; k < keyCount; k++) times[k] = frameIds[k] / frameRate;
@@ -42,26 +42,28 @@ export function buildAnimationClip(
   boneNames: string[],
 ): any | null {
   const { THREE } = getThree();
-  using ts = wasm.TrackSet.parse(stckData);
-  const trackCount: number = ts.trackCount;
-  const fps = ts.animFps || 30;
-  const duration = (ts.animEnd - ts.animStart) / fps;
+  const ts = wasm.parseAnimation(stckData);
+  const fps = ts.anim_fps || 30;
+  const animEnd = ts.anim_end ?? ts.anim_start;
+  const duration = (animEnd - ts.anim_start) / fps;
   const tracks: any[] = [];
 
-  for (let t = 0; t < trackCount; t++) {
-    const boneId: number = ts.boneId(t);
+  for (const bt of ts.bone_tracks) {
+    const boneId = bt.bone_id;
     if (boneId < 0 || boneId >= boneNames.length) continue;
     const boneName = boneNames[boneId];
 
-    const posKeys: Float32Array | undefined = ts.positionKeys(t);
-    if (posKeys && posKeys.length > 0) {
-      const times = buildKeyTimes(posKeys.length / 3, ts.positionFrameIds(t), ts.positionFrameRate(t));
+    const posKeys = bt.position.keys;
+    if (posKeys.length > 0) {
+      const posIds = bt.position.key_frame_ids ?? undefined;
+      const times = buildKeyTimes(posKeys.length / 3, posIds, bt.position.frame_rate);
       tracks.push(new THREE.VectorKeyframeTrack(`${boneName}.position`, times, posKeys));
     }
 
-    const rotKeys: Float32Array | undefined = ts.rotationKeys(t);
-    if (rotKeys && rotKeys.length > 0) {
-      const times = buildKeyTimes(rotKeys.length / 4, ts.rotationFrameIds(t), ts.rotationFrameRate(t));
+    const rotKeys = bt.rotation.keys;
+    if (rotKeys.length > 0) {
+      const rotIds = bt.rotation.key_frame_ids ?? undefined;
+      const times = buildKeyTimes(rotKeys.length / 4, rotIds, bt.rotation.frame_rate);
       tracks.push(new THREE.QuaternionKeyframeTrack(`${boneName}.quaternion`, times, rotKeys));
     }
   }
