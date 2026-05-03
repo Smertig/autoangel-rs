@@ -1,0 +1,1 @@
+function i(s,e=4096){const o=s.subarray(0,e),a=[];for(let t=0;t<o.length;t+=16){const n=o.subarray(t,t+16);a.push({offset:t.toString(16).padStart(8,"0"),hex:[...n].map(r=>r.toString(16).padStart(2,"0")).join(" ").padEnd(47),ascii:[...n].map(r=>r>=32&&r<=126?String.fromCharCode(r):".").join("")})}return a}export{i as h};

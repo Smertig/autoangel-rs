@@ -1,0 +1,1 @@
+function a(o,n){const e=document.createElement("a");e.href=URL.createObjectURL(o),e.download=n,e.click(),URL.revokeObjectURL(e.href)}async function t(o,n){const e=await n.read(o);if(!e)throw new Error(`File not found: ${o}`);a(new Blob([e.buffer]),o.split(/[\\/]/).pop())}export{a,t as d};
