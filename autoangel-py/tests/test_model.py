@@ -137,12 +137,11 @@ def test_read_skin_invalid():
         pass
 
 
-# --- TrackSet (STCK) tests ---
+# --- Animation (STCK) tests ---
 
-def test_read_track_set_v1_static():
+def test_read_animation_v1_static():
     with open('../test_data/models/stck_v1_static.stck', 'rb') as f:
-        ts = autoangel.read_track_set(f.read())
-    assert ts.version == 1
+        ts = autoangel.read_animation(f.read())
     assert ts.anim_fps == 15
     assert len(ts.bone_tracks) == 1
     assert len(ts.bone_tracks[0].position.keys) == 3
@@ -150,10 +149,9 @@ def test_read_track_set_v1_static():
     assert ts.bone_tracks[0].position.key_frame_ids is None
 
 
-def test_read_track_set_v1_animated():
+def test_read_animation_v1_animated():
     with open('../test_data/models/stck_v1_animated.stck', 'rb') as f:
-        ts = autoangel.read_track_set(f.read())
-    assert ts.version == 1
+        ts = autoangel.read_animation(f.read())
     assert ts.anim_fps == 15
     assert ts.anim_end == 70
     assert len(ts.bone_tracks) == 5
@@ -161,26 +159,24 @@ def test_read_track_set_v1_animated():
     assert len(ts.bone_tracks[2].rotation.keys) > 4
 
 
-def test_read_track_set_v2_static():
+def test_read_animation_v2_static():
     with open('../test_data/models/stck_v2_static.stck', 'rb') as f:
-        ts = autoangel.read_track_set(f.read())
-    assert ts.version == 2
+        ts = autoangel.read_animation(f.read())
     assert len(ts.bone_tracks) == 1
 
 
-def test_read_track_set_v2_animated():
+def test_read_animation_v2_animated():
     with open('../test_data/models/stck_v2_animated.stck', 'rb') as f:
-        ts = autoangel.read_track_set(f.read())
-    assert ts.version == 2
+        ts = autoangel.read_animation(f.read())
     assert ts.anim_fps == 30
     assert ts.anim_end == 100
     assert len(ts.bone_tracks) == 25
     assert len(ts.bone_tracks[0].rotation.keys) % 4 == 0
 
 
-def test_read_track_set_invalid():
+def test_read_animation_invalid():
     try:
-        autoangel.read_track_set(b'\xDE\xAD\xBE\xEF' + b'\x00' * 20)
+        autoangel.read_animation(b'\xDE\xAD\xBE\xEF' + b'\x00' * 20)
         assert False, 'should have raised'
     except ValueError:
         pass

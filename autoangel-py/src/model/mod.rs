@@ -1,9 +1,9 @@
+pub mod py_animation;
 pub mod py_ecm;
 pub mod py_gfx;
 pub mod py_skeleton;
 pub mod py_skin;
 pub mod py_smd;
-pub mod py_track_set;
 
 use pyo3::prelude::*;
 
@@ -13,6 +13,6 @@ pub fn fill_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     py_smd::init_py(m)?;
     py_skeleton::init_py(m)?;
     py_skin::init_py(m)?;
-    py_track_set::init_py(m)?;
+    py_animation::init_py(m)?;
     Ok(())
 }

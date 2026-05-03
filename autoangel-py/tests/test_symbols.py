@@ -20,6 +20,6 @@ def test_symbols():
     assert Material is not None
     assert SkinMesh is not None
     assert RigidMesh is not None
-    assert TrackSet is not None
+    assert Animation is not None
     assert BoneTrack is not None
     assert Track is not None

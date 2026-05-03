@@ -9,7 +9,7 @@ It supports the following file formats:
 - `*.smd` - load with `read_smd`, inspect skin model data through the `SmdModel` object.
 - `*.bon` - load with `read_skeleton`, inspect skeleton bones and hooks through the `Skeleton` object.
 - `*.ski` - load with `read_skin`, inspect meshes, textures and materials through the `Skin` object.
-- `*.stck` - load with `read_track_set`, inspect animation tracks through the `TrackSet` object.
+- `*.stck` - load with `read_animation`, inspect animation tracks through the `Animation` object.
 - `*.gfx` - load with `read_gfx`, inspect visual effect elements through the `GfxEffect` object.
 
 ## Quick Start
@@ -879,11 +879,10 @@ class BoneTrack:
 
 
 @final
-class TrackSet:
-    """Parsed STCK (skeleton track set) file."""
-    version: int
+class Animation:
+    """Parsed STCK animation (also used for BON v<6 embedded animations)."""
     anim_start: int
-    anim_end: int
+    anim_end: Optional[int]
     anim_fps: int
     bone_tracks: List[BoneTrack]
 
@@ -1432,12 +1431,12 @@ def read_skin(data: bytes) -> Skin:
     ...
 
 
-def read_track_set(data: bytes) -> TrackSet:
+def read_animation(data: bytes) -> Animation:
     """
     Parse a STCK (skeleton track set) file from bytes.
 
     :param data: Raw STCK file content.
-    :return: Parsed track set.
+    :return: Parsed animation.
     :raises ValueError: If the data is not a valid STCK file.
     """
     ...

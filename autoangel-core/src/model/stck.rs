@@ -1,21 +1,22 @@
+use crate::model::bindable;
 use crate::model::common::{detect_moxb_offset, read_count};
 use crate::util::data_source::{DataReader, DataSource};
 use eyre::Result;
+use macro_rules_attribute::apply;
 
 const MAGIC: u32 = 0x5354434B; // "STCK"
 
-/// An animation track set parsed from a STCK file.
-#[derive(Debug, Clone)]
-pub struct TrackSet {
-    pub version: u32,
+/// An animation parsed from a STCK file or BON v<6 embedded animation block.
+#[apply(bindable)]
+pub struct Animation {
     pub anim_start: i32,
-    pub anim_end: i32,
+    pub anim_end: Option<i32>,
     pub anim_fps: i32,
     pub bone_tracks: Vec<BoneTrack>,
 }
 
 /// Per-bone animation track data.
-#[derive(Debug, Clone)]
+#[apply(bindable)]
 pub struct BoneTrack {
     pub bone_id: i32,
     pub position: Track,
@@ -23,7 +24,7 @@ pub struct BoneTrack {
 }
 
 /// A single animation track (position or rotation keyframes).
-#[derive(Debug, Clone)]
+#[apply(bindable)]
 pub struct Track {
     pub frame_rate: i32,
     pub track_length_ms: i32,
@@ -33,7 +34,7 @@ pub struct Track {
     pub key_frame_ids: Option<Vec<u16>>,
 }
 
-impl TrackSet {
+impl Animation {
     pub async fn parse<R: DataReader>(data: &DataSource<R>) -> Result<Self> {
         let moxb = detect_moxb_offset(data).await?;
 
@@ -81,10 +82,9 @@ impl TrackSet {
             });
         }
 
-        Ok(TrackSet {
-            version,
+        Ok(Animation {
             anim_start,
-            anim_end,
+            anim_end: Some(anim_end),
             anim_fps,
             bone_tracks,
         })
@@ -93,7 +93,7 @@ impl TrackSet {
 
 /// Read a single track (position or rotation) for V1.
 /// `floats_per_key` is 3 for position (vec3) or 4 for rotation (quaternion xyzw).
-async fn read_track_v1<R: DataReader>(
+pub(crate) async fn read_track_v1<R: DataReader>(
     data: &DataSource<R>,
     offset: &mut u64,
     floats_per_key: usize,
@@ -246,8 +246,7 @@ mod tests {
     fn parse_v1_static() {
         let bytes = include_test_data_bytes!("models/stck_v1_static.stck");
         let ds = DataSource::from_bytes(bytes.to_vec());
-        let ts = pollster::block_on(TrackSet::parse(&ds)).unwrap();
-        assert_eq!(ts.version, 1);
+        let ts = pollster::block_on(Animation::parse(&ds)).unwrap();
         assert_eq!(ts.anim_fps, 15);
         assert_eq!(ts.bone_tracks.len(), 1);
         assert_eq!(ts.bone_tracks[0].position.keys.len(), 3); // 1 key × 3 floats
@@ -259,10 +258,9 @@ mod tests {
     fn parse_v1_animated() {
         let bytes = include_test_data_bytes!("models/stck_v1_animated.stck");
         let ds = DataSource::from_bytes(bytes.to_vec());
-        let ts = pollster::block_on(TrackSet::parse(&ds)).unwrap();
-        assert_eq!(ts.version, 1);
+        let ts = pollster::block_on(Animation::parse(&ds)).unwrap();
         assert_eq!(ts.anim_fps, 15);
-        assert_eq!(ts.anim_end, 70);
+        assert_eq!(ts.anim_end, Some(70));
         assert_eq!(ts.bone_tracks.len(), 5);
         // bone 0 has 1 key each; bone 1 has 71 position keys (71×3 floats) and 1 rotation key
         assert!(ts.bone_tracks[1].position.keys.len() > 3);
@@ -273,8 +271,7 @@ mod tests {
     fn parse_v2_static() {
         let bytes = include_test_data_bytes!("models/stck_v2_static.stck");
         let ds = DataSource::from_bytes(bytes.to_vec());
-        let ts = pollster::block_on(TrackSet::parse(&ds)).unwrap();
-        assert_eq!(ts.version, 2);
+        let ts = pollster::block_on(Animation::parse(&ds)).unwrap();
         assert_eq!(ts.bone_tracks.len(), 1);
     }
 
@@ -282,10 +279,9 @@ mod tests {
     fn parse_v2_animated() {
         let bytes = include_test_data_bytes!("models/stck_v2_animated.stck");
         let ds = DataSource::from_bytes(bytes.to_vec());
-        let ts = pollster::block_on(TrackSet::parse(&ds)).unwrap();
-        assert_eq!(ts.version, 2);
+        let ts = pollster::block_on(Animation::parse(&ds)).unwrap();
         assert_eq!(ts.anim_fps, 30);
-        assert_eq!(ts.anim_end, 100);
+        assert_eq!(ts.anim_end, Some(100));
         assert_eq!(ts.bone_tracks.len(), 25);
         // Rotation keys should be full quaternions (4 floats each) after no-w decompression
         assert_eq!(ts.bone_tracks[0].rotation.keys.len() % 4, 0);
@@ -296,12 +292,12 @@ mod tests {
         let mut buf = vec![0xDE, 0xAD, 0xBE, 0xEF];
         buf.extend_from_slice(&[0u8; 20]);
         let ds = DataSource::from_bytes(buf);
-        assert!(pollster::block_on(TrackSet::parse(&ds)).is_err());
+        assert!(pollster::block_on(Animation::parse(&ds)).is_err());
     }
 
     #[test]
     fn reject_truncated() {
         let ds = DataSource::from_bytes(vec![0u8; 10]);
-        assert!(pollster::block_on(TrackSet::parse(&ds)).is_err());
+        assert!(pollster::block_on(Animation::parse(&ds)).is_err());
     }
 }

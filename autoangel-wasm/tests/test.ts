@@ -11,10 +11,10 @@ import {
   PckBuilder,
   PckPackage,
   SmdModel,
-  TrackSet,
   Skin,
   decodeDds,
   decodeTga,
+  parseAnimation,
   parseBmd,
   parseGfx,
   parseSkeleton,
@@ -963,96 +963,91 @@ describe("Skin", () => {
   });
 });
 
-// --- TrackSet (STCK) ---
+// --- Animation (STCK) ---
 
 const STCK_V1_STATIC = readFileSync(resolve(root, "test_data/models/stck_v1_static.stck"));
 const STCK_V1_ANIM = readFileSync(resolve(root, "test_data/models/stck_v1_animated.stck"));
 const STCK_V2_STATIC = readFileSync(resolve(root, "test_data/models/stck_v2_static.stck"));
 const STCK_V2_ANIM = readFileSync(resolve(root, "test_data/models/stck_v2_animated.stck"));
 
-describe("TrackSet", () => {
+describe("Animation", () => {
   it("parses V1 static track set", () => {
-    using ts = TrackSet.parse(STCK_V1_STATIC);
-    assert.equal(ts.version, 1);
-    assert.equal(ts.animFps, 15);
-    assert.equal(ts.trackCount, 1);
+    const ts = parseAnimation(STCK_V1_STATIC);
+    assert.equal(ts.anim_fps, 15);
+    assert.equal(ts.bone_tracks.length, 1);
     // 1 key × 3 floats
-    assert.equal(ts.positionKeys(0).length, 3);
+    assert.equal(ts.bone_tracks[0].position.keys.length, 3);
     // 1 key × 4 floats
-    assert.equal(ts.rotationKeys(0).length, 4);
+    assert.equal(ts.bone_tracks[0].rotation.keys.length, 4);
     // V1 has no frame IDs
-    assert.equal(ts.positionFrameIds(0), undefined);
-    assert.equal(ts.rotationFrameIds(0), undefined);
+    assert.equal(ts.bone_tracks[0].position.key_frame_ids, undefined);
+    assert.equal(ts.bone_tracks[0].rotation.key_frame_ids, undefined);
   });
 
   it("parses V1 animated track set", () => {
-    using ts = TrackSet.parse(STCK_V1_ANIM);
-    assert.equal(ts.version, 1);
-    assert.equal(ts.animFps, 15);
-    assert.equal(ts.animEnd, 70);
-    assert.equal(ts.trackCount, 5);
+    const ts = parseAnimation(STCK_V1_ANIM);
+    assert.equal(ts.anim_fps, 15);
+    assert.equal(ts.anim_end, 70);
+    assert.equal(ts.bone_tracks.length, 5);
 
     // Position keys are multiples of 3
-    for (let t = 0; t < ts.trackCount; t++) {
-      assert.equal(ts.positionKeys(t).length % 3, 0);
-      assert.equal(ts.rotationKeys(t).length % 4, 0);
+    for (const bt of ts.bone_tracks) {
+      assert.equal(bt.position.keys.length % 3, 0);
+      assert.equal(bt.rotation.keys.length % 4, 0);
     }
 
     // At least one track has more than 1 key
-    assert.ok(ts.positionKeys(1).length > 3);
+    assert.ok(ts.bone_tracks[1].position.keys.length > 3);
   });
 
   it("parses V2 static track set", () => {
-    using ts = TrackSet.parse(STCK_V2_STATIC);
-    assert.equal(ts.version, 2);
-    assert.equal(ts.trackCount, 1);
+    const ts = parseAnimation(STCK_V2_STATIC);
+    assert.equal(ts.bone_tracks.length, 1);
   });
 
   it("parses V2 animated track set", () => {
-    using ts = TrackSet.parse(STCK_V2_ANIM);
-    assert.equal(ts.version, 2);
-    assert.equal(ts.animFps, 30);
-    assert.equal(ts.animEnd, 100);
-    assert.equal(ts.trackCount, 25);
+    const ts = parseAnimation(STCK_V2_ANIM);
+    assert.equal(ts.anim_fps, 30);
+    assert.equal(ts.anim_end, 100);
+    assert.equal(ts.bone_tracks.length, 25);
 
     // Rotation keys are always 4 floats per key (even after no-w decompression)
-    for (let t = 0; t < ts.trackCount; t++) {
-      assert.equal(ts.rotationKeys(t).length % 4, 0);
+    for (const bt of ts.bone_tracks) {
+      assert.equal(bt.rotation.keys.length % 4, 0);
     }
   });
 
   it("exposes per-track frame rates", () => {
-    using ts = TrackSet.parse(STCK_V1_ANIM);
-    assert.equal(typeof ts.positionFrameRate(0), "number");
-    assert.ok(ts.positionFrameRate(0) > 0);
-    assert.equal(typeof ts.rotationFrameRate(0), "number");
-    assert.ok(ts.rotationFrameRate(0) > 0);
+    const ts = parseAnimation(STCK_V1_ANIM);
+    const bt = ts.bone_tracks[0];
+    assert.equal(typeof bt.position.frame_rate, "number");
+    assert.ok(bt.position.frame_rate > 0);
+    assert.equal(typeof bt.rotation.frame_rate, "number");
+    assert.ok(bt.rotation.frame_rate > 0);
   });
 
   it("exposes bone IDs", () => {
-    using ts = TrackSet.parse(STCK_V1_ANIM);
-    for (let t = 0; t < ts.trackCount; t++) {
-      assert.equal(typeof ts.boneId(t), "number");
-      assert.ok(ts.boneId(t) >= 0);
+    const ts = parseAnimation(STCK_V1_ANIM);
+    for (const bt of ts.bone_tracks) {
+      assert.equal(typeof bt.bone_id, "number");
+      assert.ok(bt.bone_id >= 0);
     }
   });
 
   it("V2 compressed tracks have frame IDs", () => {
-    using ts = TrackSet.parse(STCK_V2_ANIM);
+    const ts = parseAnimation(STCK_V2_ANIM);
     // At least one track should have frame IDs (compressed)
     let foundFrameIds = false;
-    for (let t = 0; t < ts.trackCount; t++) {
-      const posIds = ts.positionFrameIds(t);
-      const rotIds = ts.rotationFrameIds(t);
+    for (const bt of ts.bone_tracks) {
+      const posIds = bt.position.key_frame_ids;
+      const rotIds = bt.rotation.key_frame_ids;
       if (posIds || rotIds) {
         foundFrameIds = true;
         if (posIds) {
-          assert.ok(posIds instanceof Uint16Array);
-          assert.equal(posIds.length, ts.positionKeys(t).length / 3);
+          assert.equal(posIds.length, bt.position.keys.length / 3);
         }
         if (rotIds) {
-          assert.ok(rotIds instanceof Uint16Array);
-          assert.equal(rotIds.length, ts.rotationKeys(t).length / 4);
+          assert.equal(rotIds.length, bt.rotation.keys.length / 4);
         }
       }
     }
@@ -1060,17 +1055,18 @@ describe("TrackSet", () => {
   });
 
   it("exposes track length in ms", () => {
-    using ts = TrackSet.parse(STCK_V2_ANIM);
-    assert.equal(typeof ts.positionTrackLengthMs(0), "number");
-    assert.equal(typeof ts.rotationTrackLengthMs(0), "number");
+    const ts = parseAnimation(STCK_V2_ANIM);
+    const bt = ts.bone_tracks[0];
+    assert.equal(typeof bt.position.track_length_ms, "number");
+    assert.equal(typeof bt.rotation.track_length_ms, "number");
   });
 
   it("rejects empty bytes", () => {
-    assert.throws(() => TrackSet.parse(new Uint8Array([])));
+    assert.throws(() => parseAnimation(new Uint8Array([])));
   });
 
   it("rejects bad magic", () => {
-    assert.throws(() => TrackSet.parse(new Uint8Array(30)));
+    assert.throws(() => parseAnimation(new Uint8Array(30)));
   });
 });
 

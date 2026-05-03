@@ -64,7 +64,7 @@ PyO3 bindings exposing `autoangel-core` as the `autoangel` Python module. Uses `
 
 - **`elements/`** — `py_config`, `py_data`, `py_value`, `py_util` wrapping core elements types
 - **`pck/`** — `py_package`, `py_package_config` wrapping core pck types
-- **`model/`** — `py_ecm`, `py_gfx`, `py_skeleton`, `py_skin`, `py_smd`, `py_track_set` wrapping core model types
+- **`model/`** — `py_ecm`, `py_gfx`, `py_skeleton`, `py_skin`, `py_smd`, `py_animation` wrapping core model types
 - **`lib.rs`** — PyO3 module initialization, top-level `read_elements`/`read_pck` functions
 
 Python type stubs: `autoangel-py/autoangel.pyi`.
