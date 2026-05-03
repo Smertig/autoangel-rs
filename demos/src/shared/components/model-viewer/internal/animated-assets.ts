@@ -1,4 +1,5 @@
 import type { AutoangelModule } from '../../../../types/autoangel';
+import type { Animation, SmdAction } from 'autoangel';
 import type { PackageView } from '@shared/package';
 import { basename } from '@shared/util/path';
 import {
@@ -56,18 +57,65 @@ export async function resolveAnimatedSkinPaths(
   return [fallback];
 }
 
-export function pickDefaultClip(
-  smdPath: string,
-  tcksDir: string | undefined,
-  pkg: PackageView,
-): { animNames: string[]; defaultClipName: string | null; defaultStckPath: string | null } {
-  const stckPaths = discoverStckPaths(smdPath, tcksDir, pkg);
+/** Tagged-union return for the clip-source dispatcher. `embedded` lights up
+ *  for BON v<6 models whose timeline lives in the skeleton plus an
+ *  `SmdAction` list; `stck` is the original modern path with one STCK file
+ *  per clip; `none` means we have neither a usable embedded timeline nor any
+ *  STCKs to enumerate. */
+export type AnimatedClipsSource =
+  | {
+      kind: 'stck';
+      animNames: string[];
+      defaultClipName: string | null;
+      defaultStckPath: string | null;
+      /** Parallel to `animNames`; `render-smd.ts` uses this to map clip name → archive path. */
+      stckPaths: string[];
+    }
+  | {
+      kind: 'embedded';
+      animNames: string[];
+      defaultClipName: string | null;
+      defaultAction: SmdAction | null;
+    }
+  | { kind: 'none'; animNames: []; defaultClipName: null };
+
+export interface PickClipOptions {
+  smdPath: string;
+  smdTcksDir: string | undefined;
+  smdActions: SmdAction[];
+  embeddedAnimation: Animation | null;
+  pkg: PackageView;
+}
+
+export function pickDefaultClip(opts: PickClipOptions): AnimatedClipsSource {
+  const useEmbedded =
+    opts.embeddedAnimation != null
+    && opts.smdActions.length > 0
+    && opts.smdActions.every((a) => a.tck_file == null);
+
+  if (useEmbedded) {
+    const animNames = opts.smdActions.map((a) => a.name);
+    const found = opts.smdActions.find((a) => a.name.includes(PREFERRED_ANIM_HINT))
+      ?? opts.smdActions[0]
+      ?? null;
+    return {
+      kind: 'embedded',
+      animNames,
+      defaultClipName: found?.name ?? null,
+      defaultAction: found,
+    };
+  }
+
+  const stckPaths = discoverStckPaths(opts.smdPath, opts.smdTcksDir, opts.pkg);
   const animNames = stckPaths.map((p) => basename(p).replace(/\.stck$/i, ''));
+  if (animNames.length === 0) return { kind: 'none', animNames: [], defaultClipName: null };
   let idx = animNames.findIndex((n) => n.includes(PREFERRED_ANIM_HINT));
-  if (idx < 0 && animNames.length > 0) idx = 0;
+  if (idx < 0) idx = 0;
   return {
+    kind: 'stck',
     animNames,
-    defaultClipName: idx >= 0 ? animNames[idx] : null,
-    defaultStckPath: idx >= 0 ? stckPaths[idx] : null,
+    defaultClipName: animNames[idx],
+    defaultStckPath: stckPaths[idx],
+    stckPaths,
   };
 }

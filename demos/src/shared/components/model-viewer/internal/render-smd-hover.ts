@@ -1,10 +1,12 @@
 import type * as ThreeModule from 'three';
+import type { SmdAction } from 'autoangel';
 import type { HoverCanvasRenderArgs } from '@shared/components/hover-preview/types';
 import { ensureThree, getThree } from './three';
 import { disposeSkinMeshes, loadAllSkins } from './mesh';
 import { buildAnimationClip } from './clip';
 import { setupHoverScene } from './hover-scene';
 import {
+  type AnimatedClipsSource,
   loadBonSkeleton,
   pickDefaultClip,
   resolveAnimatedSkinPaths,
@@ -34,11 +36,13 @@ export async function renderSmdHoverPreview(
   let skinPaths: string[] = [];
   let tcksDir: string | undefined;
   let skelRelPath = '';
+  let smdActions: SmdAction[] = [];
   {
     const smd = wasm.parseSmd(data);
     skinPaths = smd.skin_paths || [];
     tcksDir = smd.tcks_dir ?? undefined;
     skelRelPath = smd.skeleton_path;
+    smdActions = smd.actions ?? [];
   }
 
   const skel: SkelData | null = await loadBonSkeleton(wasm, pkg, skelRelPath, path, '[smd-hover]');
@@ -48,10 +52,19 @@ export async function renderSmdHoverPreview(
   if (cancelled()) return () => {};
 
   // Pick default clip iff the skeleton loaded — without bones, animation
-  // can't apply.
-  const { defaultClipName, defaultStckPath } = skel
-    ? pickDefaultClip(path, tcksDir, pkg)
-    : { defaultClipName: null, defaultStckPath: null };
+  // can't apply. Embedded mode lights up for BON v<6 models; the hover's
+  // STCK path stays null in that case (Tasks 5/6 wire embedded playback).
+  const clipsSource: AnimatedClipsSource = skel
+    ? pickDefaultClip({
+        smdPath: path,
+        smdTcksDir: tcksDir,
+        smdActions,
+        embeddedAnimation: skel.embedded_animation ?? null,
+        pkg,
+      })
+    : { mode: 'none' as const, animNames: [], defaultClipName: null };
+  const defaultClipName = clipsSource.defaultClipName;
+  const defaultStckPath = clipsSource.mode === 'stck' ? clipsSource.defaultStckPath : null;
 
   // Skin meshes bind to the skeleton iff there's an animation to drive them
   // — otherwise SkinnedMesh hits an inconsistent state on first render.

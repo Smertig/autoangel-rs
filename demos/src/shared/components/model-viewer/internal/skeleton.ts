@@ -1,4 +1,5 @@
 import type { AutoangelModule } from '../../../../types/autoangel';
+import type { Animation } from 'autoangel';
 import { getThree } from './three';
 
 export interface BoneScaleData {
@@ -120,6 +121,9 @@ export function buildSkeleton(wasm: AutoangelModule, bonData: Uint8Array): {
   tmpRoot: any;
   hooksByName: Map<string, any>;
   bonesByName: Map<string, any>;
+  /** BON v<6 stashes the whole timeline in the skeleton; SMD actions slice it
+   *  per-clip. Undefined for modern BONs (v>=6) that delegate to external STCKs. */
+  embedded_animation: Animation | undefined;
 } {
   const { THREE } = getThree();
   const skel = wasm.parseSkeleton(bonData);
@@ -205,5 +209,8 @@ export function buildSkeleton(wasm: AutoangelModule, bonData: Uint8Array): {
   const skeleton = new THREE.Skeleton(bones, boneInverses);
   const bonesByName = new Map<string, any>();
   for (const b of bones) bonesByName.set(b.name, b);
-  return { skeleton, bones, boneNames, tmpRoot, hooksByName, bonesByName };
+  return {
+    skeleton, bones, boneNames, tmpRoot, hooksByName, bonesByName,
+    embedded_animation: skel.embedded_animation,
+  };
 }

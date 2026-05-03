@@ -1,4 +1,5 @@
 import type * as ThreeModule from 'three';
+import type { SmdAction } from 'autoangel';
 import type { PreloadedTexture } from '../../gfx-runtime/types';
 import type { GfxLike } from '../../gfx-runtime/duration';
 import type { HoverCanvasRenderArgs } from '@shared/components/hover-preview/types';
@@ -21,6 +22,7 @@ import { isRenderableKind } from '../../gfx-runtime/registry';
 import { ENGINE_PATH_PREFIXES } from '../../gfx/util/resolveEnginePath';
 import { createSpawnFromPreloaded } from './gfx-spawn';
 import {
+  type AnimatedClipsSource,
   loadBonSkeleton,
   pickDefaultClip,
   resolveAnimatedSkinPaths,
@@ -67,11 +69,13 @@ export async function renderEcmHoverPreview(
   let smdSkinPaths: string[] = [];
   let smdTcksDir: string | undefined;
   let skelRelPath = '';
+  let smdActions: SmdAction[] = [];
   {
     const smd = wasm.parseSmd(smdData);
     smdSkinPaths = smd.skin_paths || [];
     smdTcksDir = smd.tcks_dir ?? undefined;
     skelRelPath = smd.skeleton_path;
+    smdActions = smd.actions ?? [];
   }
 
   // Kick off BON read and skin-path resolution before we know the clip —
@@ -83,15 +87,31 @@ export async function renderEcmHoverPreview(
     pkg, basePath: smdPath, smdSkinPaths, originPath: path, additionalSkinPaths,
   });
 
-  const clipPick = pickDefaultClip(smdPath, smdTcksDir, pkg);
+  // Embedded-mode dispatch needs the skeleton's `embedded_animation`, so
+  // pickDefaultClip can't run before skelPromise resolves. STCK-mode picks
+  // are skel-independent but we collapse both branches through the awaited
+  // helper for type-safety; the BON parse rarely dwarfs the STCK read so
+  // the latency cost is negligible.
+  const skelBuilt = await skelPromise;
+  if (cancelled()) return () => {};
+  const clipPick: AnimatedClipsSource = skelBuilt
+    ? pickDefaultClip({
+        smdPath,
+        smdTcksDir,
+        smdActions,
+        embeddedAnimation: skelBuilt.embedded_animation ?? null,
+        pkg,
+      })
+    : { mode: 'none' as const, animNames: [], defaultClipName: null };
+  const defaultStckPath = clipPick.mode === 'stck' ? clipPick.defaultStckPath : null;
   const animEvents: AnimEvent[] = clipPick.defaultClipName
     ? (allEvents.get(clipPick.defaultClipName) ?? []).filter((e) => e.type === EVENT_GFX)
     : [];
 
   // STCK and GFX preload don't need the skeleton — kick them off now;
-  // they may resolve concurrently with the BON read.
-  const stckPromise: Promise<Uint8Array | null> = clipPick.defaultStckPath
-    ? pkg.read(clipPick.defaultStckPath)
+  // they may resolve concurrently with the skin reads below.
+  const stckPromise: Promise<Uint8Array | null> = defaultStckPath
+    ? pkg.read(defaultStckPath)
     : Promise.resolve(null);
   const gfxSeeds = animEvents
     .map((e) => pkg.resolveEngine(e.filePath, ENGINE_PATH_PREFIXES.gfx))
@@ -109,9 +129,8 @@ export async function renderEcmHoverPreview(
     return () => {};
   };
 
-  const built = await skelPromise;
+  const skel: SkelData | null = skelBuilt ? { ...skelBuilt, footOffset: 0 } : null;
   if (cancelled()) return cancelDisposePending();
-  const skel: SkelData | null = built ? { ...built, footOffset: 0 } : null;
 
   if (skel && boneScaleInfo) {
     applyBoneScales(skel.bones, boneScaleInfo.entries, boneScaleInfo.isNew);
@@ -123,7 +142,7 @@ export async function renderEcmHoverPreview(
   const allSkinPaths = await allSkinPathsPromise;
   if (cancelled()) return cancelDisposePending();
 
-  const useSkinning = skel != null && clipPick.defaultStckPath != null;
+  const useSkinning = skel != null && defaultStckPath != null;
   const skinOpts = useSkinning
     ? { skeleton: skel!.skeleton, boneNames: skel!.boneNames }
     : undefined;
