@@ -175,6 +175,24 @@ mod tests {
     }
 
     #[test]
+    fn carnivore_plant_bon_smd_consistency() {
+        use crate::model::bon::Skeleton;
+        let smd_bytes = include_test_data_bytes!("models/carnivore_plant/carnivore_plant.smd");
+        let bon_bytes = include_test_data_bytes!("models/carnivore_plant/花苞食人花_b.bon");
+        let smd = pollster::block_on(SmdModel::parse(&DataSource::from_bytes(smd_bytes.to_vec())))
+            .unwrap();
+        let bon = pollster::block_on(Skeleton::parse(&DataSource::from_bytes(bon_bytes.to_vec())))
+            .unwrap();
+        let last = smd.actions.last().expect("at least one action");
+        let anim_end = bon
+            .embedded_animation
+            .as_ref()
+            .and_then(|a| a.anim_end)
+            .expect("anim_end present");
+        assert_eq!(anim_end as f32, last.end_frame);
+    }
+
+    #[test]
     fn parse_carnivore_plant_smd_actions() {
         let bytes = include_test_data_bytes!("models/carnivore_plant/carnivore_plant.smd");
         let ds = DataSource::from_bytes(bytes.to_vec());
