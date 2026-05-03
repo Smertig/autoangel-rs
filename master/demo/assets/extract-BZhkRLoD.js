@@ -1,1 +1,0 @@
-import{n as m}from"./path-C9iCgzsT.js";import"./useDividerDrag-DtWu8sXW.js";const x={name:"bmd",ext:".bmd",version:1,extract(s,d,r){const a=r.parseBmd(s),n=[],o=new Set;for(const c of a.meshes??[]){const t=c.texture_map;if(!t)continue;const e=m(t);o.has(e)||(o.add(e),n.push({kind:"texture",raw:t,candidates:[e]}))}return n}};export{x as bmdExtractor};
