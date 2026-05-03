@@ -13,6 +13,7 @@ def test_symbols():
     assert BoneScaleEntry is not None
     assert ChildModel is not None
     assert SmdModel is not None
+    assert SmdAction is not None
     assert Skeleton is not None
     assert Bone is not None
     assert Hook is not None

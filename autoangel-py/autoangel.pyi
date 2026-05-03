@@ -760,6 +760,28 @@ class SmdModel:
     skeleton_path: str
     skin_paths: List[str]
     tcks_dir: Optional[str]
+    actions: List["SmdAction"]
+    """Named animation clips. For BON v<6 + SMD v<7, each action is a
+    ``(start_frame, end_frame)`` slice into the BON-embedded timeline.
+    For SMD v>=7, each action's ``tck_file`` references an external
+    ``.stck`` file."""
+
+
+@final
+class SmdAction:
+    """A named animation clip referenced from the SMD."""
+    name: str
+    """Action name (e.g. ``"站立"``, ``"行走"``)."""
+    start_frame: float
+    """Start frame of the clip's slice into the BON timeline (or external STCK)."""
+    end_frame: float
+    """End frame of the clip."""
+    frame_rate: Optional[int]
+    """Per-action FPS override. Only stored for SMD v>=9; ``None`` means
+    inherit ``Animation.anim_fps``."""
+    tck_file: Optional[str]
+    """Per-action external track-set filename. Only stored for SMD v>=7;
+    ``None`` for older SMDs which use the BON-embedded animation."""
 
 
 @final

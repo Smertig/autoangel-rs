@@ -1628,8 +1628,32 @@
 
             </li>
             <li>
+                    <a class="class" href="#SmdAction">SmdAction</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#SmdAction.end_frame">end_frame</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SmdAction.frame_rate">frame_rate</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SmdAction.name">name</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SmdAction.start_frame">start_frame</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SmdAction.tck_file">tck_file</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
                     <a class="class" href="#SmdModel">SmdModel</a>
                             <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#SmdModel.actions">actions</a>
+                        </li>
                         <li>
                                 <a class="variable" href="#SmdModel.skeleton_path">skeleton_path</a>
                         </li>
@@ -8551,6 +8575,88 @@ The final chunk is always delivered regardless of throttling.</li>
 
                             </div>
                 </section>
+                <section id="SmdAction">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">SmdAction</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#SmdAction"></a>
+    
+            <div class="docstring"><p>A named animation clip referenced from the SMD.</p>
+</div>
+
+
+                            <div id="SmdAction.end_frame" class="classattr">
+                                <div class="attr variable">
+            <span class="name">end_frame</span><span class="annotation">: float</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SmdAction.end_frame"></a>
+    
+            <div class="docstring"><p>End frame of the clip.</p>
+</div>
+
+
+                            </div>
+                            <div id="SmdAction.frame_rate" class="classattr">
+                                <div class="attr variable">
+            <span class="name">frame_rate</span><span class="annotation">: int | None</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SmdAction.frame_rate"></a>
+    
+            <div class="docstring"><p>Per-action FPS override. Only stored for SMD v>=9; <code>None</code> means
+inherit <code><a href="#Animation.anim_fps">Animation.anim_fps</a></code>.</p>
+</div>
+
+
+                            </div>
+                            <div id="SmdAction.name" class="classattr">
+                                <div class="attr variable">
+            <span class="name">name</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SmdAction.name"></a>
+    
+            <div class="docstring"><p>Action name (e.g. <code>"站立"</code>, <code>"行走"</code>).</p>
+</div>
+
+
+                            </div>
+                            <div id="SmdAction.start_frame" class="classattr">
+                                <div class="attr variable">
+            <span class="name">start_frame</span><span class="annotation">: float</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SmdAction.start_frame"></a>
+    
+            <div class="docstring"><p>Start frame of the clip's slice into the BON timeline (or external STCK).</p>
+</div>
+
+
+                            </div>
+                            <div id="SmdAction.tck_file" class="classattr">
+                                <div class="attr variable">
+            <span class="name">tck_file</span><span class="annotation">: str | None</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SmdAction.tck_file"></a>
+    
+            <div class="docstring"><p>Per-action external track-set filename. Only stored for SMD v>=7;
+<code>None</code> for older SMDs which use the BON-embedded animation.</p>
+</div>
+
+
+                            </div>
+                </section>
                 <section id="SmdModel">
                     <div class="attr class">
             
@@ -8565,6 +8671,22 @@ The final chunk is always delivered regardless of throttling.</li>
 </div>
 
 
+                            <div id="SmdModel.actions" class="classattr">
+                                <div class="attr variable">
+            <span class="name">actions</span><span class="annotation">: List[<a href="#SmdAction">SmdAction</a>]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SmdModel.actions"></a>
+    
+            <div class="docstring"><p>Named animation clips. For BON v&lt;6 + SMD v&lt;7, each action is a
+<code>(start_frame, end_frame)</code> slice into the BON-embedded timeline.
+For SMD v>=7, each action's <code>tck_file</code> references an external
+<code>.stck</code> file.</p>
+</div>
+
+
+                            </div>
                             <div id="SmdModel.skeleton_path" class="classattr">
                                 <div class="attr variable">
             <span class="name">skeleton_path</span><span class="annotation">: str</span>
@@ -8573,9 +8695,7 @@ The final chunk is always delivered regardless of throttling.</li>
     </div>
     <a class="headerlink" href="#SmdModel.skeleton_path"></a>
     
-            <div class="docstring"><p>Path to the skeleton file.</p>
-</div>
-
+    
 
                             </div>
                             <div id="SmdModel.skin_paths" class="classattr">
@@ -8586,9 +8706,7 @@ The final chunk is always delivered regardless of throttling.</li>
     </div>
     <a class="headerlink" href="#SmdModel.skin_paths"></a>
     
-            <div class="docstring"><p>Skin texture paths.</p>
-</div>
-
+    
 
                             </div>
                             <div id="SmdModel.tcks_dir" class="classattr">
@@ -8599,7 +8717,8 @@ The final chunk is always delivered regardless of throttling.</li>
     </div>
     <a class="headerlink" href="#SmdModel.tcks_dir"></a>
     
-            <div class="docstring"><p>Directory for TCKS animation files (may be None).</p>
+            <div class="docstring"><p>Track set directory name (e.g. "tcks_fallen_general").
+Read from file for version &gt;= 8; <code>None</code> for older versions.</p>
 </div>
 
 
@@ -8612,9 +8731,7 @@ The final chunk is always delivered regardless of throttling.</li>
     </div>
     <a class="headerlink" href="#SmdModel.version"></a>
     
-            <div class="docstring"><p>SMD format version.</p>
-</div>
-
+    
 
                             </div>
                 </section>

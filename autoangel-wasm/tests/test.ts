@@ -10,7 +10,6 @@ import {
   PackageConfig,
   PckBuilder,
   PckPackage,
-  SmdModel,
   Skin,
   decodeDds,
   decodeTga,
@@ -18,6 +17,7 @@ import {
   parseBmd,
   parseGfx,
   parseSkeleton,
+  parseSmd,
   type FileEntry,
 } from "../pkg-node/autoangel.js";
 
@@ -688,27 +688,39 @@ const FALLEN_SMD = readFileSync(resolve(root, "test_data/models/fallen_general/f
 
 describe("SmdModel", () => {
   it("parses carnivore_plant SMD", () => {
-    using smd = SmdModel.parse(CARNIVORE_SMD);
+    const smd = parseSmd(CARNIVORE_SMD);
     assert.equal(smd.version, 5);
-    assert.equal(smd.skinPaths.length, 1);
-    assert.ok(smd.skeletonPath.endsWith(".bon"));
+    assert.equal(smd.skin_paths.length, 1);
+    assert.ok(smd.skeleton_path.endsWith(".bon"));
     // v5 < 8, so no tcks_dir in file
-    assert.equal(smd.tcksDir, undefined);
+    assert.equal(smd.tcks_dir, undefined);
   });
 
   it("parses fallen_general SMD", () => {
-    using smd = SmdModel.parse(FALLEN_SMD);
+    const smd = parseSmd(FALLEN_SMD);
     assert.equal(smd.version, 5);
-    assert.equal(smd.skinPaths.length, 0);
-    assert.ok(smd.skeletonPath.endsWith(".bon"));
+    assert.equal(smd.skin_paths.length, 0);
+    assert.ok(smd.skeleton_path.endsWith(".bon"));
+  });
+
+  it("exposes action list with name and frame range", () => {
+    const smd = parseSmd(CARNIVORE_SMD);
+    assert.equal(smd.actions.length, 16);
+    assert.equal(smd.actions[0].name, "挂点");
+    assert.equal(smd.actions[0].start_frame, 0);
+    assert.equal(smd.actions[0].end_frame, 1);
+    assert.equal(smd.actions[15].end_frame, 407);
+    // SMD v5 — no per-action tck file, no per-action frame rate
+    assert.ok(smd.actions.every((a) => a.tck_file === undefined));
+    assert.ok(smd.actions.every((a) => a.frame_rate === undefined));
   });
 
   it("rejects empty bytes", () => {
-    assert.throws(() => SmdModel.parse(new Uint8Array([])));
+    assert.throws(() => parseSmd(new Uint8Array([])));
   });
 
   it("rejects truncated file", () => {
-    assert.throws(() => SmdModel.parse(new Uint8Array(20)));
+    assert.throws(() => parseSmd(new Uint8Array(20)));
   });
 });
 

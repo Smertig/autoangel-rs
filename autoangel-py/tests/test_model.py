@@ -1,4 +1,8 @@
+import pathlib
+
 import autoangel
+
+REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
 
 
 def test_read_ecm_carnivore_plant():
@@ -70,6 +74,19 @@ def test_read_smd_invalid():
         assert False, 'should have raised'
     except ValueError:
         pass
+
+
+def test_carnivore_plant_actions():
+    smd_path = REPO_ROOT / "test_data" / "models" / "carnivore_plant" / "carnivore_plant.smd"
+    data = smd_path.read_bytes()
+    smd = autoangel.read_smd(data)
+    assert len(smd.actions) == 16
+    assert smd.actions[0].name == "挂点"
+    assert smd.actions[0].start_frame == 0.0
+    assert smd.actions[0].end_frame == 1.0
+    assert smd.actions[15].end_frame == 407.0
+    assert all(a.tck_file is None for a in smd.actions)
+    assert all(a.frame_rate is None for a in smd.actions)
 
 
 # --- Skeleton (BON) tests ---
