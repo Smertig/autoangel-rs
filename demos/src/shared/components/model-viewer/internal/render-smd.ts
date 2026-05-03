@@ -1,7 +1,8 @@
 import type { AutoangelModule, GfxEffect } from '../../../../types/autoangel';
+import type { Animation, SmdAction } from 'autoangel';
 import type { PackageView } from '@shared/package';
 import { basename } from '@shared/util/path';
-import { resolvePath, collectSkinPaths, tryLoadSki, tryFallbackSkiPath, discoverStckPaths } from '@shared/util/model-dependencies';
+import { resolvePath, collectSkinPaths, tryLoadSki, tryFallbackSkiPath } from '@shared/util/model-dependencies';
 import { ensureThree, getThree } from './three';
 import { type SkinStats, loadSkinFile } from './mesh';
 import {
@@ -12,7 +13,8 @@ import {
   applyBoneScalesToHierarchy,
   buildSkeleton,
 } from './skeleton';
-import { ClipCache, buildAnimationClip } from './clip';
+import { ClipCache, buildAnimationClip, sliceEmbeddedAnimationClip } from './clip';
+import { pickDefaultClip } from './animated-assets';
 import { type AnimEvent, buildAnimEventMap, EVENT_GFX, EVENT_SOUND } from './event-map';
 import { getViewer } from './viewer';
 import { mountScene, type LoopMode } from './scene';
@@ -72,11 +74,13 @@ export async function renderFromSmd(
 ): Promise<void> {
   let smdSkinPaths: string[] = [];
   let smdTcksDir: string | undefined;
-  let skelData: { skeleton: any; bones: any[]; boneNames: string[]; tmpRoot: any; hooksByName: Map<string, any>; bonesByName: Map<string, any>; footOffset: number } | null = null;
+  let smdActions: SmdAction[] = [];
+  let skelData: { skeleton: any; bones: any[]; boneNames: string[]; tmpRoot: any; hooksByName: Map<string, any>; bonesByName: Map<string, any>; embedded_animation: Animation | undefined; footOffset: number } | null = null;
   {
     const smd = wasm.parseSmd(smdData);
     smdSkinPaths = smd.skin_paths || [];
     smdTcksDir = smd.tcks_dir ?? undefined;
+    smdActions = smd.actions ?? [];
     const bonRelPath: string = smd.skeleton_path;
     if (bonRelPath) {
       const bonPath = resolvePath(bonRelPath, smdPath);
@@ -123,29 +127,53 @@ export async function renderFromSmd(
   const animNames: string[] = [];
   let loadClip: ((name: string) => Promise<any>) | undefined;
   if (skelData) {
-    const stckPaths = discoverStckPaths(smdPath, smdTcksDir, pkg);
-    const stckPathByName = new Map<string, string>();
-    for (const stckPath of stckPaths) {
-      const clipName = basename(stckPath).replace(/\.stck$/i, '');
-      animNames.push(clipName);
-      stckPathByName.set(clipName, stckPath);
-    }
-    console.log(`[model] Animation clips discovered: ${animNames.length}`);
+    const clipsSource = pickDefaultClip({
+      smdPath,
+      smdTcksDir,
+      smdActions,
+      embeddedAnimation: skelData.embedded_animation ?? null,
+      pkg,
+    });
 
-    const clipCache = new ClipCache(50);
-    const boneNames = skelData.boneNames;
-    loadClip = async (name: string): Promise<any> => {
-      const cached = clipCache.get(name);
-      if (cached) return cached;
-      const path = stckPathByName.get(name);
-      if (!path) throw new Error('Animation path not in track directory');
-      const stckData = await pkg.read(path);
-      if (!stckData) throw new Error('Failed to read STCK file from archive');
-      const clip = buildAnimationClip(wasm, stckData, name, boneNames);
-      if (!clip) throw new Error('No bone tracks matched or zero duration');
-      clipCache.set(name, clip);
-      return clip;
-    };
+    if (clipsSource.kind === 'stck') {
+      const stckPathByName = new Map(clipsSource.animNames.map((n, i) => [n, clipsSource.stckPaths[i]]));
+      animNames.push(...clipsSource.animNames);
+      console.log(`[model] Animation clips discovered (stck): ${animNames.length}`);
+
+      const clipCache = new ClipCache(50);
+      const boneNames = skelData.boneNames;
+      loadClip = async (name: string): Promise<any> => {
+        const cached = clipCache.get(name);
+        if (cached) return cached;
+        const path = stckPathByName.get(name);
+        if (!path) throw new Error('Animation path not in track directory');
+        const stckData = await pkg.read(path);
+        if (!stckData) throw new Error('Failed to read STCK file from archive');
+        const clip = buildAnimationClip(wasm, stckData, name, boneNames);
+        if (!clip) throw new Error('No bone tracks matched or zero duration');
+        clipCache.set(name, clip);
+        return clip;
+      };
+    } else if (clipsSource.kind === 'embedded') {
+      animNames.push(...clipsSource.animNames);
+      console.log(`[model] Animation clips discovered (embedded): ${animNames.length}`);
+
+      const actionByName = new Map(smdActions.map((a) => [a.name, a]));
+      const embedded = skelData.embedded_animation!;
+      const boneNames = skelData.boneNames;
+      const clipCache = new ClipCache(50);
+      loadClip = async (name: string): Promise<any> => {
+        const cached = clipCache.get(name);
+        if (cached) return cached;
+        const action = actionByName.get(name);
+        if (!action) throw new Error('Action not found in SMD');
+        const clip = sliceEmbeddedAnimationClip(embedded, action, boneNames);
+        if (!clip) throw new Error('Empty clip produced from action range');
+        clipCache.set(name, clip);
+        return clip;
+      };
+    }
+    // 'none' → animNames stays empty, loadClip undefined → static render
   }
 
   // Callers that own an ECM handle can build an event map here while the

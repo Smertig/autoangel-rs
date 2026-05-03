@@ -13,7 +13,7 @@ import {
   computeFootOffset,
   readEcmBoneScales,
 } from './skeleton';
-import { buildAnimationClip } from './clip';
+import { buildAnimationClip, sliceEmbeddedAnimationClip } from './clip';
 import { buildAnimEventMap, EVENT_GFX, type AnimEvent } from './event-map';
 import { setupHoverScene } from './hover-scene';
 import { disposePreloadedTextures, preloadGfxGraph } from '../../gfx-runtime/preload';
@@ -102,8 +102,9 @@ export async function renderEcmHoverPreview(
         embeddedAnimation: skelBuilt.embedded_animation ?? null,
         pkg,
       })
-    : { mode: 'none' as const, animNames: [], defaultClipName: null };
-  const defaultStckPath = clipPick.mode === 'stck' ? clipPick.defaultStckPath : null;
+    : { kind: 'none' as const, animNames: [], defaultClipName: null };
+  const defaultStckPath = clipPick.kind === 'stck' ? clipPick.defaultStckPath : null;
+  const defaultAction = clipPick.kind === 'embedded' ? clipPick.defaultAction : null;
   const animEvents: AnimEvent[] = clipPick.defaultClipName
     ? (allEvents.get(clipPick.defaultClipName) ?? []).filter((e) => e.type === EVENT_GFX)
     : [];
@@ -142,7 +143,7 @@ export async function renderEcmHoverPreview(
   const allSkinPaths = await allSkinPathsPromise;
   if (cancelled()) return cancelDisposePending();
 
-  const useSkinning = skel != null && defaultStckPath != null;
+  const useSkinning = skel != null && (defaultStckPath != null || defaultAction != null);
   const skinOpts = useSkinning
     ? { skeleton: skel!.skeleton, boneNames: skel!.boneNames }
     : undefined;
@@ -159,9 +160,14 @@ export async function renderEcmHoverPreview(
     return () => {};
   }
 
-  const clip: ThreeModule.AnimationClip | null = (skel && stckData && clipPick.defaultClipName)
-    ? buildAnimationClip(wasm, stckData, clipPick.defaultClipName, skel.boneNames)
-    : null;
+  let clip: ThreeModule.AnimationClip | null = null;
+  if (skel && clipPick.defaultClipName) {
+    if (stckData) {
+      clip = buildAnimationClip(wasm, stckData, clipPick.defaultClipName, skel.boneNames);
+    } else if (defaultAction && skel.embedded_animation) {
+      clip = sliceEmbeddedAnimationClip(skel.embedded_animation, defaultAction, skel.boneNames);
+    }
+  }
 
   let renderer: ThreeModule.WebGLRenderer | null = null;
   let mixer: ThreeModule.AnimationMixer | null = null;

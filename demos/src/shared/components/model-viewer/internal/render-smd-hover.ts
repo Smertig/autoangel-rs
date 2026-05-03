@@ -3,7 +3,7 @@ import type { SmdAction } from 'autoangel';
 import type { HoverCanvasRenderArgs } from '@shared/components/hover-preview/types';
 import { ensureThree, getThree } from './three';
 import { disposeSkinMeshes, loadAllSkins } from './mesh';
-import { buildAnimationClip } from './clip';
+import { buildAnimationClip, sliceEmbeddedAnimationClip } from './clip';
 import { setupHoverScene } from './hover-scene';
 import {
   type AnimatedClipsSource,
@@ -52,8 +52,8 @@ export async function renderSmdHoverPreview(
   if (cancelled()) return () => {};
 
   // Pick default clip iff the skeleton loaded — without bones, animation
-  // can't apply. Embedded mode lights up for BON v<6 models; the hover's
-  // STCK path stays null in that case (Tasks 5/6 wire embedded playback).
+  // can't apply. Embedded mode lights up for BON v<6 models, where the
+  // STCK path stays null and the slice comes from the embedded timeline.
   const clipsSource: AnimatedClipsSource = skel
     ? pickDefaultClip({
         smdPath: path,
@@ -62,13 +62,14 @@ export async function renderSmdHoverPreview(
         embeddedAnimation: skel.embedded_animation ?? null,
         pkg,
       })
-    : { mode: 'none' as const, animNames: [], defaultClipName: null };
+    : { kind: 'none' as const, animNames: [], defaultClipName: null };
   const defaultClipName = clipsSource.defaultClipName;
-  const defaultStckPath = clipsSource.mode === 'stck' ? clipsSource.defaultStckPath : null;
+  const defaultStckPath = clipsSource.kind === 'stck' ? clipsSource.defaultStckPath : null;
+  const defaultAction = clipsSource.kind === 'embedded' ? clipsSource.defaultAction : null;
 
   // Skin meshes bind to the skeleton iff there's an animation to drive them
   // — otherwise SkinnedMesh hits an inconsistent state on first render.
-  const useSkinning = skel != null && defaultStckPath != null;
+  const useSkinning = skel != null && (defaultStckPath != null || defaultAction != null);
 
   // Skin loads and (optional) clip fetch are independent — kick them off in
   // parallel so the slowest single read bounds time-to-first-paint.
@@ -86,9 +87,14 @@ export async function renderSmdHoverPreview(
     return () => {};
   }
 
-  const clip: ThreeModule.AnimationClip | null = (skel && stckData && defaultClipName)
-    ? buildAnimationClip(wasm, stckData, defaultClipName, skel.boneNames)
-    : null;
+  let clip: ThreeModule.AnimationClip | null = null;
+  if (skel && defaultClipName) {
+    if (stckData) {
+      clip = buildAnimationClip(wasm, stckData, defaultClipName, skel.boneNames);
+    } else if (defaultAction && skel.embedded_animation) {
+      clip = sliceEmbeddedAnimationClip(skel.embedded_animation, defaultAction, skel.boneNames);
+    }
+  }
 
   let renderer: ThreeModule.WebGLRenderer | null = null;
   let mixer: ThreeModule.AnimationMixer | null = null;
