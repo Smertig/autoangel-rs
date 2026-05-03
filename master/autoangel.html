@@ -29,6 +29,24 @@
             <h2>API Documentation</h2>
                 <ul class="memberlist">
             <li>
+                    <a class="class" href="#Animation">Animation</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#Animation.anim_end">anim_end</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Animation.anim_fps">anim_fps</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Animation.anim_start">anim_start</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Animation.bone_tracks">bone_tracks</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
                     <a class="class" href="#Bone">Bone</a>
                             <ul class="memberlist">
                         <li>
@@ -1538,6 +1556,9 @@
                                 <a class="variable" href="#Skeleton.bones">bones</a>
                         </li>
                         <li>
+                                <a class="variable" href="#Skeleton.embedded_animation">embedded_animation</a>
+                        </li>
+                        <li>
                                 <a class="variable" href="#Skeleton.hooks">hooks</a>
                         </li>
                         <li>
@@ -1607,8 +1628,32 @@
 
             </li>
             <li>
+                    <a class="class" href="#SmdAction">SmdAction</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#SmdAction.end_frame">end_frame</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SmdAction.frame_rate">frame_rate</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SmdAction.name">name</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SmdAction.start_frame">start_frame</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#SmdAction.tck_file">tck_file</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
                     <a class="class" href="#SmdModel">SmdModel</a>
                             <ul class="memberlist">
+                        <li>
+                                <a class="variable" href="#SmdModel.actions">actions</a>
+                        </li>
                         <li>
                                 <a class="variable" href="#SmdModel.skeleton_path">skeleton_path</a>
                         </li>
@@ -1709,27 +1754,6 @@
 
             </li>
             <li>
-                    <a class="class" href="#TrackSet">TrackSet</a>
-                            <ul class="memberlist">
-                        <li>
-                                <a class="variable" href="#TrackSet.anim_end">anim_end</a>
-                        </li>
-                        <li>
-                                <a class="variable" href="#TrackSet.anim_fps">anim_fps</a>
-                        </li>
-                        <li>
-                                <a class="variable" href="#TrackSet.anim_start">anim_start</a>
-                        </li>
-                        <li>
-                                <a class="variable" href="#TrackSet.bone_tracks">bone_tracks</a>
-                        </li>
-                        <li>
-                                <a class="variable" href="#TrackSet.version">version</a>
-                        </li>
-                </ul>
-
-            </li>
-            <li>
                     <a class="class" href="#TrailPerturbSpreading">TrailPerturbSpreading</a>
                             <ul class="memberlist">
                         <li>
@@ -1761,6 +1785,9 @@
                         </li>
                 </ul>
 
+            </li>
+            <li>
+                    <a class="function" href="#read_animation">read_animation</a>
             </li>
             <li>
                     <a class="function" href="#read_ecm">read_ecm</a>
@@ -1795,9 +1822,6 @@
             <li>
                     <a class="function" href="#read_smd">read_smd</a>
             </li>
-            <li>
-                    <a class="function" href="#read_track_set">read_track_set</a>
-            </li>
     </ul>
 
 
@@ -1825,7 +1849,7 @@ autoangel    </h1>
 <li><code>*.smd</code> - load with <code><a href="#read_smd">read_smd</a></code>, inspect skin model data through the <code><a href="#SmdModel">SmdModel</a></code> object.</li>
 <li><code>*.bon</code> - load with <code><a href="#read_skeleton">read_skeleton</a></code>, inspect skeleton bones and hooks through the <code><a href="#Skeleton">Skeleton</a></code> object.</li>
 <li><code>*.ski</code> - load with <code><a href="#read_skin">read_skin</a></code>, inspect meshes, textures and materials through the <code><a href="#Skin">Skin</a></code> object.</li>
-<li><code>*.stck</code> - load with <code><a href="#read_track_set">read_track_set</a></code>, inspect animation tracks through the <code><a href="#TrackSet">TrackSet</a></code> object.</li>
+<li><code>*.stck</code> - load with <code><a href="#read_animation">read_animation</a></code>, inspect animation tracks through the <code><a href="#Animation">Animation</a></code> object.</li>
 <li><code>*.gfx</code> - load with <code><a href="#read_gfx">read_gfx</a></code>, inspect visual effect elements through the <code><a href="#GfxEffect">GfxEffect</a></code> object.</li>
 </ul>
 
@@ -1937,6 +1961,65 @@ This should work for you, if you don't use exotic game version (otherwise, you s
 
 
             </section>
+                <section id="Animation">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">Animation</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#Animation"></a>
+    
+            <div class="docstring"><p>Parsed STCK animation (also used for BON v&lt;6 embedded animations).</p>
+</div>
+
+
+                            <div id="Animation.anim_end" class="classattr">
+                                <div class="attr variable">
+            <span class="name">anim_end</span><span class="annotation">: int | None</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Animation.anim_end"></a>
+    
+    
+
+                            </div>
+                            <div id="Animation.anim_fps" class="classattr">
+                                <div class="attr variable">
+            <span class="name">anim_fps</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Animation.anim_fps"></a>
+    
+    
+
+                            </div>
+                            <div id="Animation.anim_start" class="classattr">
+                                <div class="attr variable">
+            <span class="name">anim_start</span><span class="annotation">: int</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Animation.anim_start"></a>
+    
+    
+
+                            </div>
+                            <div id="Animation.bone_tracks" class="classattr">
+                                <div class="attr variable">
+            <span class="name">bone_tracks</span><span class="annotation">: List[<a href="#BoneTrack">BoneTrack</a>]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Animation.bone_tracks"></a>
+    
+    
+
+                            </div>
+                </section>
                 <section id="Bone">
                     <div class="attr class">
             
@@ -2123,9 +2206,7 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#BoneTrack.bone_id"></a>
     
-            <div class="docstring"><p>Bone identifier.</p>
-</div>
-
+    
 
                             </div>
                             <div id="BoneTrack.position" class="classattr">
@@ -2136,9 +2217,7 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#BoneTrack.position"></a>
     
-            <div class="docstring"><p>Position track for this bone.</p>
-</div>
-
+    
 
                             </div>
                             <div id="BoneTrack.rotation" class="classattr">
@@ -2149,9 +2228,7 @@ and <code><a href="#BoneScaleEntry.scale_type">scale_type</a></code> is <code>No
     </div>
     <a class="headerlink" href="#BoneTrack.rotation"></a>
     
-            <div class="docstring"><p>Rotation track for this bone.</p>
-</div>
-
+    
 
                             </div>
                 </section>
@@ -8219,6 +8296,20 @@ The final chunk is always delivered regardless of throttling.</li>
 
 
                             </div>
+                            <div id="Skeleton.embedded_animation" class="classattr">
+                                <div class="attr variable">
+            <span class="name">embedded_animation</span><span class="annotation">: <a href="#Animation">Animation</a> | None</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Skeleton.embedded_animation"></a>
+    
+            <div class="docstring"><p>Per-joint position/rotation tracks for BON v&lt;6; <code>None</code> for v>=6
+(which uses external <code>.stck</code> files instead).</p>
+</div>
+
+
+                            </div>
                             <div id="Skeleton.hooks" class="classattr">
                                 <div class="attr variable">
             <span class="name">hooks</span><span class="annotation">: List[<a href="#Hook">Hook</a>]</span>
@@ -8484,6 +8575,88 @@ The final chunk is always delivered regardless of throttling.</li>
 
                             </div>
                 </section>
+                <section id="SmdAction">
+                    <div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">SmdAction</span>:
+
+        
+    </div>
+    <a class="headerlink" href="#SmdAction"></a>
+    
+            <div class="docstring"><p>A named animation clip referenced from the SMD.</p>
+</div>
+
+
+                            <div id="SmdAction.end_frame" class="classattr">
+                                <div class="attr variable">
+            <span class="name">end_frame</span><span class="annotation">: float</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SmdAction.end_frame"></a>
+    
+            <div class="docstring"><p>End frame of the clip.</p>
+</div>
+
+
+                            </div>
+                            <div id="SmdAction.frame_rate" class="classattr">
+                                <div class="attr variable">
+            <span class="name">frame_rate</span><span class="annotation">: int | None</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SmdAction.frame_rate"></a>
+    
+            <div class="docstring"><p>Per-action FPS override. Only stored for SMD v>=9; <code>None</code> means
+inherit <code><a href="#Animation.anim_fps">Animation.anim_fps</a></code>.</p>
+</div>
+
+
+                            </div>
+                            <div id="SmdAction.name" class="classattr">
+                                <div class="attr variable">
+            <span class="name">name</span><span class="annotation">: str</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SmdAction.name"></a>
+    
+            <div class="docstring"><p>Action name (e.g. <code>"站立"</code>, <code>"行走"</code>).</p>
+</div>
+
+
+                            </div>
+                            <div id="SmdAction.start_frame" class="classattr">
+                                <div class="attr variable">
+            <span class="name">start_frame</span><span class="annotation">: float</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SmdAction.start_frame"></a>
+    
+            <div class="docstring"><p>Start frame of the clip's slice into the BON timeline (or external STCK).</p>
+</div>
+
+
+                            </div>
+                            <div id="SmdAction.tck_file" class="classattr">
+                                <div class="attr variable">
+            <span class="name">tck_file</span><span class="annotation">: str | None</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SmdAction.tck_file"></a>
+    
+            <div class="docstring"><p>Per-action external track-set filename. Only stored for SMD v>=7;
+<code>None</code> for older SMDs which use the BON-embedded animation.</p>
+</div>
+
+
+                            </div>
+                </section>
                 <section id="SmdModel">
                     <div class="attr class">
             
@@ -8498,6 +8671,22 @@ The final chunk is always delivered regardless of throttling.</li>
 </div>
 
 
+                            <div id="SmdModel.actions" class="classattr">
+                                <div class="attr variable">
+            <span class="name">actions</span><span class="annotation">: List[<a href="#SmdAction">SmdAction</a>]</span>
+
+        
+    </div>
+    <a class="headerlink" href="#SmdModel.actions"></a>
+    
+            <div class="docstring"><p>Named animation clips. For BON v&lt;6 + SMD v&lt;7, each action is a
+<code>(start_frame, end_frame)</code> slice into the BON-embedded timeline.
+For SMD v>=7, each action's <code>tck_file</code> references an external
+<code>.stck</code> file.</p>
+</div>
+
+
+                            </div>
                             <div id="SmdModel.skeleton_path" class="classattr">
                                 <div class="attr variable">
             <span class="name">skeleton_path</span><span class="annotation">: str</span>
@@ -8506,9 +8695,7 @@ The final chunk is always delivered regardless of throttling.</li>
     </div>
     <a class="headerlink" href="#SmdModel.skeleton_path"></a>
     
-            <div class="docstring"><p>Path to the skeleton file.</p>
-</div>
-
+    
 
                             </div>
                             <div id="SmdModel.skin_paths" class="classattr">
@@ -8519,9 +8706,7 @@ The final chunk is always delivered regardless of throttling.</li>
     </div>
     <a class="headerlink" href="#SmdModel.skin_paths"></a>
     
-            <div class="docstring"><p>Skin texture paths.</p>
-</div>
-
+    
 
                             </div>
                             <div id="SmdModel.tcks_dir" class="classattr">
@@ -8532,7 +8717,8 @@ The final chunk is always delivered regardless of throttling.</li>
     </div>
     <a class="headerlink" href="#SmdModel.tcks_dir"></a>
     
-            <div class="docstring"><p>Directory for TCKS animation files (may be None).</p>
+            <div class="docstring"><p>Track set directory name (e.g. "tcks_fallen_general").
+Read from file for version &gt;= 8; <code>None</code> for older versions.</p>
 </div>
 
 
@@ -8545,9 +8731,7 @@ The final chunk is always delivered regardless of throttling.</li>
     </div>
     <a class="headerlink" href="#SmdModel.version"></a>
     
-            <div class="docstring"><p>SMD format version.</p>
-</div>
-
+    
 
                             </div>
                 </section>
@@ -8801,9 +8985,7 @@ The final chunk is always delivered regardless of throttling.</li>
     </div>
     <a class="headerlink" href="#Track.frame_rate"></a>
     
-            <div class="docstring"><p>Frame rate of this track.</p>
-</div>
-
+    
 
                             </div>
                             <div id="Track.key_frame_ids" class="classattr">
@@ -8840,89 +9022,7 @@ The final chunk is always delivered regardless of throttling.</li>
     </div>
     <a class="headerlink" href="#Track.track_length_ms"></a>
     
-            <div class="docstring"><p>Track length in milliseconds.</p>
-</div>
-
-
-                            </div>
-                </section>
-                <section id="TrackSet">
-                    <div class="attr class">
-            
-    <span class="def">class</span>
-    <span class="name">TrackSet</span>:
-
-        
-    </div>
-    <a class="headerlink" href="#TrackSet"></a>
     
-            <div class="docstring"><p>Parsed STCK (skeleton track set) file.</p>
-</div>
-
-
-                            <div id="TrackSet.anim_end" class="classattr">
-                                <div class="attr variable">
-            <span class="name">anim_end</span><span class="annotation">: int</span>
-
-        
-    </div>
-    <a class="headerlink" href="#TrackSet.anim_end"></a>
-    
-            <div class="docstring"><p>Animation end frame.</p>
-</div>
-
-
-                            </div>
-                            <div id="TrackSet.anim_fps" class="classattr">
-                                <div class="attr variable">
-            <span class="name">anim_fps</span><span class="annotation">: int</span>
-
-        
-    </div>
-    <a class="headerlink" href="#TrackSet.anim_fps"></a>
-    
-            <div class="docstring"><p>Animation frames per second.</p>
-</div>
-
-
-                            </div>
-                            <div id="TrackSet.anim_start" class="classattr">
-                                <div class="attr variable">
-            <span class="name">anim_start</span><span class="annotation">: int</span>
-
-        
-    </div>
-    <a class="headerlink" href="#TrackSet.anim_start"></a>
-    
-            <div class="docstring"><p>Animation start frame.</p>
-</div>
-
-
-                            </div>
-                            <div id="TrackSet.bone_tracks" class="classattr">
-                                <div class="attr variable">
-            <span class="name">bone_tracks</span><span class="annotation">: List[<a href="#BoneTrack">BoneTrack</a>]</span>
-
-        
-    </div>
-    <a class="headerlink" href="#TrackSet.bone_tracks"></a>
-    
-            <div class="docstring"><p>Per-bone animation tracks.</p>
-</div>
-
-
-                            </div>
-                            <div id="TrackSet.version" class="classattr">
-                                <div class="attr variable">
-            <span class="name">version</span><span class="annotation">: int</span>
-
-        
-    </div>
-    <a class="headerlink" href="#TrackSet.version"></a>
-    
-            <div class="docstring"><p>STCK format version.</p>
-</div>
-
 
                             </div>
                 </section>
@@ -9039,6 +9139,39 @@ The final chunk is always delivered regardless of throttling.</li>
     
 
                             </div>
+                </section>
+                <section id="read_animation">
+                    <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">read_animation</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span></span><span class="return-annotation">) -> <span class="n"><a href="#Animation">Animation</a></span>:</span></span>
+
+        
+    </div>
+    <a class="headerlink" href="#read_animation"></a>
+    
+            <div class="docstring"><p>Parse a STCK (skeleton track set) file from bytes.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>data</strong>:  Raw STCK file content.</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<blockquote>
+  <p>Parsed animation.</p>
+</blockquote>
+
+<h6 id="raises">Raises</h6>
+
+<ul>
+<li><strong>ValueError</strong>:  If the data is not a valid STCK file.</li>
+</ul>
+</div>
+
+
                 </section>
                 <section id="read_ecm">
                     <div class="attr function">
@@ -9415,39 +9548,6 @@ The last entry is always reported regardless of throttling.</li>
 
 <ul>
 <li><strong>ValueError</strong>:  If the data is not a valid SMD file.</li>
-</ul>
-</div>
-
-
-                </section>
-                <section id="read_track_set">
-                    <div class="attr function">
-            
-        <span class="def">def</span>
-        <span class="name">read_track_set</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span></span><span class="return-annotation">) -> <span class="n"><a href="#TrackSet">TrackSet</a></span>:</span></span>
-
-        
-    </div>
-    <a class="headerlink" href="#read_track_set"></a>
-    
-            <div class="docstring"><p>Parse a STCK (skeleton track set) file from bytes.</p>
-
-<h6 id="parameters">Parameters</h6>
-
-<ul>
-<li><strong>data</strong>:  Raw STCK file content.</li>
-</ul>
-
-<h6 id="returns">Returns</h6>
-
-<blockquote>
-  <p>Parsed track set.</p>
-</blockquote>
-
-<h6 id="raises">Raises</h6>
-
-<ul>
-<li><strong>ValueError</strong>:  If the data is not a valid STCK file.</li>
 </ul>
 </div>
 
