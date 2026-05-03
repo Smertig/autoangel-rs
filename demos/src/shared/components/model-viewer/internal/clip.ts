@@ -1,3 +1,4 @@
+import type { Animation, SmdAction, Track } from 'autoangel';
 import type { AutoangelModule } from '../../../../types/autoangel';
 import { getThree } from './three';
 
@@ -70,4 +71,61 @@ export function buildAnimationClip(
 
   if (tracks.length === 0 || duration <= 0) return null;
   return new THREE.AnimationClip(clipName, duration, tracks);
+}
+
+/** Filter to keys in [startSec, endSec], rebased to start at 0. */
+function sliceTrack(
+  track: Track,
+  startSec: number,
+  endSec: number,
+  floatsPerKey: number,
+): { times: Float32Array; values: Float32Array } | null {
+  const numKeys = track.keys.length / floatsPerKey;
+  if (numKeys === 0) return null;
+  const times = buildKeyTimes(numKeys, track.key_frame_ids ?? undefined, track.frame_rate);
+
+  const filteredTimes: number[] = [];
+  const filteredValues: number[] = [];
+  for (let k = 0; k < numKeys; k++) {
+    const t = times[k];
+    if (t >= startSec && t <= endSec) {
+      filteredTimes.push(t - startSec);
+      for (let i = 0; i < floatsPerKey; i++) {
+        filteredValues.push(track.keys[k * floatsPerKey + i]);
+      }
+    }
+  }
+  if (filteredTimes.length === 0) return null;
+  return {
+    times: new Float32Array(filteredTimes),
+    values: new Float32Array(filteredValues),
+  };
+}
+
+/** Per-clip three.js AnimationClip sliced from a BON-embedded `Animation` by
+ *  an `SmdAction`'s frame range. */
+export function sliceEmbeddedAnimationClip(
+  animation: Animation,
+  action: SmdAction,
+  boneNames: string[],
+): any | null {
+  const { THREE } = getThree();
+  const fps = animation.anim_fps || 30;
+  const startSec = action.start_frame / fps;
+  const endSec = action.end_frame / fps;
+  const duration = endSec - startSec;
+  if (duration <= 0) return null;
+
+  const tracks: any[] = [];
+  for (const bt of animation.bone_tracks) {
+    if (bt.bone_id < 0 || bt.bone_id >= boneNames.length) continue;
+    const boneName = boneNames[bt.bone_id];
+
+    const pos = sliceTrack(bt.position, startSec, endSec, 3);
+    if (pos) tracks.push(new THREE.VectorKeyframeTrack(`${boneName}.position`, pos.times, pos.values));
+    const rot = sliceTrack(bt.rotation, startSec, endSec, 4);
+    if (rot) tracks.push(new THREE.QuaternionKeyframeTrack(`${boneName}.quaternion`, rot.times, rot.values));
+  }
+  if (tracks.length === 0) return null;
+  return new THREE.AnimationClip(action.name, duration, tracks);
 }
