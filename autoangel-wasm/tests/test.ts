@@ -792,6 +792,19 @@ describe("Skeleton", () => {
     assert.equal(typeof skel.version, "number");
   });
 
+  it("exposes embedded animation for BON v<6", () => {
+    const skel = parseSkeleton(CARNIVORE_BON);
+    assert.ok(skel.embedded_animation, "embedded_animation present");
+    const anim = skel.embedded_animation!;
+    assert.equal(anim.anim_start, 0);
+    assert.equal(anim.anim_end, 407);
+    assert.equal(anim.anim_fps, 15);
+    assert.equal(anim.bone_tracks.length, 26);
+    const bt0 = anim.bone_tracks[0];
+    assert.equal(bt0.bone_id, 0);
+    assert.equal(bt0.position.frame_rate, 15);
+  });
+
   it("fallen_general has 5 hooks with HH_* names", () => {
     const skel = parseSkeleton(FALLEN_BON);
     assert.equal(skel.hooks.length, 5);

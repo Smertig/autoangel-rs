@@ -808,6 +808,9 @@ class Skeleton:
     """List of bones in the skeleton."""
     hooks: List[Hook]
     """List of hook attachment points."""
+    embedded_animation: Optional["Animation"]
+    """Per-joint position/rotation tracks for BON v<6; ``None`` for v>=6
+    (which uses external ``.stck`` files instead)."""
 
 
 @final

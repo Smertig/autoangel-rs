@@ -1,5 +1,6 @@
 use crate::model::bindable;
 use crate::model::common::{detect_moxb_offset, read_astring, read_count, read_matrix};
+use crate::model::stck;
 use crate::util::data_source::{DataReader, DataSource};
 use eyre::Result;
 use macro_rules_attribute::apply;
@@ -15,6 +16,7 @@ pub struct Skeleton {
     pub version: u32,
     pub bones: Vec<Bone>,
     pub hooks: Vec<Hook>,
+    pub embedded_animation: Option<stck::Animation>,
 }
 
 #[apply(bindable)]
@@ -54,6 +56,9 @@ impl Skeleton {
         let num_bones = read_count(data, moxb + 8).await?;
         let num_joints = read_count(data, moxb + 12).await?;
         let num_hooks = read_count(data, moxb + 16).await?;
+        let anim_start = data.get(moxb + 20..moxb + 24)?.as_le::<i32>().await?;
+        let anim_end = data.get(moxb + 24..moxb + 28)?.as_le::<i32>().await?;
+        let anim_fps = data.get(moxb + 28..moxb + 32)?.as_le::<i32>().await?;
 
         let mut offset = moxb + HEADER_SIZE;
 
@@ -90,12 +95,13 @@ impl Skeleton {
             });
         }
 
-        // Skip joints (+ embedded tracks for version < 6)
+        // Parse joints (+ embedded tracks for version < 6)
+        let mut bone_tracks: Vec<stck::BoneTrack> = Vec::with_capacity(num_joints);
         if num_joints > 0 {
             // Joint type IDs array
             offset += num_joints as u64 * 4;
 
-            for _ in 0..num_joints {
+            for i in 0..num_joints {
                 // Joint name
                 let view = data.get(offset..)?;
                 let (_name, name_len) = read_astring(&view).await?;
@@ -104,21 +110,16 @@ impl Skeleton {
                 // JOINTDATA (12 bytes)
                 offset += JOINTDATA_SIZE;
 
-                // If version < 6, skip embedded bone track data
+                // For version < 6, embedded per-joint position + rotation tracks
+                // (byte-identical to STCK v1).
                 if version < 6 {
-                    // Position track
-                    let pos_num_keys = read_count(data, offset).await?;
-                    let pos_num_segments = read_count(data, offset + 4).await?;
-                    offset += 12; // track info header
-                    offset += pos_num_keys as u64 * 12; // A3DVECTOR3 per key
-                    offset += pos_num_segments as u64 * 16; // SEGMENT per segment
-
-                    // Rotation track
-                    let rot_num_keys = read_count(data, offset).await?;
-                    let rot_num_segments = read_count(data, offset + 4).await?;
-                    offset += 12; // track info header
-                    offset += rot_num_keys as u64 * 16; // A3DQUATERNION per key
-                    offset += rot_num_segments as u64 * 16; // SEGMENT per segment
+                    let position = stck::read_track_v1(data, &mut offset, 3, anim_end).await?;
+                    let rotation = stck::read_track_v1(data, &mut offset, 4, anim_end).await?;
+                    bone_tracks.push(stck::BoneTrack {
+                        bone_id: i as i32,
+                        position,
+                        rotation,
+                    });
                 }
             }
         }
@@ -144,10 +145,22 @@ impl Skeleton {
             });
         }
 
+        let embedded_animation = if version < 6 && num_joints > 0 {
+            Some(stck::Animation {
+                anim_start,
+                anim_end: Some(anim_end),
+                anim_fps,
+                bone_tracks,
+            })
+        } else {
+            None
+        };
+
         Ok(Skeleton {
             version,
             bones,
             hooks,
+            embedded_animation,
         })
     }
 }
@@ -166,6 +179,38 @@ mod tests {
         assert_eq!(skel.bones.len(), 26);
         assert_eq!(skel.hooks.len(), 3);
         assert_eq!(skel.bones[0].parent, -1);
+    }
+
+    #[test]
+    fn parse_carnivore_plant_bon_header_animation() {
+        let bytes = include_test_data_bytes!("models/carnivore_plant/花苞食人花_b.bon");
+        let ds = DataSource::from_bytes(bytes.to_vec());
+        let skel = pollster::block_on(Skeleton::parse(&ds)).unwrap();
+        let anim = skel
+            .embedded_animation
+            .as_ref()
+            .expect("embedded animation");
+        assert_eq!(anim.anim_start, 0);
+        assert_eq!(anim.anim_end, Some(407));
+        assert_eq!(anim.anim_fps, 15);
+    }
+
+    #[test]
+    fn parse_carnivore_plant_bon_embedded_tracks() {
+        let bytes = include_test_data_bytes!("models/carnivore_plant/花苞食人花_b.bon");
+        let ds = DataSource::from_bytes(bytes.to_vec());
+        let skel = pollster::block_on(Skeleton::parse(&ds)).unwrap();
+        let anim = skel
+            .embedded_animation
+            .as_ref()
+            .expect("embedded animation");
+        assert_eq!(anim.bone_tracks.len(), 26);
+        let bt0 = &anim.bone_tracks[0];
+        assert_eq!(bt0.bone_id, 0);
+        assert_eq!(bt0.position.frame_rate, 15);
+        assert_eq!(bt0.rotation.frame_rate, 15);
+        assert_eq!(bt0.position.keys.len() % 3, 0);
+        assert_eq!(bt0.rotation.keys.len() % 4, 0);
     }
 
     #[test]
