@@ -23,6 +23,13 @@ export const LAST_SEEN_KEY = 'demos:changelogLastSeen';
  */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    id: '2026-05-03-bon-v6-embedded-animations',
+    date: '2026-05-03',
+    scope: 'pck',
+    title: 'Animation for ECMs with BON-embedded tracks',
+    body: 'BON v<6 ships clips inside the skeleton instead of separate STCK files.',
+  },
+  {
     id: '2026-05-01-bon-viewer',
     date: '2026-05-01',
     scope: 'pck',
